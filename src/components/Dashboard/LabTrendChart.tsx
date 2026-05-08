@@ -1,27 +1,35 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   ResponsiveContainer,
-  AreaChart,
+  ComposedChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ReferenceLine,
+  Brush
 } from "recharts";
-import { Activity, Loader2 } from "lucide-react";
+import { Activity, Loader2, Download } from "lucide-react";
+import ExportButton from "../ui/ExportButton";
 import { getLabHistory } from "../../lib/firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { LabResult } from "../../types/medical";
 
-export default function LabTrendChart() {
+interface LabTrendChartProps {
+  labs?: LabResult[];
+}
+
+export default function LabTrendChart({ labs }: LabTrendChartProps) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [labResults, setLabResults] = useState<LabResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMarker, setSelectedMarker] = useState<string>("");
-
+  const chartRef = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
     async function fetchLabs() {
       if (!user) {
@@ -30,11 +38,14 @@ export default function LabTrendChart() {
       }
       setIsLoading(true);
       try {
-        const results = await getLabHistory(
-          user.uid,
-          undefined,
-          activeProfile?.id,
-        );
+        let results = labs;
+        if (!results) {
+          results = await getLabHistory(
+            user.uid,
+            undefined,
+            activeProfile?.id,
+          );
+        }
         if (results && results.length > 0) {
           // Normalize marker names to Title Case to group duplicates like 'hemoglobin' and 'Hemoglobin '
           const normalizedResults = results.map(r => {
@@ -56,7 +67,7 @@ export default function LabTrendChart() {
       }
     }
     fetchLabs();
-  }, [user, activeProfile]);
+  }, [user, activeProfile, labs]);
 
   const uniqueMarkers = useMemo(() => {
     const markers = Array.from(
@@ -84,7 +95,7 @@ export default function LabTrendChart() {
       .filter((r) => r.markerName === selectedMarker)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    return filtered.map((r) => {
+    const processed = filtered.map((r) => {
       // Parse reference range carefully
       let refMin = undefined;
       let refMax = undefined;
@@ -99,12 +110,15 @@ export default function LabTrendChart() {
       }
 
       return {
+        timestamp: new Date(r.date).getTime(),
         date: new Date(r.date).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
           year: "numeric",
         }),
         value: r.value,
+        predictedValue: undefined as number | undefined,
+        trendValue: r.value,
         unit: r.unit,
         refMin: !isNaN(refMin as number) ? refMin : undefined,
         refMax: !isNaN(refMax as number) ? refMax : undefined,
@@ -112,6 +126,54 @@ export default function LabTrendChart() {
         status: r.status,
       };
     });
+
+    // Simple Linear Regression prediction if we have >= 2 points
+    if (processed.length >= 2) {
+      const n = processed.length;
+      let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+      
+      // Normalize X to make coefficients manageable
+      const firstX = processed[0].timestamp;
+      
+      processed.forEach(p => {
+        const x = (p.timestamp - firstX) / (1000 * 60 * 60 * 24); // days since first point
+        const y = p.value;
+        sumX += x;
+        sumY += y;
+        sumXY += x * y;
+        sumXX += x * x;
+      });
+      
+      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX) || 0;
+      const intercept = (sumY - slope * sumX) / n;
+      
+      // Predict 30 days into the future from the last point
+      const lastPoint = processed[processed.length - 1];
+      const nextDays = ((lastPoint.timestamp - firstX) / (1000 * 60 * 60 * 24)) + 30;
+      let nextValue = slope * nextDays + intercept;
+      // Prevent negative values if unreasonable
+      if (nextValue < 0 && lastPoint.value > 0) nextValue = lastPoint.value * 0.5;
+
+      const nextDate = new Date(lastPoint.timestamp + 30 * 24 * 60 * 60 * 1000);
+      
+      processed.push({
+        timestamp: nextDate.getTime(),
+        date: "Predicted",
+        value: undefined as any,
+        predictedValue: Number(nextValue.toFixed(1)),
+        trendValue: Number(nextValue.toFixed(1)),
+        unit: lastPoint.unit,
+        refMin: lastPoint.refMin,
+        refMax: lastPoint.refMax,
+        referenceRange: lastPoint.referenceRange,
+        status: "predicted" as any,
+      });
+
+      // Connect the lines by setting predictedValue to the last actual value
+      processed[processed.length - 2].predictedValue = lastPoint.value;
+    }
+
+    return processed;
   }, [labResults, selectedMarker]);
 
   if (isLoading) {
@@ -188,33 +250,42 @@ export default function LabTrendChart() {
           </p>
         </div>
 
-        <div className="relative">
-          <select
-            value={selectedMarker}
-            onChange={(e) => setSelectedMarker(e.target.value)}
-            className="appearance-none bg-slate-800/80 hover:bg-slate-800 border border-white/10 text-white text-xs font-bold uppercase tracking-widest rounded-xl px-4 py-2.5 pr-10 focus:outline-none focus:border-indigo-500 cursor-pointer w-full sm:w-auto shadow-inner transition-colors"
-          >
-            {uniqueMarkers.map((m) => (
-              <option key={m} value={m} className="bg-slate-900 text-white">
-                {m}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-            <svg
-              className="fill-current h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <select
+              value={selectedMarker}
+              onChange={(e) => setSelectedMarker(e.target.value)}
+              className="appearance-none bg-slate-800/80 hover:bg-slate-800 border border-white/10 text-white text-xs font-bold uppercase tracking-widest rounded-xl px-4 py-2.5 pr-10 focus:outline-none focus:border-indigo-500 cursor-pointer w-full sm:w-auto shadow-inner transition-colors"
             >
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-            </svg>
+              {uniqueMarkers.map((m) => (
+                <option key={m} value={m} className="bg-slate-900 text-white">
+                  {m}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+              <svg
+                className="fill-current h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
+          <div className="relative">
+            <ExportButton 
+              filename={`${selectedMarker || 'Lab'}_trend_report.pdf`}
+              elementId="lab-trend-chart-container"
+              orientation="landscape"
+            />
           </div>
         </div>
       </div>
 
-      <div className="h-[300px] w-full mt-4 bg-slate-900/40 rounded-2xl p-4 border border-white/5">
+      <div id="lab-trend-chart-container" className="h-[300px] w-full mt-4 bg-slate-900/40 rounded-2xl p-4 border border-white/5 relative">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
+          <ComposedChart
             data={chartData}
             margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
           >
@@ -280,6 +351,7 @@ export default function LabTrendChart() {
               strokeWidth={3}
               dot={(props: any) => {
                 const { cx, cy, payload } = props;
+                if (payload.status === 'predicted') return null;
                 const isCritical =
                   payload.status === "critical" ||
                   payload.status === "abnormal";
@@ -297,6 +369,7 @@ export default function LabTrendChart() {
               }}
               activeDot={(props: any) => {
                 const { cx, cy, payload } = props;
+                if (payload.status === 'predicted') return null;
                 const isCritical =
                   payload.status === "critical" ||
                   payload.status === "abnormal";
@@ -314,8 +387,28 @@ export default function LabTrendChart() {
               }}
               animationDuration={1500}
             />
-          </AreaChart>
+            <Line 
+              type="monotone" 
+              dataKey="predictedValue" 
+              stroke="#818CF8" 
+              strokeWidth={3} 
+              strokeDasharray="5 5" 
+              dot={false}
+              activeDot={false}
+              isAnimationActive={true}
+            />
+            <Brush 
+              dataKey="date" 
+              height={30} 
+              stroke="#64748B" 
+              fill="rgba(15, 23, 42, 0.5)"
+              tickFormatter={() => ''}
+            />
+          </ComposedChart>
         </ResponsiveContainer>
+        <div className="absolute top-2 right-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] px-2 py-1 rounded-md uppercase font-bold tracking-widest pointer-events-none">
+          ML Predict Active
+        </div>
       </div>
 
       {latestDataPoint && (

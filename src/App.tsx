@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { 
   Activity, 
   Upload, 
@@ -14,16 +14,42 @@ import {
   X,
   LogIn,
   LogOut,
-  Users
+  Users,
+  Loader2,
+  Key
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import Dashboard from './components/Dashboard/Dashboard';
-import UploadCenter from './components/Upload/UploadCenter';
-import Timeline from './components/Timeline/Timeline';
-import SpecialistLounge from './components/Specialists/SpecialistLounge';
-import Medications from './components/Medications/Medications';
 import { useAuth } from './context/AuthContext';
 import { useProfile } from './context/ProfileContext';
+import { useAlerts } from './context/AlertsContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import NotificationCenter from './components/Notifications/NotificationCenter';
+
+import { validateProfileName } from './lib/validation';
+import { logger } from './lib/logger';
+
+declare global {
+  interface Window {
+    aistudio?: {
+      openSelectKey?: () => Promise<void>;
+      hasSelectedApiKey?: () => Promise<boolean>;
+    };
+  }
+}
+
+const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
+const UploadCenter = lazy(() => import('./components/Upload/UploadCenter'));
+const Timeline = lazy(() => import('./components/Timeline/Timeline'));
+const SpecialistLounge = lazy(() => import('./components/Specialists/SpecialistLounge'));
+const Medications = lazy(() => import('./components/Medications/Medications'));
+const ProfileManagement = lazy(() => import('./components/Profile/ProfileManagement'));
+
+// Loading Fallback
+const Fallback = () => (
+  <div className="flex h-full items-center justify-center">
+    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+  </div>
+);
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -31,21 +57,34 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, signIn, logOut } = useAuth();
   const { profiles, activeProfile, setActiveProfile, createProfile } = useProfile();
+  const { alerts, dismissedIds, dismissAlert, unreadCount } = useAlerts();
   const [isNewProfileModaOpen, setIsNewProfileModaOpen] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
+  const [profileError, setProfileError] = useState('');
+  const [profileToSwitch, setProfileToSwitch] = useState<any>(null);
+  const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProfileName.trim()) return;
+    setProfileError('');
+    
+    const validation = validateProfileName(newProfileName);
+    if (!validation.isValid) {
+      setProfileError(validation.error || 'Invalid name');
+      return;
+    }
+    
     try {
       await createProfile(newProfileName.trim());
       setIsNewProfileModaOpen(false);
       setNewProfileName('');
-    } catch (e) {
-      console.error(e);
-      alert('Failed to create profile');
+    } catch (e: any) {
+      logger.error(e);
+      setProfileError('Failed to create profile. Please try again.');
     }
   };
+
+  const activeAlertsCount = unreadCount;
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: Activity },
@@ -53,6 +92,7 @@ export default function App() {
     { id: 'timeline', label: 'Medical History', icon: Calendar },
     { id: 'specialists', label: 'Specialist Panels', icon: Stethoscope },
     { id: 'meds', label: 'Medications', icon: FileText },
+    { id: 'profiles', label: 'Profile Management', icon: Users },
   ];
 
   return (
@@ -92,11 +132,13 @@ export default function App() {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-4 overflow-y-auto">
+        <nav className="flex-1 px-4 py-4 overflow-y-auto" aria-label="Main Navigation">
           <ul className="space-y-2">
             {tabs.map((tab) => (
               <li key={tab.id}>
                 <button
+                  aria-label={`Go to ${tab.label}`}
+                  title={tab.label}
                   onClick={() => {
                     setActiveTab(tab.id);
                     setIsMobileMenuOpen(false);
@@ -146,28 +188,40 @@ export default function App() {
                 <span className="px-2 py-0.5 bg-white/10 rounded-full text-[8px] md:text-[10px] font-medium border border-white/10 text-slate-400 uppercase tracking-widest hidden sm:inline-block">HIPAA SECURE</span>
                 {user && activeProfile && (
                   <div className="relative group">
-                    <button className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white hover:bg-white/10 transition-colors uppercase tracking-widest">
-                      <Users className="w-3 h-3" />
-                      {activeProfile.name}
+                    <button className="flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/30 rounded-full text-[11px] font-bold text-indigo-300 hover:bg-indigo-500/20 transition-colors uppercase tracking-widest shadow-[0_0_15px_rgba(99,102,241,0.15)] relative overflow-hidden">
+                      <div className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[200%] group-hover:translate-x-[200%] transition-transform duration-700 ease-in-out" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="max-w-[100px] truncate">{activeProfile.name}</span>
                     </button>
-                    <div className="absolute left-0 top-full mt-2 w-48 bg-slate-800 border border-white/10 rounded-xl shadow-xl py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
-                      <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 mb-1">
-                        Select Profile
+                    <div className="absolute left-0 top-full mt-2 w-52 bg-slate-800 border border-white/10 rounded-xl shadow-xl py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
+                      <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 mb-1 flex items-center justify-between">
+                        <span>Select Profile</span>
+                        <span className="text-[10px] bg-white/5 px-1.5 py-0.5 rounded">{profiles.length}</span>
                       </div>
-                      {profiles.map(p => (
+                      {profiles.map((p: any) => (
                         <button
                           key={p.id}
-                          onClick={() => setActiveProfile(p)}
-                          className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white/5 transition-colors ${activeProfile.id === p.id ? 'bg-white/5 font-bold text-indigo-400' : ''}`}
+                          onClick={() => {
+                            if (p.id !== activeProfile.id) {
+                              setProfileToSwitch(p);
+                            }
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${
+                            activeProfile.id === p.id 
+                              ? 'bg-indigo-500/10 font-bold text-indigo-400 border-l-2 border-indigo-400' 
+                              : 'text-white hover:bg-white/5 border-l-2 border-transparent'
+                          }`}
                         >
-                          {p.name}
+                          <span className="truncate pr-2">{p.name}</span>
+                          {activeProfile.id === p.id && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />}
                         </button>
                       ))}
                       <button
                         onClick={() => setIsNewProfileModaOpen(true)}
-                        className="w-full text-left px-4 py-2 text-sm text-indigo-400 hover:bg-white/5 transition-colors flex items-center gap-2 border-t border-white/5 mt-1 pt-2"
+                        className="w-full text-left px-4 py-2.5 text-sm text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-2 border-t border-white/5 mt-1 pt-3"
                       >
-                        <Plus className="w-3 h-3" /> New Profile
+                        <Plus className="w-4 h-4" /> New Profile
                       </button>
                     </div>
                   </div>
@@ -188,9 +242,25 @@ export default function App() {
             <button className="md:hidden p-2 text-slate-400 hover:text-indigo-400 transition-colors">
               <Search className="w-5 h-5" />
             </button>
-            <button className="hidden sm:block p-2 text-slate-400 hover:text-indigo-400 transition-colors relative">
+            <button 
+              className="p-2 text-slate-400 hover:text-indigo-400 transition-colors relative"
+              onClick={async () => {
+                if (window.aistudio?.openSelectKey) {
+                  await window.aistudio.openSelectKey();
+                }
+              }}
+              title="Set custom Gemini API Key"
+            >
+              <Key className="w-5 h-5" />
+            </button>
+            <button 
+              className="p-2 text-slate-400 hover:text-indigo-400 transition-colors relative"
+              onClick={() => setIsNotificationCenterOpen(true)}
+            >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-[#0F172A]"></span>
+              {activeAlertsCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#0F172A]"></span>
+              )}
             </button>
             {user ? (
               <div 
@@ -217,26 +287,32 @@ export default function App() {
 
         {/* Dynamic Content */}
         <div className="flex-1 p-4 md:p-8 pb-24 w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              {activeTab === 'dashboard' && <Dashboard />}
-              {activeTab === 'upload' && <UploadCenter />}
-              {activeTab === 'timeline' && <Timeline />}
-              {activeTab === 'specialists' && <SpecialistLounge />}
-              {activeTab === 'meds' && <Medications />}
-            </motion.div>
-          </AnimatePresence>
+          <ErrorBoundary>
+            <Suspense fallback={<Fallback />}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  {activeTab === 'dashboard' && <Dashboard />}
+                  {activeTab === 'upload' && <UploadCenter />}
+                  {activeTab === 'timeline' && <Timeline />}
+                  {activeTab === 'specialists' && <SpecialistLounge />}
+                  {activeTab === 'meds' && <Medications />}
+                  {activeTab === 'profiles' && <ProfileManagement />}
+                </motion.div>
+              </AnimatePresence>
+            </Suspense>
+          </ErrorBoundary>
         </div>
 
         {/* Global Action Button */}
         <button 
+          aria-label="Upload New Document"
           onClick={() => setActiveTab('upload')}
           className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 md:w-16 md:h-16 bg-indigo-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group z-20 border border-white/10"
         >
@@ -267,17 +343,88 @@ export default function App() {
                     type="text"
                     value={newProfileName}
                     onChange={e => setNewProfileName(e.target.value)}
-                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-6"
+                    className={`w-full bg-black/20 border ${profileError ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2`}
                     placeholder="Enter name..."
                     autoFocus
                   />
-                  <div className="flex justify-end gap-3">
+                  {profileError && (
+                    <p className="text-red-400 text-xs mb-4">{profileError}</p>
+                  )}
+                  <div className={`flex justify-end gap-3 ${profileError ? '' : 'mt-6'}`}>
                     <button type="button" onClick={() => setIsNewProfileModaOpen(false)} className="px-4 py-2 rounded-xl text-slate-300 hover:bg-white/5 transition-colors font-medium">Cancel</button>
                     <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-colors font-medium shadow-lg shadow-indigo-500/20">Create Profile</button>
                   </div>
                 </form>
               </motion.div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Switch Profile Confirmation Modal */}
+        <AnimatePresence>
+          {profileToSwitch && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.95 }}
+                className="bg-[#0F172A] border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative overflow-hidden"
+              >
+                <div className="flex justify-between items-center mb-4 relative z-10">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Users className="w-5 h-5 text-indigo-400" />
+                    Switch Profile
+                  </h3>
+                  <button onClick={() => setProfileToSwitch(null)} className="p-1 text-slate-400 hover:text-white transition-colors">
+                    <X className="w-5 h-5"/>
+                  </button>
+                </div>
+                <p className="text-slate-300 text-sm mb-6 leading-relaxed relative z-10">
+                  Are you sure you want to switch to <span className="font-bold text-indigo-400">{profileToSwitch.name}</span>? 
+                  You will view health records associated with this profile.
+                </p>
+                <div className="flex gap-3 justify-end relative z-10">
+                  <button
+                    onClick={() => setProfileToSwitch(null)}
+                    className="px-4 py-2 text-sm font-medium text-slate-300 hover:bg-white/5 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveProfile(profileToSwitch);
+                      setProfileToSwitch(null);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+                  >
+                    Switch Profile
+                  </button>
+                </div>
+                {/* Decorative background blob */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 blur-2xl rounded-full" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isNotificationCenterOpen && (
+            <NotificationCenter
+              alerts={alerts}
+              dismissedIds={dismissedIds}
+              onDismiss={dismissAlert}
+              onAction={(id) => {
+                 console.log("Action on", id);
+                 setIsNotificationCenterOpen(false);
+              }}
+              onClose={() => setIsNotificationCenterOpen(false)}
+            />
           )}
         </AnimatePresence>
       </main>

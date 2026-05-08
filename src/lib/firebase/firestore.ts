@@ -219,3 +219,44 @@ export async function deleteDocumentRecord(docId: string) {
   }
 }
 
+export interface ClinicalSummaryRecord {
+  id?: string;
+  userId: string;
+  profileId?: string;
+  markdown: string;
+  dataHash: string;
+  createdAt: any;
+}
+
+export async function getClinicalSummary(userId: string, profileId?: string) {
+  const path = 'summaries';
+  try {
+    const q = query(collection(db, path), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClinicalSummaryRecord));
+    if (profileId) {
+      docs = docs.filter(doc => doc.profileId === profileId || (!doc.profileId && profileId === 'Myself'));
+    }
+    return docs[0]; // return latest
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+  }
+}
+
+export async function saveClinicalSummary(userId: string, profileId: string | undefined, markdown: string, dataHash: string) {
+  const path = 'summaries';
+  try {
+    const docRef = await addDoc(collection(db, path), {
+      userId,
+      profileId: profileId || 'Myself',
+      markdown,
+      dataHash,
+      createdAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+

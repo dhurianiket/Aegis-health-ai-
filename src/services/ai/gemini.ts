@@ -1,7 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Specialty } from "../../types/medical";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const getAI = () => new GoogleGenAI({ 
+  apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY 
+});
 
 const SPECIALIST_PROMPTS: Record<string, string> = {
   [Specialty.INTERNAL_MEDICINE]: "You are a world-class Internal Medicine specialist. Your role is to provide a holistic overview of the patient's health, identifying general patterns and coordinating between other specialists. Focus on systemic health, prevention, and unexplained symptoms.",
@@ -55,8 +57,9 @@ export async function analyzeWithSpecialist(
   `;
 
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -88,7 +91,13 @@ export async function analyzeWithSpecialist(
     });
 
     let text = response.text || "{}";
-    if (text.startsWith("\`\`\`json")) { text = text.replace(/^\`\`\`json\n/, "").replace(/\n\`\`\`$/, ""); }
+    
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      text = text.slice(jsonStart, jsonEnd + 1);
+    }
+    
     return JSON.parse(text);
   } catch (error) {
     console.error(`Error in specialist analysis (${specialty}):`, error);
@@ -96,9 +105,159 @@ export async function analyzeWithSpecialist(
   }
 }
 
+export async function generateClinicalSummary(
+  patientData: any,
+  labHistory: any[],
+  documents: any[],
+  medications: any[],
+  insights: any[]
+) {
+  const prompt = `
+    You are a world-class PhD-level Oncologist, Hematologist, and Internal Medicine 
+    Physician with 30+ years of clinical and research experience at top institutions 
+    like Johns Hopkins, Mayo Clinic, and MD Anderson Cancer Center.
+
+    I am going to share my medical history with you, including lab results, documents, medications, and specialist insights. Analyze them with the 
+    depth, precision, and clinical rigor of a senior attending physician reviewing 
+    a complex patient case.
+
+    Please provide a FULL and DETAILED breakdown structured exactly as follows:
+
+    ---
+
+    ## 1. 🧬 PATIENT OVERVIEW
+    - Summarize the overall picture of my health context in 3–5 sentences
+    - State clearly: Is this report largely NORMAL, CONCERNING, or REQUIRES URGENT ATTENTION?
+
+    ---
+
+    ## 2. ✅ WHAT IS GOING RIGHT (Healthy Markers)
+    - List every value that is within a healthy range
+    - For each, explain WHY it is good and what it means for my body
+    - Highlight any values that are not just "normal" but OPTIMAL
+
+    ---
+
+    ## 3. ⚠️ WHAT IS WRONG OR BORDERLINE (Abnormal/Flagged Markers & Issues)
+    - List every value that is outside normal range or borderline abnormal
+    - For each abnormal value:
+      a. State the value vs. the expected normal range
+      b. Explain what this deviation means physiologically
+      c. List possible causes (dietary, lifestyle, disease-related, medication-related)
+      d. Rate the urgency: LOW / MODERATE / HIGH / CRITICAL
+      e. Suggest what follow-up test or action is recommended
+
+    ---
+
+    ## 4. 🫀 ORGAN SYSTEM HEALTH REPORT
+    Evaluate each organ/system based on the available markers:
+    - 🩸 Blood & Bone Marrow (CBC: RBC, WBC, Hemoglobin, Hematocrit, Platelets, Differentials)
+    - 🫀 Cardiovascular Health (Lipid Panel: LDL, HDL, Total Cholesterol, Triglycerides)
+    - 🍬 Metabolic & Blood Sugar Status (Glucose, HbA1c, Insulin if available)
+    - 🟤 Liver Health (ALT, AST, ALP, Bilirubin, Albumin, Total Protein)
+    - 🔵 Kidney Health (Creatinine, BUN, eGFR, Uric Acid)
+    - 🦴 Thyroid Function (TSH, T3, T4 if available)
+    - ⚡ Electrolytes & Minerals (Sodium, Potassium, Chloride)
+    - 🛡️ Immune System (WBC Differential)
+    - 💊 Nutritional Status (Iron, Ferritin, Vitamin B12, Vitamin D)
+    - 🔬 Inflammation Markers (CRP, ESR, LDH)
+
+    For each system: Give a rating — 🟢 HEALTHY / 🟡 BORDERLINE / 🔴 ABNORMAL
+
+    ---
+
+    ## 5. 🔗 PATTERN ANALYSIS & CORRELATIONS
+    - Identify if multiple abnormal values together suggest a SPECIFIC condition or syndrome
+    - Connect the dots across systems — what story do these results tell TOGETHER?
+    - How do current medications and specialist insights correlate with the lab results?
+
+    ---
+
+    ## 6. 🎯 RISK ASSESSMENT
+    - Based on this report, list any DISEASES or CONDITIONS I may be at elevated risk for
+    - Include: cardiovascular disease, diabetes, anemia, liver disease, kidney disease, etc.
+    - Be direct and honest — do not sugarcoat concerns.
+
+    ---
+
+    ## 7. 🥗 PERSONALIZED LIFESTYLE & NUTRITION RECOMMENDATIONS
+    Based on my specific results:
+    - What foods should I EAT MORE of?
+    - What foods or habits should I AVOID?
+    - What supplements should I consider (with dosage if possible)?
+    - What lifestyle changes (exercise, sleep, stress) are most important for MY results?
+
+    ---
+
+    ## 8. 🏥 NEXT STEPS & FOLLOW-UP PLAN
+    - Which values need to be re-tested, and HOW SOON?
+    - What specialist should I see (Hematologist, Endocrinologist, Cardiologist, etc.)?
+    - What additional tests or imaging would you recommend?
+    - Is there anything that needs IMMEDIATE medical attention?
+
+    ---
+
+    ## 9. 📊 SUMMARY TABLE
+    Create a table summarizing tests, my value, normal range, status, and urgency.
+
+    ---
+
+    IMPORTANT INSTRUCTIONS:
+    - Be thorough, not vague. Give specific numbers and medical reasoning.
+    - Do NOT say "consult your doctor" as the only answer — give me real clinical insight.
+    - Use plain language where possible, but do not oversimplify medical facts.
+    - Treat me as an intelligent adult who wants the full truth about my health.
+    - Format output using Markdown.
+
+    PATIENT PROFILE:
+    ${JSON.stringify(patientData)}
+
+    LAB HISTORY (Chronological, descending if possible, or grouped):
+    ${JSON.stringify(labHistory)}
+    
+    MEDICAL TIMELINE/DOCUMENTS:
+    ${JSON.stringify(documents.map((d: any) => ({
+      type: d.type,
+      date: d.date,
+      hospitalName: d.hospitalName,
+      doctorName: d.doctorName,
+      extractedFindings: d.extractedData?.findings || ""
+    })))}
+    
+    CURRENT POSSBLE MEDICATIONS:
+    ${JSON.stringify(medications)}
+    
+    SPECIALIST AI INSIGHTS:
+    ${JSON.stringify(insights)}
+  `;
+
+  try {
+    const ai = getAI();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+    return response.text || "";
+  } catch (error: any) {
+    console.error("Error generating clinical summary:", JSON.stringify(error));
+    
+    // Check if it's a rate limit / quota error
+    const isQuotaError = 
+      error?.status === 429 || 
+      error?.code === 429 || 
+      error?.status === 'RESOURCE_EXHAUSTED' ||
+      (error?.message && (error.message.includes('429') || error.message.includes('quota')));
+      
+    if (isQuotaError) {
+      return `## ⚠️ AI Service Quota Exceeded\n\nThe AI generation service has reached its rate limit or quota. \n\n*Error: RESOURCE_EXHAUSTED (429)*\n\nUnfortunately, standard AI analysis cannot be performed right now. Please try again later or check your API plan limits.`;
+    }
+    
+    return `Failed to generate report. Please try again. ${error?.message ? `(${error.message})` : ''}`;
+  }
+}
+
 export async function extractMedicalReports(filesData: {base64Data: string, mimeType: string}[]) {
   const prompt = `
-    Analyze these medical reports (images or PDFs). 
     Extract the following information from this medical report (image or PDF).
     Extract the information into a single structured JSON format:
     - document_type: (lab_report, prescription, consultation_note, etc. - choose the most prominent or general type)
@@ -117,8 +276,9 @@ export async function extractMedicalReports(filesData: {base64Data: string, mime
   `;
 
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-flash-latest",
+      model: "gemini-2.5-flash",
       contents: [
         { text: prompt },
         ...filesData.map(f => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))
@@ -167,7 +327,13 @@ export async function extractMedicalReports(filesData: {base64Data: string, mime
     });
 
     let text = response.text || "{}";
-    if (text.startsWith("\`\`\`json")) { text = text.replace(/^\`\`\`json\n/, "").replace(/\n\`\`\`$/, ""); }
+    
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      text = text.slice(jsonStart, jsonEnd + 1);
+    }
+    
     return JSON.parse(text);
   } catch (error) {
     console.error("Error extracting report:", error);

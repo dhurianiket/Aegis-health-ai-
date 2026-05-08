@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { Specialty } from '../../types/medical';
 import { analyzeWithSpecialist } from '../../services/ai/gemini';
-import { getDocuments, getLabHistory, saveSpecialistInsight } from '../../lib/firebase/firestore';
+import { getDocuments, getLabHistory, getMedications, saveSpecialistInsight } from '../../lib/firebase/firestore';
 
 const specialists = [
   {
@@ -129,21 +129,70 @@ export default function SpecialistLounge() {
     setInsight(null);
     try {
       const userId = user.uid;
-      const recentReports = await getDocuments(userId);
-      // We could fetch specific labs too if needed
-      const analysis = await analyzeWithSpecialist(activeSpecialist.specialty, { userId }, recentReports || [], sensitivity);
+      const profileId = activeProfile?.id;
+      
+      const [recentReports, recentLabs, recentMeds] = await Promise.all([
+        getDocuments(userId, profileId),
+        getLabHistory(userId, undefined, profileId),
+        getMedications(userId, profileId)
+      ]);
+
+      const formattedReports = (recentReports || []).map((doc: any) => ({
+        type: doc.type,
+        date: doc.date,
+        hospital: doc.hospitalName,
+        findings: doc.extractedData?.findings || '',
+        lab_values: doc.extractedData?.lab_values || [],
+        medications: doc.extractedData?.medications || []
+      }));
+
+      const formattedLabs = (recentLabs || []).map((lab: any) => ({
+        date: lab.date,
+        marker: lab.markerName,
+        value: lab.value,
+        unit: lab.unit,
+        status: lab.status
+      }));
+
+      const formattedMeds = (recentMeds || []).map((med: any) => ({
+        name: med.name,
+        dosage: med.dosage,
+        frequency: med.frequency,
+        status: med.status
+      }));
+
+      const payload = {
+        reports: formattedReports,
+        labs: formattedLabs,
+        medications: formattedMeds
+      };
+
+      const analysis = await analyzeWithSpecialist(
+        activeSpecialist.specialty,
+        { userId, profileId },
+        payload as any,
+        sensitivity
+      );
+
       if (analysis) {
-        await saveSpecialistInsight(userId, {
-          specialty: activeSpecialist.specialty,
-          content: analysis.summary,
-          confidence: analysis.confidence_score,
-          flags: analysis.abnormalities || [],
-          profileId: activeProfile?.id
-        } as any);
+        setInsight(analysis); // Set this first so UI updates immediately
+        try {
+          await saveSpecialistInsight(userId, {
+            specialty: activeSpecialist.specialty,
+            content: analysis.summary,
+            confidence: analysis.confidence_score,
+            flags: analysis.abnormalities || [],
+            profileId: profileId
+          } as any);
+        } catch (dbError) {
+          console.error('Failed to save insight to db, but showing results:', dbError);
+        }
+      } else {
+        alert("We couldn't generate an analysis at this time. Please try again.");
       }
-      setInsight(analysis);
     } catch (error) {
       console.error('Analysis failed:', error);
+      alert("An error occurred while generating the analysis.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -225,12 +274,12 @@ export default function SpecialistLounge() {
                 className="flex-1 flex flex-col items-center justify-center p-8 md:p-20 text-center gap-6 md:gap-8 min-h-[400px]"
               >
                 <div className="w-16 h-16 md:w-24 md:h-24 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-inner">
-                  <activeSpecialist.icon className="w-8 h-8 md:w-10 md:h-10 text-slate-700" />
+                  {activeSpecialist && <activeSpecialist.icon className="w-8 h-8 md:w-10 md:h-10 text-slate-700" />}
                 </div>
                 <div>
                   <h3 className="text-xl md:text-2xl font-light text-white mb-2 md:mb-3">Ready for Analysis</h3>
                   <p className="text-slate-500 text-xs md:text-sm max-w-sm mx-auto leading-relaxed font-light">
-                    Initiate a {activeSpecialist.name} assessment of your clinical history, lab trends, and medications.
+                    Initiate a {activeSpecialist?.name} assessment of your clinical history, lab trends, and medications.
                   </p>
                 </div>
                 <div className="w-full max-w-sm mt-4 text-left">
@@ -298,7 +347,7 @@ export default function SpecialistLounge() {
                       transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                       className="absolute inset-2 border-b-2 border-emerald-500 rounded-full opacity-50"
                     />
-                    <activeSpecialist.icon className="w-12 h-12 text-indigo-400" />
+                    {activeSpecialist && <activeSpecialist.icon className="w-12 h-12 text-indigo-400" />}
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -330,10 +379,10 @@ export default function SpecialistLounge() {
                       </span>
                       <span className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Confidence: {insight.confidence_score}%</span>
                     </div>
-                    <h3 className="text-3xl font-light text-white tracking-tight">{activeSpecialist.name} Findings</h3>
+                    <h3 className="text-3xl font-light text-white tracking-tight">{activeSpecialist?.name} Findings</h3>
                   </div>
                   <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-indigo-400">
-                    <activeSpecialist.icon className="w-7 h-7" />
+                    {activeSpecialist && <activeSpecialist.icon className="w-7 h-7" />}
                   </div>
                 </div>
 

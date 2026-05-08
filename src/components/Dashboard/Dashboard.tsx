@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ResponsiveContainer, 
   RadarChart, 
@@ -31,6 +31,11 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import LabTrendChart from './LabTrendChart';
+import SmartAlerts from './SmartAlerts';
+import CorrelationMatrix from './CorrelationMatrix';
+import ComparativeAnalysis from './ComparativeAnalysis';
+import TrendSparklines from './TrendSparklines';
+import ShareReport from '../Export/ShareReport';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { getHealthScores, getLatestInsights, getLabHistory } from '../../lib/firebase/firestore';
@@ -70,27 +75,72 @@ export default function Dashboard() {
 
   const latestScore = healthScores[0] || { overall: 85, systems: { metabolic: 85, heart: 70, liver: 92, kidney: 88, blood: 65, inflammation: 78 } };
   
-  const radarData = [
+  const radarData = useMemo(() => [
     { subject: 'Metabolic', A: latestScore.systems.metabolic, fullMark: 100 },
     { subject: 'Heart Risk', A: latestScore.systems.heart, fullMark: 100 },
     { subject: 'Liver Health', A: latestScore.systems.liver, fullMark: 100 },
     { subject: 'Kidney Health', A: latestScore.systems.kidney, fullMark: 100 },
     { subject: 'Blood Health', A: latestScore.systems.blood, fullMark: 100 },
     { subject: 'Inflammation', A: latestScore.systems.inflammation, fullMark: 100 },
-  ];
+  ], [latestScore.systems]);
+
+  const containerVariants: any = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants: any = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100, damping: 15 }
+    }
+  };
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center p-20">
-        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+      <div className="flex-1 flex flex-col items-center justify-center p-20 min-h-[60vh] gap-4">
+        <div className="relative w-16 h-16 flex items-center justify-center">
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full"
+          />
+          <Heart className="w-6 h-6 text-indigo-400 animate-pulse" />
+        </div>
+        <p className="text-sm font-medium text-slate-400 animate-pulse">Analyzing health telemetry...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 pb-20">
+    <motion.div 
+      className="space-y-8 pb-20"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-white">Health Overview</h2>
+          <p className="text-sm text-slate-400 mt-1">AI-driven analysis of your medical telemetry</p>
+        </div>
+        <ShareReport />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <SmartAlerts labs={keyLabs} />
+      </motion.div>
+
       {/* Top Banner Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <motion.div 
           whileHover={{ y: -4, backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
           className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-2xl flex items-center gap-6"
@@ -145,9 +195,9 @@ export default function Dashboard() {
             </div>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Radar Chart Section */}
         <div className="lg:col-span-1 bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl">
           <div className="flex items-center justify-between mb-8">
@@ -179,12 +229,21 @@ export default function Dashboard() {
 
         {/* Trends Section */}
         <div className="lg:col-span-2">
-          <LabTrendChart />
+          <LabTrendChart labs={keyLabs} />
         </div>
-      </div>
+      </motion.div>
 
-      {/* Critical Alerts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <motion.div variants={itemVariants}>
+        <TrendSparklines labs={keyLabs} />
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <CorrelationMatrix labs={keyLabs} />
+        <ComparativeAnalysis labs={keyLabs} />
+      </motion.div>
+
+      {/* Action Required & Intelligence Feed */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[40px] border border-white/10 shadow-2xl border-l-4 border-l-amber-500/50">
           <div className="flex items-center gap-3 mb-6 text-amber-400">
             <AlertTriangle className="w-5 h-5" />
@@ -234,7 +293,7 @@ export default function Dashboard() {
           <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-indigo-500 rounded-full blur-[80px] opacity-40"></div>
           <div className="absolute right-12 top-12 w-32 h-32 bg-purple-400 rounded-full blur-[60px] opacity-20"></div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
