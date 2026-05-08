@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- GLOBAL HELPERS ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isEmailVerified() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- VALIDATION HELPERS ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'fullName']) &&
+             data.keys().size() >= 2 && data.keys().size() <= 10 &&
+             data.uid == request.auth.uid &&
+             data.fullName is string && data.fullName.size() <= 200;
+    }
+
+    function isValidProfile(data) {
+      return data.keys().hasAll(['userId', 'name']) &&
+             data.keys().size() >= 2 && data.keys().size() <= 5 &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100;
+    }
+
+    function isValidDocument(data) {
+      return data.keys().hasAll(['userId', 'type', 'fileName']) &&
+             data.keys().size() >= 3 && data.keys().size() <= 15 &&
+             data.userId == request.auth.uid &&
+             data.type is string && data.type.size() <= 50 &&
+             data.fileName is string && data.fileName.size() <= 255;
+    }
+
+    function isValidLabResult(data) {
+      return data.keys().hasAll(['userId', 'markerName', 'value']) &&
+             data.keys().size() >= 3 && data.keys().size() <= 15 &&
+             data.userId == request.auth.uid &&
+             data.markerName is string && data.markerName.size() <= 100 &&
+             (data.value is number || data.value is float);
+    }
+
+    function isValidMedication(data) {
+      return data.keys().hasAll(['userId', 'name']) &&
+             data.keys().size() >= 2 && data.keys().size() <= 12 &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 200;
+    }
+
+    function isValidInsight(data) {
+      return data.keys().hasAll(['userId', 'specialty', 'summary', 'urgency_level']) &&
+             data.userId == request.auth.uid;
+    }
+
+    function isValidScore(data) {
+      return data.keys().hasAll(['userId', 'date', 'overall']) &&
+             data.userId == request.auth.uid;
+    }
+
+    // --- COLLECTION RULES ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'dob', 'gender', 'bloodType', 'chronicConditions', 'allergies']);
+    }
+
+    match /profiles/{profileId} {
+      allow get: if isSignedIn() && isValidId(profileId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(profileId) && isValidProfile(incoming());
+      allow update: if isOwner(existing().userId) && isValidProfile(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['name']);
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /documents/{docId} {
+      allow get: if isSignedIn() && isValidId(docId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(docId) && isValidDocument(incoming());
+      allow update: if isOwner(existing().userId) && isValidDocument(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['isProcessed', 'extractedData']);
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /labResults/{resId} {
+      allow get: if isSignedIn() && isValidId(resId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(resId) && isValidLabResult(incoming());
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /medications/{medId} {
+      allow get: if isSignedIn() && isValidId(medId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(medId) && isValidMedication(incoming());
+      allow update: if isOwner(existing().userId) && isValidMedication(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'endDate']);
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /insights/{insightId} {
+      allow get: if isSignedIn() && isValidId(insightId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(insightId) && isValidInsight(incoming());
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /scores/{scoreId} {
+      allow get: if isSignedIn() && isValidId(scoreId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(scoreId) && isValidScore(incoming());
+      allow update: if isOwner(existing().userId) && isValidScore(incoming());
+    }
+  }
+}
