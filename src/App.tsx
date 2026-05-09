@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { 
   Activity, 
   Upload, 
@@ -28,13 +28,12 @@ import { useAlerts } from './context/AlertsContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import NotificationDropdown from './components/Header/NotificationDropdown';
 import OfflineIndicator from './components/OfflineIndicator';
-import SharedProfile from './components/Export/SharedProfile';
-import IntegrationsPanel from './components/Settings/IntegrationsPanel';
-import SBARPreview from './components/Export/SBARPreview';
-import ExportModal from './components/Export/ExportModal';
-import QRCodeShare from './components/Export/QRCodeShare';
-import ChatCoach from './components/AIHelper/ChatCoach';
-import NotificationCenter from './components/Notifications/NotificationCenter';
+const SBARPreview = lazy(() => import('./components/Export/SBARPreview'));
+const ExportModal = lazy(() => import('./components/Export/ExportModal'));
+const ChatCoach = lazy(() => import('./components/AIHelper/ChatCoach'));
+const NotificationCenter = lazy(() => import('./components/Notifications/NotificationCenter'));
+const IntegrationsPanel = lazy(() => import('./components/Settings/IntegrationsPanel'));
+const SharedProfile = lazy(() => import('./components/Export/SharedProfile'));
 import { MessageSquare } from 'lucide-react';
 import { generateSBAR } from './services/sbarGenerationService';
 
@@ -89,8 +88,25 @@ export default function App() {
   const searchParams = new URLSearchParams(window.location.search);
   const shareId = searchParams.get('share');
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isNewProfileModaOpen) setIsNewProfileModaOpen(false);
+        if (profileToSwitch) setProfileToSwitch(null);
+        if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+        if (isNotificationsOpen) setIsNotificationsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isNewProfileModaOpen, profileToSwitch, isMobileMenuOpen, isNotificationsOpen]);
+
   if (shareId) {
-    return <SharedProfile shareId={shareId} />;
+    return (
+      <Suspense fallback={<Fallback />}>
+        <SharedProfile shareId={shareId} />
+      </Suspense>
+    );
   }
 
   const handleCreateProfile = async (e: React.FormEvent) => {
@@ -529,66 +545,64 @@ export default function App() {
 
         <AnimatePresence>
           {isNotificationCenterOpen && (
-            <NotificationCenter
-              alerts={alerts}
-              dismissedIds={dismissedIds}
-              onDismiss={dismissAlert}
-              onAction={(id: string) => {
-                 console.log("Action on", id);
-                 setIsNotificationCenterOpen(false);
-              }}
-              onClose={() => setIsNotificationCenterOpen(false)}
-            />
+            <Suspense fallback={<Fallback />}>
+              <NotificationCenter
+                alerts={alerts}
+                dismissedIds={dismissedIds}
+                onDismiss={dismissAlert}
+                onAction={(id: string) => {
+                   console.log("Action on", id);
+                   setIsNotificationCenterOpen(false);
+                }}
+                onClose={() => setIsNotificationCenterOpen(false)}
+              />
+            </Suspense>
           )}
         </AnimatePresence>
 
         <AnimatePresence>
           {isExportOpen && activeProfile && (
-            <ExportModal 
-              onClose={() => setIsExportOpen(false)} 
-              healthContext={{
-                userName: activeProfile.name,
-                healthScore: 85, // Stub
-                topFlags: ['Elevated HbA1c', 'High LDL'], // Stub
-                medications: (activeProfile as any).medications || [],
-                recentTrends: [
-                   { marker: 'HbA1c', value: 6.2, unit: '%', direction: 'up' },
-                   { marker: 'LDL', value: 142, unit: 'mg/dL', direction: 'down' }
-                ],
-                doctorNotes: (activeProfile as any).doctorNotes || []
-              }}
-            />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {isSharingOpen && activeProfile && user && (
-            <QRCodeShare 
-              onClose={() => setIsSharingOpen(false)} 
-              profileId={activeProfile.id}
-              userId={user.uid}
-            />
+            <Suspense fallback={<Fallback />}>
+              <ExportModal 
+                onClose={() => setIsExportOpen(false)} 
+                healthContext={{
+                  userName: activeProfile.name,
+                  healthScore: 85, // Stub
+                  topFlags: ['Elevated HbA1c', 'High LDL'], // Stub
+                  medications: (activeProfile as any).medications || [],
+                  recentTrends: [
+                     { marker: 'HbA1c', value: 6.2, unit: '%', direction: 'up' },
+                     { marker: 'LDL', value: 142, unit: 'mg/dL', direction: 'down' }
+                  ],
+                  doctorNotes: (activeProfile as any).doctorNotes || []
+                }}
+              />
+            </Suspense>
           )}
         </AnimatePresence>
 
         <AnimatePresence>
           {isSBAROpen && activeProfile && (
-            <SBARPreview 
-              onClose={() => {
-                setIsSBAROpen(false);
-                setSbarText('');
-              }}
-              sbarText={sbarText}
-              isLoading={isGeneratingSBAR}
-            />
+            <Suspense fallback={<Fallback />}>
+              <SBARPreview 
+                onClose={() => {
+                  setIsSBAROpen(false);
+                  setSbarText('');
+                }}
+                sbarText={sbarText}
+                isLoading={isGeneratingSBAR}
+              />
+            </Suspense>
           )}
         </AnimatePresence>
 
-        <ChatCoach 
-          externalOpen={isChatOpen} 
-          onClose={() => setIsChatOpen(false)} 
-          showTrigger={false} 
-        />
+        <Suspense fallback={<Fallback />}>
+          <ChatCoach 
+            externalOpen={isChatOpen} 
+            onClose={() => setIsChatOpen(false)} 
+            showTrigger={false} 
+          />
+        </Suspense>
       </main>
     </div>
   );

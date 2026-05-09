@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Share2, QrCode as QRIcon, Download, FileText, CheckCircle2, X, ArrowLeft, Brain, Activity, Sparkles } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { Share2, Download, FileText, CheckCircle2, X, ArrowLeft, Brain, Activity, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import ExportButton from '../ui/ExportButton';
@@ -14,28 +13,12 @@ export default function ShareReport() {
   const { activeProfile } = useProfile();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [loadingPhase, setLoadingPhase] = useState(0);
   const [summaryMarkdown, setSummaryMarkdown] = useState('');
-  
-  const loadingPhases = [
-    "Synthesizing laboratory history...",
-    "Cross-referencing medical timeline...",
-    "Reviewing active medications...",
-    "Analyzing specialist insights...",
-    "Drafting clinical expert summary...",
-    "Finalizing HIPAA-compliant document..."
-  ];
 
   const handleGenerateSummary = async () => {
     if (!user || !activeProfile) return;
     setIsGenerating(true);
-    setLoadingPhase(0);
     setSummaryMarkdown('');
-    
-    // Simulate phases progressing over time
-    const interval = setInterval(() => {
-      setLoadingPhase(prev => (prev < loadingPhases.length - 1 ? prev + 1 : prev));
-    }, 2000);
     
     try {
       const [labs, documents, medications, insights] = await Promise.all([
@@ -80,12 +63,9 @@ export default function ShareReport() {
         setSummaryMarkdown('Failed to generate summary. Please try again later.');
       }
     } finally {
-      clearInterval(interval);
       setIsGenerating(false);
     }
   };
-
-  const dummyQRValue = `https://aura-intelligence.placeholder.com/secure-record/${activeProfile?.id}?token=temp-123`;
 
   return (
     <>
@@ -128,7 +108,7 @@ export default function ShareReport() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 print:hidden">
+                  <div className="grid grid-cols-1 gap-4 mb-8 print:hidden">
                     <div 
                       onClick={handleGenerateSummary}
                       className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-6 cursor-pointer transition-all flex flex-col items-center justify-center gap-4 relative overflow-hidden h-full min-h-[140px] md:min-h-[160px]"
@@ -180,17 +160,9 @@ export default function ShareReport() {
                           <div className="text-center w-full px-2">
                             <div className="flex items-center justify-center gap-2 mb-2 h-5">
                               <Activity className="w-3 h-3 text-indigo-400 animate-pulse shrink-0" />
-                              <AnimatePresence mode="popLayout">
-                                <motion.p 
-                                  key={loadingPhase}
-                                  initial={{ opacity: 0, y: 5 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -5 }}
-                                  className="text-xs text-indigo-300 font-medium truncate"
-                                >
-                                  {loadingPhases[loadingPhase]}
-                                </motion.p>
-                              </AnimatePresence>
+                              <p className="text-xs text-indigo-300 font-medium truncate">
+                                Generating clinical summary...
+                              </p>
                             </div>
                             
                             {/* DNA-like progress bar */}
@@ -198,8 +170,8 @@ export default function ShareReport() {
                               <motion.div 
                                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-400"
                                 initial={{ width: "0%" }}
-                                animate={{ width: `${((loadingPhase + 1) / loadingPhases.length) * 100}%` }}
-                                transition={{ duration: 0.5, ease: "circOut" }}
+                                animate={{ width: "100%" }}
+                                transition={{ duration: 15, ease: "linear" }}
                               />
                               {/* Shimmer effect */}
                               <motion.div
@@ -212,34 +184,14 @@ export default function ShareReport() {
                         </div>
                       ) : (
                         <>
-                          <FileText className="w-10 h-10 text-emerald-400 group-hover:scale-110 transition-transform" />
+                          <Activity className="w-10 h-10 text-emerald-400 group-hover:scale-110 transition-transform" />
                           <div className="text-center">
-                            <h3 className="font-bold text-sm text-white">AI Dr. Summary (PDF)</h3>
-                            <p className="text-[10px] text-slate-400 mt-1">Generate comprehensive clinical report</p>
+                            <h3 className="font-bold text-sm text-white">Generate AI Report</h3>
+                            <p className="text-[10px] text-slate-400 mt-1">Compile comprehensive clinical summary</p>
                           </div>
                         </>
                       )}
                     </div>
-
-                    <div className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-4">
-                      <div className="bg-white p-2 rounded-xl">
-                        <QRCodeSVG 
-                          value={dummyQRValue} 
-                          size={80} 
-                          bgColor={"#ffffff"}
-                          fgColor={"#0f172a"}
-                          level={"M"}
-                        />
-                      </div>
-                      <div className="text-center">
-                        <h3 className="font-semibold text-sm text-indigo-300">Secure QR Share</h3>
-                        <p className="text-[10px] text-slate-400 mt-1">24h expiration</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 text-xs text-indigo-200 leading-relaxed print:hidden">
-                    <strong>HIPAA Secure:</strong> Shared links and PDFs are strictly generated client-side or sent over encrypted channels. Only verified medical professionals with the QR cipher can temporarily access your selected data.
                   </div>
                 </>
               ) : (

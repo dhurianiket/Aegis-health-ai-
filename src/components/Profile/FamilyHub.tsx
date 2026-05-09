@@ -246,7 +246,7 @@ export default function FamilyHub() {
               <Dna className="w-16 h-16 text-indigo-400 mx-auto mb-6 animate-pulse" />
               <h3 className="text-2xl font-bold text-white mb-4">Genetic Marker Cross-Analysis</h3>
               <p className="text-slate-400 max-w-2xl mx-auto leading-relaxed font-light mb-8">
-                Aegis analyzes biological markers across linked family accounts to identify hereditary patterns. This helps predict metabolic shifts up to 2 years before standard diagnostics.
+                Aura securely visualizes patterns across linked family accounts to provide insight into shared health histories. This functionality allows you to review historical data together for care coordination.
               </p>
               
               <button

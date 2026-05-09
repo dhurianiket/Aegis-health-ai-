@@ -3,15 +3,22 @@ import { generateSBAR } from '../sbarGenerationService';
 import { MedicationStatus } from '../../types/medical';
 
 // Mock the AI SDK
-vi.mock('@google/genai', () => {
+vi.mock('../../lib/geminiClient', () => {
   return {
     GoogleGenAI: vi.fn().mockImplementation(function() {
       return {
         models: {
-          generateContent: vi.fn().mockResolvedValue({ text: "AI generated SBAR summary" })
+          generateContent: vi.fn().mockResolvedValue({ text: JSON.stringify({
+            situation: 'Patient requires review',
+            background: 'Patient has hypertension',
+            assessment: 'Glucose is high',
+            recommendation: 'Increase medication',
+            missing_information: 'No recent weight',
+            confidence_note: 'High'
+          }) })
         },
         getGenerativeModel: vi.fn().mockReturnValue({
-          generateContent: vi.fn().mockResolvedValue({ response: { text: () => "AI generated SBAR summary" } })
+          generateContent: vi.fn().mockResolvedValue({ response: { text: () => "{}" } })
         })
       };
     })
@@ -37,13 +44,18 @@ describe('SBARGenerationService', () => {
 
   it('should generate SBAR when AI succeeds', async () => {
     const sbar = await generateSBAR(mockProfile, mockLabs, mockMeds);
-    expect(sbar).toBe('AI generated SBAR summary');
+    expect(sbar).toContain('SITUATION:\nPatient requires review');
+    expect(sbar).toContain('BACKGROUND:\nPatient has hypertension');
+    expect(sbar).toContain('ASSESSMENT:\nGlucose is high');
+    expect(sbar).toContain('RECOMMENDATION:\nIncrease medication');
+    expect(sbar).toContain('MISSING INFORMATION:\nNo recent weight');
+    expect(sbar).toContain('CONFIDENCE:\nHigh');
   });
 
   it('should generate a fallback SBAR when AI fails', async () => {
     // Mock failure for this specific test
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const GoogleGenAI = (await import('@google/genai')).GoogleGenAI;
+    const GoogleGenAI = (await import('../../lib/geminiClient')).GoogleGenAI;
     const mockInstance = vi.mocked(GoogleGenAI).mock.results[0].value;
     vi.mocked(mockInstance.models.generateContent).mockRejectedValueOnce(new Error('AI Failure'));
     
@@ -57,3 +69,4 @@ describe('SBARGenerationService', () => {
     expect(sbar).toContain('Glucose: 200');
   });
 });
+

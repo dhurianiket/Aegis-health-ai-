@@ -117,7 +117,6 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
           year: "numeric",
         }),
         value: r.value,
-        predictedValue: undefined as number | undefined,
         trendValue: r.value,
         unit: r.unit,
         refMin: !isNaN(refMin as number) ? refMin : undefined,
@@ -126,52 +125,6 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
         status: r.status,
       };
     });
-
-    // Simple Linear Regression prediction if we have >= 2 points
-    if (processed.length >= 2) {
-      const n = processed.length;
-      let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-      
-      // Normalize X to make coefficients manageable
-      const firstX = processed[0].timestamp;
-      
-      processed.forEach(p => {
-        const x = (p.timestamp - firstX) / (1000 * 60 * 60 * 24); // days since first point
-        const y = p.value;
-        sumX += x;
-        sumY += y;
-        sumXY += x * y;
-        sumXX += x * x;
-      });
-      
-      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX) || 0;
-      const intercept = (sumY - slope * sumX) / n;
-      
-      // Predict 30 days into the future from the last point
-      const lastPoint = processed[processed.length - 1];
-      const nextDays = ((lastPoint.timestamp - firstX) / (1000 * 60 * 60 * 24)) + 30;
-      let nextValue = slope * nextDays + intercept;
-      // Prevent negative values if unreasonable
-      if (nextValue < 0 && lastPoint.value > 0) nextValue = lastPoint.value * 0.5;
-
-      const nextDate = new Date(lastPoint.timestamp + 30 * 24 * 60 * 60 * 1000);
-      
-      processed.push({
-        timestamp: nextDate.getTime(),
-        date: "Predicted",
-        value: undefined as any,
-        predictedValue: Number(nextValue.toFixed(1)),
-        trendValue: Number(nextValue.toFixed(1)),
-        unit: lastPoint.unit,
-        refMin: lastPoint.refMin,
-        refMax: lastPoint.refMax,
-        referenceRange: lastPoint.referenceRange,
-        status: "predicted" as any,
-      });
-
-      // Connect the lines by setting predictedValue to the last actual value
-      processed[processed.length - 2].predictedValue = lastPoint.value;
-    }
 
     return processed;
   }, [labResults, selectedMarker]);
@@ -387,16 +340,6 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
               }}
               animationDuration={1500}
             />
-            <Line 
-              type="monotone" 
-              dataKey="predictedValue" 
-              stroke="#818CF8" 
-              strokeWidth={3} 
-              strokeDasharray="5 5" 
-              dot={false}
-              activeDot={false}
-              isAnimationActive={true}
-            />
             <Brush 
               dataKey="date" 
               height={30} 
@@ -406,9 +349,6 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
             />
           </ComposedChart>
         </ResponsiveContainer>
-        <div className="absolute top-2 right-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] px-2 py-1 rounded-md uppercase font-bold tracking-widest pointer-events-none">
-          ML Predict Active
-        </div>
       </div>
 
       {latestDataPoint && (

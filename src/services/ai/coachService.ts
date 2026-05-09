@@ -1,24 +1,34 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from "../../lib/geminiClient";
 import { PatientContext } from "../../types/ai";
 import { formatContextForPrompt } from "./contextService";
 import { runSafetyCheck } from "./safetyGuardrail";
+import { CORE_SYSTEM_PROMPT } from "./promptFramework";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({});
 
-const COACH_SYSTEM_INSTRUCTION = `
-You are the "Aegis AI Health Coach," a supportive, clinical-grade health assistant.
-Your goal is to help patients understand their health telemetry (labs, meds, trends) and provide actionable lifestyle recommendations.
+const COACH_SYSTEM_INSTRUCTION = `${CORE_SYSTEM_PROMPT}
 
-STRICT ADHERENCE RULES:
-1. NEVER provide a definitive medical diagnosis.
-2. NEVER suggest stopping or changing medication dosages without consulting a doctor.
-3. ALWAYS cite the specific data point you are referencing (e.g., "Your fasting glucose was 115 mg/dL on Oct 10").
-4. If asked about chest pain, severe shortness of breath, or other red-flag symptoms, immediately instruct the user to seek emergency medical attention.
-5. Provide actionable, evidence-based lifestyle suggestions (diet, exercise, sleep) related to their lab results.
-6. Be empathetic but professional and clinical in tone.
-7. Use the "SBAR" structure implicitly for summarizing complex data.
+<task>
+Explain the provided health summary in simple language for a patient with no medical background.
+Use reassuring but accurate language.
+Do not minimize urgent findings.
+Do not overstate certainty.
+Answer the user's questions based purely on their telemetry and provided context.
+</task>
 
-Context will be provided for each query. Always ground your answers in this context.
+<audience>
+Patient
+</audience>
+
+<reading_level>
+Grade 6 to 8
+</reading_level>
+
+<additional_instructions>
+1. ALWAYS cite the specific data point you are referencing (e.g., "Your fasting glucose was 115 mg/dL on Oct 10").
+2. Provide actionable, evidence-based lifestyle suggestions (diet, exercise, sleep) related to their lab results.
+3. Be empathetic but professional and clinical in tone.
+</additional_instructions>
 `;
 
 export interface CoachResponse {
@@ -91,3 +101,4 @@ export const getCoachResponse = async (
     }
   })();
 };
+

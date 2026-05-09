@@ -21,7 +21,18 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [alerts, setAlerts] = useState<HealthAlert[]>([]);
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('dismissedAlerts');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('dismissedAlerts', JSON.stringify(Array.from(dismissedIds)));
+  }, [dismissedIds]);
 
   const refreshAlerts = async () => {
     if (!user || !activeProfile) {
@@ -63,7 +74,11 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
 
   const markAllAsRead = () => {
     const allIds = alerts.map(a => a.id);
-    setDismissedIds(new Set(allIds));
+    setDismissedIds(prev => {
+      const next = new Set(prev);
+      allIds.forEach(id => next.add(id));
+      return next;
+    });
   };
 
   const unreadCount = alerts.filter(a => !dismissedIds.has(a.id)).length;

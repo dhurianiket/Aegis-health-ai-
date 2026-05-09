@@ -48,7 +48,7 @@ service cloud.firestore {
     }
 
     match /profiles/{profileId} {
-      allow get: if true; // Access via UUID is the shared view gateway
+      allow get: if isVerified() && isOwner(resource.data.userId); // Require owner view
       allow list: if isOwner(resource.data.userId);
       allow create: if isVerified() && isOwner(incoming().userId) && isValidProfile(incoming());
       allow update: if isVerified() && isOwner(existing().userId) && isValidProfile(incoming());

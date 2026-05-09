@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   FileText, 
@@ -12,7 +12,6 @@ import {
   Activity
 } from 'lucide-react';
 import { format, subDays, subMonths, subYears } from 'date-fns';
-import { exportToPDF } from '../../services/pdfExportService';
 
 interface ExportModalProps {
   onClose: () => void;
@@ -33,6 +32,14 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleExport = async () => {
     setIsExporting(true);
     setExportProgress(10);
@@ -47,6 +54,7 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
       await new Promise(resolve => setTimeout(resolve, 500));
       setExportProgress(60);
       
+      const { exportToPDF } = await import('../../services/pdfExportService');
       const fileName = `Health_Report_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
       await exportToPDF(reportId, fileName, 'portrait');
       
@@ -67,6 +75,9 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         className="bg-slate-800 border border-white/10 rounded-[2rem] w-full max-w-xl shadow-2xl relative overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="export-modal-title"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5">
@@ -75,7 +86,7 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
               <FileText className="w-6 h-6 text-indigo-400" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Export Health Report</h3>
+              <h3 id="export-modal-title" className="text-xl font-bold text-white tracking-tight">Export Health Report</h3>
               <p className="text-slate-400 text-sm">Professional PDF summary for your records</p>
             </div>
           </div>
@@ -299,7 +310,7 @@ function HealthReportPrintable({ reportId, context }: { reportId: string, contex
           Confidential Health Report • For Informational Purposes Only
         </p>
         <p className="text-[10px] text-slate-300 mt-2">
-          Generated via Aura Intelligence HIPAA-Secure Export Engine. Checksums verified.
+          Generated via Aura Intelligence.
         </p>
       </div>
     </div>

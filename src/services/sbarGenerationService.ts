@@ -1,7 +1,8 @@
 import { LabResult, Medication, UserProfile } from '../types/medical';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from "../lib/geminiClient";
+import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from './ai/promptFramework';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({});
 
 export const generateSBAR = async (
   profile: UserProfile, 
@@ -13,33 +14,63 @@ export const generateSBAR = async (
   
   const age = profile.dob ? Math.floor((new Date().getTime() - new Date(profile.dob).getTime()) / 3.15576e+10) : 'Unknown';
 
-  const prompt = `Generate a professional medical SBAR (Situation, Background, Assessment, Recommendation) summary for a ${age}-year-old ${profile.gender || ''} patient.
-  
-  PATIENT PROFILE:
-  - Conditions: ${profile.chronicConditions?.join(', ') || 'None reported'}
-  - Allergies: ${profile.allergies?.join(', ') || 'None reported'}
-  
-  ACTIVE MEDICATIONS:
-  ${activeMeds.map(m => `- ${m.name} ${m.dosage} (${m.frequency})`).join('\n') || 'No active medications'}
-  
-  RECENT LAB RESULTS (FOCUS AREAS):
-  ${criticalLabs.map(l => `- ${l.markerName}: ${l.value} ${l.unit} (${l.status})`).join('\n') || 'All values within normal limits'}
-  
-  INSTRUCTIONS:
-  1. Use a professional, concise clinical tone.
-  2. The Situation should summarize the current clinical status.
-  3. The Background should highlight relevant history and meds.
-  4. The Assessment should interpret the lab findings in context.
-  5. The Recommendation should suggest actionable next steps for a physician to consider.
-  6. Return ONLY the SBAR text. Do not use AI conversational filler.`;
+  const prompt = `${CORE_SYSTEM_PROMPT}
+
+<task>
+Convert the provided health data into an SBAR handoff note for clinician review.
+Keep it concise, factual, and clinically neutral.
+Do not invent missing details.
+</task>
+
+<audience>
+Clinician
+</audience>
+
+<input>
+PATIENT CONTEXT:
+- Age: ${age}
+- Gender: ${profile.gender || 'Unknown'}
+- Conditions: ${profile.chronicConditions?.join(', ') || 'None reported'}
+- Allergies: ${profile.allergies?.join(', ') || 'None reported'}
+
+ACTIVE MEDICATIONS:
+${activeMeds.map(m => `- ${m.name} ${m.dosage} (${m.frequency})`).join('\n') || 'No active medications'}
+
+RECENT LAB RESULTS (FOCUS AREAS):
+${criticalLabs.map(l => `- ${l.markerName}: ${l.value} ${l.unit} (${l.status})`).join('\n') || 'All values within normal limits'}
+</input>
+
+${OUTPUT_FORMAT_JSON}
+Return valid JSON with exactly these keys: task_type, situation, background, assessment, recommendation, missing_information, confidence_note.`;
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
+      config: {
+        responseMimeType: "application/json"
+      }
     });
     
-    return response.text || "Failed to generate AI summary. Please try again.";
+    let text = response.text || "";
+    text = text.replace(/^```json/, "").replace(/```$/, "").trim();
+    
+    const parsed = JSON.parse(text);
+    
+    let resultStr = `SITUATION:\n${parsed.situation || 'Not provided'}\n\n`;
+    resultStr += `BACKGROUND:\n${parsed.background || 'Not provided'}\n\n`;
+    resultStr += `ASSESSMENT:\n${parsed.assessment || 'Not provided'}\n\n`;
+    resultStr += `RECOMMENDATION:\n${parsed.recommendation || 'Not provided'}`;
+    
+    if (parsed.missing_information) {
+      resultStr += `\n\nMISSING INFORMATION:\n${parsed.missing_information}`;
+    }
+    if (parsed.confidence_note) {
+      resultStr += `\n\nCONFIDENCE:\n${parsed.confidence_note}`;
+    }
+    
+    return resultStr.trim();
+
   } catch (error) {
     console.error("Gemini SBAR Generation failed:", error);
     // Fallback to template if AI fails
@@ -51,3 +82,5 @@ export const generateSBAR = async (
     return `SITUATION:\n${situation}\n\nBACKGROUND:\n${background}\n\nASSESSMENT:\n${assessment}\n\nRECOMMENDATION:\n${recommendation}`;
   }
 };
+
+
