@@ -93,7 +93,7 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
             <label className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Calendar className="w-4 h-4" /> Date Range
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 { id: '30days', label: 'Last 30 Days' },
                 { id: '6months', label: 'Last 6 Months' },
@@ -118,7 +118,7 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
           {/* Report Preview Summary */}
           <div className="p-6 bg-black/20 rounded-3xl border border-white/5 space-y-4">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Included Content</label>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-x-6 gap-y-3">
               {[
                 'Health Overview Score',
                 'Critical Lab Flags',
@@ -129,7 +129,7 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  {item}
+                  <span className="truncate">{item}</span>
                 </div>
               ))}
             </div>
@@ -145,8 +145,8 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-black/20 border-t border-white/5 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-slate-400">
+        <div className="p-6 bg-black/20 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-slate-400 order-2 sm:order-1">
             <Clock className="w-4 h-4" />
             <span className="text-xs">Approx. generation: 5s</span>
           </div>
@@ -154,7 +154,7 @@ export default function ExportModal({ onClose, healthContext }: ExportModalProps
           <button 
             disabled={isExporting}
             onClick={handleExport}
-            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all relative overflow-hidden ${
+            className={`w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all relative overflow-hidden order-1 sm:order-2 ${
               isExporting 
               ? 'bg-indigo-600/50 text-white/50 cursor-not-allowed' 
               : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-500/20 active:scale-95'

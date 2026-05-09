@@ -109,8 +109,8 @@ export default function ShareReport() {
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              className={`bg-[#0F172A] border border-white/10 rounded-3xl shadow-2xl relative overflow-hidden flex flex-col print:bg-white print:border-none print:shadow-none print:rounded-none print:w-full print:h-full print:text-black ${
-                summaryMarkdown ? 'w-[90vw] h-[90vh]' : 'max-w-lg w-full p-8'
+              className={`bg-[#0F172A] border border-white/10 rounded-2xl md:rounded-3xl shadow-2xl relative overflow-hidden flex flex-col print:bg-white print:border-none print:shadow-none print:rounded-none print:w-full print:h-full print:text-black ${
+                summaryMarkdown ? 'w-[95vw] md:w-[90vw] h-[95vh] md:h-[90vh]' : 'max-w-lg w-full p-6 md:p-8'
               }`}
             >
               {!summaryMarkdown ? (
@@ -128,10 +128,10 @@ export default function ShareReport() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-8 print:hidden">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 print:hidden">
                     <div 
                       onClick={handleGenerateSummary}
-                      className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-6 cursor-pointer transition-all flex flex-col items-center justify-center gap-4 relative overflow-hidden h-full min-h-[160px]"
+                      className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-6 cursor-pointer transition-all flex flex-col items-center justify-center gap-4 relative overflow-hidden h-full min-h-[140px] md:min-h-[160px]"
                     >
                       {isGenerating ? (
                         <div className="flex flex-col items-center justify-center gap-6 w-full py-4">
@@ -275,7 +275,7 @@ export default function ShareReport() {
                   
                   {/* Markdown Content */}
                   <div className="flex-1 overflow-y-auto p-8 print:p-0 print:overflow-visible custom-scrollbar">
-                    <div id="report-container" className="max-w-4xl mx-auto bg-slate-900 print:bg-white print:text-black">
+                    <div id="report-container" className="max-w-4xl mx-auto bg-slate-900 print:bg-white print:text-black p-4 md:p-8">
                       <div className="hidden print:block mb-8 border-b border-slate-300 pb-4">
                         <h1 className="text-3xl font-bold text-black font-sans">AURA INTELLIGENCE</h1>
                         <h2 className="text-xl text-slate-600 mt-1">Clinical Expert Review</h2>
@@ -284,7 +284,7 @@ export default function ShareReport() {
                           <p><strong>Generated:</strong> {new Date().toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <div className="markdown-body prose prose-invert print:prose-p:text-black print:prose-headings:text-black print:prose-table:text-black print:prose-td:border-slate-300 print:prose-th:border-slate-300 max-w-none">
+                      <div className="markdown-body prose prose-invert print:prose-p:text-black print:prose-headings:text-black print:prose-table:text-black print:prose-td:border-slate-300 print:prose-th:border-slate-300 max-w-none text-slate-300">
                         <Markdown>{summaryMarkdown}</Markdown>
                       </div>
                       <div className="hidden print:block mt-24 border-t border-slate-300 pt-8 text-center text-xs text-slate-400">

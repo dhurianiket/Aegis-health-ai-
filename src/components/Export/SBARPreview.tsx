@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Copy, Check, X } from 'lucide-react';
+import { FileText, Copy, Check, X, Download } from 'lucide-react';
+import { exportToPDF } from '../../services/pdfExportService';
 
 interface SBARPreviewProps {
   sbarText: string;
@@ -10,11 +11,23 @@ interface SBARPreviewProps {
 
 export default function SBARPreview({ sbarText, isLoading, onClose }: SBARPreviewProps) {
   const [copied, setCopied] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(sbarText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await exportToPDF('sbar-content', 'AI_Physician_SBAR.pdf');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -37,7 +50,10 @@ export default function SBARPreview({ sbarText, isLoading, onClose }: SBARPrevie
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-4 bg-black/20 rounded-2xl border border-white/5 mb-4 text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap relative min-h-[200px]">
+        <div 
+          id="sbar-content"
+          className="flex-1 overflow-y-auto p-8 md:p-12 bg-black/20 rounded-2xl border border-white/5 mb-4 text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap relative min-h-[200px]"
+        >
           {isLoading ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-800/50 backdrop-blur-sm rounded-2xl">
               <motion.div
@@ -52,16 +68,25 @@ export default function SBARPreview({ sbarText, isLoading, onClose }: SBARPrevie
           )}
         </div>
         
-        <div className="flex items-center justify-end gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 shrink-0 mt-2">
           <button 
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors order-3 sm:order-1"
           >
             Close
           </button>
           <button 
+            disabled={isLoading || isExporting}
+            onClick={handleExport}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/10 order-2 sm:order-2 disabled:opacity-50"
+          >
+            {isExporting ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><Download className="w-4 h-4" /></motion.div> : <Download className="w-4 h-4" />}
+            Export PDF
+          </button>
+          <button 
+            disabled={isLoading}
             onClick={handleCopy}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-lg shadow-indigo-500/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-lg shadow-indigo-500/20 order-1 sm:order-3 disabled:opacity-50"
           >
             {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
             {copied ? 'Copied' : 'Copy to Clipboard'}

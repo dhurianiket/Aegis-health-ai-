@@ -59,7 +59,7 @@ export async function analyzeWithSpecialist(
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -234,7 +234,7 @@ export async function generateClinicalSummary(
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: prompt,
     });
     return response.text || "";
@@ -278,7 +278,7 @@ export async function extractMedicalReports(filesData: {base64Data: string, mime
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: [
         { text: prompt },
         ...filesData.map(f => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))
