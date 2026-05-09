@@ -1,65 +1,72 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // 0. Global Safety Net
     match /{document=**} {
       allow read, write: if false;
     }
-    
+
+    // Phase 3: Primitives
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return isVerified() && request.auth.uid == userId;
     }
 
-    match /documents/{docId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId) && isOwner(request.resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    match /labResults/{docId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId) && isOwner(request.resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
-    }
-    
-    match /medications/{docId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId) && isOwner(request.resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
+    function incoming() {
+      return request.resource.data;
     }
 
-    match /insights/{docId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId) && isOwner(request.resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
+    function existing() {
+      return resource.data;
     }
 
-    match /scores/{docId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId) && isOwner(request.resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
+    // --- SHARED SESSIONS ---
+    match /shares/{shareId} {
+      allow get: if existing().active == true && request.time < existing().expiresAt;
+      allow create: if isVerified() && incoming().userId == request.auth.uid;
+      allow update: if (
+        (existing().active == true && incoming().diff(existing()).affectedKeys().hasOnly(['viewCount'])) ||
+        (isOwner(existing().userId) && incoming().diff(existing()).affectedKeys().hasOnly(['active']))
+      );
     }
 
-    match /summaries/{docId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId) && isOwner(request.resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
+    // --- PROFILES ---
+    function isValidProfile(data) {
+      return data.userId == request.auth.uid 
+        && data.name is string && data.name.size() <= 100;
     }
 
-    match /profiles/{docId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId) && isOwner(request.resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
+    match /profiles/{profileId} {
+      allow get: if true; // Access via UUID is the shared view gateway
+      allow list: if isOwner(resource.data.userId);
+      allow create: if isVerified() && isOwner(incoming().userId) && isValidProfile(incoming());
+      allow update: if isVerified() && isOwner(existing().userId) && isValidProfile(incoming());
+      allow delete: if isVerified() && isOwner(existing().userId);
+    }
+
+    // --- COMMON MEDICAL COLLECTIONS ---
+    // Includes: labResults, medications, insights, scores, summaries, documents
+    match /{collectionName}/{docId} {
+      allow list: if isOwner(resource.data.userId);
+      allow get: if isOwner(resource.data.userId);
+      
+      allow create: if isVerified() 
+        && incoming().userId == request.auth.uid
+        && (collectionName in ['labResults', 'medications', 'insights', 'scores', 'summaries', 'documents']);
+        
+      allow update, delete: if isVerified() 
+        && existing().userId == request.auth.uid;
     }
   }
 }
