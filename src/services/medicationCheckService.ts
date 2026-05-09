@@ -23,7 +23,7 @@ export const checkMedicationInteractions = (meds: Medication[]): HealthAlert[] =
           type: 'medication',
           title: `Duplicate Therapy Detected`,
           description: `You are concurrently taking ${med1} and ${med2}, which belong to the same drug class. This may increase risk of side effects.`,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
           read: false
         });
       }
@@ -46,7 +46,7 @@ export const checkMedicationInteractions = (meds: Medication[]): HealthAlert[] =
             type: 'medication',
             title: `Potential Drug Interaction`,
             description: `Interaction between ${med1} and ${med2}: ${interaction.description}`,
-            createdAt: new Date(),
+            createdAt: new Date().toISOString(),
             read: false
           });
         }

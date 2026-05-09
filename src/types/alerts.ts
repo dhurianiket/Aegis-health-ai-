@@ -8,9 +8,17 @@ export interface HealthAlert {
   title: string;
   description: string;
   actionUrl?: string;
-  createdAt: string;
-  reviewedAt?: string;
+  createdAt: string | Date;
+  reviewedAt?: string | Date;
   read: boolean;
+}
+
+export interface AlertThreshold {
+  biomarker: string;
+  minNormal?: number;
+  maxNormal?: number;
+  criticalMax?: number;
+  criticalMin?: number;
 }
 
 export interface AlertContextType {

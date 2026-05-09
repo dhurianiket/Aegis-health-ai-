@@ -2,7 +2,8 @@
   "name": "Aegis Health Intelligence",
   "description": "A secure, AI-powered personal health record system that analyzes medical history, explains lab reports, and monitors long-term wellness through multi-specialist AI insights.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
   ],
   "majorCapabilities": [
     "Medical Intelligence",

@@ -1,16 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import { checkLabResultForAlerts, getConsolidatedAlerts } from '../alertService';
-import { LabResult, DocumentType, MedicationStatus } from '../../types/medical';
+import { LabResult, DocumentType, MedicationStatus, LabStatus } from '../../types/medical';
 
 describe('AlertService', () => {
   describe('checkLabResultForAlerts', () => {
     it('should return a critical alert for very high Glucose', () => {
       const result: LabResult = {
         id: '1',
+        userId: 'u1',
+        docId: 'd1',
         markerName: 'Glucose',
         value: 190,
         unit: 'mg/dL',
-        status: 'high',
+        status: LabStatus.CRITICAL,
         date: new Date().toISOString()
       };
 
@@ -23,10 +25,12 @@ describe('AlertService', () => {
     it('should return a high alert for moderately high HbA1c', () => {
       const result: LabResult = {
         id: '2',
+        userId: 'u1',
+        docId: 'd1',
         markerName: 'HbA1c',
         value: 6.2,
         unit: '%',
-        status: 'high',
+        status: LabStatus.ABNORMAL,
         date: new Date().toISOString()
       };
 
@@ -39,10 +43,12 @@ describe('AlertService', () => {
     it('should return null for normal values', () => {
       const result: LabResult = {
         id: '3',
+        userId: 'u1',
+        docId: 'd1',
         markerName: 'Glucose',
         value: 85,
         unit: 'mg/dL',
-        status: 'normal',
+        status: LabStatus.NORMAL,
         date: new Date().toISOString()
       };
 
@@ -55,16 +61,19 @@ describe('AlertService', () => {
     it('should aggregate alerts from labs and medications', () => {
       const labs: LabResult[] = [{
         id: '1',
+        userId: 'u1',
+        docId: 'd1',
         markerName: 'Glucose',
         value: 190,
         unit: 'mg/dL',
-        status: 'high',
+        status: LabStatus.CRITICAL,
         date: new Date().toISOString()
       }];
       
       const meds = [
         {
           id: 'm1',
+          userId: 'u1',
           name: 'Atorvastatin',
           dosage: '20mg',
           frequency: 'Daily',
@@ -73,6 +82,7 @@ describe('AlertService', () => {
         },
         {
           id: 'm2',
+          userId: 'u1',
           name: 'Simvastatin',
           dosage: '10mg',
           frequency: 'Daily',

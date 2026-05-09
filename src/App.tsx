@@ -15,6 +15,8 @@ import {
   LogIn,
   LogOut,
   Users,
+  Pill,
+  Handshake,
   Loader2,
   Key
 } from 'lucide-react';
@@ -30,6 +32,8 @@ import IntegrationsPanel from './components/Settings/IntegrationsPanel';
 import SBARPreview from './components/Export/SBARPreview';
 import ExportModal from './components/Export/ExportModal';
 import QRCodeShare from './components/Export/QRCodeShare';
+import ChatCoach from './components/AIHelper/ChatCoach';
+import NotificationCenter from './components/Notifications/NotificationCenter';
 import { generateSBAR } from './services/sbarGenerationService';
 
 import { validateProfileName } from './lib/validation';
@@ -50,6 +54,7 @@ const Timeline = lazy(() => import('./components/Timeline/Timeline'));
 const SpecialistLounge = lazy(() => import('./components/Specialists/SpecialistLounge'));
 const Medications = lazy(() => import('./components/Medications/Medications'));
 const ProfileManagement = lazy(() => import('./components/Profile/ProfileManagement'));
+const FamilyHub = lazy(() => import('./components/Profile/FamilyHub'));
 
 // Loading Fallback
 const Fallback = () => (
@@ -108,12 +113,13 @@ export default function App() {
   const activeAlertsCount = unreadCount;
 
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: Activity },
-    { id: 'upload', label: 'Upload Reports', icon: Upload },
-    { id: 'timeline', label: 'Medical History', icon: Calendar },
-    { id: 'specialists', label: 'Specialist Panels', icon: Stethoscope },
-    { id: 'meds', label: 'Medications', icon: FileText },
-    { id: 'profiles', label: 'Profile Management', icon: Users },
+    { id: 'dashboard', label: 'Telemetry', icon: Activity },
+    { id: 'upload', label: 'Ingestion', icon: Upload },
+    { id: 'meds', label: 'Pharmacy', icon: Pill },
+    { id: 'timeline', label: 'Analytics', icon: Calendar },
+    { id: 'family', label: 'Family Vault', icon: Handshake },
+    { id: 'specialists', label: 'Specialists', icon: Stethoscope },
+    { id: 'profiles', label: 'Profile Mgmt', icon: Users },
   ];
 
   return (
@@ -161,6 +167,7 @@ export default function App() {
                 <button
                   aria-label={`Go to ${tab.label}`}
                   title={tab.label}
+                  data-nav={tab.id === 'meds' ? 'medications' : tab.id}
                   onClick={() => {
                     setActiveTab(tab.id);
                     setIsMobileMenuOpen(false);
@@ -188,6 +195,7 @@ export default function App() {
         <div className="p-4 border-t border-white/10">
           <button 
             onClick={() => setActiveTab('settings')}
+            data-nav="settings"
             className={`flex items-center gap-4 w-full p-3 transition-all rounded-xl ${
               activeTab === 'settings' 
               ? 'bg-white/10 text-white' 
@@ -385,6 +393,7 @@ export default function App() {
                   {activeTab === 'specialists' && <SpecialistLounge />}
                   {activeTab === 'meds' && <Medications />}
                   {activeTab === 'profiles' && <ProfileManagement />}
+                  {activeTab === 'family' && <FamilyHub />}
                   {activeTab === 'settings' && user && activeProfile && (
                      <div className="max-w-4xl mx-auto space-y-12">
                         <section className="space-y-6">
@@ -509,7 +518,7 @@ export default function App() {
               alerts={alerts}
               dismissedIds={dismissedIds}
               onDismiss={dismissAlert}
-              onAction={(id) => {
+              onAction={(id: string) => {
                  console.log("Action on", id);
                  setIsNotificationCenterOpen(false);
               }}
@@ -559,6 +568,8 @@ export default function App() {
             />
           )}
         </AnimatePresence>
+
+        <ChatCoach />
       </main>
     </div>
   );

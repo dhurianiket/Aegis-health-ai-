@@ -45,7 +45,7 @@ export const checkLabResultForAlerts = (result: LabResult): HealthAlert | null =
       type: 'lab_value',
       title,
       description,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       read: false,
     };
   }

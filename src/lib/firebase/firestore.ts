@@ -11,6 +11,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { auth, db } from './config';
+export { auth, db };
 import { MedicalDocument, LabResult, Medication, SpecialistInsight } from '../../types/medical';
 
 // Error handling helper as per Firebase integration instructions
@@ -256,6 +257,51 @@ export async function saveClinicalSummary(userId: string, profileId: string | un
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+// Phase 2: Conversations
+export async function getConversations(userId: string, profileId?: string) {
+  const path = 'conversations';
+  try {
+    const q = query(
+      collection(db, path), 
+      where('userId', '==', userId), 
+      where('profileId', '==', profileId || 'Myself'),
+      orderBy('lastUpdated', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+  }
+}
+
+export async function saveConversation(userId: string, profileId: string, messages: any[], title?: string) {
+  const path = 'conversations';
+  try {
+    const docRef = await addDoc(collection(db, path), {
+      userId,
+      profileId: profileId || 'Myself',
+      messages,
+      title: title || (messages.length > 0 ? messages[0].content.substring(0, 30) + '...' : 'New Chat'),
+      lastUpdated: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+// Phase 2: Family Relations
+export async function getFamilyRelations(userId: string) {
+  const path = 'familyRelations';
+  try {
+    const q = query(collection(db, path), where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
   }
 }
 

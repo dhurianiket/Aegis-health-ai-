@@ -19,7 +19,7 @@ export const checkAppointmentsForReminders = (appointments: Appointment[]): Heal
         type: 'appointment',
         title: `Upcoming Appointment Tomorrow`,
         description: `You have an appointment with ${appt.doctorName || 'your doctor'} tomorrow at ${apptDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}.`,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         read: false
       });
     } 
@@ -31,7 +31,7 @@ export const checkAppointmentsForReminders = (appointments: Appointment[]): Heal
         type: 'appointment',
         title: `Upcoming Appointment in 3 Days`,
         description: `Reminder: Appointment with ${appt.doctorName || 'your doctor'} is coming up on ${apptDate.toLocaleDateString()}.`,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         read: false
       });
     }

@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { extractMedicalReports } from '../../services/ai/gemini';
 import { saveDocument, saveLabResult, saveMedication } from '../../lib/firebase/firestore';
+import NoteAnalyzer from './NoteAnalyzer';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { MedicationStatus, LabStatus } from '../../types/medical';
@@ -27,6 +28,7 @@ import { MedicationStatus, LabStatus } from '../../types/medical';
 export default function UploadCenter() {
   const { user, signIn } = useAuth();
   const { activeProfile } = useProfile();
+  const [activeTab, setActiveTab] = useState<'files' | 'notes'>('files');
   const [files, setFiles] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -308,15 +310,41 @@ export default function UploadCenter() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Ingestion Hub</h2>
-        <p className="text-slate-400 text-sm font-light leading-relaxed">
-          The extraction pipeline uses Gemini multimodal intelligence to parse prescriptions, notes, and records into structured medical data.
-        </p>
-        
-        <div 
-          {...getRootProps()} 
+    <div className="space-y-8 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight text-white">Ingestion Hub</h2>
+          <p className="text-slate-400 text-sm font-light leading-relaxed max-w-2xl">
+            The extraction pipeline uses Gemini multimodal intelligence to parse prescriptions, notes, and records into structured medical data.
+          </p>
+        </div>
+        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 self-start">
+          <button 
+            onClick={() => setActiveTab('files')}
+            className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+              activeTab === 'files' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            File Upload
+          </button>
+          <button 
+            onClick={() => setActiveTab('notes')}
+            className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+              activeTab === 'notes' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Clinical Notes
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'notes' ? (
+        <NoteAnalyzer />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <div 
+              {...getRootProps()} 
           className={`
             border-2 border-dashed rounded-[40px] p-16 transition-all cursor-pointer flex flex-col items-center gap-6
             ${isDragActive ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/10 bg-white/5 hover:border-indigo-400 hover:bg-white/10'}
@@ -643,5 +671,7 @@ export default function UploadCenter() {
         )}
       </div>
     </div>
+  )}
+</div>
   );
 }
