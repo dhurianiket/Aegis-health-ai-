@@ -4,10 +4,11 @@ import { FileText, Copy, Check, X } from 'lucide-react';
 
 interface SBARPreviewProps {
   sbarText: string;
+  isLoading?: boolean;
   onClose: () => void;
 }
 
-export default function SBARPreview({ sbarText, onClose }: SBARPreviewProps) {
+export default function SBARPreview({ sbarText, isLoading, onClose }: SBARPreviewProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -36,8 +37,19 @@ export default function SBARPreview({ sbarText, onClose }: SBARPreviewProps) {
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-4 bg-black/20 rounded-2xl border border-white/5 mb-4 text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap">
-          {sbarText}
+        <div className="flex-1 overflow-y-auto p-4 bg-black/20 rounded-2xl border border-white/5 mb-4 text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap relative min-h-[200px]">
+          {isLoading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-800/50 backdrop-blur-sm rounded-2xl">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"
+              />
+              <p className="text-indigo-400 font-bold text-xs uppercase tracking-widest animate-pulse">Consulting Gemini AI...</p>
+            </div>
+          ) : (
+            sbarText
+          )}
         </div>
         
         <div className="flex items-center justify-end gap-3 shrink-0">

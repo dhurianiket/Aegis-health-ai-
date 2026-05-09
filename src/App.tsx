@@ -24,6 +24,12 @@ import { useProfile } from './context/ProfileContext';
 import { useAlerts } from './context/AlertsContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import NotificationCenter from './components/Notifications/NotificationCenter';
+import SharedProfile from './components/Export/SharedProfile';
+import IntegrationsPanel from './components/Settings/IntegrationsPanel';
+import SBARPreview from './components/Export/SBARPreview';
+import ExportModal from './components/Export/ExportModal';
+import QRCodeShare from './components/Export/QRCodeShare';
+import { generateSBAR } from './services/sbarGenerationService';
 
 import { validateProfileName } from './lib/validation';
 import { logger } from './lib/logger';
@@ -63,6 +69,19 @@ export default function App() {
   const [profileError, setProfileError] = useState('');
   const [profileToSwitch, setProfileToSwitch] = useState<any>(null);
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
+  const [isSBAROpen, setIsSBAROpen] = useState(false);
+  const [sbarText, setSbarText] = useState('');
+  const [isGeneratingSBAR, setIsGeneratingSBAR] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isSharingOpen, setIsSharingOpen] = useState(false);
+
+  // Check for shared profile in URL
+  const searchParams = new URLSearchParams(window.location.search);
+  const shareId = searchParams.get('share');
+
+  if (shareId) {
+    return <SharedProfile shareId={shareId} />;
+  }
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,7 +183,14 @@ export default function App() {
         </nav>
 
         <div className="p-4 border-t border-white/10">
-          <button className="flex items-center gap-4 w-full p-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all">
+          <button 
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center gap-4 w-full p-3 transition-all rounded-xl ${
+              activeTab === 'settings' 
+              ? 'bg-white/10 text-white' 
+              : 'text-slate-400 hover:bg-white/5 hover:text-white'
+            }`}
+          >
             <Settings className="w-5 h-5 min-w-[20px]" />
             {(isSidebarOpen || isMobileMenuOpen) && <span className="font-medium text-sm">Settings</span>}
           </button>
@@ -298,13 +324,58 @@ export default function App() {
                   transition={{ duration: 0.2 }}
                   className="h-full"
                 >
-                  {activeTab === 'dashboard' && <Dashboard />}
+                  {activeTab === 'dashboard' && (
+                    <div className="space-y-6">
+                       <div className="flex items-center justify-end gap-3 mb-4">
+                          <button 
+                            onClick={async () => {
+                              if (activeProfile) {
+                                setIsSBAROpen(true);
+                                setIsGeneratingSBAR(true);
+                                const text = await generateSBAR(
+                                  activeProfile as any, 
+                                  (activeProfile as any).labValues || [], 
+                                  (activeProfile as any).medications || []
+                                );
+                                setSbarText(text);
+                                setIsGeneratingSBAR(false);
+                              }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest border border-white/5 transition-all"
+                          >
+                            <FileText className="w-4 h-4" /> Physician SBAR
+                          </button>
+                          <button 
+                            onClick={() => setIsExportOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-indigo-500/10 transition-all shadow-lg shadow-indigo-500/5"
+                          >
+                            <Upload className="w-4 h-4" /> PDF Report
+                          </button>
+                          <button 
+                            onClick={() => setIsSharingOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-emerald-500/10 transition-all shadow-lg shadow-emerald-500/5"
+                          >
+                            <Key className="w-4 h-4 rotate-45" /> Quick Share
+                          </button>
+                       </div>
+                       <Dashboard />
+                    </div>
+                  )}
                   {activeTab === 'upload' && <UploadCenter />}
                   {activeTab === 'timeline' && <Timeline />}
                   {activeTab === 'specialists' && <SpecialistLounge />}
                   {activeTab === 'meds' && <Medications />}
                   {activeTab === 'profiles' && <ProfileManagement />}
+                  {activeTab === 'settings' && user && activeProfile && (
+                     <div className="max-w-4xl mx-auto space-y-12">
+                        <section className="space-y-6">
+                           <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Integrations & Data</h2>
+                           <IntegrationsPanel activeProfile={activeProfile} />
+                        </section>
+                     </div>
+                  )}
                 </motion.div>
+
               </AnimatePresence>
             </Suspense>
           </ErrorBoundary>
@@ -424,6 +495,48 @@ export default function App() {
                  setIsNotificationCenterOpen(false);
               }}
               onClose={() => setIsNotificationCenterOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isExportOpen && activeProfile && (
+            <ExportModal 
+              onClose={() => setIsExportOpen(false)} 
+              healthContext={{
+                userName: activeProfile.name,
+                healthScore: 85, // Stub
+                topFlags: ['Elevated HbA1c', 'High LDL'], // Stub
+                medications: (activeProfile as any).medications || [],
+                recentTrends: [
+                   { marker: 'HbA1c', value: 6.2, unit: '%', direction: 'up' },
+                   { marker: 'LDL', value: 142, unit: 'mg/dL', direction: 'down' }
+                ],
+                doctorNotes: (activeProfile as any).doctorNotes || []
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isSharingOpen && activeProfile && user && (
+            <QRCodeShare 
+              onClose={() => setIsSharingOpen(false)} 
+              profileId={activeProfile.id}
+              userId={user.uid}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isSBAROpen && activeProfile && (
+            <SBARPreview 
+              onClose={() => {
+                setIsSBAROpen(false);
+                setSbarText('');
+              }}
+              sbarText={sbarText}
+              isLoading={isGeneratingSBAR}
             />
           )}
         </AnimatePresence>

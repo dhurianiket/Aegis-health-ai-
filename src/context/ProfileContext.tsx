@@ -7,6 +7,14 @@ export interface Profile {
   id: string;
   userId: string;
   name: string;
+  dob?: string;
+  gender?: string;
+  bloodType?: string;
+  allergies?: string[];
+  chronicConditions?: string[];
+  medications?: any[];
+  labValues?: any[];
+  doctorNotes?: string[];
 }
 
 interface ProfileContextType {
