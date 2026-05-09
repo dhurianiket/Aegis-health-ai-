@@ -165,72 +165,76 @@ export default function UploadCenter() {
       id: Math.random().toString(36).substr(2, 9),
       file,
       status: 'pending',
+      statusText: 'Waiting...',
       progress: 0
     }));
     
-    setFiles(newFiles);
+    setFiles(prev => [...prev, ...newFiles]);
 
     setIsProcessing(true);
     setProcessingStep(0);
     
-    // Simulate steps changing
-    const stepInterval = setInterval(() => {
-      setProcessingStep(prev => (prev < 3 ? prev + 1 : prev));
-    }, 3000);
-
-    // Simulate progress per file
-    const progressIntervals = newFiles.map(f => {
-      return setInterval(() => {
-        setFiles(prev => prev.map(pf => {
-          if (pf.id === f.id && pf.status === 'pending') {
-            const nextProg = pf.progress + Math.floor(Math.random() * 15) + 5;
-            return { ...pf, progress: nextProg > 90 ? 90 : nextProg };
-          }
-          return pf;
-        }));
-      }, 500);
-    });
+    const updateFileStatus = (id: string, updates: any) => {
+      setFiles(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    };
 
     try {
-      const readPromises = acceptedFiles.map((file) => {
-        return new Promise<{base64Data: string, mimeType: string}>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-             // Simulate base64 reading
-            const base64Data = (reader.result as string).split(',')[1];
-            resolve({ base64Data, mimeType: file.type });
+      const processFile = async (f: any, index: number) => {
+        try {
+          updateFileStatus(f.id, { statusText: 'Reading file...', progress: 10 });
+          setProcessingStep(0);
+          
+          const fileData = await new Promise<{base64Data: string, mimeType: string}>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64Data = (reader.result as string).split(',')[1];
+              resolve({ base64Data, mimeType: f.file.type });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(f.file);
+          });
+
+          updateFileStatus(f.id, { statusText: 'Extracting markers...', progress: 30 });
+          await new Promise(r => setTimeout(r, 600));
+          setProcessingStep(1);
+          
+          updateFileStatus(f.id, { statusText: 'Analyzing with Gemini...', progress: 50 });
+          
+          const extraction = await extractMedicalReports([fileData]);
+          
+          if (!extraction) {
+            updateFileStatus(f.id, { status: 'error', statusText: 'AI failed to parse', progress: 0 });
+            return null;
+          }
+
+          setProcessingStep(2);
+          updateFileStatus(f.id, { statusText: 'Structuring findings...', progress: 80 });
+          await new Promise(r => setTimeout(r, 800));
+          setProcessingStep(3);
+
+          const result = {
+            ...extraction,
+            fileName: f.file.name
           };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      });
 
-      const filesData = await Promise.all(readPromises);
-      
-      // Process independently to ensure no records are dropped
-      const extractions = await Promise.all(
-        filesData.map(fd => extractMedicalReports([fd]))
-      );
+          // Normalize
+          if (result.lab_values) {
+            result.lab_values = result.lab_values.map((l: any) => ({ ...l, date: l.date || result.date }));
+          }
+          if (result.medications) {
+            result.medications = result.medications.map((m: any) => ({ ...m, date: m.date || result.date }));
+          }
 
-      clearInterval(stepInterval);
-      progressIntervals.forEach(clearInterval);
-
-      const validExtractions = extractions.map((e, index) => {
-        if (!e) return null;
-        const result = {
-          ...e,
-          fileName: newFiles[index].file.name
-        };
-        // Normalize lab values
-        if (result.lab_values) {
-          result.lab_values = result.lab_values.map((l: any) => ({ ...l, date: l.date || result.date }));
+          updateFileStatus(f.id, { status: 'completed', statusText: 'Success', progress: 100 });
+          return result;
+        } catch (err) {
+          updateFileStatus(f.id, { status: 'error', statusText: 'Processing failed', progress: 0 });
+          return null;
         }
-        // Normalize medications
-        if (result.medications) {
-          result.medications = result.medications.map((m: any) => ({ ...m, date: m.date || result.date }));
-        }
-        return result;
-      }).filter(Boolean);
+      };
+
+      const extractions = await Promise.all(newFiles.map((f, i) => processFile(f, i)));
+      const validExtractions = extractions.filter(Boolean);
 
       if (validExtractions.length > 0) {
         setResults(validExtractions);
@@ -251,18 +255,11 @@ export default function UploadCenter() {
           setConfirmedLabIndices(initialConfirmed);
           setIsVerifying(true);
         } else if (validExtractions.some(e => e.findings || (e.medications && e.medications.length > 0))) {
-          // Even without labs, we show the verification view so they can review findings and medications
           setIsVerifying(true);
         }
-        
-        setFiles(prev => prev.map(f => newFiles.some(nf => nf.id === f.id) ? { ...f, status: 'completed', progress: 100 } : f));
-      } else {
-        setFiles(prev => prev.map(f => newFiles.some(nf => nf.id === f.id) ? { ...f, status: 'error', progress: 0 } : f));
       }
     } catch (err) {
-      clearInterval(stepInterval);
-      progressIntervals.forEach(clearInterval);
-      setFiles(prev => prev.map(f => newFiles.some(nf => nf.id === f.id) ? { ...f, status: 'error', progress: 0 } : f));
+      console.error("General upload error:", err);
     } finally {
       setIsProcessing(false);
     }
@@ -352,11 +349,11 @@ export default function UploadCenter() {
               >
                 {/* Progress bar background */}
                 {f.status === 'pending' && (
-                  <div className="absolute left-0 bottom-0 h-1 bg-white/5 w-full">
+                  <div className="absolute left-0 bottom-0 h-1.5 bg-white/5 w-full">
                     <motion.div 
-                      className="h-full bg-indigo-500" 
+                      className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.5)]" 
                       animate={{ width: `${f.progress}%` }} 
-                      transition={{ ease: "linear" }}
+                      transition={{ type: "spring", stiffness: 50, damping: 20 }}
                     />
                   </div>
                 )}
@@ -367,10 +364,28 @@ export default function UploadCenter() {
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-white truncate max-w-[200px]">{f.file.name}</p>
-                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                        {(f.file.size / 1024 / 1024).toFixed(2)} MB {f.status === 'pending' && `• ${Math.round(f.progress)}%`}
-                      </p>
+                      <p className="font-semibold text-sm text-white truncate max-w-[180px]">{f.file.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                          {(f.file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                        {f.status === 'pending' && (
+                          <motion.p 
+                            key={f.statusText}
+                            initial={{ opacity: 0, x: -5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="text-[9px] text-indigo-400 font-black uppercase tracking-widest"
+                          >
+                            • {f.statusText} ({Math.round(f.progress)}%)
+                          </motion.p>
+                        )}
+                        {f.status === 'completed' && (
+                          <p className="text-[9px] text-emerald-500 font-black uppercase tracking-widest">• Ready</p>
+                        )}
+                        {f.status === 'error' && (
+                          <p className="text-[9px] text-red-500 font-black uppercase tracking-widest">• Failed</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

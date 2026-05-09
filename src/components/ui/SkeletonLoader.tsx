@@ -7,6 +7,16 @@ interface SkeletonLoaderProps {
   variant?: 'rectangular' | 'circular' | 'text';
 }
 
+/**
+ * SkeletonLoader - A low-fidelity placeholder for loading states.
+ * 
+ * Uses an subtle opacity pulse animation to indicate content is being fetched,
+ * preventing layout shift and improving perceived performance.
+ * 
+ * @component
+ * @example
+ * return <SkeletonLoader variant="rectangular" className="h-32 w-full" />
+ */
 export default function SkeletonLoader({ 
   className = "", 
   count = 1, 
@@ -32,6 +42,9 @@ export default function SkeletonLoader({
   );
 }
 
+/**
+ * DashboardSkeleton - Loading state specifically designed for the Health Dashboard.
+ */
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6">

@@ -5,6 +5,18 @@ import { jsPDF } from 'jspdf';
  * Modern PDF Export Service
  * Uses html-to-image for high-fidelity captures, especially for SVG/Charts.
  */
+/**
+ * exportToPDF - High-fidelity DOM-to-PDF serialization.
+ * 
+ * Captures a DOM node, applies light-mode overrides for print clarity,
+ * and generates a multi-page A4 document using canvas-to-PDF bridging.
+ * 
+ * @async
+ * @param {string} elementId - ID of the DOM element to capture
+ * @param {string} [filename='report.pdf'] - Output filename
+ * @param {'p'|'l'} [orientation='p'] - Page orientation (portrait/landscape)
+ * @returns {Promise<void>}
+ */
 export const exportToPDF = async (
   elementId: string, 
   filename: string, 

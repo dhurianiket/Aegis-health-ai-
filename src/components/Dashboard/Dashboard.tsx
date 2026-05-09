@@ -41,6 +41,18 @@ import { useProfile } from '../../context/ProfileContext';
 import { getHealthScores, getLatestInsights, getLabHistory } from '../../lib/firebase/firestore';
 import SkeletonLoader, { DashboardSkeleton } from '../ui/SkeletonLoader';
 
+/**
+ * Dashboard - The primary clinical analytics view.
+ * 
+ * Aggregates health scores, latest AI-synthesized insights, and key laboratory data
+ * into a high-density, interactive interface.
+ * 
+ * @component
+ * @example
+ * return (
+ *   <Dashboard />
+ * )
+ */
 export default function Dashboard() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();

@@ -1,16 +1,13 @@
-import { HealthAlert } from './alerts';
-
 export interface LabValue {
   id: string;
-  name: string;
+  markerName: string;
   value: number;
   unit: string;
-  normalRange: { min: number; max: number };
+  status: 'normal' | 'low' | 'high' | 'critical';
+  date: string;
   referenceRange?: string;
-  date: Date;
-  doctorNotes?: string;
-  flagged: boolean;
-  severity: 'normal' | 'low' | 'high' | 'critical';
+  category?: string;
+  notes?: string;
 }
 
 export interface Medication {
@@ -18,36 +15,35 @@ export interface Medication {
   name: string;
   dosage: string;
   frequency: string;
-  startDate: Date;
-  endDate?: Date;
+  status: 'active' | 'discontinued' | 'on-hold';
+  startDate: string;
+  endDate?: string;
   indications: string[];
   sideEffects?: string[];
   warnings?: string[];
-  active: boolean;
-}
-
-export interface Appointment {
-  id: string;
-  title: string;
-  date: Date;
-  doctorName?: string;
-  location?: string;
-  notes?: string;
+  instructions?: string;
 }
 
 export interface HealthProfile {
   id: string;
   userId: string;
   name: string;
-  dob: Date;
+  dob: string;
   bloodType?: string;
   allergies: string[];
   chronicConditions: string[];
-  medications: Medication[];
-  labValues: LabValue[];
-  appointments: Appointment[];
   healthScore: number;
-  lastUpdated: Date;
+  lastUpdated: string;
+}
+
+export interface Appointment {
+  id: string;
+  doctorName: string;
+  specialty: string;
+  date: string;
+  location?: string;
+  notes?: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
 }
 
 export interface HealthInsight {
@@ -59,4 +55,5 @@ export interface HealthInsight {
   evidence: string[];
   recommendation?: string;
   specialist?: string;
+  createdAt: string;
 }

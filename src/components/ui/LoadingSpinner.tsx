@@ -8,6 +8,18 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
+/**
+ * LoadingSpinner - A high-visibility progress indicator.
+ * 
+ * Used for long-running operations or as a fallback for smaller component states
+ * where a skeleton loader might be too intrusive.
+ * 
+ * @component
+ * @param {('sm'|'md'|'lg')} [size='md'] - The size of the spinner icon
+ * @param {string} [label] - Optional descriptive text to display beneath the spinner
+ * @example
+ * return <LoadingSpinner size="lg" label="Analyzing health records..." />
+ */
 export default function LoadingSpinner({ 
   size = 'md', 
   label,
