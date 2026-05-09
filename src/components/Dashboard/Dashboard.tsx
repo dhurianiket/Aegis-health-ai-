@@ -39,6 +39,7 @@ import ShareReport from '../Export/ShareReport';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { getHealthScores, getLatestInsights, getLabHistory } from '../../lib/firebase/firestore';
+import SkeletonLoader, { DashboardSkeleton } from '../ui/SkeletonLoader';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -104,19 +105,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-20 min-h-[60vh] gap-4">
-        <div className="relative w-16 h-16 flex items-center justify-center">
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full"
-          />
-          <Heart className="w-6 h-6 text-indigo-400 animate-pulse" />
-        </div>
-        <p className="text-sm font-medium text-slate-400 animate-pulse">Analyzing health telemetry...</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

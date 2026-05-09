@@ -23,7 +23,8 @@ import { useAuth } from './context/AuthContext';
 import { useProfile } from './context/ProfileContext';
 import { useAlerts } from './context/AlertsContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import NotificationCenter from './components/Notifications/NotificationCenter';
+import NotificationDropdown from './components/Header/NotificationDropdown';
+import OfflineIndicator from './components/OfflineIndicator';
 import SharedProfile from './components/Export/SharedProfile';
 import IntegrationsPanel from './components/Settings/IntegrationsPanel';
 import SBARPreview from './components/Export/SBARPreview';
@@ -68,6 +69,7 @@ export default function App() {
   const [newProfileName, setNewProfileName] = useState('');
   const [profileError, setProfileError] = useState('');
   const [profileToSwitch, setProfileToSwitch] = useState<any>(null);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [isSBAROpen, setIsSBAROpen] = useState(false);
   const [sbarText, setSbarText] = useState('');
@@ -115,7 +117,8 @@ export default function App() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#0F172A] text-slate-100 overflow-hidden relative">
+    <div className="flex h-screen bg-[#0F172A] text-slate-100 overflow-hidden relative selection:bg-indigo-500/30 selection:text-white">
+      <OfflineIndicator />
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -279,15 +282,31 @@ export default function App() {
             >
               <Key className="w-5 h-5" />
             </button>
-            <button 
-              className="p-2 text-slate-400 hover:text-indigo-400 transition-colors relative"
-              onClick={() => setIsNotificationCenterOpen(true)}
-            >
-              <Bell className="w-5 h-5" />
-              {activeAlertsCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#0F172A]"></span>
-              )}
-            </button>
+            <div className="relative">
+              <button 
+                className="p-2 text-slate-400 hover:text-indigo-400 transition-colors relative focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full"
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                aria-label={`View notifications. ${activeAlertsCount} unread.`}
+                title="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {activeAlertsCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#0F172A]"></span>
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {isNotificationsOpen && (
+                  <div className="absolute right-0 mt-2 z-50">
+                    <div 
+                      className="fixed inset-0" 
+                      onClick={() => setIsNotificationsOpen(false)} 
+                    />
+                    <NotificationDropdown onClose={() => setIsNotificationsOpen(false)} />
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
             {user ? (
               <div 
                 className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border-2 border-white/20 flex items-center justify-center font-bold text-white shadow-lg text-xs md:text-sm shrink-0 uppercase cursor-pointer relative group"

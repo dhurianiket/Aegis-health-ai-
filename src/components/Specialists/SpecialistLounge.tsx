@@ -24,6 +24,7 @@ import ReactMarkdown from 'react-markdown';
 import { Specialty } from '../../types/medical';
 import { analyzeWithSpecialist } from '../../services/ai/gemini';
 import { getDocuments, getLabHistory, getMedications, saveSpecialistInsight } from '../../lib/firebase/firestore';
+import { SpecialistsSkeleton } from '../ui/SkeletonLoader';
 
 const specialists = [
   {
@@ -117,7 +118,22 @@ export default function SpecialistLounge() {
     setExpandedQuestions(newExpanded);
   };
 
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   const activeSpecialist = specialists.find(s => s.id === selectedId);
+
+  useEffect(() => {
+    setInsight(null);
+  }, [selectedId]);
+
+  if (initialLoading) {
+    return <SpecialistsSkeleton />;
+  }
 
   const runAnalysis = async () => {
     if (!activeSpecialist) return;
@@ -197,10 +213,6 @@ export default function SpecialistLounge() {
       setIsAnalyzing(false);
     }
   };
-
-  useEffect(() => {
-    setInsight(null);
-  }, [selectedId]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">

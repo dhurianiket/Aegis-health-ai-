@@ -10,6 +10,7 @@ interface AlertsContextType {
   alerts: HealthAlert[];
   dismissedIds: Set<string>;
   dismissAlert: (id: string) => void;
+  markAllAsRead: () => void;
   unreadCount: number;
   refreshAlerts: () => Promise<void>;
 }
@@ -33,7 +34,16 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
       const meds = await getMedications(user.uid, activeProfile.id) || [];
       
       const generatedAlerts = getConsolidatedAlerts(labs, meds as Medication[]);
-      setAlerts(generatedAlerts);
+      
+      // Feature 4.1: Clear notifications older than 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const filteredAlerts = generatedAlerts.filter(alert => 
+        new Date(alert.createdAt) > thirtyDaysAgo
+      );
+
+      setAlerts(filteredAlerts);
     } catch (error) {
       console.error("Failed to fetch alerts:", error);
     }
@@ -51,10 +61,15 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const markAllAsRead = () => {
+    const allIds = alerts.map(a => a.id);
+    setDismissedIds(new Set(allIds));
+  };
+
   const unreadCount = alerts.filter(a => !dismissedIds.has(a.id)).length;
 
   return (
-    <AlertsContext.Provider value={{ alerts, dismissedIds, dismissAlert, unreadCount, refreshAlerts }}>
+    <AlertsContext.Provider value={{ alerts, dismissedIds, dismissAlert, markAllAsRead, unreadCount, refreshAlerts }}>
       {children}
     </AlertsContext.Provider>
   );

@@ -57,14 +57,16 @@ export default function AlertBanner({ alert, onDismiss, onAction }: AlertBannerP
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, filter: 'blur(4px)' }}
       layout
+      role="alert"
+      aria-live="polite"
       className={`relative overflow-hidden w-full p-4 md:p-5 rounded-2xl border backdrop-blur-xl shadow-lg flex flex-col md:flex-row items-start md:items-center gap-4 transition-colors ${styles.bg} ${styles.border}`}
     >
       {/* Decorative pulse for critical */}
       {alert.severity === 'critical' && (
-        <span className="absolute top-0 left-0 w-1 h-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]" />
+        <span className="absolute top-0 left-0 w-1 h-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]" aria-hidden="true" />
       )}
 
-      <div className={`p-3 rounded-full bg-white/5 border border-white/5 shrink-0 ${styles.iconColor}`}>
+      <div className={`p-3 rounded-full bg-white/5 border border-white/5 shrink-0 ${styles.iconColor}`} aria-hidden="true">
         <Icon className="w-6 h-6" />
       </div>
 
@@ -91,14 +93,16 @@ export default function AlertBanner({ alert, onDismiss, onAction }: AlertBannerP
         {onAction && (
           <button 
             onClick={() => onAction(alert.id)}
-            className="flex-1 md:flex-none text-xs font-semibold bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors border border-white/5"
+            aria-label={`Take action on ${alert.title}`}
+            className="flex-1 md:flex-none text-xs font-semibold bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors border border-white/5 focus-visible:ring-2 focus-visible:ring-indigo-500 focus:outline-none"
           >
             Take Action
           </button>
         )}
         <button 
           onClick={() => onDismiss(alert.id)}
-          className="flex-1 md:flex-none text-xs font-medium text-slate-400 hover:text-white px-4 py-2 rounded-lg transition-colors bg-black/20 hover:bg-black/40 border border-transparent hover:border-white/10"
+          aria-label={`Dismiss ${alert.title}`}
+          className="flex-1 md:flex-none text-xs font-medium text-slate-400 hover:text-white px-4 py-2 rounded-lg transition-colors bg-black/20 hover:bg-black/40 border border-transparent hover:border-white/10 focus-visible:ring-2 focus-visible:ring-indigo-500 focus:outline-none"
         >
           Dismiss
         </button>
@@ -106,7 +110,8 @@ export default function AlertBanner({ alert, onDismiss, onAction }: AlertBannerP
 
       <button
         onClick={() => onDismiss(alert.id)}
-        className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors md:hidden"
+        aria-label="Dismiss alert"
+        className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors md:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-full"
       >
         <X className="w-4 h-4" />
       </button>

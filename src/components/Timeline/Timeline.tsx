@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { getDocuments, deleteDocumentRecord } from '../../lib/firebase/firestore';
 import { MedicalDocument, DocumentType } from '../../types/medical';
+import { TimelineSkeleton } from '../ui/SkeletonLoader';
 
 const TYPE_CONFIG: Record<string, { icon: any, color: string }> = {
   [DocumentType.LAB_REPORT]: { icon: Droplets, color: 'emerald' },
@@ -148,9 +149,7 @@ export default function Timeline() {
         <div className="space-y-8 md:space-y-12">
           <AnimatePresence mode="popLayout">
             {isLoading ? (
-              <motion.div exit={{ opacity: 0 }} className="flex items-center justify-center p-20">
-                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-              </motion.div>
+              <TimelineSkeleton />
             ) : filteredDocs.length > 0 ? (
               filteredDocs.map((doc, idx) => {
                 const config = TYPE_CONFIG[doc.type] || TYPE_CONFIG.default;
