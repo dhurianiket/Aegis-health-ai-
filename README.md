@@ -1,20 +1,49 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Clinical Health Telemetry System
 
-# Run and deploy your AI Studio app
+A modern, high-density clinical dashboard for personal health management. This application allows users to upload medical reports, extract key data using Gemini 1.5 Flash, and visualize health trends over time.
 
-This contains everything you need to run your app locally.
+## 🚀 Features
 
-View your app in AI Studio: https://ai.studio/apps/aa8f32c9-5d45-4598-860a-1f69826e6e70
+- **AI-Powered Extraction**: Seamlessly parse PDF and image-based medical reports.
+- **Smart Alerts**: Automatic detection of critical lab values and drug-drug interactions.
+- **SBAR Summarization**: Generate professional Situation-Background-Assessment-Recommendation summaries for physicians.
+- **Advanced Visualization**: High-fidelity charts using Recharts for metabolic and cardiovascular trends.
+- **Offline Support**: Robust offline indicator and cached data access.
+- **Privacy First**: Secure handling of medical telemetry via Firebase and local processing.
 
-## Run Locally
+## 🛠️ Tech Stack
 
-**Prerequisites:**  Node.js
+- **Frontend**: React 19, Vite, Tailwind CSS, Motion (formerly Framer Motion)
+- **Backend**: Firebase Firestore, Firebase Authentication
+- **AI**: Google Gemini 1.5 Flash (via @google/genai)
+- **Visuals**: Lucide React, Recharts
+- **Testing**: Vitest, React Testing Library
 
+## 📦 Installation
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables in `.env`:
+   ```env
+   GEMINI_API_KEY=your_key_here
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## 🧪 Testing
+
+Run unit tests with:
+```bash
+npm test
+```
+
+## 📄 Documentation
+
+- [Features Overview](./FEATURES.md)
+- [Development Guide](./DEVELOPMENT.md)
+- [Architecture Details](./ARCHITECTURE.md)

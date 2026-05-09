@@ -1,6 +1,6 @@
-import { LabResult, Medication, MedicationStatus } from '../types/medical';
+import { LabResult, Medication } from '../types/medical';
 import { HealthAlert, AlertThreshold } from '../types/alerts';
-import { isDuplicateClass, DRUG_INTERACTIONS } from '../lib/medicationInteractionDB';
+import { checkMedicationInteractions } from './medicationCheckService';
 
 const DEFAULT_THRESHOLDS: Record<string, AlertThreshold> = {
   'HbA1c': { biomarker: 'HbA1c', minNormal: 4.0, maxNormal: 5.6, criticalMax: 7.0 },
@@ -65,45 +65,8 @@ export const getConsolidatedAlerts = (labs: LabResult[], meds: Medication[]): He
   });
 
   // 2. Medication interactions
-  const activeMeds = meds.filter(m => m.status === MedicationStatus.ACTIVE);
-  
-  // Check duplicates
-  for (let i = 0; i < activeMeds.length; i++) {
-    for (let j = i + 1; j < activeMeds.length; j++) {
-      const med1 = activeMeds[i].name;
-      const med2 = activeMeds[j].name;
-      
-      if (isDuplicateClass(med1, med2)) {
-        alerts.push({
-          id: crypto.randomUUID(),
-          severity: 'high',
-          type: 'medication',
-          title: `Duplicate Therapy Detected`,
-          description: `You are concurrently taking ${med1} and ${med2}, which belong to the same drug class. This may increase risk of side effects.`,
-          createdAt: new Date(),
-          read: false
-        });
-      }
-      
-      // check DRUG_INTERACTIONS
-      DRUG_INTERACTIONS.forEach(interaction => {
-        const hasDrug1 = med1.toLowerCase().includes(interaction.drugs[0]) || med2.toLowerCase().includes(interaction.drugs[0]);
-        const hasDrug2 = med1.toLowerCase().includes(interaction.drugs[1]) || med2.toLowerCase().includes(interaction.drugs[1]);
-        
-        if (hasDrug1 && hasDrug2) {
-          alerts.push({
-            id: crypto.randomUUID(),
-            severity: interaction.severity,
-            type: 'medication',
-            title: `Potential Drug Interaction`,
-            description: `Interaction between ${med1} and ${med2}: ${interaction.description}`,
-            createdAt: new Date(),
-            read: false
-          });
-        }
-      });
-    }
-  }
+  const medAlerts = checkMedicationInteractions(meds);
+  alerts.push(...medAlerts);
 
   // Sort by severity (critical > high > moderate > normal) and date
   const severityScore = { critical: 4, high: 3, moderate: 2, normal: 1 };

@@ -36,3 +36,26 @@ export const isDuplicateClass = (med1: string, med2: string): boolean => {
   
   return false;
 };
+
+export const MED_CATEGORIES: Record<string, string[]> = {
+  'statin': ['atorvastatin', 'simvastatin', 'rosuvastatin', 'pravastatin', 'lovastatin'],
+  'nsaid': ['ibuprofen', 'naproxen', 'diclofenac', 'celecoxib', 'meloxicam'],
+  'ssri': ['sertraline', 'escitalopram', 'fluoxetine', 'paroxetine', 'citalopram'],
+  'maoi': ['phenelzine', 'tranylcypromine', 'isocarboxazid'],
+  'ace inhibitor': ['lisinopril', 'enalapril', 'ramipril', 'benazepril'],
+  'macrolide': ['azithromycin', 'clarithromycin', 'erythromycin']
+};
+
+export const isMedInCategory = (medName: string, category: string): boolean => {
+  const normalizedMed = medName.toLowerCase();
+  const normalizedCat = category.toLowerCase();
+  
+  if (normalizedMed.includes(normalizedCat)) return true;
+  
+  const categoryDrugs = MED_CATEGORIES[normalizedCat];
+  if (categoryDrugs) {
+    return categoryDrugs.some(drug => normalizedMed.includes(drug));
+  }
+  
+  return false;
+};
