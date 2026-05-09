@@ -15,13 +15,14 @@ import {
   History,
   Zap,
   Activity,
-  Loader2
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Medication, MedicationStatus } from '../../types/medical';
 import { getMedications } from '../../lib/firebase/firestore';
 
-export default function Medications() {
+export default function Medications({ onOpenChat }: { onOpenChat?: () => void }) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [meds, setMeds] = useState<Medication[]>([]);
@@ -159,6 +160,15 @@ export default function Medications() {
                 <Activity className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Total Inventory</span>
               </button>
+              {onOpenChat && (
+                <button 
+                  onClick={onOpenChat}
+                  className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all mt-4 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Ask Aura about Meds</span>
+                </button>
+              )}
             </nav>
           </div>
         </div>

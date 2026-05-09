@@ -18,7 +18,8 @@ import {
   Pill,
   Handshake,
   Loader2,
-  Key
+  Key,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from './context/AuthContext';
@@ -34,6 +35,7 @@ import ExportModal from './components/Export/ExportModal';
 import QRCodeShare from './components/Export/QRCodeShare';
 import ChatCoach from './components/AIHelper/ChatCoach';
 import NotificationCenter from './components/Notifications/NotificationCenter';
+import { MessageSquare } from 'lucide-react';
 import { generateSBAR } from './services/sbarGenerationService';
 
 import { validateProfileName } from './lib/validation';
@@ -77,6 +79,7 @@ export default function App() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [isSBAROpen, setIsSBAROpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [sbarText, setSbarText] = useState('');
   const [isGeneratingSBAR, setIsGeneratingSBAR] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -373,25 +376,25 @@ export default function App() {
                             <FileText className="w-4 h-4" /> Physician SBAR
                           </button>
                           <button 
-                            onClick={() => setIsExportOpen(true)}
+                            onClick={() => setIsChatOpen(true)}
                             className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-indigo-500/10 transition-all shadow-lg shadow-indigo-500/5"
+                          >
+                            <Sparkles className="w-4 h-4" /> Consult AURA
+                          </button>
+                          <button 
+                            onClick={() => setIsExportOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-emerald-500/10 transition-all shadow-lg shadow-emerald-500/5"
                           >
                             <Upload className="w-4 h-4" /> PDF Report
                           </button>
-                          <button 
-                            onClick={() => setIsSharingOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-emerald-500/10 transition-all shadow-lg shadow-emerald-500/5"
-                          >
-                            <Key className="w-4 h-4 rotate-45" /> Quick Share
-                          </button>
                        </div>
-                       <Dashboard />
+                       <Dashboard onOpenChat={() => setIsChatOpen(true)} />
                     </div>
                   )}
-                  {activeTab === 'upload' && <UploadCenter />}
+                  {activeTab === 'upload' && <UploadCenter onOpenChat={() => setIsChatOpen(true)} />}
                   {activeTab === 'timeline' && <Timeline />}
                   {activeTab === 'specialists' && <SpecialistLounge />}
-                  {activeTab === 'meds' && <Medications />}
+                  {activeTab === 'meds' && <Medications onOpenChat={() => setIsChatOpen(true)} />}
                   {activeTab === 'profiles' && <ProfileManagement />}
                   {activeTab === 'family' && <FamilyHub />}
                   {activeTab === 'settings' && user && activeProfile && (
@@ -409,14 +412,26 @@ export default function App() {
           </ErrorBoundary>
         </div>
 
-        {/* Global Action Button */}
-        <button 
-          aria-label="Upload New Document"
-          onClick={() => setActiveTab('upload')}
-          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 md:w-16 md:h-16 bg-indigo-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group z-20 border border-white/10"
-        >
-          <Plus className="w-6 h-6 md:w-7 md:h-7 group-hover:rotate-90 transition-transform duration-300" />
-        </button>
+        {/* Global Action Button - Speed Dial Style */}
+        <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 flex flex-col items-center gap-4">
+          <button 
+            aria-label="Ask Aura AI"
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl shadow-xl flex items-center justify-center transition-all border border-white/10 ${
+              isChatOpen ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30'
+            }`}
+          >
+            <MessageSquare className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+          
+          <button 
+            aria-label="Upload New Document"
+            onClick={() => setActiveTab('upload')}
+            className="w-14 h-14 md:w-16 md:h-16 bg-indigo-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group border border-white/10"
+          >
+            <Plus className="w-6 h-6 md:w-7 md:h-7 group-hover:rotate-90 transition-transform duration-300" />
+          </button>
+        </div>
 
         <AnimatePresence>
           {isNewProfileModaOpen && (
@@ -569,7 +584,11 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <ChatCoach />
+        <ChatCoach 
+          externalOpen={isChatOpen} 
+          onClose={() => setIsChatOpen(false)} 
+          showTrigger={false} 
+        />
       </main>
     </div>
   );

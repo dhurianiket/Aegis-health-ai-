@@ -34,27 +34,60 @@ export const getCoachResponse = async (
 ): Promise<AsyncGenerator<string>> => {
   const patientDataPrompt = formatContextForPrompt(context);
   
-  const contents = [
-    { role: 'user', parts: [{ text: `Here is my current health context:\n${patientDataPrompt}` }] },
-    ...history.map(h => ({ role: h.role, parts: [{ text: h.content }] })),
-    { role: 'user', parts: [{ text: userMessage }] }
-  ];
+  // GenAI SDK requires strictly alternating roles: user -> model -> user -> model
+  const contents: any[] = [];
+  
+  if (history.length === 0) {
+    // First message - merge context and question
+    contents.push({
+      role: 'user',
+      parts: [{ text: `Medical Context:\n${patientDataPrompt}\n\nQuestion: ${userMessage}` }]
+    });
+  } else {
+    // History exists - process it
+    history.forEach((h, i) => {
+      const role = h.role === 'assistant' ? 'model' : 'user';
+      let text = h.content;
+      
+      // Inject context into the very first user message of the history
+      if (i === 0 && role === 'user') {
+        text = `Context:\n${patientDataPrompt}\n\nUser previously said: ${text}`;
+      }
+      
+      // Handle potential duplicate roles in history (though useCoach should prevent this)
+      if (contents.length > 0 && contents[contents.length - 1].role === role) {
+        contents[contents.length - 1].parts[0].text += `\n\n${text}`;
+      } else {
+        contents.push({ role, parts: [{ text }] });
+      }
+    });
+
+    // Add current message
+    if (contents[contents.length - 1].role === 'user') {
+      // Append to last user message if history ended with user
+      contents[contents.length - 1].parts[0].text += `\n\nFollow-up Question: ${userMessage}`;
+    } else {
+      contents.push({
+        role: 'user',
+        parts: [{ text: userMessage }]
+      });
+    }
+  }
 
   const stream = await ai.models.generateContentStream({
     model: "gemini-3-flash-preview",
     contents,
     config: {
       systemInstruction: COACH_SYSTEM_INSTRUCTION,
-      temperature: 0.1, // Low temperature for higher accuracy and grounding
+      temperature: 0.1,
     }
   });
 
   return (async function* () {
-    let fullText = "";
     for await (const chunk of stream) {
-      const text = chunk.text || "";
-      fullText += text;
-      yield text;
+      if (chunk.text) {
+        yield chunk.text;
+      }
     }
   })();
 };

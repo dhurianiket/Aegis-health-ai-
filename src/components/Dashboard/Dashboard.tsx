@@ -40,6 +40,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { getHealthScores, getLatestInsights, getLabHistory } from '../../lib/firebase/firestore';
 import SkeletonLoader, { DashboardSkeleton } from '../ui/SkeletonLoader';
+import { Sparkles, MessageSquare } from 'lucide-react';
 
 /**
  * Dashboard - The primary clinical analytics view.
@@ -50,10 +51,10 @@ import SkeletonLoader, { DashboardSkeleton } from '../ui/SkeletonLoader';
  * @component
  * @example
  * return (
- *   <Dashboard />
+ *   <Dashboard onOpenChat={() => {}} />
  * )
  */
-export default function Dashboard() {
+export default function Dashboard({ onOpenChat }: { onOpenChat?: () => void }) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [loading, setLoading] = useState(true);
@@ -287,9 +288,17 @@ export default function Dashboard() {
             <p className="text-indigo-100/90 leading-relaxed text-sm mb-8 font-light italic">
               "Your cardiovascular trajectory is highly positive. Lipid panel markers are nearing the 95th percentile for your age group after the recent dietary shift."
             </p>
-            <button className="flex items-center gap-3 bg-white text-indigo-600 px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
-              View Strategy Roadmap <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex flex-wrap gap-4">
+              <button 
+                onClick={onOpenChat}
+                className="flex items-center gap-3 bg-white text-indigo-600 px-6 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+              >
+                <MessageSquare className="w-4 h-4" /> Ask AURA AI
+              </button>
+              <button className="flex items-center gap-3 bg-indigo-500/50 text-white px-6 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all border border-indigo-400/30">
+                View Roadmap <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-indigo-500 rounded-full blur-[80px] opacity-40"></div>
           <div className="absolute right-12 top-12 w-32 h-32 bg-purple-400 rounded-full blur-[60px] opacity-20"></div>

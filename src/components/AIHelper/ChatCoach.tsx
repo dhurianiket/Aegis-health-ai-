@@ -21,8 +21,24 @@ import { useProfile } from '../../context/ProfileContext';
 import { useCoach } from '../../hooks/useCoach';
 import { VoiceService } from '../../services/ai/voiceService';
 
-export default function ChatCoach() {
-  const [isOpen, setIsOpen] = useState(false);
+interface ChatCoachProps {
+  externalOpen?: boolean;
+  onClose?: () => void;
+  showTrigger?: boolean;
+}
+
+export default function ChatCoach({ externalOpen, onClose, showTrigger = true }: ChatCoachProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  
+  const handleToggle = () => {
+    if (externalOpen !== undefined) {
+      if (isOpen && onClose) onClose();
+    } else {
+      setInternalOpen(!internalOpen);
+    }
+  };
+
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -97,45 +113,62 @@ export default function ChatCoach() {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className={`fixed inset-0 md:inset-auto md:bottom-24 md:right-8 z-[9999] flex flex-col items-end ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ 
               opacity: 1, 
               scale: 1, 
               y: 0,
-              height: isMinimized ? '80px' : '600px',
-              width: '400px'
+              height: isMinimized ? '72px' : 'min(calc(100vh - 120px), 640px)',
+              width: 'min(calc(100vw - 32px), 440px)'
             }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col mb-4"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className={`
+              bg-slate-950/98 backdrop-blur-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col
+              fixed md:relative
+              ${isMinimized 
+                ? 'bottom-40 right-4 h-[72px] w-[320px] rounded-[2rem]' 
+                : 'top-20 bottom-40 left-4 right-4 md:top-auto md:bottom-2 md:left-auto md:right-0 rounded-[2rem]'
+              }
+              pointer-events-auto
+            `}
           >
             {/* Header */}
-            <div className="p-4 border-b border-white/5 bg-indigo-600/20 flex items-center justify-between">
+            <div className="p-4 md:p-6 border-b border-white/5 bg-indigo-600/10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
                   <Bot className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-sm">Aegis AI Coach</h3>
+                  <h3 className="text-white font-bold text-sm">Aura AI Coach</h3>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Clinical Logic Engine</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Intelligent Engine</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <button 
-                  onClick={() => setIsMinimized(!isMinimized)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMinimized(!isMinimized);
+                  }}
                   className="p-2 hover:bg-white/5 rounded-lg text-slate-400 transition-colors"
+                  title={isMinimized ? "Maximize" : "Minimize"}
                 >
                   {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
                 </button>
                 <button 
-                  onClick={() => setIsOpen(false)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onClose) onClose();
+                    setInternalOpen(false);
+                  }}
                   className="p-2 hover:bg-white/5 rounded-lg text-slate-400 transition-colors"
+                  title="Close"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -147,29 +180,40 @@ export default function ChatCoach() {
                 {/* Messages */}
                 <div 
                   ref={scrollRef}
-                  className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10"
+                  className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/10"
                 >
                   {messages.length === 0 && (
-                    <div className="space-y-6 py-4">
-                      <div className="text-center space-y-2">
-                        <Sparkles className="w-8 h-8 text-indigo-400 mx-auto" />
-                        <h4 className="text-white font-semibold">How can I help you today?</h4>
-                        <p className="text-sm text-slate-400 px-8">
-                          I can analyze your telehealth data, explain lab trends, and check for medication interactions.
+                    <div className="space-y-8 py-4">
+                      <div className="text-center space-y-3">
+                        <div className="relative inline-block">
+                          <Sparkles className="w-10 h-10 text-indigo-400 mx-auto" />
+                          <motion.div 
+                            animate={{ scale: [1, 1.2, 1] }} 
+                            transition={{ repeat: Infinity, duration: 2 }}
+                            className="absolute -top-1 -right-1 w-3 h-3 bg-indigo-500 rounded-full blur-[2px]" 
+                          />
+                        </div>
+                        <h4 className="text-white font-bold text-xl tracking-tight">AI Analysis Ready</h4>
+                        <p className="text-sm text-slate-400 px-4 leading-relaxed font-light">
+                          I can analyze your health records, lab results, and medications in real-time. How can I help you today?
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 gap-2">
-                        {suggestedQuestions.map((q, i) => (
-                          <button
-                            key={i}
-                            onClick={() => sendMessage(q)}
-                            className="text-left p-3 rounded-xl bg-white/5 border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 text-sm text-slate-300 transition-all flex items-center justify-between group"
-                          >
-                            {q}
-                            <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors" />
-                          </button>
-                        ))}
+                      <div className="space-y-3">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Suggested Protocols</span>
+                        <div className="flex flex-col gap-2">
+                          {suggestedQuestions.map((q, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => sendMessage(q)}
+                              className="text-left p-4 rounded-2xl bg-white/10 border border-white/20 hover:border-indigo-500/50 hover:bg-indigo-500/20 text-sm text-slate-300 transition-all flex items-center justify-between group cursor-pointer active:scale-[0.98] pointer-events-auto"
+                            >
+                              <span className="font-medium pr-4 select-none">{q}</span>
+                              <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 shrink-0 transition-transform group-hover:translate-x-1" />
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -177,23 +221,23 @@ export default function ChatCoach() {
                   {messages.map((msg, i) => (
                     <motion.div
                       key={i}
-                      initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
-                      animate={{ opacity: 1, x: 0 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`flex gap-3 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`p-2 rounded-lg h-fit ${msg.role === 'user' ? 'bg-indigo-600' : 'bg-slate-800'}`}>
+                      <div className={`flex gap-4 max-w-[90%] md:max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                        <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-indigo-600 shadow-lg shadow-indigo-600/20' : 'bg-slate-800 border border-white/5'}`}>
                           {msg.role === 'user' ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-indigo-400" />}
                         </div>
-                        <div className={`p-3 rounded-2xl text-sm leading-relaxed prose prose-invert prose-p:my-0 prose-slate ${
+                        <div className={`p-4 rounded-[1.5rem] text-sm leading-relaxed prose prose-invert prose-p:my-0 prose-slate ${
                           msg.role === 'user' 
                             ? 'bg-indigo-600 text-white rounded-tr-none' 
-                            : 'bg-slate-800 text-slate-200 border border-white/5 rounded-tl-none'
+                            : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-none'
                         }`}>
                           {msg.role === 'assistant' ? (
                             <ReactMarkdown>{msg.content}</ReactMarkdown>
                           ) : (
-                            msg.content
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
                           )}
                         </div>
                       </div>
@@ -202,14 +246,28 @@ export default function ChatCoach() {
 
                   {isTyping && (
                     <div className="flex justify-start">
-                      <div className="flex gap-3 max-w-[85%]">
-                        <div className="p-2 rounded-lg h-fit bg-slate-800">
-                          <Bot className="w-4 h-4 text-indigo-400" />
+                      <div className="flex gap-4 max-w-[90%] md:max-w-[85%]">
+                        <div className="w-8 h-8 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center shrink-0">
+                          <Bot className="w-4 h-4 text-indigo-400 animate-pulse" />
                         </div>
-                        <div className="bg-slate-800 p-3 rounded-2xl rounded-tl-none border border-white/5 flex gap-1 items-center">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <div className="bg-white/5 border border-white/5 p-4 rounded-[1.5rem] rounded-tl-none">
+                          <div className="flex gap-1.5 p-1">
+                            <motion.div
+                              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
+                              transition={{ repeat: Infinity, duration: 1.2 }}
+                              className="w-1.5 h-1.5 bg-indigo-400 rounded-full"
+                            />
+                            <motion.div
+                              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
+                              transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }}
+                              className="w-1.5 h-1.5 bg-indigo-400 rounded-full"
+                            />
+                            <motion.div
+                              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
+                              transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }}
+                              className="w-1.5 h-1.5 bg-indigo-400 rounded-full"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -224,39 +282,49 @@ export default function ChatCoach() {
                 </div>
 
                 {/* Input */}
-                <form onSubmit={handleSubmit} className="p-4 border-t border-white/5 bg-slate-900">
+                <form onSubmit={handleSubmit} className="p-4 md:p-6 border-t border-white/5 bg-slate-950">
                   <div className="relative flex items-center gap-2">
                     <div className="relative flex-1">
                       <input
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder={isListening ? "Listening..." : "Ask AECIS about your health..."}
+                        placeholder={isListening ? "Listening..." : "Query the medical engine..."}
                         disabled={isTyping}
-                        className={`w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${isListening ? 'animate-pulse border-indigo-500/50' : ''}`}
+                        className={`w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-5 pr-24 text-base md:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${isListening ? 'animate-pulse border-indigo-500/50' : ''}`}
                       />
-                      <button
-                        type="button"
-                        onClick={toggleVoice}
-                        className={`absolute right-12 top-1.5 p-2 rounded-lg transition-colors ${
-                          isListening ? 'bg-red-500 text-white' : 'text-slate-500 hover:text-indigo-400'
-                        }`}
-                      >
-                        {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={!inputValue.trim() || isTyping}
-                        className="absolute right-2 top-1.5 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={toggleVoice}
+                          className={`p-2.5 rounded-xl transition-all ${
+                            isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-500 hover:text-indigo-400 hover:bg-white/5'
+                          }`}
+                        >
+                          {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={!inputValue.trim() || isTyping}
+                          className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20"
+                        >
+                          <Send className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-center gap-2 mt-2">
-                    <Volume2 className="w-3 h-3 text-slate-600" />
-                    <p className="text-[10px] text-slate-500 text-center">
-                      Try "Show my medications" or "Explain my labs"
-                    </p>
+                  <div className="flex items-center justify-center gap-2 mt-3 overflow-hidden">
+                    <motion.div 
+                      animate={{ x: [-20, 20, -20] }}
+                      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                      className="flex items-center gap-4 whitespace-nowrap"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="w-3 h-3 text-slate-600" />
+                        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+                          Try "Show my medications" • "Explain my labs" • "Analyze my report"
+                        </p>
+                      </div>
+                    </motion.div>
                   </div>
                 </form>
               </>
@@ -265,23 +333,25 @@ export default function ChatCoach() {
         )}
       </AnimatePresence>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all ${
-          isOpen ? 'bg-slate-900 border border-white/10' : 'bg-indigo-600 hover:bg-indigo-500'
-        }`}
-      >
-        {isOpen ? (
-          <X className="w-6 h-6 text-white" />
-        ) : (
-          <MessageSquare className="w-6 h-6 text-white" />
-        )}
-        {!isOpen && (
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-slate-950" />
-        )}
-      </motion.button>
+      {showTrigger && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleToggle}
+          className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all pointer-events-auto mr-24 mb-6 md:mr-0 md:mb-0 ${
+            isOpen ? 'bg-slate-900 border border-white/10' : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/40 shadow-lg'
+          }`}
+        >
+          {isOpen ? (
+            <X className="w-6 h-6 text-white" />
+          ) : (
+            <MessageSquare className="w-6 h-6 text-white" />
+          )}
+          {!isOpen && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-slate-950" />
+          )}
+        </motion.button>
+      )}
     </div>
   );
 }

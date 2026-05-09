@@ -24,8 +24,9 @@ import NoteAnalyzer from './NoteAnalyzer';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { MedicationStatus, LabStatus } from '../../types/medical';
+import { MessageSquare } from 'lucide-react';
 
-export default function UploadCenter() {
+export default function UploadCenter({ onOpenChat }: { onOpenChat?: () => void }) {
   const { user, signIn } = useAuth();
   const { activeProfile } = useProfile();
   const [activeTab, setActiveTab] = useState<'files' | 'notes'>('files');
@@ -318,10 +319,10 @@ export default function UploadCenter() {
             The extraction pipeline uses Gemini multimodal intelligence to parse prescriptions, notes, and records into structured medical data.
           </p>
         </div>
-        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 self-start">
+        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 self-start shrink-0">
           <button 
             onClick={() => setActiveTab('files')}
-            className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+            className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
               activeTab === 'files' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -329,13 +330,21 @@ export default function UploadCenter() {
           </button>
           <button 
             onClick={() => setActiveTab('notes')}
-            className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+            className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
               activeTab === 'notes' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
             Clinical Notes
           </button>
         </div>
+        {onOpenChat && (
+          <button 
+            onClick={onOpenChat}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-indigo-500/20 transition-all self-start"
+          >
+            <MessageSquare className="w-4 h-4" /> Ask Aura AI
+          </button>
+        )}
       </div>
 
       {activeTab === 'notes' ? (
@@ -457,8 +466,14 @@ export default function UploadCenter() {
           </div>
         ) : results && results.length > 0 ? (
           <div className="flex-1 p-10 space-y-10 overflow-y-auto relative">
-            <div className="flex justify-end p-2 -mt-4 shrink-0 border-b border-white/5 pb-4">
-               <button onClick={() => { setResults(null); setFiles([]); setConfirmedLabIndices(new Set()); setSyncMessage(null); setEditingIndex(null); }} className="text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl">
+            <div className="flex justify-between items-center p-2 -mt-4 shrink-0 border-b border-white/5 pb-4">
+              <button 
+                onClick={onOpenChat}
+                className="text-indigo-400 hover:text-indigo-300 transition-colors text-xs font-bold uppercase tracking-widest flex items-center gap-2 bg-indigo-500/10 px-4 py-2 rounded-xl border border-indigo-500/20"
+              >
+                <MessageSquare className="w-4 h-4" /> Analyze with AI
+              </button>
+              <button onClick={() => { setResults(null); setFiles([]); setConfirmedLabIndices(new Set()); setSyncMessage(null); setEditingIndex(null); }} className="text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl">
                  <RefreshCw className="w-4 h-4" /> Start Over
                </button>
             </div>
