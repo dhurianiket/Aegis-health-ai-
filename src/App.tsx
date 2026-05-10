@@ -456,15 +456,22 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              role="presentation"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setIsNewProfileModaOpen(false);
+              }}
             >
               <motion.div
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.95 }}
                 className="bg-slate-800 rounded-3xl p-6 md:p-8 max-w-md w-full border border-white/10 shadow-2xl relative"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title-new-profile"
               >
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-white">Create New Profile</h3>
+                  <h3 id="modal-title-new-profile" className="text-xl font-bold text-white">Create New Profile</h3>
                   <button onClick={() => setIsNewProfileModaOpen(false)} className="p-2 text-slate-400 hover:text-white rounded-full"><X className="w-5 h-5"/></button>
                 </div>
                 <form onSubmit={handleCreateProfile}>
@@ -498,15 +505,22 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+              role="presentation"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setProfileToSwitch(null);
+              }}
             >
               <motion.div
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.95 }}
                 className="bg-[#0F172A] border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title-switch-profile"
               >
                 <div className="flex justify-between items-center mb-4 relative z-10">
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <h3 id="modal-title-switch-profile" className="text-xl font-bold text-white flex items-center gap-2">
                     <Users className="w-5 h-5 text-indigo-400" />
                     Switch Profile
                   </h3>

@@ -147,6 +147,9 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
               }
               pointer-events-auto
             `}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="chat-coach-title"
           >
             {/* Header */}
             <div className="p-4 md:p-6 border-b border-white/5 bg-indigo-600/10 flex items-center justify-between shrink-0">
@@ -155,7 +158,7 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
                   <Bot className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-sm">Aura AI Coach</h3>
+                  <h3 id="chat-coach-title" className="text-white font-bold text-sm">Aura AI Coach</h3>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Intelligent Engine</span>
