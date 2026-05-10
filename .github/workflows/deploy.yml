@@ -11,6 +11,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm install --legacy-peer-deps
+      - run: npm install react-is --legacy-peer-deps
       - run: npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
