@@ -1,94 +1,84 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 0. Global Safety Net
-    match /{document=**} {
-      allow read, write: if false;
+    
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return request.auth.uid == userId; }
+    
+    match /users/{userId}/consents/{consentId} {
+      allow read, create: if isSignedIn() && isOwner(userId);
+      allow update, delete: if false;
     }
 
-    // Phase 3: Primitives
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isVerified() {
-      return isSignedIn() && request.auth.token.email_verified == true;
-    }
-
-    function isOwner(userId) {
-      return isVerified() && request.auth.uid == userId;
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
-    }
-
-    // --- SHARED SESSIONS ---
-    match /shares/{shareId} {
-      allow get: if existing().active == true && request.time < existing().expiresAt;
-      allow create: if isVerified() && incoming().userId == request.auth.uid;
-      allow update: if (
-        (existing().active == true && incoming().diff(existing()).affectedKeys().hasOnly(['viewCount'])) ||
-        (isOwner(existing().userId) && incoming().diff(existing()).affectedKeys().hasOnly(['active']))
-      );
-    }
-
-    // --- PROFILES ---
-    function isValidProfile(data) {
-      return data.userId == request.auth.uid 
-        && data.name is string && data.name.size() <= 100;
+    match /users/{userId}/auditLogs/{logId} {
+      allow read, create: if isSignedIn() && isOwner(userId);
+      allow update, delete: if false;
     }
 
     match /profiles/{profileId} {
-      allow get: if isVerified() && isOwner(resource.data.userId); // Require owner view
-      allow list: if isOwner(resource.data.userId);
-      allow create: if isVerified() && isOwner(incoming().userId) && isValidProfile(incoming());
-      allow update: if isVerified() && isOwner(existing().userId) && isValidProfile(incoming());
-      allow delete: if isVerified() && isOwner(existing().userId);
+      allow get: if true;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    // --- COMMON MEDICAL COLLECTIONS ---
-    // Includes: labResults, medications, insights, scores, summaries, documents
-    match /{collectionName}/{docId} {
-      allow list: if isOwner(resource.data.userId);
-      allow get: if isOwner(resource.data.userId);
-      
-      allow create: if isVerified() 
-        && incoming().userId == request.auth.uid
-        && (collectionName in ['labResults', 'medications', 'insights', 'scores', 'summaries', 'documents']);
-        
-      allow update, delete: if isVerified() 
-        && existing().userId == request.auth.uid;
+    match /familyRelations/{relationId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    // --- USER PRIVATE COLLECTIONS ---
-    function hasAuditLogFields() {
-      return incoming().keys().hasAll(['action', 'resourceId', 'timestamp', 'actor']);
+    match /shares/{shareId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    function hasConsentFields() {
-      return incoming().keys().hasAll(['type', 'grantedAt', 'textVersion', 'items']);
+    match /documents/{docId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    match /users/{userId} {
-      match /auditLogs/{logId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId) && hasAuditLogFields();
-        allow update, delete: if false;
-      }
-      match /consents/{consentId} {
-        allow read: if isOwner(userId);
-        allow create: if isOwner(userId) && hasConsentFields();
-        allow update, delete: if false;
-      }
+    match /labResults/{labId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /medications/{medId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /insights/{insightId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /scores/{scoreId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /summaries/{summaryId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

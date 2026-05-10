@@ -3,7 +3,7 @@ export interface LabValue {
   markerName: string;
   value: number;
   unit: string;
-  status: 'normal' | 'low' | 'high' | 'critical';
+  status: "normal" | "low" | "high" | "critical";
   date: string;
   referenceRange?: string;
   category?: string;
@@ -15,7 +15,7 @@ export interface Medication {
   name: string;
   dosage: string;
   frequency: string;
-  status: 'active' | 'discontinued' | 'on-hold';
+  status: "active" | "discontinued" | "on-hold";
   startDate: string;
   endDate?: string;
   indications: string[];
@@ -43,13 +43,13 @@ export interface Appointment {
   date: string;
   location?: string;
   notes?: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: "scheduled" | "completed" | "cancelled";
 }
 
 export interface HealthInsight {
   id: string;
-  type: 'trend' | 'correlation' | 'alert' | 'recommendation';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  type: "trend" | "correlation" | "alert" | "recommendation";
+  priority: "low" | "medium" | "high" | "critical";
   title: string;
   description: string;
   evidence: string[];
@@ -62,7 +62,7 @@ export interface LabObservation {
   testName: string;
   valueCanonical: number | null;
   unitCanonical: string | null;
-  flag: 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL' | null;
+  flag: "LOW" | "NORMAL" | "HIGH" | "CRITICAL" | null;
   collectedAt: string; // ISO date string
   reportId: string;
 }

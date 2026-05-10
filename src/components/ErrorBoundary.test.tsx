@@ -1,15 +1,15 @@
-import { describe, it, expect } from 'vitest';
-import React from 'react';
-import { render } from '@testing-library/react';
-import { ErrorBoundary } from './ErrorBoundary';
+import { describe, it, expect } from "vitest";
+import React from "react";
+import { render } from "@testing-library/react";
+import { ErrorBoundary } from "./ErrorBoundary";
 
-describe('ErrorBoundary', () => {
-  it('renders children when there is no error', () => {
+describe("ErrorBoundary", () => {
+  it("renders children when there is no error", () => {
     const { getByText } = render(
       <ErrorBoundary>
         <div>Test Content</div>
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
-    expect(getByText('Test Content')).toBeDefined();
+    expect(getByText("Test Content")).toBeDefined();
   });
 });

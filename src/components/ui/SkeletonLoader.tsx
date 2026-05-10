@@ -1,39 +1,39 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React from "react";
+import { motion } from "motion/react";
 
 interface SkeletonLoaderProps {
   className?: string;
   count?: number;
-  variant?: 'rectangular' | 'circular' | 'text';
+  variant?: "rectangular" | "circular" | "text";
 }
 
 /**
  * SkeletonLoader - A low-fidelity placeholder for loading states.
- * 
+ *
  * Uses an subtle opacity pulse animation to indicate content is being fetched,
  * preventing layout shift and improving perceived performance.
- * 
+ *
  * @component
  * @example
  * return <SkeletonLoader variant="rectangular" className="h-32 w-full" />
  */
-export default function SkeletonLoader({ 
-  className = "", 
-  count = 1, 
-  variant = 'rectangular' 
+export default function SkeletonLoader({
+  className = "",
+  count = 1,
+  variant = "rectangular",
 }: SkeletonLoaderProps) {
   const baseClasses = "bg-white/5 animate-pulse";
   const variantClasses = {
     rectangular: "rounded-2xl",
     circular: "rounded-full",
-    text: "rounded h-4 w-3/4 mb-2"
+    text: "rounded h-4 w-3/4 mb-2",
   };
 
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className={`${baseClasses} ${variantClasses[variant]} ${className}`}
           aria-hidden="true"
         />

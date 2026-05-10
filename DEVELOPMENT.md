@@ -23,13 +23,20 @@
 ## Adding New Alerts
 
 To update biomarker thresholds, edit `src/services/alertService.ts`:
+
 ```typescript
 const DEFAULT_THRESHOLDS: Record<string, AlertThreshold> = {
-  'NewMarker': { biomarker: 'NewMarker', minNormal: 10, maxNormal: 20, criticalMax: 30 },
+  NewMarker: {
+    biomarker: "NewMarker",
+    minNormal: 10,
+    maxNormal: 20,
+    criticalMax: 30,
+  },
 };
 ```
 
 To add new drug interactions, update `src/lib/medicationInteractionDB.ts`:
+
 ```typescript
 {
   drugs: ['drugA', 'drugB'],
@@ -41,6 +48,7 @@ To add new drug interactions, update `src/lib/medicationInteractionDB.ts`:
 ## Creating New Charts
 
 We use **Recharts**. Ensure any new charts follow the "Glassmorphism" theme:
+
 - Use `strokeWidth={2}` for lines.
 - Use `dot={{ r: 4, strokeWidth: 0, fill: '#6366f1' }}` for markers.
 - Utilize the `CustomTooltip` component for consistent styling.

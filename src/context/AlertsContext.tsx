@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
-import { useProfile } from './ProfileContext';
-import { getLabHistory, getMedications } from '../lib/firebase/firestore';
-import { HealthAlert } from '../types/alerts';
-import { getConsolidatedAlerts } from '../services/alertService';
-import { LabResult, Medication } from '../types/medical';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
+import { useProfile } from "./ProfileContext";
+import { getLabHistory, getMedications } from "../lib/firebase/firestore";
+import { HealthAlert } from "../types/alerts";
+import { getConsolidatedAlerts } from "../services/alertService";
+import { LabResult, Medication } from "../types/medical";
 
 interface AlertsContextType {
   alerts: HealthAlert[];
@@ -23,7 +23,7 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
   const [alerts, setAlerts] = useState<HealthAlert[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
     try {
-      const stored = localStorage.getItem('dismissedAlerts');
+      const stored = localStorage.getItem("dismissedAlerts");
       return stored ? new Set(JSON.parse(stored)) : new Set();
     } catch {
       return new Set();
@@ -31,7 +31,10 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    localStorage.setItem('dismissedAlerts', JSON.stringify(Array.from(dismissedIds)));
+    localStorage.setItem(
+      "dismissedAlerts",
+      JSON.stringify(Array.from(dismissedIds)),
+    );
   }, [dismissedIds]);
 
   const refreshAlerts = async () => {
@@ -39,19 +42,20 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
       setAlerts([]);
       return;
     }
-    
+
     try {
-      const labs = await getLabHistory(user.uid, undefined, activeProfile.id) || [];
-      const meds = await getMedications(user.uid, activeProfile.id) || [];
-      
+      const labs =
+        (await getLabHistory(user.uid, undefined, activeProfile.id)) || [];
+      const meds = (await getMedications(user.uid, activeProfile.id)) || [];
+
       const generatedAlerts = getConsolidatedAlerts(labs, meds as Medication[]);
-      
+
       // Feature 4.1: Clear notifications older than 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const filteredAlerts = generatedAlerts.filter(alert => 
-        new Date(alert.createdAt) > thirtyDaysAgo
+
+      const filteredAlerts = generatedAlerts.filter(
+        (alert) => new Date(alert.createdAt) > thirtyDaysAgo,
       );
 
       setAlerts(filteredAlerts);
@@ -65,7 +69,7 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
   }, [user, activeProfile]);
 
   const dismissAlert = (id: string) => {
-    setDismissedIds(prev => {
+    setDismissedIds((prev) => {
       const next = new Set(prev);
       next.add(id);
       return next;
@@ -73,18 +77,27 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const markAllAsRead = () => {
-    const allIds = alerts.map(a => a.id);
-    setDismissedIds(prev => {
+    const allIds = alerts.map((a) => a.id);
+    setDismissedIds((prev) => {
       const next = new Set(prev);
-      allIds.forEach(id => next.add(id));
+      allIds.forEach((id) => next.add(id));
       return next;
     });
   };
 
-  const unreadCount = alerts.filter(a => !dismissedIds.has(a.id)).length;
+  const unreadCount = alerts.filter((a) => !dismissedIds.has(a.id)).length;
 
   return (
-    <AlertsContext.Provider value={{ alerts, dismissedIds, dismissAlert, markAllAsRead, unreadCount, refreshAlerts }}>
+    <AlertsContext.Provider
+      value={{
+        alerts,
+        dismissedIds,
+        dismissAlert,
+        markAllAsRead,
+        unreadCount,
+        refreshAlerts,
+      }}
+    >
       {children}
     </AlertsContext.Provider>
   );
@@ -93,7 +106,7 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
 export function useAlerts() {
   const context = useContext(AlertsContext);
   if (context === undefined) {
-    throw new Error('useAlerts must be used within an AlertsProvider');
+    throw new Error("useAlerts must be used within an AlertsProvider");
   }
   return context;
 }

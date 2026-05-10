@@ -1,5 +1,10 @@
-export type AlertSeverity = 'critical' | 'high' | 'moderate' | 'normal';
-export type AlertType = 'lab_value' | 'medication' | 'appointment' | 'goal' | 'system';
+export type AlertSeverity = "critical" | "high" | "moderate" | "normal";
+export type AlertType =
+  | "lab_value"
+  | "medication"
+  | "appointment"
+  | "goal"
+  | "system";
 
 export interface HealthAlert {
   id: string;

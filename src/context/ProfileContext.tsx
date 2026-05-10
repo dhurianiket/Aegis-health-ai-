@@ -1,8 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
-import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase/config';
-import { UserProfile, Gender } from '../types/medical';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import { db } from "../lib/firebase/config";
+import { UserProfile, Gender } from "../types/medical";
 
 export interface Profile extends UserProfile {
   // Alias for compatibility if needed, but we should prefer UserProfile
@@ -36,34 +46,46 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       }
       setIsLoading(true);
       try {
-        const q = query(collection(db, 'profiles'), where('userId', '==', user.uid));
+        const q = query(
+          collection(db, "profiles"),
+          where("userId", "==", user.uid),
+        );
         const snapshot = await getDocs(q);
-        const fetchedProfiles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserProfile));
-        
+        const fetchedProfiles = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() }) as UserProfile,
+        );
+
         // Add default "Self" profile if none exists
         if (fetchedProfiles.length === 0) {
-          const defaultProfile = { 
-            name: 'Myself', 
-            fullName: 'Myself',
+          const defaultProfile = {
+            name: "Myself",
+            fullName: "Myself",
             userId: user.uid,
             chronicConditions: [],
             allergies: [],
           };
-          const docRef = await addDoc(collection(db, 'profiles'), {
+          const docRef = await addDoc(collection(db, "profiles"), {
             ...defaultProfile,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
           });
-          const newProfile = { id: docRef.id, createdAt: new Date().toISOString(), ...defaultProfile } as UserProfile;
+          const newProfile = {
+            id: docRef.id,
+            createdAt: new Date().toISOString(),
+            ...defaultProfile,
+          } as UserProfile;
           setProfiles([newProfile]);
           setActiveProfile(newProfile);
         } else {
           setProfiles(fetchedProfiles);
-          if (!activeProfile || !fetchedProfiles.find(p => p.id === activeProfile.id)) {
+          if (
+            !activeProfile ||
+            !fetchedProfiles.find((p) => p.id === activeProfile.id)
+          ) {
             setActiveProfile(fetchedProfiles[0]);
           }
         }
       } catch (error) {
-        console.error('Failed to fetch profiles:', error);
+        console.error("Failed to fetch profiles:", error);
       } finally {
         setIsLoading(false);
       }
@@ -74,22 +96,26 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const createProfile = async (name: string) => {
     if (!user) return;
     try {
-      const newProfileData = { 
-        name, 
+      const newProfileData = {
+        name,
         fullName: name,
         userId: user.uid,
         chronicConditions: [],
         allergies: [],
       };
-      const docRef = await addDoc(collection(db, 'profiles'), {
+      const docRef = await addDoc(collection(db, "profiles"), {
         ...newProfileData,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
-      const newProfile = { id: docRef.id, createdAt: new Date().toISOString(), ...newProfileData } as UserProfile;
-      setProfiles(prev => [...prev, newProfile]);
+      const newProfile = {
+        id: docRef.id,
+        createdAt: new Date().toISOString(),
+        ...newProfileData,
+      } as UserProfile;
+      setProfiles((prev) => [...prev, newProfile]);
       setActiveProfile(newProfile);
     } catch (error) {
-      console.error('Failed to create profile:', error);
+      console.error("Failed to create profile:", error);
       throw error;
     }
   };
@@ -97,14 +123,22 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (id: string, newName: string) => {
     if (!user) return;
     try {
-      const docRef = doc(db, 'profiles', id);
+      const docRef = doc(db, "profiles", id);
       await updateDoc(docRef, { name: newName, fullName: newName });
-      setProfiles(prev => prev.map(p => p.id === id ? { ...p, name: newName, fullName: newName } : p));
+      setProfiles((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, name: newName, fullName: newName } : p,
+        ),
+      );
       if (activeProfile?.id === id) {
-        setActiveProfile({ ...activeProfile, name: newName, fullName: newName });
+        setActiveProfile({
+          ...activeProfile,
+          name: newName,
+          fullName: newName,
+        });
       }
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      console.error("Failed to update profile:", error);
       throw error;
     }
   };
@@ -115,21 +149,31 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (profiles.length <= 1) {
         throw new Error("Cannot delete the last profile");
       }
-      const docRef = doc(db, 'profiles', id);
+      const docRef = doc(db, "profiles", id);
       await deleteDoc(docRef);
-      setProfiles(prev => prev.filter(p => p.id !== id));
+      setProfiles((prev) => prev.filter((p) => p.id !== id));
       if (activeProfile?.id === id) {
-        const remaining = profiles.filter(p => p.id !== id);
+        const remaining = profiles.filter((p) => p.id !== id);
         setActiveProfile(remaining[0]);
       }
     } catch (error) {
-      console.error('Failed to delete profile:', error);
+      console.error("Failed to delete profile:", error);
       throw error;
     }
   };
 
   return (
-    <ProfileContext.Provider value={{ profiles, activeProfile, setActiveProfile, createProfile, updateProfile, deleteProfile, isLoading }}>
+    <ProfileContext.Provider
+      value={{
+        profiles,
+        activeProfile,
+        setActiveProfile,
+        createProfile,
+        updateProfile,
+        deleteProfile,
+        isLoading,
+      }}
+    >
       {children}
     </ProfileContext.Provider>
   );
@@ -138,7 +182,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 export function useProfile() {
   const context = useContext(ProfileContext);
   if (context === undefined) {
-    throw new Error('useProfile must be used within a ProfileProvider');
+    throw new Error("useProfile must be used within a ProfileProvider");
   }
   return context;
 }

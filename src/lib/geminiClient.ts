@@ -19,7 +19,7 @@ export class GoogleGenAI {
         for await (const chunk of response) {
           yield chunk;
         }
-      }.bind(this)
+      }.bind(this),
     };
   }
 }
@@ -28,7 +28,7 @@ export async function streamGenerate(
   params: any,
   onChunk: (text: string) => void,
   onDone: (text: string) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) {
   const ai = new GoogleGenAI();
   const stream = ai.models.generateContentStream(params);
@@ -42,7 +42,7 @@ export async function streamGenerate(
     }
     onDone(fullText);
   } catch (err: any) {
-    if (err.name === 'AbortError') {
+    if (err.name === "AbortError") {
       console.log("AI Streaming aborted by user.");
       return;
     }

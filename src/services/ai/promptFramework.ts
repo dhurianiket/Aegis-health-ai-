@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { GoogleGenAI } from '../../lib/geminiClient';
+import { z } from "zod";
+import { GoogleGenAI } from "../../lib/geminiClient";
 
 export const CORE_SYSTEM_PROMPT = `
 <role>
@@ -74,34 +74,39 @@ export const LabExtractionSchema = z.object({
     collectionDate: z.string().nullable(),
     reportDate: z.string().nullable(),
   }),
-  observations: z.array(z.object({
-    panel: z.string().nullable(),
-    testName: z.string(),
-    loincLikeName: z.string().nullable(),
-    valueOriginal: z.preprocess(
-      (val) => {
-        if (typeof val === 'string') {
-          const n = parseFloat(val);
-          return isNaN(n) ? null : n;
-        }
-        return val;
-      },
-      z.number().nullable()
-    ),
-    unitOriginal: z.string().nullable(),
-    valueCanonical: z.number().nullable(),
-    unitCanonical: z.string().nullable(),
-    referenceLow: z.number().nullable(),
-    referenceHigh: z.number().nullable(),
-    flag: z.enum(['LOW', 'NORMAL', 'HIGH', 'CRITICAL']).nullable(),
-    page: z.number().nullable(),
-    rawText: z.string().nullable(),
-    confidence: z.number().min(0).max(1),
-  })).default([]),
-  issues: z.array(z.object({
-    type: z.string(),
-    description: z.string(),
-  })).default([]),
+  observations: z
+    .array(
+      z.object({
+        panel: z.string().nullable(),
+        testName: z.string(),
+        loincLikeName: z.string().nullable(),
+        valueOriginal: z.preprocess((val) => {
+          if (typeof val === "string") {
+            const n = parseFloat(val);
+            return isNaN(n) ? null : n;
+          }
+          return val;
+        }, z.number().nullable()),
+        unitOriginal: z.string().nullable(),
+        valueCanonical: z.number().nullable(),
+        unitCanonical: z.string().nullable(),
+        referenceLow: z.number().nullable(),
+        referenceHigh: z.number().nullable(),
+        flag: z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]).nullable(),
+        page: z.number().nullable(),
+        rawText: z.string().nullable(),
+        confidence: z.number().min(0).max(1),
+      }),
+    )
+    .default([]),
+  issues: z
+    .array(
+      z.object({
+        type: z.string(),
+        description: z.string(),
+      }),
+    )
+    .default([]),
 });
 
 export type LabExtraction = z.infer<typeof LabExtractionSchema>;
@@ -117,27 +122,47 @@ export type LabExtraction = z.infer<typeof LabExtractionSchema>;
  * - mmol/L triglycerides -> mg/dL (* 88.57)
  * - mmol/mol HbA1c -> % (/ 10.929 + 2.15)
  */
-export function normalizeObservation<T extends { testName: string; unitOriginal?: string | null; valueOriginal: any; valueCanonical?: number | null; unitCanonical?: string | null }>(obs: T): T {
+export function normalizeObservation<
+  T extends {
+    testName: string;
+    unitOriginal?: string | null;
+    valueOriginal: any;
+    valueCanonical?: number | null;
+    unitCanonical?: string | null;
+  },
+>(obs: T): T {
   const result = { ...obs };
   const unit = (obs.unitOriginal || "").toLowerCase();
   const test = (obs.testName || "").toLowerCase();
-  const valRaw = typeof obs.valueOriginal === 'number' ? obs.valueOriginal : parseFloat(String(obs.valueOriginal));
+  const valRaw =
+    typeof obs.valueOriginal === "number"
+      ? obs.valueOriginal
+      : parseFloat(String(obs.valueOriginal));
 
   if (isNaN(valRaw)) return result;
   const val = valRaw;
 
   // Glucose
-  if (unit.includes("mmol/l") && (test.includes("glucose") || test.includes("glu"))) {
+  if (
+    unit.includes("mmol/l") &&
+    (test.includes("glucose") || test.includes("glu"))
+  ) {
     result.valueCanonical = val * 18.0182;
     result.unitCanonical = "mg/dL";
   }
   // Creatinine
-  else if (unit.includes("umol/l") && (test.includes("creatinine") || test.includes("creat"))) {
+  else if (
+    unit.includes("umol/l") &&
+    (test.includes("creatinine") || test.includes("creat"))
+  ) {
     result.valueCanonical = val * 0.01131;
     result.unitCanonical = "mg/dL";
   }
   // Uric Acid
-  else if (unit.includes("umol/l") && (test.includes("uric acid") || test.includes("urate"))) {
+  else if (
+    unit.includes("umol/l") &&
+    (test.includes("uric acid") || test.includes("urate"))
+  ) {
     result.valueCanonical = val * 0.01681;
     result.unitCanonical = "mg/dL";
   }
@@ -152,29 +177,124 @@ export function normalizeObservation<T extends { testName: string; unitOriginal?
     result.unitCanonical = "mg/dL";
   }
   // Cholesterol
-  else if (unit.includes("mmol/l") && (test.includes("cholesterol") || test.includes("chol"))) {
+  else if (
+    unit.includes("mmol/l") &&
+    (test.includes("cholesterol") || test.includes("chol"))
+  ) {
     result.valueCanonical = val * 38.67;
     result.unitCanonical = "mg/dL";
   }
   // Triglycerides
-  else if (unit.includes("mmol/l") && (test.includes("triglyceride") || test.includes("tg"))) {
+  else if (
+    unit.includes("mmol/l") &&
+    (test.includes("triglyceride") || test.includes("tg"))
+  ) {
     result.valueCanonical = val * 88.57;
     result.unitCanonical = "mg/dL";
   }
+  // LDL & HDL
+  else if (
+    unit.includes("mmol/l") &&
+    (test.includes("ldl") || test.includes("hdl"))
+  ) {
+    result.valueCanonical = val * 38.67;
+    result.unitCanonical = "mg/dL";
+  }
   // HbA1c (mmol/mol to %)
-  else if ((unit.includes("mmol/mol")) && (test.includes("hba1c") || test.includes("hemoglobin a1c"))) {
-    result.valueCanonical = (val / 10.929) + 2.15;
+  else if (
+    unit.includes("mmol/mol") &&
+    (test.includes("hba1c") || test.includes("hemoglobin a1c"))
+  ) {
+    result.valueCanonical = val * 0.0915 + 2.15;
     result.unitCanonical = "%";
+  }
+  // Haemoglobin
+  else if (unit.includes("g/l") && (test.includes("haemoglobin") || test.includes("hemoglobin") || test.includes("hb"))) {
+    result.valueCanonical = val * 0.1;
+    result.unitCanonical = "g/dL";
+  }
+  // Calcium
+  else if (unit.includes("mmol/l") && test.includes("calcium")) {
+    result.valueCanonical = val * 4.008;
+    result.unitCanonical = "mg/dL";
+  }
+  // Phosphorus
+  else if (unit.includes("mmol/l") && test.includes("phosphorus")) {
+    result.valueCanonical = val * 3.097;
+    result.unitCanonical = "mg/dL";
   }
 
   return result;
+}
+
+export class GeminiQuotaError extends Error {}
+export class GeminiInputError extends Error {}
+export class GeminiTimeoutError extends Error {}
+
+export async function safeGeminiCall(apiCall: () => Promise<any>): Promise<any> {
+  try {
+    return await apiCall();
+  } catch (error: any) {
+    if (error.message?.includes("429") || error.status === 429) throw new GeminiQuotaError("Quota exceeded.");
+    if (error.message?.includes("400") || error.status === 400) throw new GeminiInputError("Invalid argument.");
+    if (error.message?.includes("504") || error.message?.includes("deadline")) throw new GeminiTimeoutError("Deadline exceeded.");
+    throw error;
+  }
+}
+
+export async function classifyDocument(filesData: { base64Data: string; mimeType: string }[]) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is missing");
+  const ai = new GoogleGenAI({ apiKey });
+  
+  const response = await safeGeminiCall(() => ai.models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: [
+      { text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" },
+      ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))
+    ],
+    config: { temperature: 0, responseMimeType: "application/json" }
+  }));
+  return JSON.parse(response.text || "{}");
+}
+
+export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[]) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is missing");
+  const ai = new GoogleGenAI({ apiKey });
+  
+  const response = await safeGeminiCall(() => ai.models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in JSON: { "situation": "", "background": "", "assessment": "", "recommendation": "", "disclaimer": "" }\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }],
+    config: { temperature: 0, responseMimeType: "application/json" }
+  }));
+  const sbarResult = JSON.parse(response.text || "{}");
+  
+  // Always enforce the exact disclaimer regardless of what Gemini returned
+  sbarResult.disclaimer = "This summary was prepared by the patient for discussion " +
+    "with their healthcare provider. It is not a medical diagnosis.";
+  
+  return sbarResult;
+}
+
+export async function explainInteraction(medicationContext: any) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is missing");
+  const ai = new GoogleGenAI({ apiKey });
+  
+  const response = await safeGeminiCall(() => ai.models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }],
+    config: { temperature: 0 }
+  }));
+  return response.text;
 }
 
 /**
  * Extracts laboratory data from medical reports with Zod validation and retry logic.
  */
 export async function extractLabData(
-  filesData: { base64Data: string; mimeType: string }[]
+  filesData: { base64Data: string; mimeType: string }[],
 ): Promise<LabExtraction> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -183,7 +303,13 @@ export async function extractLabData(
   const ai = new GoogleGenAI({ apiKey });
   const basePrompt = `
     Extract laboratory results into consistent JSON format.
-    
+    - Extract ALL rows from ALL lab result tables on ALL pages.
+    - If a field is not present in the document, set it to null. Never invent values.
+    - For every observation, set confidence between 0 and 1 based on OCR clarity.
+    - If the same test appears multiple times on different pages, create separate observation entries with different page values.
+    - For flag: compare value to reference range. Set CRITICAL if value is more than 2× above or below normal range. Set null if no reference range is available.
+    - Do not include markdown. Return valid JSON only.
+
     SCHEMA SPECIFICATION:
     {
       "patient": { "name", "dob", "sex", "id" },
@@ -198,49 +324,69 @@ export async function extractLabData(
   `;
 
   let lastValidationErrors = "";
+  let currentPrompt = Object.assign(basePrompt, {}); // Value copy
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    const finalPrompt = attempt === 1 
-      ? basePrompt 
-      : `${basePrompt}\n\nYour previous response had schema errors: ${lastValidationErrors}. Return corrected JSON matching the schema exactly.`;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const finalPrompt = attempt === 1
+      ? currentPrompt
+      : attempt === 2 
+        ? `${currentPrompt}\n\nYour previous response had schema errors: ${lastValidationErrors}. Return corrected JSON matching the schema exactly.`
+        : `${currentPrompt}\n\nYour previous response had issues analyzing the document properly: ${lastValidationErrors}. Please fix these and provide correct structured JSON.`;
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+      const response = await safeGeminiCall(() => ai.models.generateContent({
+        model: "gemini-1.5-flash",
+        systemInstruction: CORE_SYSTEM_PROMPT,
         contents: [
           { text: finalPrompt },
-          ...filesData.map(f => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))
+          ...filesData.map((f) => ({
+            inlineData: { data: f.base64Data, mimeType: f.mimeType },
+          })),
         ],
         config: {
           temperature: 0,
           responseMimeType: "application/json",
         },
-      });
+      }));
 
       const text = response.text || "{}";
       const parsed = JSON.parse(text);
-      
+
       const validationResult = LabExtractionSchema.safeParse(parsed);
-      
+
       if (!validationResult.success) {
         lastValidationErrors = JSON.stringify(validationResult.error.format());
-        console.warn(`Lab extraction validation failed (attempt ${attempt}):`, lastValidationErrors);
-        if (attempt === 1) continue;
+        console.warn(
+          `Lab extraction validation failed (attempt ${attempt}):`,
+          lastValidationErrors,
+        );
+        if (attempt < 2) continue; // retry for schema errors
         throw new Error(`Validation Error: ${lastValidationErrors}`);
       }
 
-      const validatedData = validationResult.data;
-      
-      // Apply normalization to observations
-      validatedData.observations = validatedData.observations.map(normalizeObservation);
-      
+      let validatedData = validationResult.data;
+
+      if (validatedData.issues.length > 0 && attempt < 3) {
+        lastValidationErrors = JSON.stringify(validatedData.issues);
+        continue; // attempt 3 to re-process flagged issues
+      }
+
+      // Apply normalization to observations capturing original string correctly
+      validatedData.observations = validatedData.observations.map(obs => {
+        // if original was missing, or non-numeric string preserve as rawText and valueCanonical null (from req)
+        if (obs.valueOriginal == null && typeof obs.rawText === "string") {
+           // handled by Zod coercing to null already.
+        }
+        return normalizeObservation(obs);
+      });
+
       return validatedData;
     } catch (err: any) {
-      if (attempt === 1 && !lastValidationErrors) {
+      if (attempt < 2 && !lastValidationErrors) {
         lastValidationErrors = err.message;
         continue;
       }
-      throw new Error(`Lab extraction failed: ${err.message}`);
+      if (attempt === 3) throw new Error(`Lab extraction failed: ${err.message}`);
     }
   }
 

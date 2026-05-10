@@ -1,7 +1,12 @@
-import { UserProfile, LabResult, Medication, SpecialistInsight } from "./medical";
+import {
+  UserProfile,
+  LabResult,
+  Medication,
+  SpecialistInsight,
+} from "./medical";
 import { HealthAlert } from "./alerts";
 
-export type ChatRole = 'user' | 'assistant' | 'system';
+export type ChatRole = "user" | "assistant" | "system";
 
 export interface ChatMessage {
   role: ChatRole;

@@ -1,42 +1,52 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Bell, 
-  X, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Bell,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
   Info,
   ChevronRight,
-  Filter
-} from 'lucide-react';
-import { HealthAlert } from '../../types/alerts';
-import { useAlerts } from '../../context/AlertsContext';
+  Filter,
+} from "lucide-react";
+import { HealthAlert } from "../../types/alerts";
+import { useAlerts } from "../../context/AlertsContext";
 
 interface NotificationDropdownProps {
   onClose: () => void;
 }
 
-type NotificationCategory = 'all' | 'critical' | 'reminders' | 'updates';
+type NotificationCategory = "all" | "critical" | "reminders" | "updates";
 
-export default function NotificationDropdown({ onClose }: NotificationDropdownProps) {
+export default function NotificationDropdown({
+  onClose,
+}: NotificationDropdownProps) {
   const { alerts, markAllAsRead, dismissAlert, unreadCount } = useAlerts();
-  const [activeCategory, setActiveCategory] = useState<NotificationCategory>('all');
+  const [activeCategory, setActiveCategory] =
+    useState<NotificationCategory>("all");
 
-  const filteredAlerts = alerts.filter(alert => {
-    if (activeCategory === 'all') return true;
-    if (activeCategory === 'critical') return alert.severity === 'critical' || alert.severity === 'high';
-    if (activeCategory === 'reminders') return alert.type === 'appointment' || alert.type === 'medication';
-    if (activeCategory === 'updates') return alert.type === 'lab_value' || alert.type === 'goal';
+  const filteredAlerts = alerts.filter((alert) => {
+    if (activeCategory === "all") return true;
+    if (activeCategory === "critical")
+      return alert.severity === "critical" || alert.severity === "high";
+    if (activeCategory === "reminders")
+      return alert.type === "appointment" || alert.type === "medication";
+    if (activeCategory === "updates")
+      return alert.type === "lab_value" || alert.type === "goal";
     return true;
   });
 
   const getCategoryIcon = (category: NotificationCategory) => {
     switch (category) {
-      case 'critical': return <AlertCircle className="w-4 h-4 text-red-400" />;
-      case 'reminders': return <Clock className="w-4 h-4 text-amber-400" />;
-      case 'updates': return <CheckCircle2 className="w-4 h-4 text-emerald-400" />;
-      default: return <Bell className="w-4 h-4 text-indigo-400" />;
+      case "critical":
+        return <AlertCircle className="w-4 h-4 text-red-400" />;
+      case "reminders":
+        return <Clock className="w-4 h-4 text-amber-400" />;
+      case "updates":
+        return <CheckCircle2 className="w-4 h-4 text-emerald-400" />;
+      default:
+        return <Bell className="w-4 h-4 text-indigo-400" />;
     }
   };
 
@@ -51,7 +61,9 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
       <div className="p-5 border-b border-white/10 bg-black/20">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-white tracking-tight text-lg">Notifications</h3>
+            <h3 className="font-bold text-white tracking-tight text-lg">
+              Notifications
+            </h3>
             {unreadCount > 0 && (
               <span className="bg-indigo-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
                 {unreadCount} New
@@ -59,13 +71,16 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={markAllAsRead}
               className="text-[10px] font-bold text-slate-400 hover:text-indigo-400 uppercase tracking-widest transition-colors"
             >
               Mark all read
             </button>
-            <button onClick={onClose} className="p-1 text-slate-500 hover:text-white transition-colors">
+            <button
+              onClick={onClose}
+              className="p-1 text-slate-500 hover:text-white transition-colors"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -73,14 +88,21 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
 
         {/* Categories */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {(['all', 'critical', 'reminders', 'updates'] as NotificationCategory[]).map((cat) => (
+          {(
+            [
+              "all",
+              "critical",
+              "reminders",
+              "updates",
+            ] as NotificationCategory[]
+          ).map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
                 activeCategory === cat
-                ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]'
-                : 'bg-white/5 text-slate-500 border-transparent hover:border-white/10 hover:text-slate-300'
+                  ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
+                  : "bg-white/5 text-slate-500 border-transparent hover:border-white/10 hover:text-slate-300"
               } capitalize flex items-center gap-2`}
             >
               {getCategoryIcon(cat)}
@@ -94,7 +116,7 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
       <div className="max-h-[400px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         <AnimatePresence mode="popLayout">
           {filteredAlerts.length === 0 ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="py-12 px-6 flex flex-col items-center text-center"
@@ -103,7 +125,9 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
                 <Bell className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-slate-400 font-bold">All clear!</p>
-              <p className="text-slate-500 text-xs mt-1">No notifications in this category.</p>
+              <p className="text-slate-500 text-xs mt-1">
+                No notifications in this category.
+              </p>
             </motion.div>
           ) : (
             filteredAlerts.map((alert) => (
@@ -113,41 +137,59 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className={`group p-4 rounded-2xl mb-1 flex gap-4 transition-all hover:bg-white/5 relative ${!alert.read ? 'bg-indigo-500/5' : ''}`}
+                className={`group p-4 rounded-2xl mb-1 flex gap-4 transition-all hover:bg-white/5 relative ${!alert.read ? "bg-indigo-500/5" : ""}`}
               >
-                {!alert.read && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full" />}
-                
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
-                  alert.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
-                  alert.severity === 'high' ? 'bg-amber-500/20 text-amber-400' :
-                  'bg-indigo-500/20 text-indigo-400'
-                }`}>
-                  {alert.type === 'medication' ? <Clock className="w-5 h-5" /> :
-                   alert.type === 'appointment' ? <Calendar className="w-5 h-5" /> :
-                   <Info className="w-5 h-5" />}
+                {!alert.read && (
+                  <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                )}
+
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
+                    alert.severity === "critical"
+                      ? "bg-red-500/20 text-red-400"
+                      : alert.severity === "high"
+                        ? "bg-amber-500/20 text-amber-400"
+                        : "bg-indigo-500/20 text-indigo-400"
+                  }`}
+                >
+                  {alert.type === "medication" ? (
+                    <Clock className="w-5 h-5" />
+                  ) : alert.type === "appointment" ? (
+                    <Calendar className="w-5 h-5" />
+                  ) : (
+                    <Info className="w-5 h-5" />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className={`text-sm font-bold truncate ${!alert.read ? 'text-white' : 'text-slate-400'}`}>
+                    <p
+                      className={`text-sm font-bold truncate ${!alert.read ? "text-white" : "text-slate-400"}`}
+                    >
                       {alert.title}
                     </p>
                     <span className="text-[10px] font-medium text-slate-500 whitespace-nowrap pt-0.5">
-                      {new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(alert.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                     {alert.description}
                   </p>
-                  
+
                   <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={() => alert.actionUrl && window.open(alert.actionUrl, '_blank')}
+                    <button
+                      onClick={() =>
+                        alert.actionUrl &&
+                        window.open(alert.actionUrl, "_blank")
+                      }
                       className="text-[10px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1"
                     >
                       View Details <ChevronRight className="w-3 h-3" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => dismissAlert(alert.id)}
                       className="text-[10px] font-black text-slate-600 hover:text-red-400 uppercase tracking-widest"
                     >
@@ -163,7 +205,7 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
 
       {/* Footer */}
       <div className="p-4 border-t border-white/10 bg-black/10">
-        <button 
+        <button
           onClick={onClose}
           className="w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-xl transition-all border border-indigo-500/20"
         >
@@ -176,13 +218,13 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
 
 function Calendar({ className }: { className?: string }) {
   return (
-    <svg 
-      className={className} 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
       strokeLinejoin="round"
     >
       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>

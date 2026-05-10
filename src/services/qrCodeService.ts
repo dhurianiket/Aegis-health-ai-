@@ -1,5 +1,5 @@
-import { db } from '../lib/firebase/config';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { db } from "../lib/firebase/config";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
 
 export interface ShareOptions {
   profileId: string;
@@ -13,17 +13,19 @@ export interface ShareOptions {
   };
 }
 
-export const generateShareLink = async (options: ShareOptions): Promise<string> => {
+export const generateShareLink = async (
+  options: ShareOptions,
+): Promise<string> => {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + options.expiryHours);
 
   try {
-    const shareRef = await addDoc(collection(db, 'shares'), {
+    const shareRef = await addDoc(collection(db, "shares"), {
       ...options,
       expiresAt: Timestamp.fromDate(expiresAt),
       createdAt: Timestamp.now(),
       viewCount: 0,
-      active: true
+      active: true,
     });
 
     // Generate the URL. We'll use a query param 'share'

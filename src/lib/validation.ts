@@ -14,17 +14,25 @@ export const isAlphanumeric = (value: string): boolean => {
 };
 
 // Validates profile name
-export const validateProfileName = (name: string): { isValid: boolean; error?: string } => {
+export const validateProfileName = (
+  name: string,
+): { isValid: boolean; error?: string } => {
   if (!isRequired(name)) {
-    return { isValid: false, error: 'Profile name is required' };
+    return { isValid: false, error: "Profile name is required" };
   }
   if (name.length > 50) {
-    return { isValid: false, error: 'Profile name must be 50 characters or less' };
+    return {
+      isValid: false,
+      error: "Profile name must be 50 characters or less",
+    };
   }
   // Optional: Enforce no special characters, but let's allow spaces
   if (!/^[a-zA-Z0-9\s]+$/.test(name)) {
-    return { isValid: false, error: 'Profile name can only contain letters, numbers, and spaces' };
+    return {
+      isValid: false,
+      error: "Profile name can only contain letters, numbers, and spaces",
+    };
   }
-  
+
   return { isValid: true };
 };

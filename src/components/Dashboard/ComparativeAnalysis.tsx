@@ -1,23 +1,29 @@
-import React, { useMemo } from 'react';
-import { motion } from 'motion/react';
-import { BarChart2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { LabResult, LabStatus } from '../../types/medical';
+import React, { useMemo } from "react";
+import { motion } from "motion/react";
+import { BarChart2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { LabResult, LabStatus } from "../../types/medical";
 
 interface ComparativeAnalysisProps {
   labs: LabResult[];
 }
 
-export default function ComparativeAnalysis({ labs }: ComparativeAnalysisProps) {
+export default function ComparativeAnalysis({
+  labs,
+}: ComparativeAnalysisProps) {
   const latestLabs = useMemo(() => {
     // Get the most recent lab for each marker
     const latest: Record<string, LabResult> = {};
-    const sorted = [...labs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    sorted.forEach(lab => {
-      const name = lab.markerName ? lab.markerName.trim().toUpperCase() : 'UNKNOWN';
+    const sorted = [...labs].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+
+    sorted.forEach((lab) => {
+      const name = lab.markerName
+        ? lab.markerName.trim().toUpperCase()
+        : "UNKNOWN";
       latest[name] = lab;
     });
-    
+
     return Object.values(latest).slice(0, 4); // Take top 4
   }, [labs]);
 
@@ -30,8 +36,12 @@ export default function ComparativeAnalysis({ labs }: ComparativeAnalysisProps) 
           <BarChart2 className="w-5 h-5 text-emerald-400" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white tracking-tight">Percentile Ranking</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Your values compared to healthy peers</p>
+          <h3 className="text-lg font-bold text-white tracking-tight">
+            Percentile Ranking
+          </h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Your values compared to healthy peers
+          </p>
         </div>
       </div>
 
@@ -40,37 +50,48 @@ export default function ComparativeAnalysis({ labs }: ComparativeAnalysisProps) 
           // Synthetic percentile calculation based on normal ranges if provided
           // Or just random for the MVP visualization
           let percentile = Math.floor(Math.random() * 60) + 20; // 20-80
-          if (lab.status === LabStatus.NORMAL) percentile = Math.floor(Math.random() * 40) + 50; // 50-90
-          if (lab.status === LabStatus.CRITICAL || lab.status === LabStatus.ABNORMAL) percentile = Math.floor(Math.random() * 20) + 80;
+          if (lab.status === LabStatus.NORMAL)
+            percentile = Math.floor(Math.random() * 40) + 50; // 50-90
+          if (
+            lab.status === LabStatus.CRITICAL ||
+            lab.status === LabStatus.ABNORMAL
+          )
+            percentile = Math.floor(Math.random() * 20) + 80;
 
           const getStatusColor = () => {
-            if (lab.status === LabStatus.CRITICAL) return 'from-red-500 to-red-600';
-            if (lab.status === LabStatus.ABNORMAL) return 'from-amber-500 to-orange-500';
-            return 'from-emerald-400 to-teal-500';
+            if (lab.status === LabStatus.CRITICAL)
+              return "from-red-500 to-red-600";
+            if (lab.status === LabStatus.ABNORMAL)
+              return "from-amber-500 to-orange-500";
+            return "from-emerald-400 to-teal-500";
           };
-          
+
           return (
             <div key={lab.id} className="relative">
               <div className="flex justify-between items-end mb-2">
-                <span className="text-sm font-bold text-slate-200">{lab.markerName}</span>
-                <span className="text-xs font-medium text-slate-400">{lab.value} {lab.unit}</span>
+                <span className="text-sm font-bold text-slate-200">
+                  {lab.markerName}
+                </span>
+                <span className="text-xs font-medium text-slate-400">
+                  {lab.value} {lab.unit}
+                </span>
               </div>
-              
+
               <div className="h-2.5 w-full bg-slate-900/60 rounded-full overflow-hidden border border-white/5 relative">
                 {/* Population curve background hint */}
                 <div className="absolute inset-y-0 left-1/4 right-1/4 bg-white/5"></div>
-                
-                <motion.div 
+
+                <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${percentile}%` }}
                   transition={{ delay: idx * 0.1, duration: 1, type: "spring" }}
                   className={`h-full rounded-full bg-gradient-to-r ${getStatusColor()}`}
                 />
-                
+
                 {/* Marker line for 50th percentile */}
                 <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/20"></div>
               </div>
-              
+
               <div className="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
                 <span>Lower</span>
                 <span className="text-slate-400">Median</span>

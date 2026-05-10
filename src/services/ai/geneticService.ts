@@ -2,7 +2,7 @@ import { GoogleGenAI } from "../../lib/geminiClient";
 import { UserProfile, LabResult } from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 
-const ai = new GoogleGenAI({ });
+const ai = new GoogleGenAI({});
 
 export interface GeneticRiskAnalysis {
   condition: string;
@@ -38,23 +38,27 @@ Maturity Note: Be cautious and use clinical "could suggest" or "potential patter
 /**
  * GeneticService - Analyzes family health data for shared hereditary risks.
  */
-export const analyzeSharedRisks = async (profilesData: { profile: UserProfile; labs: LabResult[] }[]): Promise<GeneticRiskAnalysis[]> => {
+export const analyzeSharedRisks = async (
+  profilesData: { profile: UserProfile; labs: LabResult[] }[],
+): Promise<GeneticRiskAnalysis[]> => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `${GENETIC_PROMPT}\n\n<input>\n${JSON.stringify(profilesData)}\n</input>`,
       config: {
-        responseMimeType: "application/json"
-      }
+        responseMimeType: "application/json",
+      },
     });
 
     const jsonText = response.text || "[]";
     let cleanText = jsonText.trim();
-    cleanText = cleanText.replace(/^```[a-z]*\s*/i, "").replace(/```$/, "").trim();
+    cleanText = cleanText
+      .replace(/^```[a-z]*\s*/i, "")
+      .replace(/```$/, "")
+      .trim();
     return JSON.parse(cleanText);
   } catch (error) {
     console.error("Genetic analysis error:", error);
     return [];
   }
 };
-

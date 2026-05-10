@@ -1,6 +1,6 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { logger } from '../lib/logger';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { logger } from "../lib/logger";
 
 interface Props {
   children?: ReactNode;
@@ -14,7 +14,7 @@ interface State {
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null
+    error: null,
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -34,13 +34,17 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Something went wrong</h2>
+            <h2 className="text-xl font-bold text-white mb-2">
+              Something went wrong
+            </h2>
             <p className="text-slate-400 text-sm mb-6">
               We encountered an unexpected error while rendering this component.
             </p>
             {this.state.error && (
               <div className="bg-black/20 rounded-xl p-3 mb-6 text-left overflow-hidden">
-                <p className="text-xs text-red-300 font-mono break-words">{this.state.error.message}</p>
+                <p className="text-xs text-red-300 font-mono break-words">
+                  {this.state.error.message}
+                </p>
               </div>
             )}
             <button

@@ -4,28 +4,28 @@
  */
 
 export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  OTHER = 'other',
+  MALE = "male",
+  FEMALE = "female",
+  OTHER = "other",
 }
 
 export enum DocumentType {
-  LAB_REPORT = 'lab_report',
-  PRESCRIPTION = 'prescription',
-  CONSULTATION_NOTE = 'consultation_note',
-  DISCHARGE_SUMMARY = 'discharge_summary',
-  IMAGING_REPORT = 'imaging_report',
+  LAB_REPORT = "lab_report",
+  PRESCRIPTION = "prescription",
+  CONSULTATION_NOTE = "consultation_note",
+  DISCHARGE_SUMMARY = "discharge_summary",
+  IMAGING_REPORT = "imaging_report",
 }
 
 export enum LabStatus {
-  NORMAL = 'normal',
-  ABNORMAL = 'abnormal',
-  CRITICAL = 'critical',
+  NORMAL = "normal",
+  ABNORMAL = "abnormal",
+  CRITICAL = "critical",
 }
 
 export enum MedicationStatus {
-  ACTIVE = 'active',
-  DISCONTINUED = 'discontinued',
+  ACTIVE = "active",
+  DISCONTINUED = "discontinued",
 }
 
 export interface UserProfile {
@@ -113,12 +113,19 @@ export interface HealthScore {
 }
 
 export enum Specialty {
-  INTERNAL_MEDICINE = 'Internal Medicine',
-  ONCOLOGY = 'Oncology',
-  CARDIOLOGY = 'Cardiology',
-  ENDOCRINOLOGY = 'Endocrinology',
-  NEPHROLOGY = 'Nephrology',
-  HEPATOLOGY = 'Hepatology',
-  HEMATOLOGY = 'Hematology',
-  NUTRITION = 'Nutrition & Preventive Medicine',
+  INTERNAL_MEDICINE = "Internal Medicine",
+  ONCOLOGY = "Oncology",
+  CARDIOLOGY = "Cardiology",
+  ENDOCRINOLOGY = "Endocrinology",
+  NEPHROLOGY = "Nephrology",
+  HEPATOLOGY = "Hepatology",
+  HEMATOLOGY = "Hematology",
+  NUTRITION = "Nutrition & Preventive Medicine",
+}
+
+export interface SBARSummary {
+  situation: string;
+  background: string;
+  assessment: string[];
+  recommendation: string[];
 }

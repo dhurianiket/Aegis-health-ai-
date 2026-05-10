@@ -15,8 +15,10 @@ export class VoiceService {
   private isListening: boolean = false;
 
   constructor(options: VoiceServiceOptions) {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
     if (!SpeechRecognition) {
       options.onError?.("Speech recognition is not supported in this browser.");
       return;
@@ -25,7 +27,7 @@ export class VoiceService {
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = false;
     this.recognition.interimResults = false;
-    this.recognition.lang = options.language || 'en-US';
+    this.recognition.lang = options.language || "en-US";
 
     this.recognition.onresult = (event: any) => {
       const text = event.results[0][0].transcript;

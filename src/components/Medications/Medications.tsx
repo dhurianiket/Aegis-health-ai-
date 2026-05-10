@@ -1,236 +1,268 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useProfile } from '../../context/ProfileContext';
-import { 
-  Pill, 
-  Clock, 
-  Calendar, 
-  Plus, 
-  Trash2, 
-  Search,
-  CheckCircle2,
-  AlertCircle,
-  ChevronRight,
-  TrendingUp,
-  History,
-  Zap,
-  Activity,
-  Loader2,
-  Sparkles
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Medication, MedicationStatus } from '../../types/medical';
-import { getMedications } from '../../lib/firebase/firestore';
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useProfile } from "../../context/ProfileContext";
+import { Pill, Clock, Plus, Trash2, ShieldAlert, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { db } from "../../lib/firebase/config";
+import { doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { logAuditEvent } from "../../lib/auditLogger";
 
-export default function Medications({ onOpenChat }: { onOpenChat?: () => void }) {
+export default function Medications({
+  onOpenChat,
+}: {
+  onOpenChat?: () => void;
+}) {
   const { user } = useAuth();
-  const { activeProfile } = useProfile();
-  const [meds, setMeds] = useState<Medication[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'history'>('active');
+  const { activeProfile, setActiveProfile } = useProfile();
 
-  useEffect(() => {
-    async function fetchMeds() {
-      if (!user) {
-        setMeds([]);
-        setIsLoading(false);
-        return;
-      }
-      setIsLoading(true);
-      try {
-        const fetchedMeds = await getMedications(user.uid, activeProfile?.id);
-        setMeds(fetchedMeds || []);
-      } catch (error) {
-        console.error('Failed to fetch medications:', error);
-        setMeds([]);
-      } finally {
-        setIsLoading(false);
-      }
+  const [isAdding, setIsAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [dose, setDose] = useState("");
+  const [frequency, setFrequency] = useState("Once daily");
+  const [startDate, setStartDate] = useState("");
+
+  const meds = activeProfile?.medications || [];
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !activeProfile || !name.trim()) return;
+
+    const newMed = {
+      name: name.trim(),
+      dose: dose.trim(),
+      frequency,
+      startDate: startDate || new Date().toISOString().split("T")[0],
+      status: "active",
+    };
+
+    try {
+      const docRef = doc(db, "profiles", activeProfile.id);
+      await updateDoc(docRef, {
+        medications: arrayUnion(newMed),
+      });
+
+      const updatedProfile = {
+        ...activeProfile,
+        medications: [...(activeProfile.medications || []), newMed],
+      };
+      setActiveProfile(updatedProfile as any);
+
+      await logAuditEvent(user.uid, "ADD_MEDICATION", newMed.name);
+
+      setIsAdding(false);
+      setName("");
+      setDose("");
+      setFrequency("Once daily");
+      setStartDate("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add medication.");
     }
-    fetchMeds();
-  }, [user, activeProfile]);
+  };
 
-  const filteredMeds = meds.filter(med => {
-    if (activeFilter === 'active') return med.status === MedicationStatus.ACTIVE;
-    if (activeFilter === 'history') return med.status === MedicationStatus.DISCONTINUED;
-    return true;
-  });
+  const handleRemove = async (med: any) => {
+    if (!user || !activeProfile) return;
+    try {
+      const docRef = doc(db, "profiles", activeProfile.id);
+      await updateDoc(docRef, {
+        medications: arrayRemove(med),
+      });
+
+      const updatedProfile = {
+        ...activeProfile,
+        medications: (activeProfile.medications || []).filter(
+          (m: any) => m.name !== med.name,
+        ),
+      };
+      setActiveProfile(updatedProfile as any);
+
+      await logAuditEvent(user.uid, "REMOVE_MEDICATION", med.name);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to remove medication.");
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Header Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <motion.div 
-          whileHover={{ y: -4, backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl flex items-center gap-6"
-        >
-          <div className="w-16 h-16 rounded-3xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-            <Pill className="w-8 h-8" />
-          </div>
-          <div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Active Regimen</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-light text-white">
-                {meds.filter(m => m.status === MedicationStatus.ACTIVE).length}
-              </span>
-              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Meds</span>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          whileHover={{ y: -4, backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl flex items-center gap-6"
-        >
-          <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
-          <div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Adherence Rate</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-light text-white">98%</span>
-              <span className="text-emerald-400 text-[10px] font-bold flex items-center">
-                <TrendingUp className="w-3 h-3 mr-1" /> +2%
-              </span>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          whileHover={{ y: -4, backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl flex items-center gap-6"
-        >
-          <div className="w-16 h-16 rounded-3xl bg-amber-500/20 flex items-center justify-center text-amber-400">
-            <Clock className="w-8 h-8" />
-          </div>
-          <div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Next Scheduled</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-light text-white">8:00 PM</span>
-              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Dose</span>
-            </div>
-          </div>
-        </motion.div>
+    <div className="space-y-8 max-w-4xl mx-auto pb-20">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">
+            Pharmacy
+          </h2>
+          <p className="text-slate-400 text-xs md:text-sm font-light">
+            Manage your active regimen.
+          </p>
+        </div>
+        {!isAdding && (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-colors font-semibold shadow-xl"
+          >
+            <Plus className="w-4 h-4" /> Add Medication
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Navigation & Search */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-[32px] shadow-2xl">
-            <div className="relative mb-6">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-              <input 
-                type="text" 
-                placeholder="Search meds..."
-                className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-indigo-500 transition-all text-white placeholder-slate-500 shadow-inner"
-              />
-            </div>
-            
-            <nav className="space-y-2">
-              <button 
-                onClick={() => setActiveFilter('active')}
-                className={`w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all ${
-                  activeFilter === 'active' 
-                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <Zap className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Active List</span>
-              </button>
-              <button 
-                onClick={() => setActiveFilter('history')}
-                className={`w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all ${
-                  activeFilter === 'history' 
-                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <History className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Archive</span>
-              </button>
-              <button 
-                onClick={() => setActiveFilter('all')}
-                className={`w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all ${
-                  activeFilter === 'all' 
-                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <Activity className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Total Inventory</span>
-              </button>
-              {onOpenChat && (
-                <button 
-                  onClick={onOpenChat}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all mt-4 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Ask Aura about Meds</span>
-                </button>
-              )}
-            </nav>
-          </div>
-        </div>
-
-        {/* Medication List */}
-        <div className="lg:col-span-3 space-y-4">
-          <AnimatePresence mode="popLayout">
-            {isLoading ? (
-              <div className="flex items-center justify-center p-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[40px]">
-                 <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <AnimatePresence>
+        {isAdding && (
+          <motion.form
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            onSubmit={handleAdd}
+            className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[24px] shadow-2xl relative"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Name
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 placeholder-slate-500 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. Metformin"
+                />
               </div>
-            ) : filteredMeds.length > 0 ? (
-              filteredMeds.map((med, index) => (
-                <motion.div
-                  key={med.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                  className="group relative bg-white/5 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[40px] shadow-2xl hover:bg-white/10 transition-all cursor-pointer"
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Dose
+                </label>
+                <input
+                  type="text"
+                  value={dose}
+                  onChange={(e) => setDose(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 placeholder-slate-500 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. 500mg"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Frequency
+                </label>
+                <select
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 appearance-none"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center gap-6">
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-[#0F172A] border border-white/10 flex items-center justify-center text-indigo-400 grow-0 shrink-0 shadow-2xl group-hover:scale-110 transition-transform">
-                      <Pill className="w-8 h-8" />
+                  <option value="Once daily">Once daily</option>
+                  <option value="Twice daily">Twice daily</option>
+                  <option value="Three times daily">Three times daily</option>
+                  <option value="As needed">As needed</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 placeholder-slate-500 text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setIsAdding(false)}
+                className="px-5 py-2 text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AnimatePresence>
+          {meds.length > 0 ? (
+            meds.map((med: any, idx: number) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                key={`${med.name}-${idx}`}
+                className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl hover:bg-white/10 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                      <Pill className="w-6 h-6" />
                     </div>
-                    
-                    <div className="flex-1 space-y-2">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">{med.name}</h3>
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${
-                          med.status === MedicationStatus.ACTIVE 
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                          : 'bg-white/5 text-slate-400 border-white/10'
-                        }`}>
-                          {med.status}
-                        </span>
-                      </div>
-                      <p className="text-slate-400 text-sm font-light">{med.purpose || 'Prescription item'}</p>
-                      
-                      <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t border-white/5">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
-                          <span>{med.dosage}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                          <span>{med.frequency}</span>
-                        </div>
-                      </div>
+                    <button
+                      onClick={() => handleRemove(med)}
+                      className="p-2 text-slate-500 hover:text-red-400 transition-colors bg-white/5 hover:bg-red-500/10 rounded-full"
+                      title="Remove"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <h3 className="text-xl font-bold text-white tracking-tight mb-1">
+                    {med.name}
+                  </h3>
+                  <div className="flex gap-4 mb-4">
+                    <div className="text-sm font-semibold text-slate-300">
+                      {med.dose || med.dosage}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                      <Clock className="w-3.5 h-3.5" /> {med.frequency}
                     </div>
                   </div>
-                </motion.div>
-              ))
-            ) : (
-              <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white/5 backdrop-blur-xl border border-dashed border-white/10 p-20 rounded-[40px] text-center">
-                <Pill className="w-12 h-12 text-slate-700 mx-auto mb-4" />
-                <p className="text-slate-500 font-medium text-sm">No medications found in this category.</p>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-white/5">
+                  <div className="flex items-start gap-2 text-amber-500/80 text-[10px] uppercase font-bold tracking-widest leading-relaxed mb-4">
+                    <ShieldAlert className="w-4 h-4 shrink-0" />
+                    <p>
+                      Always discuss medication changes with your doctor before
+                      starting or stopping.
+                    </p>
+                  </div>
+
+                  {onOpenChat && (
+                    <button
+                      onClick={onOpenChat}
+                      className="flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest transition-colors w-full justify-center py-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-xl"
+                    >
+                      <Sparkles className="w-4 h-4" /> Ask Aura AI about this
+                      medication
+                    </button>
+                  )}
+                </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center border border-dashed border-white/10 rounded-[40px] bg-white/5">
+              <Pill className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-white mb-2">
+                No medications logged yet
+              </h3>
+              <p className="text-slate-400 text-sm mb-6 max-w-sm mx-auto">
+                Keep track of your active regimen and monitor potential
+                interactions.
+              </p>
+              <button
+                onClick={() => setIsAdding(true)}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-indigo-500 transition-colors"
+              >
+                Add Medication
+              </button>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

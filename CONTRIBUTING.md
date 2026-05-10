@@ -1,11 +1,13 @@
 # Contributing Guidelines
 
 ## Getting Started
+
 1. Install dependencies with `npm install`
 2. Set up your `.env` file according to `.env.example`
 3. Run the development server with `npm run dev`
 
 ## Code Style
+
 - Use TypeScript for all new files.
 - Favor standard React hooks (`useState`, `useEffect`, `useMemo`).
 - Utilize global contexts for shared state where applicable, but prefer localized state for specific components.
@@ -14,6 +16,7 @@
 - All dynamic routes/components must be wrapped in `ErrorBoundary`.
 
 ## Submission Process
+
 1. Create a feature branch.
 2. Implement your changes.
 3. Write/update tests if applicable.

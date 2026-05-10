@@ -40,30 +40,34 @@ export interface CoachResponse {
 export const getCoachResponse = async (
   context: PatientContext,
   userMessage: string,
-  history: { role: 'user' | 'assistant', content: string }[] = []
+  history: { role: "user" | "assistant"; content: string }[] = [],
 ): Promise<AsyncGenerator<string>> => {
   const patientDataPrompt = formatContextForPrompt(context);
-  
+
   // GenAI SDK requires strictly alternating roles: user -> model -> user -> model
-  const contents: { role: 'user' | 'model', parts: { text: string }[] }[] = [];
-  
+  const contents: { role: "user" | "model"; parts: { text: string }[] }[] = [];
+
   if (history.length === 0) {
     // First message - merge context and question
     contents.push({
-      role: 'user',
-      parts: [{ text: `Medical Context:\n${patientDataPrompt}\n\nQuestion: ${userMessage}` }]
+      role: "user",
+      parts: [
+        {
+          text: `Medical Context:\n${patientDataPrompt}\n\nQuestion: ${userMessage}`,
+        },
+      ],
     });
   } else {
     // History exists - process it
     history.forEach((h, i) => {
-      const role = h.role === 'assistant' ? 'model' : 'user';
+      const role = h.role === "assistant" ? "model" : "user";
       let text = h.content;
-      
+
       // Inject context into the very first user message of the history
-      if (i === 0 && role === 'user') {
+      if (i === 0 && role === "user") {
         text = `Context:\n${patientDataPrompt}\n\nUser previously said: ${text}`;
       }
-      
+
       // Handle potential duplicate roles in history (though useCoach should prevent this)
       if (contents.length > 0 && contents[contents.length - 1].role === role) {
         contents[contents.length - 1].parts[0].text += `\n\n${text}`;
@@ -73,13 +77,14 @@ export const getCoachResponse = async (
     });
 
     // Add current message
-    if (contents[contents.length - 1].role === 'user') {
+    if (contents[contents.length - 1].role === "user") {
       // Append to last user message if history ended with user
-      contents[contents.length - 1].parts[0].text += `\n\nFollow-up Question: ${userMessage}`;
+      contents[contents.length - 1].parts[0].text +=
+        `\n\nFollow-up Question: ${userMessage}`;
     } else {
       contents.push({
-        role: 'user',
-        parts: [{ text: userMessage }]
+        role: "user",
+        parts: [{ text: userMessage }],
       });
     }
   }
@@ -90,7 +95,7 @@ export const getCoachResponse = async (
     config: {
       systemInstruction: COACH_SYSTEM_INSTRUCTION,
       temperature: 0.1,
-    }
+    },
   });
 
   return (async function* () {
@@ -102,4 +107,3 @@ export const getCoachResponse = async (
     // Note: The UI is expected to append the global disclaimer.
   })();
 };
-

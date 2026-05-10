@@ -1,31 +1,111 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  
-  --color-medical-bg: #0F172A;
-  --color-medical-primary: #6366F1;
-  --color-medical-secondary: #10B981;
-  --color-medical-accent: #8B5CF6;
-  --color-medical-glass: rgba(255, 255, 255, 0.05);
-  --color-medical-border: rgba(255, 255, 255, 0.1);
+  --font-sans: "Satoshi", "Inter", sans-serif;
+
+  /* Shared Apple Health Inspired Tokens */
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
+  :root,
+  [data-theme="light"] {
+    --color-bg: #ffffff;
+    --color-surface: #f5f5f7;
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-primary: #0d9488;
+    --color-critical: #dc2626;
+    --color-warning: #d97706;
+    --color-success: #059669;
+    --color-info: #2563eb;
+
+    --color-text: #1d1d1f;
+    --color-text-muted: #6e6e73;
+    --color-text-faint: #aeaeb2;
+  }
+
+  :root,
+  [data-theme="dark"] {
+    --color-bg: #000000;
+    --color-surface: rgba(255, 255, 255, 0.05);
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-primary: #2dd4bf;
+    --color-critical: #f87171;
+    --color-warning: #fbbf24;
+    --color-success: #34d399;
+    --color-info: #60a5fa;
+
+    --color-text: #ffffff;
+    --color-text-muted: rgba(255, 255, 255, 0.65);
+    --color-text-faint: rgba(255, 255, 255, 0.35);
+  }
+
   body {
-    @apply font-sans bg-medical-bg text-slate-100;
+    @apply font-sans antialiased selection:bg-teal-500/30;
+    background-color: var(--color-bg);
+    color: var(--color-text);
   }
 }
 
 @layer components {
-  .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px];
+  /* Utility classes to use the CSS variables because Tailwind uses its own colors by default, but we can map them or use arbitrary values in TSX.
+     Since the prompt said "use CSS vars or Tailwind tokens", we can define custom tailwind classes mapping to our CSS vars */
+  .bg-theme {
+    background-color: var(--color-bg);
   }
-  
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+  .border-surface {
+    border-color: var(--color-border);
+  }
+  .text-theme {
+    color: var(--color-text);
+  }
+  .text-muted {
+    color: var(--color-text-muted);
+  }
+  .text-faint {
+    color: var(--color-text-faint);
+  }
+  .text-primary {
+    color: var(--color-primary);
+  }
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+
   .glass-card {
-    @apply bg-white/5 border border-white/10 rounded-2xl p-4;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(24px);
+    @apply rounded-[24px];
+  }
+
+  .hero-number {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    @apply font-bold tracking-tight;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .label-caps {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    @apply uppercase tracking-widest font-medium;
+  }
+
+  .section-title {
+    font-size: clamp(1.125rem, 2vw, 1.5rem);
+    @apply font-semibold;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }

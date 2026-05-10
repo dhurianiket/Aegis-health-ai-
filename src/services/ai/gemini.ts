@@ -1,5 +1,12 @@
 import { GoogleGenAI, Type } from "../../lib/geminiClient";
-import { Specialty, MedicalDocument, LabResult, Medication, SpecialistInsight, UserProfile } from "../../types/medical";
+import {
+  Specialty,
+  MedicalDocument,
+  LabResult,
+  Medication,
+  SpecialistInsight,
+  UserProfile,
+} from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 
 const getAI = () => new GoogleGenAI({});
@@ -20,12 +27,18 @@ export interface SpecialistAnalysisResponse {
 }
 
 const SPECIALIST_PROMPTS: Record<string, string> = {
-  [Specialty.INTERNAL_MEDICINE]: "You are a world-class Internal Medicine specialist. Your role is to provide a holistic overview of the patient's health, identifying general patterns and coordinating between other specialists. Focus on systemic health, prevention, and unexplained symptoms.",
-  [Specialty.CARDIOLOGY]: "You are a senior Cardiologist. Focus on cardiovascular risk, lipids, blood pressure, inflammatory markers like HS-CRP, and heart-related family history. Interpret trends in cholesterol and blood pressure.",
-  [Specialty.ENDOCRINOLOGY]: "You are an expert Endocrinologist. Focus on metabolic health, HbA1c, fasting glucose, thyroid function (TSH, T4), Vitamin D, and weight trends. Identify patterns of insulin resistance or hormonal imbalances.",
-  [Specialty.HEMATOLOGY]: "You are a specialist Hematologist. Analyze Complete Blood Count (CBC), iron studies (Ferritin, TIBC), Vitamin B12, and folate. Look for signs of anemia, clotting issues, or immune response patterns.",
-  [Specialty.NEPHROLOGY]: "You are a Nephrology expert. Focus on kidney health markers: Creatinine, eGFR, Uric Acid, Urine Protein, and electrolytes. Monitor kidney function stability over time.",
-  [Specialty.HEPATOLOGY]: "You are a Hepatology specialist. Analyze Liver Function Tests (LFTs): ALT, AST, Bilirubin, Albumin, and GGT. Identify markers of fatty liver, inflammation, or synthetic function issues.",
+  [Specialty.INTERNAL_MEDICINE]:
+    "You are a world-class Internal Medicine specialist. Your role is to provide a holistic overview of the patient's health, identifying general patterns and coordinating between other specialists. Focus on systemic health, prevention, and unexplained symptoms.",
+  [Specialty.CARDIOLOGY]:
+    "You are a senior Cardiologist. Focus on cardiovascular risk, lipids, blood pressure, inflammatory markers like HS-CRP, and heart-related family history. Interpret trends in cholesterol and blood pressure.",
+  [Specialty.ENDOCRINOLOGY]:
+    "You are an expert Endocrinologist. Focus on metabolic health, HbA1c, fasting glucose, thyroid function (TSH, T4), Vitamin D, and weight trends. Identify patterns of insulin resistance or hormonal imbalances.",
+  [Specialty.HEMATOLOGY]:
+    "You are a specialist Hematologist. Analyze Complete Blood Count (CBC), iron studies (Ferritin, TIBC), Vitamin B12, and folate. Look for signs of anemia, clotting issues, or immune response patterns.",
+  [Specialty.NEPHROLOGY]:
+    "You are a Nephrology expert. Focus on kidney health markers: Creatinine, eGFR, Uric Acid, Urine Protein, and electrolytes. Monitor kidney function stability over time.",
+  [Specialty.HEPATOLOGY]:
+    "You are a Hepatology specialist. Analyze Liver Function Tests (LFTs): ALT, AST, Bilirubin, Albumin, and GGT. Identify markers of fatty liver, inflammation, or synthetic function issues.",
 };
 
 const SAFETY_GUARDRAIL = (sensitivity: string) => `
@@ -47,7 +60,7 @@ export async function analyzeWithSpecialist(
   specialty: Specialty,
   patientData: UserProfile,
   recentReports: MedicalDocument[],
-  sensitivity: string = 'Standard'
+  sensitivity: string = "Standard",
 ): Promise<SpecialistAnalysisResponse | null> {
   const prompt = `${CORE_SYSTEM_PROMPT}
 
@@ -86,18 +99,24 @@ ${OUTPUT_FORMAT_JSON}
             observations: { type: Type.ARRAY, items: { type: Type.STRING } },
             abnormalities: { type: Type.ARRAY, items: { type: Type.STRING } },
             patterns: { type: Type.ARRAY, items: { type: Type.STRING } },
-            recommended_questions: { 
-              type: Type.ARRAY, 
-              items: { 
+            recommended_questions: {
+              type: Type.ARRAY,
+              items: {
                 type: Type.OBJECT,
                 properties: {
                   question: { type: Type.STRING },
-                  reason_for_asking: { type: Type.STRING }
-                }
-              } 
+                  reason_for_asking: { type: Type.STRING },
+                },
+              },
             },
-            suggested_next_steps: { type: Type.ARRAY, items: { type: Type.STRING } },
-            lifestyle_advice: { type: Type.ARRAY, items: { type: Type.STRING } },
+            suggested_next_steps: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+            },
+            lifestyle_advice: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+            },
             urgency_level: { type: Type.STRING },
             confidence_score: { type: Type.NUMBER },
             summary: { type: Type.STRING },
@@ -108,16 +127,19 @@ ${OUTPUT_FORMAT_JSON}
     });
 
     let text = response.text || "{}";
-    
+
     // Clean codeblock formatting if present
-    text = text.replace(/^```json/, "").replace(/```$/, "").trim();
-    
-    const jsonStart = text.indexOf('{');
-    const jsonEnd = text.lastIndexOf('}');
+    text = text
+      .replace(/^```json/, "")
+      .replace(/```$/, "")
+      .trim();
+
+    const jsonStart = text.indexOf("{");
+    const jsonEnd = text.lastIndexOf("}");
     if (jsonStart !== -1 && jsonEnd !== -1) {
       text = text.slice(jsonStart, jsonEnd + 1);
     }
-    
+
     return JSON.parse(text) as SpecialistAnalysisResponse;
   } catch (error) {
     console.error(`Error in specialist analysis (${specialty}):`, error);
@@ -130,7 +152,7 @@ export async function generateClinicalSummary(
   labHistory: LabResult[],
   documents: MedicalDocument[],
   medications: Medication[],
-  insights: SpecialistInsight[]
+  insights: SpecialistInsight[],
 ): Promise<string> {
   const prompt = `${CORE_SYSTEM_PROMPT}
 
@@ -158,11 +180,13 @@ LAB HISTORY:
 ${JSON.stringify(labHistory)}
 
 MEDICAL DOCUMENTS:
-${JSON.stringify(documents.map((d: MedicalDocument) => ({
-  type: d.type,
-  date: d.date,
-  extractedFindings: d.extractedData?.findings || ""
-})))}
+${JSON.stringify(
+  documents.map((d: MedicalDocument) => ({
+    type: d.type,
+    date: d.date,
+    extractedFindings: d.extractedData?.findings || "",
+  })),
+)}
 
 MEDICATIONS:
 ${JSON.stringify(medications)}
@@ -189,32 +213,35 @@ Return valid JSON with exactly these keys:
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
-        responseMimeType: "application/json"
-      }
+        responseMimeType: "application/json",
+      },
     });
-    
+
     let text = response.text || "{}";
-    text = text.replace(/^```json/, "").replace(/```$/, "").trim();
-    
+    text = text
+      .replace(/^```json/, "")
+      .replace(/```$/, "")
+      .trim();
+
     const parsed = JSON.parse(text);
-    
+
     // Construct the markdown string from the JSON to maintain compatibility with the UI
     return `## Health Summary
 ${parsed.summary || "No summary provided."}
 
 ### Key Findings
-${(parsed.key_findings || []).map((f: string) => `- ${f}`).join('\n') || "None noted."}
+${(parsed.key_findings || []).map((f: string) => `- ${f}`).join("\n") || "None noted."}
 
 ### Abnormal Items
-${(parsed.abnormal_items || []).map((f: string) => `- ${f}`).join('\n') || "None noted."}
+${(parsed.abnormal_items || []).map((f: string) => `- ${f}`).join("\n") || "None noted."}
 
-${parsed.urgent_flags && parsed.urgent_flags.length > 0 ? `### ⚠️ Urgent Flags\n${parsed.urgent_flags.map((f: string) => `- ${f}`).join('\n')}` : ""}
+${parsed.urgent_flags && parsed.urgent_flags.length > 0 ? `### ⚠️ Urgent Flags\n${parsed.urgent_flags.map((f: string) => `- ${f}`).join("\n")}` : ""}
 
 ### Recommended Next Steps
-${(parsed.recommended_next_steps || []).map((f: string) => `- ${f}`).join('\n') || "Consult your provider."}
+${(parsed.recommended_next_steps || []).map((f: string) => `- ${f}`).join("\n") || "Consult your provider."}
 
 ### Questions to Ask Your Doctor
-${(parsed.follow_up_questions || []).map((f: string) => `- ${f}`).join('\n') || "None."}
+${(parsed.follow_up_questions || []).map((f: string) => `- ${f}`).join("\n") || "None."}
 
 ---
 *For informational purposes only. Not medical advice.*
@@ -222,18 +249,19 @@ ${(parsed.follow_up_questions || []).map((f: string) => `- ${f}`).join('\n') || 
 `;
   } catch (error: any) {
     console.error("Error generating clinical summary:", JSON.stringify(error));
-    
-    const isQuotaError = 
-      error?.status === 429 || 
-      error?.code === 429 || 
-      error?.status === 'RESOURCE_EXHAUSTED' ||
-      (error?.message && (error.message.includes('429') || error.message.includes('quota')));
-      
+
+    const isQuotaError =
+      error?.status === 429 ||
+      error?.code === 429 ||
+      error?.status === "RESOURCE_EXHAUSTED" ||
+      (error?.message &&
+        (error.message.includes("429") || error.message.includes("quota")));
+
     if (isQuotaError) {
       return `## ⚠️ AI Service Quota Exceeded\n\nThe AI generation service has reached its rate limit or quota. \n\n*Error: RESOURCE_EXHAUSTED (429)*\n\nUnfortunately, standard AI analysis cannot be performed right now. Please try again later.\n\n*For informational purposes only. Not medical advice.*`;
     }
-    
-    return `Failed to generate report. Please try again. ${error?.message ? `(${error.message})` : ''}\n\n*For informational purposes only. Not medical advice.*`;
+
+    return `Failed to generate report. Please try again. ${error?.message ? `(${error.message})` : ""}\n\n*For informational purposes only. Not medical advice.*`;
   }
 }
 
@@ -261,7 +289,9 @@ export interface ExtractedReportResponse {
   follow_up_date: string | null;
 }
 
-export async function extractMedicalReports(filesData: {base64Data: string, mimeType: string}[]): Promise<ExtractedReportResponse | null> {
+export async function extractMedicalReports(
+  filesData: { base64Data: string; mimeType: string }[],
+): Promise<ExtractedReportResponse | null> {
   const prompt = `
     Extract the following information from this medical report (image or PDF).
     Extract the information into a single structured JSON format:
@@ -286,7 +316,9 @@ export async function extractMedicalReports(filesData: {base64Data: string, mime
       model: "gemini-3-flash-preview",
       contents: [
         { text: prompt },
-        ...filesData.map(f => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))
+        ...filesData.map((f) => ({
+          inlineData: { data: f.base64Data, mimeType: f.mimeType },
+        })),
       ],
       config: {
         responseMimeType: "application/json",
@@ -297,9 +329,9 @@ export async function extractMedicalReports(filesData: {base64Data: string, mime
             date: { type: Type.STRING },
             hospital_name: { type: Type.STRING },
             doctor_name: { type: Type.STRING },
-            lab_values: { 
-              type: Type.ARRAY, 
-              items: { 
+            lab_values: {
+              type: Type.ARRAY,
+              items: {
                 type: Type.OBJECT,
                 properties: {
                   date: { type: Type.STRING },
@@ -307,38 +339,38 @@ export async function extractMedicalReports(filesData: {base64Data: string, mime
                   value: { type: Type.STRING },
                   unit: { type: Type.STRING },
                   reference_range: { type: Type.STRING },
-                  status: { type: Type.STRING }
-                }
-              } 
+                  status: { type: Type.STRING },
+                },
+              },
             },
             findings: { type: Type.STRING },
-            medications: { 
-              type: Type.ARRAY, 
-              items: { 
+            medications: {
+              type: Type.ARRAY,
+              items: {
                 type: Type.OBJECT,
                 properties: {
                   date: { type: Type.STRING },
                   name: { type: Type.STRING },
                   dosage: { type: Type.STRING },
                   frequency: { type: Type.STRING },
-                  purpose: { type: Type.STRING }
-                }
-              } 
+                  purpose: { type: Type.STRING },
+                },
+              },
             },
-            follow_up_date: { type: Type.STRING }
-          }
-        }
+            follow_up_date: { type: Type.STRING },
+          },
+        },
       },
     });
 
     let text = response.text || "{}";
-    
-    const jsonStart = text.indexOf('{');
-    const jsonEnd = text.lastIndexOf('}');
+
+    const jsonStart = text.indexOf("{");
+    const jsonEnd = text.lastIndexOf("}");
     if (jsonStart !== -1 && jsonEnd !== -1) {
       text = text.slice(jsonStart, jsonEnd + 1);
     }
-    
+
     return JSON.parse(text) as ExtractedReportResponse;
   } catch (error) {
     console.error("Error extracting report:", error);
