@@ -2,7 +2,18 @@ import React from "react";
 import { ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 
-export default function SplashScreen() {
+interface SplashScreenProps {
+  onComplete?: () => void;
+}
+
+export default function SplashScreen({ onComplete }: SplashScreenProps) {
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (onComplete) onComplete();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
       <div className="flex flex-col items-center">

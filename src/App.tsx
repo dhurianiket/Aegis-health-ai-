@@ -84,8 +84,16 @@ const Fallback = () => (
 
 export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
+  const [splashTimeout, setSplashTimeout] = useState(false);
   const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
   const isFirstAuthResolution = useRef(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSplashTimeout(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
@@ -244,8 +252,8 @@ export default function App() {
 
   const activeAlertsCount = unreadCount;
 
-  if (authLoading || (user && isConsentGranted === null)) {
-    return <SplashScreen />;
+  if (authLoading && !splashTimeout) {
+    return <SplashScreen onComplete={() => setSplashTimeout(true)} />;
   }
 
   if (showPostLoginAnimation && (!user || isConsentGranted === true)) {
