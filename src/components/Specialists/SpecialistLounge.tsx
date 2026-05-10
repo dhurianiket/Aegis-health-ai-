@@ -21,12 +21,21 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
-import { Specialty } from '../../types/medical';
-import { analyzeWithSpecialist } from '../../services/ai/gemini';
+import { Specialty, MedicalDocument, LabResult, Medication, UserProfile } from '../../types/medical';
+import { analyzeWithSpecialist, SpecialistAnalysisResponse } from '../../services/ai/gemini';
 import { getDocuments, getLabHistory, getMedications, saveSpecialistInsight } from '../../lib/firebase/firestore';
 import { SpecialistsSkeleton } from '../ui/SkeletonLoader';
 
-const specialists = [
+interface SpecialistInfo {
+  id: string;
+  name: string;
+  specialty: Specialty;
+  icon: any; // Lucide icon
+  color: string;
+  description: string;
+}
+
+const specialists: SpecialistInfo[] = [
   {
     id: 'cardiology',
     name: 'Cardiology AI',
@@ -103,20 +112,9 @@ export default function SpecialistLounge() {
   const { activeProfile } = useProfile();
   const [selectedId, setSelectedId] = useState(specialists[0].id);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [insight, setInsight] = useState<any>(null);
+  const [insight, setInsight] = useState<SpecialistAnalysisResponse | null>(null);
   const [sensitivity, setSensitivity] = useState('Standard');
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
-
-  const toggleQuestion = (index: number) => {
-    const newExpanded = new Set(expandedQuestions);
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index);
-    } else {
-      newExpanded.add(index);
-    }
-    setExpandedQuestions(newExpanded);
-  };
 
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -137,15 +135,15 @@ export default function SpecialistLounge() {
 
   const runAnalysis = async () => {
     if (!activeSpecialist) return;
-    if (!user) {
-      alert("Please sign in to run analysis.");
+    if (!user || !activeProfile) {
+      alert("Please ensure you are signed in and have an active profile.");
       return;
     }
     setIsAnalyzing(true);
     setInsight(null);
     try {
       const userId = user.uid;
-      const profileId = activeProfile?.id;
+      const profileId = activeProfile.id;
       
       const [recentReports, recentLabs, recentMeds] = await Promise.all([
         getDocuments(userId, profileId),
@@ -153,45 +151,18 @@ export default function SpecialistLounge() {
         getMedications(userId, profileId)
       ]);
 
-      const formattedReports = (recentReports || []).map((doc: any) => ({
-        type: doc.type,
-        date: doc.date,
-        hospital: doc.hospitalName,
-        findings: doc.extractedData?.findings || '',
-        lab_values: doc.extractedData?.lab_values || [],
-        medications: doc.extractedData?.medications || []
-      }));
-
-      const formattedLabs = (recentLabs || []).map((lab: any) => ({
-        date: lab.date,
-        marker: lab.markerName,
-        value: lab.value,
-        unit: lab.unit,
-        status: lab.status
-      }));
-
-      const formattedMeds = (recentMeds || []).map((med: any) => ({
-        name: med.name,
-        dosage: med.dosage,
-        frequency: med.frequency,
-        status: med.status
-      }));
-
-      const payload = {
-        reports: formattedReports,
-        labs: formattedLabs,
-        medications: formattedMeds
-      };
-
+      // We need to pass the actual objects or formatted summaries to the specialist
+      // analyzeWithSpecialist expects UserProfile and MedicalDocument[]
+      
       const analysis = await analyzeWithSpecialist(
         activeSpecialist.specialty,
-        { userId, profileId },
-        payload as any,
+        activeProfile,
+        recentReports || [],
         sensitivity
       );
 
       if (analysis) {
-        setInsight(analysis); // Set this first so UI updates immediately
+        setInsight(analysis); 
         try {
           await saveSpecialistInsight(userId, {
             specialty: activeSpecialist.specialty,
@@ -370,7 +341,7 @@ export default function SpecialistLounge() {
                   </div>
                 </div>
               </motion.div>
-            ) : (
+            ) : insight ? (
               <motion.div 
                 key="result"
                 initial={{ opacity: 0, scale: 0.98 }}
@@ -400,6 +371,7 @@ export default function SpecialistLounge() {
 
                 <div className="p-8 bg-white/5 rounded-3xl border border-white/10 border-l-4 border-l-indigo-500 prose prose-invert prose-lg max-w-none">
                   <ReactMarkdown>{insight.summary}</ReactMarkdown>
+                  <p className="text-[10px] text-slate-500 italic mt-4 pt-4 border-t border-white/5">For informational purposes only. Not medical advice.</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-12">
@@ -452,7 +424,7 @@ export default function SpecialistLounge() {
                    </button>
                 </div>
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
 
           <div className="mt-auto p-4 md:p-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between bg-black/20 gap-4">

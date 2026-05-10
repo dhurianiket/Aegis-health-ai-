@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "../../lib/geminiClient";
+import { UserProfile, LabResult } from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 
 const ai = new GoogleGenAI({ });
@@ -37,7 +38,7 @@ Maturity Note: Be cautious and use clinical "could suggest" or "potential patter
 /**
  * GeneticService - Analyzes family health data for shared hereditary risks.
  */
-export const analyzeSharedRisks = async (profilesData: any[]): Promise<GeneticRiskAnalysis[]> => {
+export const analyzeSharedRisks = async (profilesData: { profile: UserProfile; labs: LabResult[] }[]): Promise<GeneticRiskAnalysis[]> => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

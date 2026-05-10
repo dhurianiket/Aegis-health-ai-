@@ -1,12 +1,13 @@
 import { getLabHistory, getMedications, getLatestInsights } from '../../lib/firebase/firestore';
 import { getConsolidatedAlerts } from '../alertService';
 import { PatientContext } from '../../types/ai';
+import { UserProfile } from '../../types/medical';
 
 /**
  * ContextService - Consolidates patient telemetry into a standardized format
  * for RAG (Retrieval-Augmented Generation) grounding.
  */
-export const getPatientContext = async (userId: string, profile: any): Promise<PatientContext> => {
+export const getPatientContext = async (userId: string, profile: UserProfile): Promise<PatientContext> => {
   const profileId = profile?.id === 'Myself' ? undefined : profile?.id;
   
   const [labHistory, medications, recentInsights] = await Promise.all([

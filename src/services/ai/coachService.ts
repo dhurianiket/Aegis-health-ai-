@@ -6,7 +6,7 @@ import { CORE_SYSTEM_PROMPT } from "./promptFramework";
 
 const ai = new GoogleGenAI({});
 
-const COACH_SYSTEM_INSTRUCTION = `${CORE_SYSTEM_PROMPT}
+export const COACH_SYSTEM_INSTRUCTION = `${CORE_SYSTEM_PROMPT}
 
 <task>
 Explain the provided health summary in simple language for a patient with no medical background.
@@ -45,7 +45,7 @@ export const getCoachResponse = async (
   const patientDataPrompt = formatContextForPrompt(context);
   
   // GenAI SDK requires strictly alternating roles: user -> model -> user -> model
-  const contents: any[] = [];
+  const contents: { role: 'user' | 'model', parts: { text: string }[] }[] = [];
   
   if (history.length === 0) {
     // First message - merge context and question
@@ -99,6 +99,7 @@ export const getCoachResponse = async (
         yield chunk.text;
       }
     }
+    // Note: The UI is expected to append the global disclaimer.
   })();
 };
 

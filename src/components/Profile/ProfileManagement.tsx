@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, Edit2, Trash2, Plus, X, AlertTriangle, Save } from 'lucide-react';
 import { useProfile, Profile } from '../../context/ProfileContext';
+import { UserProfile } from '../../types/medical';
 import { validateProfileName } from '../../lib/validation';
 import { logger } from '../../lib/logger';
 
@@ -38,9 +39,9 @@ export default function ProfileManagement() {
     }
   };
 
-  const handleEdit = (p: Profile) => {
+  const handleEdit = (p: UserProfile) => {
     setEditingId(p.id);
-    setEditName(p.name);
+    setEditName(p.fullName || p.name || '');
     setEditError('');
   };
 

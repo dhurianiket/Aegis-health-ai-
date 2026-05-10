@@ -2,25 +2,16 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase/config';
+import { UserProfile, Gender } from '../types/medical';
 
-export interface Profile {
-  id: string;
-  userId: string;
-  name: string;
-  dob?: string;
-  gender?: string;
-  bloodType?: string;
-  allergies?: string[];
-  chronicConditions?: string[];
-  medications?: any[];
-  labValues?: any[];
-  doctorNotes?: string[];
+export interface Profile extends UserProfile {
+  // Alias for compatibility if needed, but we should prefer UserProfile
 }
 
 interface ProfileContextType {
-  profiles: Profile[];
-  activeProfile: Profile | null;
-  setActiveProfile: (profile: Profile) => void;
+  profiles: UserProfile[];
+  activeProfile: UserProfile | null;
+  setActiveProfile: (profile: UserProfile) => void;
   createProfile: (name: string) => Promise<void>;
   updateProfile: (id: string, newName: string) => Promise<void>;
   deleteProfile: (id: string) => Promise<void>;
@@ -31,8 +22,8 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
+  const [profiles, setProfiles] = useState<UserProfile[]>([]);
+  const [activeProfile, setActiveProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,16 +38,22 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       try {
         const q = query(collection(db, 'profiles'), where('userId', '==', user.uid));
         const snapshot = await getDocs(q);
-        const fetchedProfiles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Profile));
+        const fetchedProfiles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserProfile));
         
         // Add default "Self" profile if none exists
         if (fetchedProfiles.length === 0) {
-          const defaultProfile = { name: 'Myself', userId: user.uid };
+          const defaultProfile = { 
+            name: 'Myself', 
+            fullName: 'Myself',
+            userId: user.uid,
+            chronicConditions: [],
+            allergies: [],
+          };
           const docRef = await addDoc(collection(db, 'profiles'), {
             ...defaultProfile,
             createdAt: serverTimestamp()
           });
-          const newProfile = { id: docRef.id, ...defaultProfile };
+          const newProfile = { id: docRef.id, createdAt: new Date().toISOString(), ...defaultProfile } as UserProfile;
           setProfiles([newProfile]);
           setActiveProfile(newProfile);
         } else {
@@ -77,12 +74,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const createProfile = async (name: string) => {
     if (!user) return;
     try {
-      const newProfileData = { name, userId: user.uid };
+      const newProfileData = { 
+        name, 
+        fullName: name,
+        userId: user.uid,
+        chronicConditions: [],
+        allergies: [],
+      };
       const docRef = await addDoc(collection(db, 'profiles'), {
         ...newProfileData,
         createdAt: serverTimestamp()
       });
-      const newProfile = { id: docRef.id, ...newProfileData };
+      const newProfile = { id: docRef.id, createdAt: new Date().toISOString(), ...newProfileData } as UserProfile;
       setProfiles(prev => [...prev, newProfile]);
       setActiveProfile(newProfile);
     } catch (error) {
@@ -95,10 +98,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     try {
       const docRef = doc(db, 'profiles', id);
-      await updateDoc(docRef, { name: newName });
-      setProfiles(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p));
+      await updateDoc(docRef, { name: newName, fullName: newName });
+      setProfiles(prev => prev.map(p => p.id === id ? { ...p, name: newName, fullName: newName } : p));
       if (activeProfile?.id === id) {
-        setActiveProfile({ ...activeProfile, name: newName });
+        setActiveProfile({ ...activeProfile, name: newName, fullName: newName });
       }
     } catch (error) {
       console.error('Failed to update profile:', error);

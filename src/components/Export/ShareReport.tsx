@@ -47,9 +47,7 @@ export default function ShareReport() {
       if (cachedSummary && cachedSummary.dataHash === currentDataHash) {
         setSummaryMarkdown(cachedSummary.markdown);
       } else {
-        const markdown = await generateClinicalSummary({
-          name: activeProfile.name,
-        }, pLabs, pDocs, pMeds, pIns);
+        const markdown = await generateClinicalSummary(activeProfile, pLabs, pDocs, pMeds, pIns);
         await saveClinicalSummary(user.uid, activeProfile.id, markdown, currentDataHash);
         setSummaryMarkdown(markdown);
       }

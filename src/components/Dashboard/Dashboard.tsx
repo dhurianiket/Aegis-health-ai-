@@ -29,7 +29,7 @@ import {
   ChevronRight,
   Loader2
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, Variants } from 'motion/react';
 import LabTrendChart from './LabTrendChart';
 import SmartAlerts from './SmartAlerts';
 import CorrelationMatrix from './CorrelationMatrix';
@@ -39,6 +39,7 @@ import ShareReport from '../Export/ShareReport';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { getHealthScores, getLatestInsights, getLabHistory } from '../../lib/firebase/firestore';
+import { Specialty, MedicalDocument, LabResult, Medication, UserProfile, HealthScore, SpecialistInsight } from '../../types/medical';
 import SkeletonLoader, { DashboardSkeleton } from '../ui/SkeletonLoader';
 import { Sparkles, MessageSquare } from 'lucide-react';
 
@@ -58,9 +59,9 @@ export default function Dashboard({ onOpenChat }: { onOpenChat?: () => void }) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [loading, setLoading] = useState(true);
-  const [healthScores, setHealthScores] = useState<any[]>([]);
-  const [latestInsights, setLatestInsights] = useState<any[]>([]);
-  const [keyLabs, setKeyLabs] = useState<any[]>([]);
+  const [healthScores, setHealthScores] = useState<HealthScore[]>([]);
+  const [latestInsights, setLatestInsights] = useState<SpecialistInsight[]>([]);
+  const [keyLabs, setKeyLabs] = useState<LabResult[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -75,9 +76,9 @@ export default function Dashboard({ onOpenChat }: { onOpenChat?: () => void }) {
           getLatestInsights(user.uid, activeProfile?.id),
           getLabHistory(user.uid, undefined, activeProfile?.id)
         ]);
-        setHealthScores(scores || []);
-        setLatestInsights(insights || []);
-        setKeyLabs(labs || []);
+        setHealthScores((scores as HealthScore[]) || []);
+        setLatestInsights((insights as SpecialistInsight[]) || []);
+        setKeyLabs((labs as LabResult[]) || []);
       } catch (error) {
         console.error('Dashboard fetch failed:', error);
       } finally {
@@ -87,7 +88,17 @@ export default function Dashboard({ onOpenChat }: { onOpenChat?: () => void }) {
     fetchData();
   }, [user, activeProfile]);
 
-  const latestScore = healthScores[0] || { overall: 85, systems: { metabolic: 85, heart: 70, liver: 92, kidney: 88, blood: 65, inflammation: 78 } };
+  const latestScore = healthScores[0] || { 
+    overall: 85, 
+    systems: { 
+      metabolic: 85, 
+      heart: 70, 
+      liver: 92, 
+      kidney: 88, 
+      blood: 65, 
+      inflammation: 78 
+    } 
+  } as HealthScore;
   
   const radarData = useMemo(() => [
     { subject: 'Metabolic', A: latestScore.systems.metabolic, fullMark: 100 },
@@ -98,7 +109,7 @@ export default function Dashboard({ onOpenChat }: { onOpenChat?: () => void }) {
     { subject: 'Inflammation', A: latestScore.systems.inflammation, fullMark: 100 },
   ], [latestScore.systems]);
 
-  const containerVariants: any = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -108,7 +119,7 @@ export default function Dashboard({ onOpenChat }: { onOpenChat?: () => void }) {
     }
   };
 
-  const itemVariants: any = {
+  const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: { 
       y: 0, 

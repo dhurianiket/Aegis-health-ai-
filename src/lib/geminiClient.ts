@@ -1,29 +1,54 @@
+import { GoogleGenAI as GenAI } from "@google/genai";
+
 export class GoogleGenAI {
-  constructor(config?: any) {}
-  
-  models = {
-    generateContent: async (params: any) => {
-      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
-      const res = await fetch(baseUrl + "/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to generate AI response.");
-      }
-      const data = await res.json();
-      return {
-        text: data.text,
-      };
-    },
-    generateContentStream: async function* (params: any) {
-      // Very basic mock stream using the standard endpoint
-      const result = await this.generateContent(params);
-      yield { text: result.text };
+  private ai: GenAI;
+
+  constructor(config: any = {}) {
+    const rawKey = config.apiKey || process.env.GEMINI_API_KEY;
+    const apiKey = rawKey?.trim().replace(/^["']|["']$/g, "");
+    this.ai = new GenAI({ apiKey });
+  }
+
+  get models() {
+    return {
+      generateContent: async (params: any) => {
+        return this.ai.models.generateContent(params);
+      },
+      generateContentStream: async function* (this: any, params: any) {
+        const response = await this.ai.models.generateContentStream(params);
+        for await (const chunk of response) {
+          yield chunk;
+        }
+      }.bind(this)
+    };
+  }
+}
+
+export async function streamGenerate(
+  params: any,
+  onChunk: (text: string) => void,
+  onDone: (text: string) => void,
+  signal?: AbortSignal
+) {
+  const ai = new GoogleGenAI();
+  const stream = ai.models.generateContentStream(params);
+  let fullText = "";
+  try {
+    for await (const chunk of stream) {
+      if (signal?.aborted) break;
+      const text = (chunk as any).text || "";
+      fullText += text;
+      onChunk(text);
     }
-  };
+    onDone(fullText);
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      console.log("AI Streaming aborted by user.");
+      return;
+    }
+    console.error("Streaming error:", err);
+    throw err;
+  }
 }
 
 export const Type = {

@@ -1,6 +1,5 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
 import path from "path";
 
 async function startServer() {
@@ -8,19 +7,7 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json({ limit: "50mb" }));
-
-  // AI API proxy
-  app.post("/api/ai/generate", async (req, res) => {
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-      const response = await ai.models.generateContent(req.body);
-      res.json({ text: response.text });
-    } catch (err: any) {
-      console.error("AI Generation Error", err.message);
-      res.status(500).json({ error: err.message, status: err.status });
-    }
-  });
-
+  
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

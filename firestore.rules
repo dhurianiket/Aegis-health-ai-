@@ -68,5 +68,27 @@ service cloud.firestore {
       allow update, delete: if isVerified() 
         && existing().userId == request.auth.uid;
     }
+
+    // --- USER PRIVATE COLLECTIONS ---
+    function hasAuditLogFields() {
+      return incoming().keys().hasAll(['action', 'resourceId', 'timestamp', 'actor']);
+    }
+
+    function hasConsentFields() {
+      return incoming().keys().hasAll(['type', 'grantedAt', 'textVersion', 'items']);
+    }
+
+    match /users/{userId} {
+      match /auditLogs/{logId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && hasAuditLogFields();
+        allow update, delete: if false;
+      }
+      match /consents/{consentId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && hasConsentFields();
+        allow update, delete: if false;
+      }
+    }
   }
 }

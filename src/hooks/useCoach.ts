@@ -3,8 +3,9 @@ import { getCoachResponse } from '../services/ai/coachService';
 import { getPatientContext } from '../services/ai/contextService';
 import { runSafetyCheck } from '../services/ai/safetyGuardrail';
 import { ChatMessage } from '../types/ai';
+import { UserProfile } from '../types/medical';
 
-export function useCoach(userId: string, activeProfile: any) {
+export function useCoach(userId: string, activeProfile: UserProfile | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +24,9 @@ export function useCoach(userId: string, activeProfile: any) {
     setError(null);
 
     try {
+      if (!activeProfile) {
+        throw new Error("No active profile selected.");
+      }
       const context = await getPatientContext(userId, activeProfile);
       
       const history = messages

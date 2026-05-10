@@ -29,13 +29,18 @@ export enum MedicationStatus {
 }
 
 export interface UserProfile {
-  uid: string;
+  id: string;
+  userId: string;
   fullName: string;
+  name?: string; // Compatibility with ProfileContext
   dob?: string;
   gender?: Gender;
   bloodType?: string;
   chronicConditions: string[];
   allergies: string[];
+  medications?: Medication[];
+  labValues?: LabResult[];
+  doctorNotes?: string[];
   createdAt: string;
 }
 

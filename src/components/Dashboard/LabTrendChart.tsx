@@ -17,6 +17,7 @@ import { getLabHistory } from "../../lib/firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { LabResult } from "../../types/medical";
+import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 
 interface LabTrendChartProps {
   labs?: LabResult[];
@@ -28,7 +29,7 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
   const [labResults, setLabResults] = useState<LabResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMarker, setSelectedMarker] = useState<string>("");
-  const chartRef = useRef<HTMLDivElement>(null);
+  const [chartKey, setChartKey] = useState(0);
   
   useEffect(() => {
     async function fetchLabs() {
@@ -88,45 +89,50 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
   }, [uniqueMarkers, selectedMarker]);
 
   const chartData = useMemo(() => {
-    if (!selectedMarker) return [];
+    try {
+      if (!selectedMarker) return [];
 
-    // Filter and sort by date ascending
-    const filtered = labResults
-      .filter((r) => r.markerName === selectedMarker)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      // Filter and sort by date ascending
+      const filtered = labResults
+        .filter((r) => r.markerName === selectedMarker)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    const processed = filtered.map((r) => {
-      // Parse reference range carefully
-      let refMin = undefined;
-      let refMax = undefined;
+      const processed = filtered.map((r) => {
+        // Parse reference range carefully
+        let refMin = undefined;
+        let refMax = undefined;
 
-      if (r.referenceRange) {
-        // Handle "10 - 20" or "10-20" format
-        const rangeMatch = r.referenceRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
-        if (rangeMatch) {
-          refMin = parseFloat(rangeMatch[1]);
-          refMax = parseFloat(rangeMatch[2]);
+        if (r.referenceRange) {
+          // Handle "10 - 20" or "10-20" format
+          const rangeMatch = r.referenceRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
+          if (rangeMatch) {
+            refMin = parseFloat(rangeMatch[1]);
+            refMax = parseFloat(rangeMatch[2]);
+          }
         }
-      }
 
-      return {
-        timestamp: new Date(r.date).getTime(),
-        date: new Date(r.date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-        value: r.value,
-        trendValue: r.value,
-        unit: r.unit,
-        refMin: !isNaN(refMin as number) ? refMin : undefined,
-        refMax: !isNaN(refMax as number) ? refMax : undefined,
-        referenceRange: r.referenceRange,
-        status: r.status,
-      };
-    });
+        return {
+          timestamp: new Date(r.date).getTime(),
+          date: new Date(r.date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }),
+          value: r.value,
+          trendValue: r.value,
+          unit: r.unit,
+          refMin: !isNaN(refMin as number) ? refMin : undefined,
+          refMax: !isNaN(refMax as number) ? refMax : undefined,
+          referenceRange: r.referenceRange,
+          status: r.status,
+        };
+      });
 
-    return processed;
+      return processed;
+    } catch (error) {
+      console.error("Chart data preparation failed:", error);
+      return [];
+    }
   }, [labResults, selectedMarker]);
 
   if (isLoading) {
@@ -153,7 +159,7 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
 
   const latestDataPoint = chartData[chartData.length - 1];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -237,118 +243,124 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
       </div>
 
       <div id="lab-trend-chart-container" className="h-[300px] w-full mt-4 bg-slate-900/40 rounded-2xl p-4 border border-white/5 relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
-            data={chartData}
-            margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
-          >
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#818CF8" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#818CF8" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            {chartData.length > 0 && chartData[0].refMax !== undefined && (
-              <ReferenceLine
-                y={chartData[0].refMax}
-                stroke="#F87171"
-                strokeWidth={1}
-                strokeDasharray="3 3"
-                strokeOpacity={0.8}
-              ></ReferenceLine>
-            )}
-            {chartData.length > 0 && chartData[0].refMin !== undefined && (
-              <ReferenceLine
-                y={chartData[0].refMin}
-                stroke="#60A5FA"
-                strokeWidth={1}
-                strokeDasharray="3 3"
-                strokeOpacity={0.8}
-              ></ReferenceLine>
-            )}
+        <AIErrorBoundary 
+          key={chartKey}
+          onReset={() => setChartKey(k => k + 1)}
+          fallbackMessage="The trend analysis engine encountered a visualization error."
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#818CF8" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#818CF8" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              {chartData.length > 0 && chartData[0].refMax !== undefined && (
+                <ReferenceLine
+                  y={chartData[0].refMax}
+                  stroke="#F87171"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.8}
+                ></ReferenceLine>
+              )}
+              {chartData.length > 0 && chartData[0].refMin !== undefined && (
+                <ReferenceLine
+                  y={chartData[0].refMin}
+                  stroke="#60A5FA"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.8}
+                ></ReferenceLine>
+              )}
 
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="rgba(255,255,255,0.05)"
-            />
-            <XAxis
-              dataKey="date"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fill: "#64748B", fontWeight: 600 }}
-              dy={10}
-              minTickGap={20}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fill: "#64748B", fontWeight: 600 }}
-              domain={["auto", "auto"]}
-              width={60}
-            />
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{
-                stroke: "rgba(255,255,255,0.1)",
-                strokeWidth: 1,
-                strokeDasharray: "4 4",
-              }}
-            />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="rgba(255,255,255,0.05)"
+              />
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: "#64748B", fontWeight: 600 }}
+                dy={10}
+                minTickGap={20}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: "#64748B", fontWeight: 600 }}
+                domain={["auto", "auto"]}
+                width={60}
+              />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{
+                  stroke: "rgba(255,255,255,0.1)",
+                  strokeWidth: 1,
+                  strokeDasharray: "4 4",
+                }}
+              />
 
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="#818CF8"
-              fill="url(#colorValue)"
-              strokeWidth={3}
-              dot={(props: any) => {
-                const { cx, cy, payload } = props;
-                if (payload.status === 'predicted') return null;
-                const isCritical =
-                  payload.status === "critical" ||
-                  payload.status === "abnormal";
-                return (
-                  <circle
-                    key={`dot-${cx}-${cy}`}
-                    cx={cx}
-                    cy={cy}
-                    r={5}
-                    fill="#1E293B"
-                    stroke={isCritical ? "#EF4444" : "#818CF8"}
-                    strokeWidth={2}
-                  />
-                );
-              }}
-              activeDot={(props: any) => {
-                const { cx, cy, payload } = props;
-                if (payload.status === 'predicted') return null;
-                const isCritical =
-                  payload.status === "critical" ||
-                  payload.status === "abnormal";
-                return (
-                  <circle
-                    key={`active-dot-${cx}-${cy}`}
-                    cx={cx}
-                    cy={cy}
-                    r={7}
-                    fill={isCritical ? "#EF4444" : "#818CF8"}
-                    stroke="#fff"
-                    strokeWidth={2}
-                  />
-                );
-              }}
-              animationDuration={1500}
-            />
-            <Brush 
-              dataKey="date" 
-              height={30} 
-              stroke="#64748B" 
-              fill="rgba(15, 23, 42, 0.5)"
-              tickFormatter={() => ''}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#818CF8"
+                fill="url(#colorValue)"
+                strokeWidth={3}
+                dot={(props: any) => {
+                  const { cx, cy, payload } = props;
+                  if (!cx || !cy || payload.status === 'predicted') return null;
+                  const isCritical =
+                    payload.status === "critical" ||
+                    payload.status === "abnormal";
+                  return (
+                    <circle
+                      key={`dot-${cx}-${cy}`}
+                      cx={cx}
+                      cy={cy}
+                      r={5}
+                      fill="#1E293B"
+                      stroke={isCritical ? "#EF4444" : "#818CF8"}
+                      strokeWidth={2}
+                    />
+                  );
+                }}
+                activeDot={(props: any) => {
+                  const { cx, cy, payload } = props;
+                  if (!cx || !cy || payload.status === 'predicted') return null;
+                  const isCritical =
+                    payload.status === "critical" ||
+                    payload.status === "abnormal";
+                  return (
+                    <circle
+                      key={`active-dot-${cx}-${cy}`}
+                      cx={cx}
+                      cy={cy}
+                      r={7}
+                      fill={isCritical ? "#EF4444" : "#818CF8"}
+                      stroke="#fff"
+                      strokeWidth={2}
+                    />
+                  );
+                }}
+                animationDuration={1500}
+              />
+              <Brush 
+                dataKey="date" 
+                height={30} 
+                stroke="#64748B" 
+                fill="rgba(15, 23, 42, 0.5)"
+                tickFormatter={() => ''}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </AIErrorBoundary>
       </div>
 
       {latestDataPoint && (

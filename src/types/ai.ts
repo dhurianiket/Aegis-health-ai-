@@ -1,3 +1,6 @@
+import { UserProfile, LabResult, Medication, SpecialistInsight } from "./medical";
+import { HealthAlert } from "./alerts";
+
 export type ChatRole = 'user' | 'assistant' | 'system';
 
 export interface ChatMessage {
@@ -16,9 +19,9 @@ export interface Conversation {
 }
 
 export interface PatientContext {
-  profile: any;
-  labHistory: any[];
-  medications: any[];
-  recentInsights: any[];
-  alerts: any[];
+  profile: UserProfile;
+  labHistory: LabResult[];
+  medications: Medication[];
+  recentInsights: SpecialistInsight[];
+  alerts: HealthAlert[];
 }

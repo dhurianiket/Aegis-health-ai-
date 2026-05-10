@@ -14,12 +14,16 @@ import {
   ChevronRight,
   Mic,
   MicOff,
-  Volume2
+  Volume2,
+  Square
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
-import { useCoach } from '../../hooks/useCoach';
 import { VoiceService } from '../../services/ai/voiceService';
+import { streamGenerate } from '../../lib/geminiClient';
+import { getPatientContext, formatContextForPrompt } from '../../services/ai/contextService';
+import { COACH_SYSTEM_INSTRUCTION } from '../../services/ai/coachService';
+import { ChatMessage } from '../../types/ai';
 
 interface ChatCoachProps {
   externalOpen?: boolean;
@@ -44,11 +48,17 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
   const [isListening, setIsListening] = useState(false);
   const { user } = useAuth();
   const { activeProfile } = useProfile();
-  const { messages, sendMessage, isTyping, error } = useCoach(user?.uid || '', activeProfile);
-  const voiceServiceRef = useRef<VoiceService | null>(null);
   
+  // Local state for chat management
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [streamedText, setStreamedText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const voiceServiceRef = useRef<VoiceService | null>(null);
+  
   useEffect(() => {
     voiceServiceRef.current = new VoiceService({
       onResult: (text) => {
@@ -85,18 +95,17 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
   const toggleVoice = () => {
     if (isListening) {
       voiceServiceRef.current?.stop();
-      setIsListening(false);
     } else {
       voiceServiceRef.current?.start();
-      setIsListening(true);
     }
+    setIsListening(!isListening);
   };
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isTyping]);
+  }, [messages, isTyping, streamedText]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -110,11 +119,89 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  const handleAbort = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsTyping(false);
+      setStreamedText('');
+    }
+  };
+
+  const handleSendMessage = async (text: string) => {
+    if (!text.trim() || !user || !activeProfile || isTyping) return;
+
+    const userMsg: ChatMessage = {
+      role: 'user',
+      content: text,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setIsTyping(true);
+    setStreamedText('');
+    setError(null);
+    setInputValue('');
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      const patientData = await getPatientContext(user.uid, activeProfile);
+      const context = formatContextForPrompt(patientData);
+      const history = messages
+        .filter(m => m.role !== 'system')
+        .map(m => ({ 
+          role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model', 
+          parts: [{ text: m.content }] 
+        }));
+
+      // In-line prompt construction for the stream
+      const contents = [...history];
+      contents.push({ role: 'user', parts: [{ text: `Clinical Context:\n${context}\n\nUser Question: ${text}` }] });
+
+      await streamGenerate(
+        {
+          model: "gemini-3-flash-preview",
+          contents,
+          config: {
+            systemInstruction: COACH_SYSTEM_INSTRUCTION,
+            temperature: 0.2,
+          }
+        },
+        (chunk) => {
+          setStreamedText(prev => prev + chunk);
+        },
+        (finalText) => {
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: finalText,
+            timestamp: new Date()
+          }]);
+          setStreamedText('');
+          setIsTyping(false);
+        },
+        controller.signal
+      );
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error("Chat error:", err);
+        const errorContent = "I encountered a connection issue. Please try again.";
+        setError(errorContent);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: errorContent,
+          timestamp: new Date()
+        }]);
+      }
+      setStreamedText('');
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim() || isTyping) return;
-    sendMessage(inputValue);
-    setInputValue('');
+    handleSendMessage(inputValue);
   };
 
   const suggestedQuestions = [
@@ -221,7 +308,7 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
                             <button
                               key={i}
                               type="button"
-                              onClick={() => sendMessage(q)}
+                              onClick={() => handleSendMessage(q)}
                               className="text-left p-4 rounded-2xl bg-white/10 border border-white/20 hover:border-indigo-500/50 hover:bg-indigo-500/20 text-sm text-slate-300 transition-all flex items-center justify-between group cursor-pointer active:scale-[0.98] pointer-events-auto"
                             >
                               <span className="font-medium pr-4 select-none">{q}</span>
@@ -250,7 +337,12 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
                             : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-none'
                         }`}>
                           {msg.role === 'assistant' ? (
-                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            <div className="space-y-2">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                              <div className="pt-2 border-t border-white/10 mt-2">
+                                <p className="text-[10px] text-slate-500 italic">For informational purposes only. Not medical advice.</p>
+                              </div>
+                            </div>
                           ) : (
                             <p className="whitespace-pre-wrap">{msg.content}</p>
                           )}
@@ -259,7 +351,31 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
                     </motion.div>
                   ))}
 
-                  {isTyping && (
+                  {/* Streaming Response Overlay */}
+                  {streamedText && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-start"
+                    >
+                      <div className="flex gap-4 max-w-[90%] md:max-w-[85%]">
+                        <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-slate-800 border border-white/5">
+                          <Bot className="w-4 h-4 text-indigo-400" />
+                        </div>
+                        <div className="p-4 rounded-[1.5rem] text-sm leading-relaxed prose prose-invert prose-p:my-0 prose-slate bg-white/5 text-slate-200 border border-white/5 rounded-tl-none">
+                          <div className="space-y-2">
+                            <ReactMarkdown>{streamedText}</ReactMarkdown>
+                            <span className="inline-block w-2 h-4 bg-indigo-400 ml-1 animate-pulse align-middle">▋</span>
+                            <div className="pt-2 border-t border-white/10 mt-2">
+                              <p className="text-[10px] text-slate-500 italic">For informational purposes only. Not medical advice.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {isTyping && !streamedText && (
                     <div className="flex justify-start">
                       <div className="flex gap-4 max-w-[90%] md:max-w-[85%]">
                         <div className="w-8 h-8 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center shrink-0">
@@ -297,7 +413,19 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
                 </div>
 
                 {/* Input */}
-                <form onSubmit={handleSubmit} className="p-4 md:p-6 border-t border-white/5 bg-slate-950">
+                <form onSubmit={handleSubmit} className="p-4 md:p-6 border-t border-white/5 bg-slate-950 flex flex-col gap-3">
+                  {isTyping && (
+                    <div className="flex justify-center">
+                      <button
+                        type="button"
+                        onClick={handleAbort}
+                        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all text-xs font-bold uppercase tracking-wider"
+                      >
+                        <Square className="w-3 h-3 fill-current" />
+                        Stop Generating
+                      </button>
+                    </div>
+                  )}
                   <div className="relative flex items-center gap-2">
                     <div className="relative flex-1">
                       <input
@@ -305,15 +433,16 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
                         onChange={(e) => setInputValue(e.target.value)}
                         placeholder={isListening ? "Listening..." : "Query the medical engine..."}
                         disabled={isTyping}
-                        className={`w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-5 pr-24 text-base md:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${isListening ? 'animate-pulse border-indigo-500/50' : ''}`}
+                        className={`w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-5 pr-24 text-base md:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${isListening ? 'animate-pulse border-indigo-500/50' : ''} ${isTyping ? 'opacity-50' : ''}`}
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <button
                           type="button"
                           onClick={toggleVoice}
+                          disabled={isTyping}
                           className={`p-2.5 rounded-xl transition-all ${
                             isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-500 hover:text-indigo-400 hover:bg-white/5'
-                          }`}
+                          } ${isTyping ? 'opacity-0 pointer-events-none' : ''}`}
                         >
                           {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                         </button>
@@ -322,12 +451,12 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
                           disabled={!inputValue.trim() || isTyping}
                           className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20"
                         >
-                          <Send className="w-5 h-5" />
+                          {isTyping ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                         </button>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-center gap-2 mt-3 overflow-hidden">
+                  <div className="flex items-center justify-center gap-2 mt-1 overflow-hidden">
                     <motion.div 
                       animate={{ x: [-20, 20, -20] }}
                       transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
@@ -368,5 +497,25 @@ export default function ChatCoach({ externalOpen, onClose, showTrigger = true }:
         </motion.button>
       )}
     </div>
+  );
+}
+
+// Helper icons
+function Loader2(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
   );
 }

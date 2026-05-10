@@ -21,6 +21,7 @@ import { useProfile } from '../../context/ProfileContext';
 import { getFamilyRelations, db } from '../../lib/firebase/firestore';
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from 'firebase/firestore';
 import { analyzeSharedRisks, GeneticRiskAnalysis } from '../../services/ai/geneticService';
+import { UserProfile, LabResult } from '../../types/medical';
 
 export default function FamilyHub() {
   const { user } = useAuth();
@@ -76,13 +77,12 @@ export default function FamilyHub() {
   const handleAnalyzeRisk = async () => {
     setIsAnalyzingRisk(true);
     try {
-      // In a real app, we'd fetch data for both users. 
-      // For demo, we send the current profiles context.
-      const mockProfilesData = [
-        { name: activeProfile?.name, data: "Recent HbA1c 5.9, BP 130/85" },
-        { name: "Family Member", data: "Recent HbA1c 6.2, BP 140/90" }
+      if (!activeProfile) return;
+      
+      const profilesData = [
+        { profile: activeProfile, labs: activeProfile.labValues || [] },
       ];
-      const results = await analyzeSharedRisks(mockProfilesData);
+      const results = await analyzeSharedRisks(profilesData);
       setRisks(results);
     } catch (error) {
       console.error("Risk analysis failed:", error);

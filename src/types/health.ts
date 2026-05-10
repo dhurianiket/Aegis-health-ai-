@@ -57,3 +57,12 @@ export interface HealthInsight {
   specialist?: string;
   createdAt: string;
 }
+
+export interface LabObservation {
+  testName: string;
+  valueCanonical: number | null;
+  unitCanonical: string | null;
+  flag: 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL' | null;
+  collectedAt: string; // ISO date string
+  reportId: string;
+}

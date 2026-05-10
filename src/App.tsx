@@ -26,8 +26,11 @@ import { useAuth } from './context/AuthContext';
 import { useProfile } from './context/ProfileContext';
 import { useAlerts } from './context/AlertsContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AIErrorBoundary } from './components/ui/AIErrorBoundary';
+import ConsentScreen from './components/Onboarding/ConsentScreen';
 import NotificationDropdown from './components/Header/NotificationDropdown';
 import OfflineIndicator from './components/OfflineIndicator';
+import { UserProfile } from './types/medical';
 const SBARPreview = lazy(() => import('./components/Export/SBARPreview'));
 const ExportModal = lazy(() => import('./components/Export/ExportModal'));
 const ChatCoach = lazy(() => import('./components/AIHelper/ChatCoach'));
@@ -74,8 +77,9 @@ export default function App() {
   const [isNewProfileModaOpen, setIsNewProfileModaOpen] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
   const [profileError, setProfileError] = useState('');
-  const [profileToSwitch, setProfileToSwitch] = useState<any>(null);
+  const [profileToSwitch, setProfileToSwitch] = useState<UserProfile | null>(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isConsentGranted, setIsConsentGranted] = useState<boolean | null>(null);
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [isSBAROpen, setIsSBAROpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -83,6 +87,8 @@ export default function App() {
   const [isGeneratingSBAR, setIsGeneratingSBAR] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSharingOpen, setIsSharingOpen] = useState(false);
+  const [sbarKey, setSbarKey] = useState(0);
+  const [chatKey, setChatKey] = useState(0);
 
   // Check for shared profile in URL
   const searchParams = new URLSearchParams(window.location.search);
@@ -95,11 +101,14 @@ export default function App() {
         if (profileToSwitch) setProfileToSwitch(null);
         if (isMobileMenuOpen) setIsMobileMenuOpen(false);
         if (isNotificationsOpen) setIsNotificationsOpen(false);
+        if (isSBAROpen) setIsSBAROpen(false);
+        if (isExportOpen) setIsExportOpen(false);
+        if (isChatOpen) setIsChatOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isNewProfileModaOpen, profileToSwitch, isMobileMenuOpen, isNotificationsOpen]);
+  }, [isNewProfileModaOpen, profileToSwitch, isMobileMenuOpen, isNotificationsOpen, isSBAROpen, isExportOpen, isChatOpen]);
 
   if (shareId) {
     return (
@@ -123,8 +132,8 @@ export default function App() {
       await createProfile(newProfileName.trim());
       setIsNewProfileModaOpen(false);
       setNewProfileName('');
-    } catch (e: any) {
-      logger.error(e);
+    } catch (e: unknown) {
+      logger.error(e as Error);
       setProfileError('Failed to create profile. Please try again.');
     }
   };
@@ -255,7 +264,7 @@ export default function App() {
                         <span>Select Profile</span>
                         <span className="text-[10px] bg-white/5 px-1.5 py-0.5 rounded">{profiles.length}</span>
                       </div>
-                      {profiles.map((p: any) => (
+                      {profiles.map((p) => (
                         <button
                           key={p.id}
                           onClick={() => {
@@ -361,69 +370,76 @@ export default function App() {
         <div className="flex-1 p-4 md:p-8 pb-24 w-full">
           <ErrorBoundary>
             <Suspense fallback={<Fallback />}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
-                  {activeTab === 'dashboard' && (
-                    <div className="space-y-6">
-                       <div className="flex items-center justify-end gap-3 mb-4">
-                          <button 
-                            onClick={async () => {
-                              if (activeProfile) {
-                                setIsSBAROpen(true);
-                                setIsGeneratingSBAR(true);
-                                const text = await generateSBAR(
-                                  activeProfile as any, 
-                                  (activeProfile as any).labValues || [], 
-                                  (activeProfile as any).medications || []
-                                );
-                                setSbarText(text);
-                                setIsGeneratingSBAR(false);
-                              }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest border border-white/5 transition-all"
-                          >
-                            <FileText className="w-4 h-4" /> Physician SBAR
-                          </button>
-                          <button 
-                            onClick={() => setIsChatOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-indigo-500/10 transition-all shadow-lg shadow-indigo-500/5"
-                          >
-                            <Sparkles className="w-4 h-4" /> Consult AURA
-                          </button>
-                          <button 
-                            onClick={() => setIsExportOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-emerald-500/10 transition-all shadow-lg shadow-emerald-500/5"
-                          >
-                            <Upload className="w-4 h-4" /> PDF Report
-                          </button>
+              {user && isConsentGranted === true && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="h-full"
+                  >
+                    {activeTab === 'dashboard' && (
+                      <div className="space-y-6">
+                         <div className="flex items-center justify-end gap-3 mb-4">
+                            <button 
+                              onClick={async () => {
+                                if (activeProfile) {
+                                  try {
+                                    setIsSBAROpen(true);
+                                    setIsGeneratingSBAR(true);
+                                    const text = await generateSBAR(
+                                      activeProfile, 
+                                      activeProfile.labValues || [], 
+                                      activeProfile.medications || []
+                                    );
+                                    setSbarText(text);
+                                  } catch (error) {
+                                    logger.error('SBAR Trigger Error:', error as Error);
+                                  } finally {
+                                    setIsGeneratingSBAR(false);
+                                  }
+                                }
+                              }}
+                              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest border border-white/5 transition-all"
+                            >
+                              <FileText className="w-4 h-4" /> Physician SBAR
+                            </button>
+                            <button 
+                              onClick={() => setIsChatOpen(true)}
+                              className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-indigo-500/10 transition-all shadow-lg shadow-indigo-500/5"
+                            >
+                              <Sparkles className="w-4 h-4" /> Consult AURA
+                            </button>
+                            <button 
+                              onClick={() => setIsExportOpen(true)}
+                              className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-widest border border-emerald-500/10 transition-all shadow-lg shadow-emerald-500/5"
+                            >
+                              <Upload className="w-4 h-4" /> PDF Report
+                            </button>
+                         </div>
+                         <Dashboard onOpenChat={() => setIsChatOpen(true)} />
+                      </div>
+                    )}
+                    {activeTab === 'upload' && <UploadCenter onOpenChat={() => setIsChatOpen(true)} />}
+                    {activeTab === 'timeline' && <Timeline />}
+                    {activeTab === 'specialists' && <SpecialistLounge />}
+                    {activeTab === 'meds' && <Medications onOpenChat={() => setIsChatOpen(true)} />}
+                    {activeTab === 'profiles' && <ProfileManagement />}
+                    {activeTab === 'family' && <FamilyHub />}
+                    {activeTab === 'settings' && user && activeProfile && (
+                       <div className="max-w-4xl mx-auto space-y-12">
+                          <section className="space-y-6">
+                             <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Integrations & Data</h2>
+                             <IntegrationsPanel activeProfile={activeProfile} />
+                          </section>
                        </div>
-                       <Dashboard onOpenChat={() => setIsChatOpen(true)} />
-                    </div>
-                  )}
-                  {activeTab === 'upload' && <UploadCenter onOpenChat={() => setIsChatOpen(true)} />}
-                  {activeTab === 'timeline' && <Timeline />}
-                  {activeTab === 'specialists' && <SpecialistLounge />}
-                  {activeTab === 'meds' && <Medications onOpenChat={() => setIsChatOpen(true)} />}
-                  {activeTab === 'profiles' && <ProfileManagement />}
-                  {activeTab === 'family' && <FamilyHub />}
-                  {activeTab === 'settings' && user && activeProfile && (
-                     <div className="max-w-4xl mx-auto space-y-12">
-                        <section className="space-y-6">
-                           <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Integrations & Data</h2>
-                           <IntegrationsPanel activeProfile={activeProfile} />
-                        </section>
-                     </div>
-                  )}
-                </motion.div>
-
-              </AnimatePresence>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              )}
+              {user && isConsentGranted === null && <Fallback />}
             </Suspense>
           </ErrorBoundary>
         </div>
@@ -580,15 +596,15 @@ export default function App() {
               <ExportModal 
                 onClose={() => setIsExportOpen(false)} 
                 healthContext={{
-                  userName: activeProfile.name,
+                  userName: activeProfile.name || 'User',
                   healthScore: 85, // Stub
                   topFlags: ['Elevated HbA1c', 'High LDL'], // Stub
-                  medications: (activeProfile as any).medications || [],
+                  medications: activeProfile.medications || [],
                   recentTrends: [
                      { marker: 'HbA1c', value: 6.2, unit: '%', direction: 'up' },
                      { marker: 'LDL', value: 142, unit: 'mg/dL', direction: 'down' }
                   ],
-                  doctorNotes: (activeProfile as any).doctorNotes || []
+                  doctorNotes: activeProfile.doctorNotes || []
                 }}
               />
             </Suspense>
@@ -598,26 +614,46 @@ export default function App() {
         <AnimatePresence>
           {isSBAROpen && activeProfile && (
             <Suspense fallback={<Fallback />}>
-              <SBARPreview 
-                onClose={() => {
-                  setIsSBAROpen(false);
-                  setSbarText('');
-                }}
-                sbarText={sbarText}
-                isLoading={isGeneratingSBAR}
-              />
+              <AIErrorBoundary 
+                key={sbarKey}
+                onReset={() => setSbarKey(k => k + 1)}
+                fallbackMessage="The medical summary engine is taking a break. Please try again in a moment."
+              >
+                <SBARPreview 
+                  onClose={() => {
+                    setIsSBAROpen(false);
+                    setSbarText('');
+                  }}
+                  sbarText={sbarText}
+                  isLoading={isGeneratingSBAR}
+                />
+              </AIErrorBoundary>
             </Suspense>
           )}
         </AnimatePresence>
 
         <Suspense fallback={<Fallback />}>
-          <ChatCoach 
-            externalOpen={isChatOpen} 
-            onClose={() => setIsChatOpen(false)} 
-            showTrigger={false} 
-          />
+          <AIErrorBoundary 
+            key={chatKey}
+            onReset={() => setChatKey(k => k + 1)}
+          >
+            <ChatCoach 
+              externalOpen={isChatOpen} 
+              onClose={() => setIsChatOpen(false)} 
+              showTrigger={false} 
+            />
+          </AIErrorBoundary>
         </Suspense>
       </main>
+
+      {/* Consent Blocking Overlay */}
+      {user && (isConsentGranted === false || isConsentGranted === null) && (
+        <ConsentScreen 
+          userId={user.uid} 
+          onConsentGranted={() => setIsConsentGranted(true)} 
+          onConsentChecked={(exists) => setIsConsentGranted(exists)}
+        />
+      )}
     </div>
   );
 }

@@ -237,7 +237,7 @@ export default function UploadCenter({ onOpenChat }: { onOpenChat?: () => void }
       };
 
       const extractions = await Promise.all(newFiles.map((f, i) => processFile(f, i)));
-      const validExtractions = extractions.filter(Boolean);
+      const validExtractions = extractions.filter(Boolean) as any[];
 
       if (validExtractions.length > 0) {
         setResults(validExtractions);

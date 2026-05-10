@@ -1,8 +1,23 @@
 import { GoogleGenAI, Type } from "../../lib/geminiClient";
-import { Specialty } from "../../types/medical";
+import { Specialty, MedicalDocument, LabResult, Medication, SpecialistInsight, UserProfile } from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 
 const getAI = () => new GoogleGenAI({});
+
+export interface SpecialistAnalysisResponse {
+  observations: string[];
+  abnormalities: string[];
+  patterns: string[];
+  recommended_questions: {
+    question: string;
+    reason_for_asking: string;
+  }[];
+  suggested_next_steps: string[];
+  lifestyle_advice: string[];
+  urgency_level: string;
+  confidence_score: number;
+  summary: string;
+}
 
 const SPECIALIST_PROMPTS: Record<string, string> = {
   [Specialty.INTERNAL_MEDICINE]: "You are a world-class Internal Medicine specialist. Your role is to provide a holistic overview of the patient's health, identifying general patterns and coordinating between other specialists. Focus on systemic health, prevention, and unexplained symptoms.",
@@ -25,14 +40,15 @@ CRITICAL INSTRUCTIONS:
    - If Conservative: Only flag severe, potentially life-threatening or highly abnormal values.
    - If Standard: Flag standard out-of-range lab values and clear abnormalities.
    - If High: Flag even minor deviations from optimal (not just 'normal') ranges, and highlight any potential emerging risks.
+8. DISCLAIMER: Your output MUST contain the disclaimer "For informational purposes only. Not medical advice."
 `;
 
 export async function analyzeWithSpecialist(
   specialty: Specialty,
-  patientData: any,
-  recentReports: any[],
+  patientData: UserProfile,
+  recentReports: MedicalDocument[],
   sensitivity: string = 'Standard'
-) {
+): Promise<SpecialistAnalysisResponse | null> {
   const prompt = `${CORE_SYSTEM_PROMPT}
 
 <task>
@@ -102,7 +118,7 @@ ${OUTPUT_FORMAT_JSON}
       text = text.slice(jsonStart, jsonEnd + 1);
     }
     
-    return JSON.parse(text);
+    return JSON.parse(text) as SpecialistAnalysisResponse;
   } catch (error) {
     console.error(`Error in specialist analysis (${specialty}):`, error);
     return null;
@@ -110,12 +126,12 @@ ${OUTPUT_FORMAT_JSON}
 }
 
 export async function generateClinicalSummary(
-  patientData: any,
-  labHistory: any[],
-  documents: any[],
-  medications: any[],
-  insights: any[]
-) {
+  patientData: UserProfile,
+  labHistory: LabResult[],
+  documents: MedicalDocument[],
+  medications: Medication[],
+  insights: SpecialistInsight[]
+): Promise<string> {
   const prompt = `${CORE_SYSTEM_PROMPT}
 
 <task>
@@ -142,7 +158,7 @@ LAB HISTORY:
 ${JSON.stringify(labHistory)}
 
 MEDICAL DOCUMENTS:
-${JSON.stringify(documents.map((d: any) => ({
+${JSON.stringify(documents.map((d: MedicalDocument) => ({
   type: d.type,
   date: d.date,
   extractedFindings: d.extractedData?.findings || ""
@@ -201,6 +217,7 @@ ${(parsed.recommended_next_steps || []).map((f: string) => `- ${f}`).join('\n') 
 ${(parsed.follow_up_questions || []).map((f: string) => `- ${f}`).join('\n') || "None."}
 
 ---
+*For informational purposes only. Not medical advice.*
 *${parsed.safety_disclaimer || "Aegis AI Health provides informational summaries, not medical advice. Consult your doctor."}*
 `;
   } catch (error: any) {
@@ -213,15 +230,38 @@ ${(parsed.follow_up_questions || []).map((f: string) => `- ${f}`).join('\n') || 
       (error?.message && (error.message.includes('429') || error.message.includes('quota')));
       
     if (isQuotaError) {
-      return `## ⚠️ AI Service Quota Exceeded\n\nThe AI generation service has reached its rate limit or quota. \n\n*Error: RESOURCE_EXHAUSTED (429)*\n\nUnfortunately, standard AI analysis cannot be performed right now. Please try again later.`;
+      return `## ⚠️ AI Service Quota Exceeded\n\nThe AI generation service has reached its rate limit or quota. \n\n*Error: RESOURCE_EXHAUSTED (429)*\n\nUnfortunately, standard AI analysis cannot be performed right now. Please try again later.\n\n*For informational purposes only. Not medical advice.*`;
     }
     
-    return `Failed to generate report. Please try again. ${error?.message ? `(${error.message})` : ''}`;
+    return `Failed to generate report. Please try again. ${error?.message ? `(${error.message})` : ''}\n\n*For informational purposes only. Not medical advice.*`;
   }
 }
 
+export interface ExtractedReportResponse {
+  document_type: string;
+  date: string;
+  hospital_name: string | null;
+  doctor_name: string | null;
+  lab_values: {
+    date: string;
+    marker: string;
+    value: string;
+    unit: string;
+    reference_range: string | null;
+    status: string;
+  }[];
+  findings: string | null;
+  medications: {
+    date: string;
+    name: string;
+    dosage: string;
+    frequency: string;
+    purpose: string;
+  }[];
+  follow_up_date: string | null;
+}
 
-export async function extractMedicalReports(filesData: {base64Data: string, mimeType: string}[]) {
+export async function extractMedicalReports(filesData: {base64Data: string, mimeType: string}[]): Promise<ExtractedReportResponse | null> {
   const prompt = `
     Extract the following information from this medical report (image or PDF).
     Extract the information into a single structured JSON format:
@@ -299,7 +339,7 @@ export async function extractMedicalReports(filesData: {base64Data: string, mime
       text = text.slice(jsonStart, jsonEnd + 1);
     }
     
-    return JSON.parse(text);
+    return JSON.parse(text) as ExtractedReportResponse;
   } catch (error) {
     console.error("Error extracting report:", error);
     return null;
