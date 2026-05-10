@@ -73,9 +73,12 @@ export default function Dashboard({
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [healthScores, setHealthScores] = useState<HealthScore[]>([]);
   const [latestInsights, setLatestInsights] = useState<SpecialistInsight[]>([]);
   const [keyLabs, setKeyLabs] = useState<LabResult[]>([]);
+
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     async function fetchData() {
@@ -84,6 +87,7 @@ export default function Dashboard({
         return;
       }
       setLoading(true);
+      setError(null);
       try {
         const [scores, insights, labs] = await Promise.all([
           getHealthScores(user.uid, activeProfile?.id),
@@ -93,14 +97,15 @@ export default function Dashboard({
         setHealthScores((scores as HealthScore[]) || []);
         setLatestInsights((insights as SpecialistInsight[]) || []);
         setKeyLabs((labs as LabResult[]) || []);
-      } catch (error) {
-        console.error("Dashboard fetch failed:", error);
+      } catch (err) {
+        console.error("Dashboard fetch failed:", err);
+        setError("Failed to load health telemetry. Please check your connection.");
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, [user, activeProfile]);
+  }, [user, activeProfile, retryCount]);
 
   const latestScore =
     healthScores[0] ||
@@ -156,6 +161,26 @@ export default function Dashboard({
 
   if (loading) {
     return <DashboardSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
+        <div>
+          <h3 className="text-xl font-bold">Telemetry Sync Failed</h3>
+          <p className="text-sm text-muted mt-2 max-w-xs">{error}</p>
+        </div>
+        <button
+          onClick={() => setRetryCount(c => c + 1)}
+          className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20 transition-transform active:scale-95"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
   }
 
   if (

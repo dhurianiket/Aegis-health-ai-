@@ -210,7 +210,7 @@ export async function getLatestInsights(userId: string, profileId?: string) {
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as SpecialistInsight,
-    ).sort((a, b) => {
+    ).sort((a: any, b: any) => {
        const tA = a.timestamp?.toMillis ? a.timestamp.toMillis() : new Date(a.timestamp || 0).getTime();
        const tB = b.timestamp?.toMillis ? b.timestamp.toMillis() : new Date(b.timestamp || 0).getTime();
        return tB - tA;
@@ -311,7 +311,7 @@ export async function getClinicalSummary(userId: string, profileId?: string) {
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as ClinicalSummaryRecord,
-    ).sort((a, b) => {
+    ).sort((a: any, b: any) => {
        const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime();
        const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt || 0).getTime();
        return tB - tA;
@@ -360,7 +360,7 @@ export async function getConversations(userId: string, profileId?: string) {
       where("profileId", "==", profileId || "Myself")
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any).sort((a, b) => {
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any).sort((a: any, b: any) => {
        const tA = a.lastUpdated?.toMillis ? a.lastUpdated.toMillis() : new Date(a.lastUpdated || 0).getTime();
        const tB = b.lastUpdated?.toMillis ? b.lastUpdated.toMillis() : new Date(b.lastUpdated || 0).getTime();
        return tB - tA;

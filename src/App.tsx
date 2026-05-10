@@ -28,6 +28,8 @@ import OfflineIndicator from "./components/OfflineIndicator";
 import { UserProfile } from "./types/medical";
 import { AppNav } from "./components/Header/AppNav";
 
+import { SectionErrorBoundary } from "./components/ui/SectionErrorBoundary";
+
 const ConsentScreen = lazy(
   () => import("./components/Onboarding/ConsentScreen"),
 );
@@ -264,14 +266,13 @@ export default function App() {
     );
   }
 
-  if (user && isConsentGranted === false) {
+  if (user && (isConsentGranted === false || isConsentGranted === null)) {
     return (
       <Suspense fallback={<SplashScreen />}>
         <ConsentScreen
           userId={user.uid}
           onConsentGranted={() => {
             setIsConsentGranted(true);
-            // Optionally trigger post login animation here if we wanted
           }}
           onConsentChecked={(exists) => setIsConsentGranted(exists)}
           onClose={logOut}
@@ -431,66 +432,93 @@ export default function App() {
                     className="max-w-[1200px] mx-auto w-full h-full p-6 md:p-10 pb-32"
                   >
                     {activeTab === "home" && (
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-end gap-3 mb-6">
-                          <button
-                            onClick={async () => {
-                              if (activeProfile) {
-                                setIsSBAROpen(true);
-                                setSbarError(null);
-                              }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-surface/80 rounded-[12px] text-xs font-semibold transition-colors"
+                      <SectionErrorBoundary sectionName="Dashboard">
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-end gap-3 mb-6">
+                            <button
+                              onClick={async () => {
+                                if (activeProfile) {
+                                  setIsSBAROpen(true);
+                                  setSbarError(null);
+                                }
+                              }}
+                              className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-surface/80 rounded-[12px] text-xs font-semibold transition-colors"
+                            >
+                              <FileText className="w-4 h-4 text-muted" /> Handover
+                              Report
+                            </button>
+                            <button
+                              onClick={() => setIsChatOpen(true)}
+                              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 rounded-[12px] text-xs font-semibold transition-colors"
+                            >
+                              <Sparkles className="w-4 h-4" /> Consult AI
+                            </button>
+                          </div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
                           >
-                            <FileText className="w-4 h-4 text-muted" /> Handover
-                            Report
-                          </button>
-                          <button
-                            onClick={() => setIsChatOpen(true)}
-                            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 rounded-[12px] text-xs font-semibold transition-colors"
-                          >
-                            <Sparkles className="w-4 h-4" /> Consult AI
-                          </button>
+                            <Dashboard
+                              onOpenChat={() => setIsChatOpen(true)}
+                              onUploadClick={() => {
+                                setActiveTab("upload");
+                                window.location.hash = "upload";
+                              }}
+                            />
+                          </motion.div>
                         </div>
-                        <motion.div
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, ease: "easeOut" }}
-                        >
-                          <Dashboard
-                            onOpenChat={() => setIsChatOpen(true)}
-                            onUploadClick={() => {
-                              setActiveTab("upload");
-                              window.location.hash = "upload";
-                            }}
-                          />
-                        </motion.div>
-                      </div>
+                      </SectionErrorBoundary>
                     )}
                     {activeTab === "reports" && (
-                      <LabReportsSection
-                        onOpenChat={() => setIsChatOpen(true)}
-                        onNavigateToUpload={() => {
-                          setActiveTab("upload");
-                          window.location.hash = "upload";
-                        }}
-                      />
+                      <SectionErrorBoundary sectionName="Reports">
+                        <LabReportsSection
+                          onOpenChat={() => setIsChatOpen(true)}
+                          onNavigateToUpload={() => {
+                            setActiveTab("upload");
+                            window.location.hash = "upload";
+                          }}
+                        />
+                      </SectionErrorBoundary>
                     )}
                     {activeTab === "upload" && (
-                      <UploadCenter onOpenChat={() => setIsChatOpen(true)} />
+                      <SectionErrorBoundary sectionName="Upload Center">
+                        <UploadCenter onOpenChat={() => setIsChatOpen(true)} />
+                      </SectionErrorBoundary>
                     )}
-                    {activeTab === "trends" && <Timeline />}
-                    {activeTab === "specialist" && <SpecialistLounge />}
+                    {activeTab === "trends" && (
+                      <SectionErrorBoundary sectionName="Timeline">
+                        <Timeline />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "specialist" && (
+                      <SectionErrorBoundary sectionName="Specialist Lounge">
+                        <SpecialistLounge />
+                      </SectionErrorBoundary>
+                    )}
                     {activeTab === "medications" && (
-                      <Medications onOpenChat={() => setIsChatOpen(true)} />
+                      <SectionErrorBoundary sectionName="Pharmacy">
+                        <Medications onOpenChat={() => setIsChatOpen(true)} />
+                      </SectionErrorBoundary>
                     )}
-                    {activeTab === "profile" && <ProfileManagement />}
-                    {activeTab === "settings" && <SettingsPage />}
-                    {activeTab === "family" && <FamilyHub />}
+                    {activeTab === "profile" && (
+                      <SectionErrorBoundary sectionName="Profile">
+                        <ProfileManagement />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "settings" && (
+                      <SectionErrorBoundary sectionName="Settings">
+                        <SettingsPage />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "family" && (
+                      <SectionErrorBoundary sectionName="Family Hub">
+                        <FamilyHub />
+                      </SectionErrorBoundary>
+                    )}
                   </motion.div>
                 </AnimatePresence>
               )}
-              {user && isConsentGranted === null && <Fallback />}
               {!user && (
                 <div className="flex flex-col items-center justify-center h-full pt-16">
                   <motion.div
