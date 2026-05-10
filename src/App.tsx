@@ -1,4 +1,9 @@
-import React, { useState, Suspense, lazy, useEffect } from "react";
+import React, { useState, Suspense, lazy, useEffect, useRef } from "react";
+import { ShieldCheck } from "lucide-react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./lib/firebase/config";
+import SplashScreen from "./components/Onboarding/SplashScreen";
+import PostLoginTransition from "./components/Onboarding/PostLoginTransition";
 import {
   Bell,
   Search,
@@ -78,6 +83,21 @@ const Fallback = () => (
 );
 
 export default function App() {
+  const [authLoading, setAuthLoading] = useState(true);
+  const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
+  const isFirstAuthResolution = useRef(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      setAuthLoading(false);
+      if (authUser && isFirstAuthResolution.current) {
+        isFirstAuthResolution.current = false;
+        setShowPostLoginAnimation(true);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const [activeTab, setActiveTab] = useState("home");
   const { user, signIn, logOut } = useAuth();
   const { profiles, activeProfile, setActiveProfile, createProfile } =
@@ -223,6 +243,18 @@ export default function App() {
   };
 
   const activeAlertsCount = unreadCount;
+
+  if (authLoading) {
+    return <SplashScreen />;
+  }
+
+  if (showPostLoginAnimation) {
+    return (
+      <PostLoginTransition 
+        onComplete={() => setShowPostLoginAnimation(false)} 
+      />
+    );
+  }
 
   return (
     <div className="flex h-[100dvh] bg-theme text-theme overflow-hidden selection:bg-[var(--color-primary)]/20">
@@ -396,13 +428,19 @@ export default function App() {
                             <Sparkles className="w-4 h-4" /> Consult AI
                           </button>
                         </div>
-                        <Dashboard
-                          onOpenChat={() => setIsChatOpen(true)}
-                          onUploadClick={() => {
-                            setActiveTab("upload");
-                            window.location.hash = "upload";
-                          }}
-                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                        >
+                          <Dashboard
+                            onOpenChat={() => setIsChatOpen(true)}
+                            onUploadClick={() => {
+                              setActiveTab("upload");
+                              window.location.hash = "upload";
+                            }}
+                          />
+                        </motion.div>
                       </div>
                     )}
                     {activeTab === "reports" && (
@@ -429,6 +467,29 @@ export default function App() {
                 </AnimatePresence>
               )}
               {user && isConsentGranted === null && <Fallback />}
+              {!user && (
+                <div className="flex flex-col items-center justify-center h-full pt-16">
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <div className="p-6 rounded-3xl bg-gradient-to-br from-teal-500/20 to-indigo-500/20 border border-white/10 mb-4">
+                      <ShieldCheck size={48} className="text-teal-400" strokeWidth={1.5} />
+                    </div>
+                    <h1 className="text-theme font-bold text-2xl tracking-[0.3em] mb-1">AEGIS HEALTH AI</h1>
+                    <p className="text-muted text-xs tracking-widest text-center mb-8">Your health telemetry, understood.</p>
+                    <button
+                      onClick={signIn}
+                      className="flex items-center gap-2 px-8 py-3 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-[12px] text-sm font-semibold transition-all shadow-sm"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>Sign In with Google</span>
+                    </button>
+                  </motion.div>
+                </div>
+              )}
             </Suspense>
           </ErrorBoundary>
         </div>
