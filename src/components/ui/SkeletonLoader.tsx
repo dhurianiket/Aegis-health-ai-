@@ -22,11 +22,11 @@ export default function SkeletonLoader({
   count = 1,
   variant = "rectangular",
 }: SkeletonLoaderProps) {
-  const baseClasses = "bg-white/5 animate-pulse";
+  const baseClasses = "relative overflow-hidden bg-[var(--color-surface)] before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/5 before:to-transparent";
   const variantClasses = {
-    rectangular: "rounded-2xl",
+    rectangular: "rounded-[24px]",
     circular: "rounded-full",
-    text: "rounded h-4 w-3/4 mb-2",
+    text: "rounded-md h-4 w-3/4 mb-2",
   };
 
   return (

@@ -244,15 +244,31 @@ export default function App() {
 
   const activeAlertsCount = unreadCount;
 
-  if (authLoading) {
+  if (authLoading || (user && isConsentGranted === null)) {
     return <SplashScreen />;
   }
 
-  if (showPostLoginAnimation) {
+  if (showPostLoginAnimation && (!user || isConsentGranted === true)) {
     return (
       <PostLoginTransition 
         onComplete={() => setShowPostLoginAnimation(false)} 
       />
+    );
+  }
+
+  if (user && isConsentGranted === false) {
+    return (
+      <Suspense fallback={<SplashScreen />}>
+        <ConsentScreen
+          userId={user.uid}
+          onConsentGranted={() => {
+            setIsConsentGranted(true);
+            // Optionally trigger post login animation here if we wanted
+          }}
+          onConsentChecked={(exists) => setIsConsentGranted(exists)}
+          onClose={logOut}
+        />
+      </Suspense>
     );
   }
 
@@ -654,16 +670,6 @@ export default function App() {
           </AIErrorBoundary>
         </Suspense>
       </main>
-
-      {/* Consent Screen Overlay */}
-      {user && (isConsentGranted === false || isConsentGranted === null) && (
-        <ConsentScreen
-          userId={user.uid}
-          onConsentGranted={() => setIsConsentGranted(true)}
-          onConsentChecked={(exists) => setIsConsentGranted(exists)}
-          onClose={logOut}
-        />
-      )}
     </div>
   );
 }

@@ -7,6 +7,14 @@
 
   /* Shared Apple Health Inspired Tokens */
   --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-shimmer: shimmer 2s infinite linear;
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
 
 @layer base {

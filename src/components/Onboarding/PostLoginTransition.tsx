@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, User } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAuth } from "../../context/AuthContext";
 
 interface PostLoginTransitionProps {
   onComplete: () => void;
@@ -8,6 +9,10 @@ interface PostLoginTransitionProps {
 
 export default function PostLoginTransition({ onComplete }: PostLoginTransitionProps) {
   const [phase, setPhase] = useState<1 | 2 | 3>(1);
+  const { user } = useAuth();
+  const userName = user?.displayName?.split(" ")[0] || "User";
+  const userPhoto = user?.photoURL;
+  const userInitial = user?.email?.[0]?.toUpperCase() || "U";
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(2), 600);
@@ -36,9 +41,15 @@ export default function PostLoginTransition({ onComplete }: PostLoginTransitionP
               transition={{ duration: 0.6, ease: "easeOut" }}
               className="flex flex-col items-center"
             >
-              <div className="p-6 rounded-3xl bg-gradient-to-br from-teal-500/20 to-indigo-500/20 border border-white/10 mb-4">
-                <ShieldCheck size={64} className="text-teal-400" strokeWidth={1.5} />
-              </div>
+              {userPhoto ? (
+                <div className="mb-4">
+                  <img src={userPhoto} alt={userName} className="w-20 h-20 rounded-[24px] object-cover border-2 border-teal-500/30" referrerPolicy="no-referrer" />
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-teal-500/20 to-indigo-500/20 border-2 border-teal-500/30 flex items-center justify-center mb-4 text-teal-400 font-bold text-3xl">
+                   {userInitial}
+                </div>
+              )}
               <h1 className="text-white font-bold text-3xl tracking-[0.3em]">
                 AEGIS
               </h1>
@@ -52,7 +63,7 @@ export default function PostLoginTransition({ onComplete }: PostLoginTransitionP
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <p className="text-white text-lg">Welcome back</p>
+                  <p className="text-white text-lg">Welcome back, {userName}</p>
                   <motion.div
                     className="h-[2px] bg-teal-400 mt-3"
                     initial={{ width: 0 }}

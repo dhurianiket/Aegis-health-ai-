@@ -1,18 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import {
   ResponsiveContainer,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   Radar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  AreaChart,
-  Area,
 } from "recharts";
 import {
   TrendingUp,
@@ -31,12 +23,6 @@ import {
   Loader2,
 } from "lucide-react";
 import { motion } from "motion/react";
-import LabTrendChart from "./LabTrendChart";
-import SmartAlerts from "./SmartAlerts";
-import CorrelationMatrix from "./CorrelationMatrix";
-import ComparativeAnalysis from "./ComparativeAnalysis";
-import TrendSparklines from "./TrendSparklines";
-import ShareReport from "../Export/ShareReport";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -55,6 +41,15 @@ import {
 } from "../../types/medical";
 import SkeletonLoader, { DashboardSkeleton } from "../ui/SkeletonLoader";
 import { Sparkles, MessageSquare } from "lucide-react";
+
+// Lazy-loaded components for faster initial dashboard render
+const LabTrendChart = lazy(() => import("./LabTrendChart"));
+const SmartAlerts = lazy(() => import("./SmartAlerts"));
+const CorrelationMatrix = lazy(() => import("./CorrelationMatrix"));
+const ComparativeAnalysis = lazy(() => import("./ComparativeAnalysis"));
+const TrendSparklines = lazy(() => import("./TrendSparklines"));
+const EmptyDashboard = lazy(() => import("./EmptyDashboard"));
+const ShareReport = lazy(() => import("../Export/ShareReport"));
 
 /**
  * Dashboard - The primary clinical analytics view.
@@ -169,29 +164,9 @@ export default function Dashboard({
     latestInsights.length === 0
   ) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center px-6"
-      >
-        <div className="w-20 h-20 rounded-3xl bg-[var(--color-primary)]/10 flex items-center justify-center">
-          <Activity className="w-10 h-10 text-[var(--color-primary)]" />
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold">No reports yet</h2>
-          <p className="text-sm text-white/50 max-w-xs">
-            Upload your first lab report and Aegis will start tracking your
-            health trends automatically.
-          </p>
-        </div>
-        <button
-          onClick={onUploadClick}
-          className="px-6 py-3 rounded-full bg-[var(--color-primary)] text-white font-semibold text-sm hover:opacity-90 transition-colors duration-200"
-        >
-          Upload first report
-        </button>
-      </motion.div>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <EmptyDashboard userProfile={activeProfile} onUploadClick={onUploadClick} />
+      </Suspense>
     );
   }
 
@@ -214,10 +189,14 @@ export default function Dashboard({
             AI-driven analysis of your medical telemetry
           </p>
         </div>
-        <ShareReport />
+        <Suspense fallback={<div className="w-10 h-10 rounded-full animate-pulse bg-white/5" />}>
+          <ShareReport />
+        </Suspense>
       </motion.div>
       <motion.div variants={tileVariants}>
-        <SmartAlerts labs={keyLabs} />
+        <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
+          <SmartAlerts labs={keyLabs} />
+        </Suspense>
       </motion.div>
 
       {/* Top Banner Stats */}
@@ -345,20 +324,28 @@ export default function Dashboard({
 
         {/* Trends Section */}
         <div className="lg:col-span-2">
-          <LabTrendChart labs={keyLabs} />
+          <Suspense fallback={<SkeletonLoader className="h-[400px]" />}>
+            <LabTrendChart labs={keyLabs} />
+          </Suspense>
         </div>
       </motion.div>
 
       <motion.div variants={tileVariants}>
-        <TrendSparklines labs={keyLabs} />
+        <Suspense fallback={<SkeletonLoader className="h-64" />}>
+          <TrendSparklines labs={keyLabs} />
+        </Suspense>
       </motion.div>
 
       <motion.div
         variants={tileVariants}
         className="grid grid-cols-1 md:grid-cols-2 gap-8"
       >
-        <CorrelationMatrix labs={keyLabs} />
-        <ComparativeAnalysis labs={keyLabs} />
+        <Suspense fallback={<SkeletonLoader className="h-[400px]" />}>
+          <CorrelationMatrix labs={keyLabs} />
+        </Suspense>
+        <Suspense fallback={<SkeletonLoader className="h-[400px]" />}>
+          <ComparativeAnalysis labs={keyLabs} />
+        </Suspense>
       </motion.div>
 
       {/* Action Required & Intelligence Feed */}

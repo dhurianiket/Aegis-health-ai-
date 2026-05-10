@@ -95,13 +95,12 @@ export async function getDocuments(userId: string, profileId?: string) {
   try {
     const q = query(
       collection(db, path),
-      where("userId", "==", userId),
-      orderBy("date", "desc"),
+      where("userId", "==", userId)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as MedicalDocument,
-    );
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     if (profileId) {
       docs = docs.filter(
         (doc) =>
@@ -124,8 +123,7 @@ export async function getLabHistory(
   try {
     let q = query(
       collection(db, path),
-      where("userId", "==", userId),
-      orderBy("date", "desc"),
+      where("userId", "==", userId)
     );
     if (markerName) {
       q = query(q, where("markerName", "==", markerName));
@@ -133,7 +131,7 @@ export async function getLabHistory(
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as LabResult,
-    );
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     if (profileId) {
       docs = docs.filter(
         (doc) =>
@@ -207,13 +205,16 @@ export async function getLatestInsights(userId: string, profileId?: string) {
   try {
     const q = query(
       collection(db, path),
-      where("userId", "==", userId),
-      orderBy("timestamp", "desc"),
+      where("userId", "==", userId)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as SpecialistInsight,
-    );
+    ).sort((a, b) => {
+       const tA = a.timestamp?.toMillis ? a.timestamp.toMillis() : new Date(a.timestamp || 0).getTime();
+       const tB = b.timestamp?.toMillis ? b.timestamp.toMillis() : new Date(b.timestamp || 0).getTime();
+       return tB - tA;
+    });
     if (profileId) {
       docs = docs.filter(
         (doc) =>
@@ -249,13 +250,12 @@ export async function getHealthScores(userId: string, profileId?: string) {
   try {
     const q = query(
       collection(db, path),
-      where("userId", "==", userId),
-      orderBy("date", "desc"),
+      where("userId", "==", userId)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as any,
-    );
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     if (profileId) {
       docs = docs.filter(
         (doc) =>
@@ -306,13 +306,16 @@ export async function getClinicalSummary(userId: string, profileId?: string) {
   try {
     const q = query(
       collection(db, path),
-      where("userId", "==", userId),
-      orderBy("createdAt", "desc"),
+      where("userId", "==", userId)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as ClinicalSummaryRecord,
-    );
+    ).sort((a, b) => {
+       const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime();
+       const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt || 0).getTime();
+       return tB - tA;
+    });
     if (profileId) {
       docs = docs.filter(
         (doc) =>
@@ -354,11 +357,14 @@ export async function getConversations(userId: string, profileId?: string) {
     const q = query(
       collection(db, path),
       where("userId", "==", userId),
-      where("profileId", "==", profileId || "Myself"),
-      orderBy("lastUpdated", "desc"),
+      where("profileId", "==", profileId || "Myself")
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any).sort((a, b) => {
+       const tA = a.lastUpdated?.toMillis ? a.lastUpdated.toMillis() : new Date(a.lastUpdated || 0).getTime();
+       const tB = b.lastUpdated?.toMillis ? b.lastUpdated.toMillis() : new Date(b.lastUpdated || 0).getTime();
+       return tB - tA;
+    });
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
   }
