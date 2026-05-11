@@ -9,13 +9,17 @@ import {
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBix3A6O6tBWzs5OB4s7l8SffltHe-FdaY",
-  authDomain: "aegis-health-app-90697.firebaseapp.com",
-  projectId: "aegis-health-app-90697",
-  storageBucket: "aegis-health-app-90697.firebasestorage.app",
-  messagingSenderId: "276903125313",
-  appId: "1:276903125313:web:e414a9d6ca041d642d01c0",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+if (!firebaseConfig.apiKey) {
+  console.warn("Firebase API key is missing. Ensure VITE_FIREBASE_API_KEY is set in your environment.");
+}
 
 const app = initializeApp(firebaseConfig);
 
