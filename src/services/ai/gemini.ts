@@ -88,6 +88,7 @@ ${OUTPUT_FORMAT_JSON}
 
   try {
     const ai = getAI();
+    if (!ai.isAvailable) throw new Error("Specialist analysis unavailable: API Key missing.");
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
@@ -209,6 +210,7 @@ Return valid JSON with exactly these keys:
 
   try {
     const ai = getAI();
+    if (!ai.isAvailable) throw new Error("Clinical summary unavailable: API Key missing.");
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
@@ -312,6 +314,7 @@ export async function extractMedicalReports(
 
   try {
     const ai = getAI();
+    if (!ai.isAvailable) throw new Error("Report extraction unavailable: API Key missing.");
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: [

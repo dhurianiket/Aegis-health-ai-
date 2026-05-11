@@ -32,9 +32,17 @@ export default function NoteAnalyzer() {
 
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const [isAlAvailable, setIsAlAvailable] = useState(true);
+
+  React.useEffect(() => {
+    import("../../lib/geminiClient").then(({ GoogleGenAI }) => {
+      const ai = new GoogleGenAI();
+      setIsAlAvailable(ai.isAvailable);
+    });
+  }, []);
 
   const handleAnalyze = async () => {
-    if (!note.trim() || isAnalyzing) return;
+    if (!note.trim() || isAnalyzing || !isAlAvailable) return;
 
     setIsAnalyzing(true);
     setResult(null);
@@ -104,13 +112,18 @@ export default function NoteAnalyzer() {
 
         <button
           onClick={handleAnalyze}
-          disabled={!note.trim() || isAnalyzing}
+          disabled={!note.trim() || isAnalyzing || !isAlAvailable}
           className="w-full bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition-all shadow-xl shadow-[var(--color-primary)]/20 flex items-center justify-center gap-2 group"
         >
           {isAnalyzing ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
               Analyzing Clinical Context...
+            </>
+          ) : !isAlAvailable ? (
+            <>
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              AI Services Offline (Configure API Key)
             </>
           ) : (
             <>

@@ -243,9 +243,8 @@ export async function safeGeminiCall(apiCall: () => Promise<any>): Promise<any> 
 }
 
 export async function classifyDocument(filesData: { base64Data: string; mimeType: string }[]) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is missing");
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI();
+  if (!ai.isAvailable) throw new Error("AI Classification unavailable: API Key missing.");
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-1.5-flash",
@@ -259,9 +258,8 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
 }
 
 export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[]) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is missing");
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI();
+  if (!ai.isAvailable) throw new Error("SBAR Generation unavailable: API Key missing.");
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-1.5-flash",
@@ -278,9 +276,8 @@ export async function generateSBAR(patientContextJSON: string, trendSummariesJSO
 }
 
 export async function explainInteraction(medicationContext: any) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is missing");
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI();
+  if (!ai.isAvailable) throw new Error("Interaction Analysis unavailable: API Key missing.");
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-1.5-flash",
@@ -296,11 +293,10 @@ export async function explainInteraction(medicationContext: any) {
 export async function extractLabData(
   filesData: { base64Data: string; mimeType: string }[],
 ): Promise<LabExtraction> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not defined in the environment.");
+  const ai = new GoogleGenAI();
+  if (!ai.isAvailable) {
+    throw new Error("Lab extraction unavailable: API Key not defined in the environment.");
   }
-  const ai = new GoogleGenAI({ apiKey });
   const basePrompt = `
     Extract laboratory results into consistent JSON format.
     - Extract ALL rows from ALL lab result tables on ALL pages.

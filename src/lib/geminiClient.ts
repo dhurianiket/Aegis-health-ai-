@@ -1,20 +1,40 @@
 import { GoogleGenAI as GenAI } from "@google/genai";
 
 export class GoogleGenAI {
-  private ai: GenAI;
+  private ai: GenAI | null = null;
+  private apiKey: string | undefined;
 
   constructor(config: any = {}) {
-    const rawKey = config.apiKey || process.env.GEMINI_API_KEY;
-    const apiKey = rawKey?.trim().replace(/^["']|["']$/g, "");
-    this.ai = new GenAI({ apiKey });
+    const rawKey = config.apiKey || (import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    this.apiKey = rawKey?.trim().replace(/^["']|["']$/g, "");
+    
+    if (this.apiKey && this.apiKey !== "undefined" && this.apiKey !== "null") {
+      try {
+        this.ai = new GenAI({ apiKey: this.apiKey });
+      } catch (err) {
+        console.error("Failed to initialize GenAI SDK:", err);
+      }
+    } else {
+      console.warn("GoogleGenAI initialized without a valid API key. AI features will be disabled.");
+    }
+  }
+
+  get isAvailable() {
+    return this.ai !== null;
   }
 
   get models() {
     return {
       generateContent: async (params: any) => {
+        if (!this.ai) {
+          throw new Error("AI services are currently unavailable (API key missing or invalid).");
+        }
         return this.ai.models.generateContent(params);
       },
       generateContentStream: async function* (this: any, params: any) {
+        if (!this.ai) {
+          throw new Error("AI services are currently unavailable (API key missing or invalid).");
+        }
         const response = await this.ai.models.generateContentStream(params);
         for await (const chunk of response) {
           yield chunk;
