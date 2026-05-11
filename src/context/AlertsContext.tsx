@@ -44,11 +44,19 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const labs =
-        (await getLabHistory(user.uid, undefined, activeProfile.id)) || [];
-      const meds = (await getMedications(user.uid, activeProfile.id)) || [];
+      // Use local variables to avoid closure issues if activeProfile changes during fetch
+      const currentUid = user.uid;
+      const currentProfileId = activeProfile.id;
 
-      const generatedAlerts = getConsolidatedAlerts(labs, meds as Medication[]);
+      const [labs, meds] = await Promise.all([
+        getLabHistory(currentUid, undefined, currentProfileId),
+        getMedications(currentUid, currentProfileId)
+      ]);
+
+      const labsData = labs || [];
+      const medsData = meds || [];
+
+      const generatedAlerts = getConsolidatedAlerts(labsData, medsData as Medication[]);
 
       // Feature 4.1: Clear notifications older than 30 days
       const thirtyDaysAgo = new Date();

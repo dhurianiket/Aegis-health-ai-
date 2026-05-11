@@ -67,7 +67,7 @@ export default function ConsentScreen({
   onConsentChecked,
   onClose,
 }: ConsentScreenProps) {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Render immediately
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [agreements, setAgreements] = useState<Record<string, boolean>>({
@@ -77,26 +77,28 @@ export default function ConsentScreen({
   });
 
   useEffect(() => {
+    let isMounted = true;
     async function checkConsent() {
       try {
         const consentsRef = collection(db, "users", userId, "consents");
         const q = query(consentsRef, where("type", "==", "initial_consent"));
         const querySnapshot = await getDocs(q);
 
-        if (!querySnapshot.empty) {
-          onConsentChecked(true);
-        } else {
-          onConsentChecked(false);
+        if (isMounted) {
+          if (!querySnapshot.empty) {
+            onConsentChecked(true);
+          } else {
+            onConsentChecked(false);
+          }
         }
       } catch (error) {
         console.error("Error checking consent:", error);
-        onConsentChecked(false);
-      } finally {
-        setLoading(false);
+        if (isMounted) onConsentChecked(false);
       }
     }
     checkConsent();
-  }, [userId, onConsentGranted, onConsentChecked]);
+    return () => { isMounted = false; };
+  }, [userId, onConsentChecked]);
 
   const handleNext = async () => {
     if (step < steps.length - 1) {
@@ -104,6 +106,14 @@ export default function ConsentScreen({
     } else {
       if (submitting) return;
       setSubmitting(true);
+      
+      // Safety timeout: auto-proceed after 4 seconds as a fallback
+      const safetyTimeout = setTimeout(() => {
+        console.warn("Consent save timed out, proceeding anyway.");
+        setSubmitting(false);
+        onConsentGranted();
+      }, 4000);
+
       try {
         const consentsRef = collection(db, "users", userId, "consents");
         await addDoc(consentsRef, {
@@ -114,9 +124,13 @@ export default function ConsentScreen({
         });
 
         logAuditEvent(userId, "GRANT_CONSENT", "initial_consent_v2.0");
+        clearTimeout(safetyTimeout);
         onConsentGranted();
       } catch (error) {
         console.error("Error saving consent:", error);
+        clearTimeout(safetyTimeout);
+        // Still proceed even if DB write fails to keep user in app
+        onConsentGranted();
       } finally {
         setSubmitting(false);
       }

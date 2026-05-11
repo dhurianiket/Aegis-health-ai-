@@ -4,7 +4,7 @@ import {
   collection,
   query,
   where,
-  getDocs,
+  onSnapshot,
   addDoc,
   serverTimestamp,
   doc,
@@ -37,26 +37,29 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchProfiles() {
-      if (!user) {
-        setProfiles([]);
-        setActiveProfile(null);
-        setIsLoading(false);
-        return;
-      }
-      setIsLoading(true);
-      try {
-        const q = query(
-          collection(db, "profiles"),
-          where("userId", "==", user.uid),
-        );
-        const snapshot = await getDocs(q);
-        const fetchedProfiles = snapshot.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() }) as UserProfile,
-        );
+    if (!user) {
+      setProfiles([]);
+      setActiveProfile(null);
+      setIsLoading(false);
+      return;
+    }
 
-        // Add default "Self" profile if none exists
-        if (fetchedProfiles.length === 0) {
+    const q = query(
+      collection(db, "profiles"),
+      where("userId", "==", user.uid),
+    );
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const fetchedProfiles = snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as UserProfile,
+      );
+
+      // Store fetched profiles
+      setProfiles(fetchedProfiles);
+      
+      // If none exist, bootstrap in background
+      if (fetchedProfiles.length === 0) {
+        try {
           const defaultProfile = {
             name: "Myself",
             fullName: "Myself",
@@ -64,33 +67,30 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
             chronicConditions: [],
             allergies: [],
           };
-          const docRef = await addDoc(collection(db, "profiles"), {
+          await addDoc(collection(db, "profiles"), {
             ...defaultProfile,
             createdAt: serverTimestamp(),
           });
-          const newProfile = {
-            id: docRef.id,
-            createdAt: new Date().toISOString(),
-            ...defaultProfile,
-          } as UserProfile;
-          setProfiles([newProfile]);
-          setActiveProfile(newProfile);
-        } else {
-          setProfiles(fetchedProfiles);
-          if (
-            !activeProfile ||
-            !fetchedProfiles.find((p) => p.id === activeProfile.id)
-          ) {
-            setActiveProfile(fetchedProfiles[0]);
-          }
+          // onSnapshot will recapture this after it's created
+        } catch (error) {
+          console.error("Failed to bootstrap profile:", error);
         }
-      } catch (error) {
-        console.error("Failed to fetch profiles:", error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        // Set active profile if not already set or if it was deleted
+        if (
+          !activeProfile ||
+          !fetchedProfiles.find((p) => p.id === activeProfile.id)
+        ) {
+          setActiveProfile(fetchedProfiles[0]);
+        }
       }
-    }
-    fetchProfiles();
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Profile onSnapshot error:", error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [user]);
 
   const createProfile = async (name: string) => {

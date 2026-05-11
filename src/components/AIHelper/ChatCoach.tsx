@@ -125,7 +125,7 @@ export default function ChatCoach({
 
       await streamGenerate(
         {
-          model: "gemini-3-flash-preview",
+          model: "gemini-2.0-flash",
           contents,
           config: {
             systemInstruction: COACH_SYSTEM_INSTRUCTION,
@@ -151,15 +151,19 @@ export default function ChatCoach({
             if (needsGuardrail) {
               try {
                 const { GoogleGenAI } = await import("../../lib/geminiClient");
-                const apiKey = process.env.GEMINI_API_KEY;
+                const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
                 if (apiKey) {
                   const ai = new GoogleGenAI({ apiKey });
                   const filterRes = await ai.models.generateContent({
-                    model: "gemini-1.5-flash",
-                    contents: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}`}],
-                    config: { temperature: 0, responseMimeType: "application/json" }
+                    model: "gemini-2.0-flash",
+                    contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
+                    config: { 
+                      temperature: 0, 
+                      responseMimeType: "application/json"
+                    }
                   });
-                  const filterData = JSON.parse(filterRes.text || "{}");
+                  const { safeJsonParse } = await import("../../utils/aiUtils");
+                  const filterData = safeJsonParse<any>(filterRes.text, { isDiagnosis: false });
                   if (filterData.isDiagnosis) {
                      finalText = filterData.safeText || (finalText + "\n\n*(Note: Please consult a healthcare professional for a formal diagnosis.)*");
                   }
@@ -222,8 +226,8 @@ export default function ChatCoach({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998]"
+            exit={{ opacity: 0, pointerEvents: "none" }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] pointer-events-auto"
             onClick={handleToggle}
           />
         )}
@@ -237,9 +241,9 @@ export default function ChatCoach({
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "100%" }}
+              exit={{ x: "100%", pointerEvents: "none" }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-0 right-0 z-40 w-full sm:w-[420px] max-w-full h-[100dvh] flex flex-col bg-[var(--color-bg)] border-l border-[var(--color-border)] sm:rounded-l-3xl pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0"
+              className="fixed top-0 right-0 z-[9999] w-full sm:w-[420px] max-w-full h-[100dvh] flex flex-col bg-[var(--color-bg)] border-l border-[var(--color-border)] sm:rounded-l-3xl pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0 pointer-events-auto"
               role="dialog"
               aria-modal="true"
               aria-labelledby="chat-title"

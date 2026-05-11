@@ -4,8 +4,6 @@ import { formatContextForPrompt } from "./contextService";
 import { runSafetyCheck } from "./safetyGuardrail";
 import { CORE_SYSTEM_PROMPT } from "./promptFramework";
 
-const ai = new GoogleGenAI({});
-
 export const COACH_SYSTEM_INSTRUCTION = `${CORE_SYSTEM_PROMPT}
 
 <task>
@@ -42,6 +40,7 @@ export const getCoachResponse = async (
   userMessage: string,
   history: { role: "user" | "assistant"; content: string }[] = [],
 ): Promise<AsyncGenerator<string>> => {
+  const ai = new GoogleGenAI({});
   const patientDataPrompt = formatContextForPrompt(context);
 
   // GenAI SDK requires strictly alternating roles: user -> model -> user -> model
@@ -92,7 +91,7 @@ export const getCoachResponse = async (
   if (!ai.isAvailable) throw new Error("Aura AI is currently offline. Please check your configuration.");
 
   const stream = await ai.models.generateContentStream({
-    model: "gemini-3-flash-preview",
+    model: "gemini-2.0-flash",
     contents,
     config: {
       systemInstruction: COACH_SYSTEM_INSTRUCTION,

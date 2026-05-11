@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { GoogleGenAI } from "../../lib/geminiClient";
+import { safeJsonParse } from "../../utils/aiUtils";
 
 export const CORE_SYSTEM_PROMPT = `
 <role>
@@ -247,14 +248,13 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
   if (!ai.isAvailable) throw new Error("AI Classification unavailable: API Key missing.");
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     contents: [
-      { text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" },
-      ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))
+      { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
     config: { temperature: 0, responseMimeType: "application/json" }
   }));
-  return JSON.parse(response.text || "{}");
+  return safeJsonParse<any>(response.text, {});
 }
 
 export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[]) {
@@ -262,11 +262,11 @@ export async function generateSBAR(patientContextJSON: string, trendSummariesJSO
   if (!ai.isAvailable) throw new Error("SBAR Generation unavailable: API Key missing.");
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-1.5-flash",
-    contents: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in JSON: { "situation": "", "background": "", "assessment": "", "recommendation": "", "disclaimer": "" }\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }],
+    model: "gemini-2.0-flash",
+    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in JSON: { "situation": "", "background": "", "assessment": "", "recommendation": "", "disclaimer": "" }\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
     config: { temperature: 0, responseMimeType: "application/json" }
   }));
-  const sbarResult = JSON.parse(response.text || "{}");
+  const sbarResult = safeJsonParse<any>(response.text, {});
   
   // Always enforce the exact disclaimer regardless of what Gemini returned
   sbarResult.disclaimer = "This summary was prepared by the patient for discussion " +
@@ -280,8 +280,8 @@ export async function explainInteraction(medicationContext: any) {
   if (!ai.isAvailable) throw new Error("Interaction Analysis unavailable: API Key missing.");
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-1.5-flash",
-    contents: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }],
+    model: "gemini-2.0-flash",
+    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
     config: { temperature: 0 }
   }));
   return response.text;
@@ -304,6 +304,7 @@ export async function extractLabData(
     - For every observation, set confidence between 0 and 1 based on OCR clarity.
     - If the same test appears multiple times on different pages, create separate observation entries with different page values.
     - For flag: compare value to reference range. Set CRITICAL if value is more than 2× above or below normal range. Set null if no reference range is available.
+    - Avoid repeating redundant boilerplate words (like "Spectrophotometry") found in the source OCR. Focus only on the essential data.
     - Do not include markdown. Return valid JSON only.
 
     SCHEMA SPECIFICATION:
@@ -331,22 +332,19 @@ export async function extractLabData(
 
     try {
       const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        systemInstruction: CORE_SYSTEM_PROMPT,
-        contents: [
-          { text: finalPrompt },
-          ...filesData.map((f) => ({
-            inlineData: { data: f.base64Data, mimeType: f.mimeType },
-          })),
-        ],
+        model: "gemini-2.0-flash",
         config: {
+          systemInstruction: CORE_SYSTEM_PROMPT,
           temperature: 0,
           responseMimeType: "application/json",
+          maxOutputTokens: 8192,
         },
+        contents: [
+          { role: "user", parts: [{ text: finalPrompt }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
+        ],
       }));
 
-      const text = response.text || "{}";
-      const parsed = JSON.parse(text);
+      const parsed = safeJsonParse<any>(response.text, {});
 
       const validationResult = LabExtractionSchema.safeParse(parsed);
 

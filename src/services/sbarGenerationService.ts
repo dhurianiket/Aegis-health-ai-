@@ -6,14 +6,14 @@ import {
 } from "../types/medical";
 import { GoogleGenAI } from "../lib/geminiClient";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./ai/promptFramework";
-
-const ai = new GoogleGenAI({});
+import { safeJsonParse } from "../utils/aiUtils";
 
 export const generateSBAR = async (
   profile: UserProfile,
   labs: any[],
   meds: any[],
 ): Promise<SBARSummary> => {
+  const ai = new GoogleGenAI({});
   const activeMeds = meds.filter((m: any) => m.status === "active" || true);
 
   const age = profile.dob
@@ -54,21 +54,15 @@ Return valid JSON with exactly these keys: situation (string), background (strin
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         temperature: 0,
       },
     });
 
-    let text = response.text || "";
-    text = text
-      .replace(/^```json/, "")
-      .replace(/```$/, "")
-      .trim();
-
-    const parsed = JSON.parse(text);
+    const parsed = safeJsonParse<any>(response.text, {});
     return {
       situation: parsed.situation || "Situation not provided.",
       background: parsed.background || "Background not provided.",

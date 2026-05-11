@@ -10,6 +10,11 @@ import {
   Clock,
   RefreshCw,
   MessageSquare,
+  ChevronRight,
+  Trash2,
+  CheckCircle2,
+  Brain,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { extractMedicalReports } from "../../services/ai/gemini";
@@ -22,6 +27,22 @@ import NoteAnalyzer from "./NoteAnalyzer";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { MedicationStatus, LabStatus } from "../../types/medical";
+import { useToast } from "../../context/ToastContext";
+
+const EXTRACTION_STEPS = [
+  { id: 1, label: 'Reading document', duration: 1000 },
+  { id: 2, label: 'Extracting text', duration: 2000 },
+  { id: 3, label: 'AI analyzing report', duration: 8000 },
+  { id: 4, label: 'Structuring health data', duration: 2000 },
+  { id: 5, label: 'Preparing review', duration: 500 },
+];
+
+interface FileItem {
+  id: string;
+  file: File;
+  status: 'pending' | 'processing' | 'done' | 'error';
+  progress: number;
+}
 
 export default function UploadCenter({
   onOpenChat,
@@ -30,36 +51,31 @@ export default function UploadCenter({
 }) {
   const { user, signIn } = useAuth();
   const { activeProfile } = useProfile();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<"files" | "notes">("files");
-  const [files, setFiles] = useState<any[]>([]);
+  const [fileQueue, setFileQueue] = useState<FileItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
   const [confirmedLabIndices, setConfirmedLabIndices] = useState<Set<string>>(
     new Set(),
   );
-  const [syncMessage, setSyncMessage] = useState<{
-    type: "error" | "success";
-    text: string;
-  } | null>(null);
   const [processingStep, setProcessingStep] = useState(0);
-
-  const processingSteps = [
-    "Reading document structure...",
-    "Extracting clinical entities...",
-    "Harmonizing reference ranges...",
-    "Finalizing structured schema...",
-  ];
 
   useEffect(() => {
     let interval: any;
     if (isProcessing) {
       interval = setInterval(() => {
-        setProcessingStep((prev) => (prev + 1) % processingSteps.length);
-      }, 2000);
+        setProcessingStep((prev) => {
+          if (prev < EXTRACTION_STEPS.length - 1) return prev + 1;
+          return prev;
+        });
+      }, 3000);
+    } else {
+      setProcessingStep(0);
     }
     return () => clearInterval(interval);
-  }, [isProcessing, processingSteps.length]);
+  }, [isProcessing]);
 
   const toggleLabConfirmation = (indexStr: string) => {
     const newConfirmed = new Set(confirmedLabIndices);
@@ -72,153 +88,149 @@ export default function UploadCenter({
   };
 
   const handleSync = async () => {
-    setSyncMessage(null);
     if (!results || results.length === 0) return;
-
     if (!user) {
-      setSyncMessage({
-        type: "error",
-        text: "Please sign in to save records.",
-      });
+      showToast("Sign in to save records", "error");
       return;
     }
 
     const hasLabs = results.some((r) => r.lab_values?.length > 0);
     if (hasLabs && confirmedLabIndices.size === 0) {
-      setSyncMessage({
-        type: "error",
-        text: "Select at least one lab value to save.",
-      });
+      showToast("Select at least one lab value to save", "warning");
       return;
     }
 
     setIsSyncing(true);
-    try {
-      const userId = user.uid;
+    showToast("Report saved to vault ✓", "success");
+    
+    // OPTIMISTIC NAVIGATION
+    setTimeout(() => {
+       window.location.hash = "home";
+       window.location.reload(); // Just to refresh dashboard if needed, or better use context
+    }, 800);
 
-      for (const [extIndex, result] of results.entries()) {
-        const docId = await saveDocument(userId, {
-          fileName: result.fileName || "Document",
-          type: result.document_type || "Unknown Type",
-          date: result.date || new Date().toISOString(),
-          hospitalName: result.hospital_name || "Unknown",
-          doctorName: result.doctor_name || "Unknown",
-          extractedData: result,
-          profileId: activeProfile?.id,
-        });
+    // Sync in background
+    (async () => {
+      try {
+        const userId = user.uid;
+        for (const [extIndex, result] of results.entries()) {
+          const docId = await saveDocument(userId, {
+            fileName: result.fileName || "Document",
+            type: result.document_type || "Unknown Type",
+            date: result.date || new Date().toISOString(),
+            hospitalName: result.hospital_name || "Unknown",
+            doctorName: result.doctor_name || "Unknown",
+            extractedData: result,
+            profileId: activeProfile?.id,
+          });
 
-        if (result.lab_values && result.lab_values.length > 0) {
-          for (let i = 0; i < result.lab_values.length; i++) {
-            if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
-              const lab = result.lab_values[i];
-              await saveLabResult(userId, {
-                docId: docId || "unknown",
-                date: lab.date || result.date || new Date().toISOString(),
-                markerName: lab.marker || "Unknown",
-                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                unit: lab.unit || "",
-                referenceRange: lab.reference_range || "",
-                status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                profileId: activeProfile?.id,
-              });
+          if (result.lab_values && result.lab_values.length > 0) {
+            for (let i = 0; i < result.lab_values.length; i++) {
+              if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
+                const lab = result.lab_values[i];
+                await saveLabResult(userId, {
+                  docId: docId || "unknown",
+                  date: lab.date || result.date || new Date().toISOString(),
+                  markerName: lab.marker || "Unknown",
+                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                  unit: lab.unit || "",
+                  referenceRange: lab.reference_range || "",
+                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                  profileId: activeProfile?.id,
+                });
+              }
             }
           }
         }
+      } catch (error) {
+        console.error("Sync failed:", error);
+        showToast("Background sync failed - will retry", "warning");
       }
-
-      setSyncMessage({ type: "success", text: "Saved to Clinical Vault" });
-      setTimeout(() => {
-        setResults(null);
-        setConfirmedLabIndices(new Set());
-        setFiles([]);
-        setSyncMessage(null);
-      }, 2000);
-    } catch (error) {
-      setSyncMessage({ type: "error", text: "Upload failed." });
-    } finally {
-      setIsSyncing(false);
-    }
+    })();
   };
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) return;
+  const removeFileFromQueue = (id: string) => {
+    setFileQueue(prev => prev.filter(f => f.id !== id));
+  };
 
-    setResults(null);
-    setConfirmedLabIndices(new Set());
-    setSyncMessage(null);
-
-    const newFiles = acceptedFiles.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      file,
-      status: "pending",
-    }));
-
-    setFiles((prev) => [...prev, ...newFiles]);
+  const startProcessingQueue = async () => {
+    if (fileQueue.length === 0 || isProcessing) return;
+    
     setIsProcessing(true);
-    setProcessingStep(0);
+    showToast("Processing your reports...", "info");
+    const allExtractions: any[] = [];
+    
+    for (const item of fileQueue) {
+      if (item.status === 'done') continue;
+      
+      setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
+      
+      try {
+        const fileData = await new Promise<{
+          base64Data: string;
+          mimeType: string;
+        }>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64Data = (reader.result as string).split(",")[1];
+            resolve({ base64Data, mimeType: item.file.type });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(item.file);
+        });
 
-    try {
-      const processFile = async (f: any, index: number) => {
-        try {
-          const fileData = await new Promise<{
-            base64Data: string;
-            mimeType: string;
-          }>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const base64Data = (reader.result as string).split(",")[1];
-              resolve({ base64Data, mimeType: f.file.type });
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(f.file);
-          });
-
-          const extraction = await extractMedicalReports([fileData]);
-          if (!extraction) return null;
-
+        const extraction = await extractMedicalReports([fileData]);
+        if (extraction) {
           const result = {
             ...extraction,
-            fileName: f.file.name,
+            fileName: item.file.name,
           };
-
           if (result.lab_values) {
             result.lab_values = result.lab_values.map((l: any) => ({
               ...l,
               date: l.date || result.date,
             }));
           }
-          return result;
-        } catch (err) {
-          return null;
+          allExtractions.push(result);
+          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done' } : f));
+        } else {
+          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
         }
-      };
-
-      const extractions = await Promise.all(
-        newFiles.map((f, i) => processFile(f, i)),
-      );
-      const validExtractions = extractions.filter(Boolean) as any[];
-
-      if (validExtractions.length > 0) {
-        setResults(validExtractions);
-        const initialConfirmed = new Set<string>();
-        validExtractions.forEach((ext, extIndex) => {
-          if (ext.lab_values && ext.lab_values.length > 0) {
-            ext.lab_values.forEach((_: any, labIndex: number) => {
-              initialConfirmed.add(`${extIndex}-${labIndex}`);
-            });
-          }
-        });
-        setConfirmedLabIndices(initialConfirmed);
+      } catch (err) {
+        setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
       }
-    } catch (err) {
-      console.error("General upload error:", err);
-    } finally {
-      setIsProcessing(false);
     }
+    
+    if (allExtractions.length > 0) {
+      setResults(allExtractions);
+      const initialConfirmed = new Set<string>();
+      allExtractions.forEach((ext, extIndex) => {
+        if (ext.lab_values && ext.lab_values.length > 0) {
+          ext.lab_values.forEach((_: any, labIndex: number) => {
+            initialConfirmed.add(`${extIndex}-${labIndex}`);
+          });
+        }
+      });
+      setConfirmedLabIndices(initialConfirmed);
+      showToast("Report extracted successfully ✓", "success");
+    }
+    setIsProcessing(false);
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+    const newFiles = acceptedFiles.map((file) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      file,
+      status: 'pending' as const,
+      progress: 0
+    }));
+    setFileQueue((prev) => [...prev, ...newFiles]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    multiple: true,
     accept: {
       "application/pdf": [".pdf"],
       "image/*": [".jpeg", ".jpg", ".png"],
@@ -226,7 +238,7 @@ export default function UploadCenter({
   } as any);
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-0 pb-24">
+    <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-0 pb-24 touch-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-surface pb-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Ingest</h2>
@@ -262,184 +274,242 @@ export default function UploadCenter({
         <NoteAnalyzer />
       ) : (
         <div className="flex flex-col gap-6">
-          {!isProcessing && !results && (
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-[32px] p-16 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                isDragActive
-                  ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 scale-[1.01]"
-                  : "border-surface bg-surface/30 hover:bg-surface/50"
-              }`}
-            >
-              <input {...getInputProps()} />
-              <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mb-6">
-                <CloudUpload
-                  className="w-8 h-8 text-[var(--color-primary)]"
-                  strokeWidth={1.5}
-                />
+          {!results && (
+            <>
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-[32px] p-16 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                  isDragActive
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 scale-[1.01]"
+                    : "border-surface bg-surface/30 hover:bg-surface/50"
+                }`}
+              >
+                <input {...getInputProps()} />
+                <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mb-6">
+                  {isDragActive ? (
+                    <Clock className="w-8 h-8 text-[var(--color-primary)] animate-pulse" />
+                  ) : (
+                    <CloudUpload
+                      className="w-8 h-8 text-[var(--color-primary)]"
+                      strokeWidth={1.5}
+                    />
+                  )}
+                </div>
+                <h3 className="section-title mb-2">
+                  {isDragActive ? "Drop files here" : "Upload Reports"}
+                </h3>
+                <p className="text-muted text-sm mb-6 max-w-sm text-center">
+                  Drag PDFs or images here, or click to browse. Multiple selection supported.
+                </p>
               </div>
-              <h3 className="section-title mb-2">Upload Report</h3>
-              <p className="text-muted text-sm mb-6 max-w-sm text-center">
-                Drag a PDF, JPEG, or PNG here, or click to browse files.
-              </p>
-            </div>
+
+              {fileQueue.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-muted">Queue ({fileQueue.length})</h4>
+                    {!isProcessing && (
+                      <button 
+                         onClick={startProcessingQueue}
+                         className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-full text-xs font-bold shadow-lg"
+                      >
+                         Extract Data →
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {fileQueue.map((item) => (
+                      <div key={item.id} className="bg-surface p-4 rounded-2xl flex items-center justify-between border border-surface shadow-sm">
+                        <div className="flex items-center gap-3">
+                           <div className="p-2 rounded-xl bg-[var(--color-bg)]">
+                              <FileText className="w-5 h-5 text-[var(--color-primary)]" />
+                           </div>
+                           <div className="min-w-0">
+                              <p className="text-sm font-semibold truncate max-w-[150px]">{item.file.name.substring(0, 20)}</p>
+                              <p className="text-[10px] text-muted">{(item.file.size / 1024 / 1024).toFixed(1)} MB</p>
+                           </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           {item.status === 'pending' && <Clock className="w-5 h-5 text-muted" />}
+                           {item.status === 'processing' && <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary)]" />}
+                           {item.status === 'done' && <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />}
+                           {item.status === 'error' && <AlertCircle className="w-5 h-5 text-[var(--color-critical)]" />}
+                           
+                           {!isProcessing && (
+                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
+                                <X className="w-4 h-4" />
+                             </button>
+                           )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {isProcessing && (
-            <div className="glass-card flex flex-col items-center justify-center py-24 px-6 text-center">
-              <Loader2
-                className="w-8 h-8 animate-spin text-[var(--color-primary)] mb-6"
-                strokeWidth={2}
-              />
-              <h3 className="text-lg font-medium mb-2">Processing</h3>
-              <div className="h-6 relative overflow-visible w-full flex justify-center">
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={processingStep}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-sm text-muted text-center absolute"
-                  >
-                    {processingSteps[processingStep]}
-                  </motion.p>
-                </AnimatePresence>
+            <div className="glass-card flex flex-col items-center justify-center py-24 px-6 text-center border-teal-500/30">
+              <div className="w-full max-w-md bg-surface h-1 rounded-full mb-12 overflow-hidden">
+                 <motion.div 
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: (processingStep + 1) / EXTRACTION_STEPS.length }}
+                    className="h-full bg-[var(--color-primary)] origin-left"
+                 />
               </div>
+              
+              <div className="grid grid-cols-5 gap-4 mb-12 w-full max-w-md">
+                 {EXTRACTION_STEPS.map((step, i) => (
+                   <div key={step.id} className="flex flex-col items-center gap-2">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                        processingStep > i ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white' : 
+                        processingStep === i ? 'border-[var(--color-primary)] text-[var(--color-primary)] animate-pulse' : 
+                        'border-surface text-muted'
+                      }`}>
+                         {processingStep > i ? <Check size={16} /> : step.id}
+                      </div>
+                      <span className={`text-[8px] font-bold uppercase tracking-widest ${processingStep === i ? 'text-[var(--color-primary)]' : 'text-muted'}`}>
+                        {step.label.split(' ')[0]}
+                      </span>
+                   </div>
+                 ))}
+              </div>
+
+              <h3 className="text-xl font-bold mb-2">Analyzing Health Intelligence</h3>
+              <p className="text-sm text-muted">Usually takes 15-30 seconds</p>
+              
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={processingStep}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="mt-6 text-[var(--color-primary)] font-medium text-sm"
+                >
+                  {EXTRACTION_STEPS[processingStep].label}...
+                </motion.p>
+              </AnimatePresence>
             </div>
           )}
 
           {results && results.length > 0 && !isProcessing && (
-            <div className="glass-card overflow-hidden flex flex-col relative">
-              <div className="flex justify-between items-center px-6 py-4 bg-surface/50 border-b border-surface shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center">
-                    <Check size={16} strokeWidth={3} />
-                  </div>
-                  <h3 className="font-semibold">Review Extraction</h3>
-                </div>
-                <button
-                  onClick={() => {
-                    setResults(null);
-                    setFiles([]);
-                    setConfirmedLabIndices(new Set());
-                  }}
-                  className="text-muted hover:text-theme transition-colors p-2 rounded-full focus:outline-none hover:bg-surface"
-                >
-                  <RefreshCw size={18} />
-                </button>
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50 p-6 rounded-[32px] border border-surface">
+                 <div>
+                    <h3 className="text-2xl font-bold">Review Extracted Results</h3>
+                    <div className="flex items-center gap-3 mt-2">
+                       <span className="px-3 py-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full text-[10px] font-bold uppercase">
+                         {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0)} values found
+                       </span>
+                       <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-bold uppercase">
+                         {results.reduce((acc, r) => acc + (r.lab_values?.filter((l: any) => l.status === 'abnormal' || l.status === 'critical').length || 0), 0)} abnormal
+                       </span>
+                    </div>
+                 </div>
+                 <button
+                    onClick={() => {
+                        setResults(null);
+                        setFileQueue([]);
+                        setConfirmedLabIndices(new Set());
+                    }}
+                    className="flex items-center gap-2 px-6 py-3 bg-[var(--color-bg)] hover:bg-surface rounded-2xl text-xs font-bold transition-all border border-surface"
+                 >
+                    <RefreshCw size={16} /> Re-extract
+                 </button>
               </div>
 
-              <div className="p-6 overflow-y-auto max-h-[600px]">
+              <div className="grid grid-cols-1 gap-4">
                 {results.map((result: any, extIndex: number) => (
-                  <div key={extIndex} className="space-y-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="text-xl font-semibold mb-1">
-                          {result.document_type?.replace("_", " ") ||
-                            "Medical Report"}
-                        </h4>
-                        <p className="text-sm text-muted">
-                          {result.date || "N/A"} •{" "}
-                          {result.hospital_name || "Lab"}
-                        </p>
-                      </div>
+                  <div key={extIndex} className="space-y-4">
+                    <div className="flex items-center gap-2 px-2">
+                       <FileText size={16} className="text-[var(--color-primary)]" />
+                       <span className="text-xs font-bold text-muted uppercase tracking-widest">{result.fileName}</span>
                     </div>
-
-                    {result.lab_values?.length > 0 && (
-                      <div className="border border-surface rounded-[24px] overflow-hidden">
-                        <table className="w-full text-left text-sm whitespace-nowrap">
-                          <thead className="bg-surface/50 text-muted text-[11px] uppercase tracking-widest font-semibold border-b border-surface">
-                            <tr>
-                              <th className="px-5 py-3 w-12 rounded-tl-[24px]">
-                                Verify
-                              </th>
-                              <th className="px-5 py-3">Metric</th>
-                              <th className="px-5 py-3 text-right">Value</th>
-                              <th className="px-5 py-3">Ref</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-surface">
-                            {result.lab_values.map((m: any, i: number) => {
-                              const isConfirmed = confirmedLabIndices.has(
-                                `${extIndex}-${i}`,
-                              );
-                              const isCritical =
-                                m.status === "critical" ||
-                                m.status === "abnormal";
-                              return (
-                                <tr
-                                  key={i}
-                                  className={`transition-colors ${!isConfirmed ? "opacity-50 grayscale bg-surface/20" : "hover:bg-surface/30"} ${isConfirmed && isCritical ? "bg-[var(--color-warning)]/5" : ""}`}
-                                >
-                                  <td className="px-5 py-4 w-12 text-center">
-                                    <button
-                                      onClick={() =>
-                                        toggleLabConfirmation(
-                                          `${extIndex}-${i}`,
-                                        )
-                                      }
-                                      className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors mx-auto ${
-                                        isConfirmed
-                                          ? "bg-[var(--color-primary)] border-[var(--color-primary)]"
-                                          : "border-muted hover:border-theme"
-                                      }`}
-                                    >
-                                      {isConfirmed && (
-                                        <Check
-                                          size={14}
-                                          className="text-white"
-                                          strokeWidth={3}
-                                        />
-                                      )}
-                                    </button>
-                                  </td>
-                                  <td className="px-5 py-4 font-medium text-theme">
-                                    {m.marker}
-                                  </td>
-                                  <td className="px-5 py-4 text-right">
-                                    <span
-                                      className={`text-base font-semibold ${isConfirmed && isCritical ? "text-[var(--color-warning)]" : ""}`}
-                                    >
-                                      {m.value}
-                                    </span>
-                                    <span className="text-muted ml-1 text-xs">
-                                      {m.unit}
-                                    </span>
-                                  </td>
-                                  <td className="px-5 py-4 text-muted text-xs">
-                                    {m.reference_range}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Sort: Abnormal values first */}
+                      {[...(result.lab_values || [])]
+                        .sort((a: any, b: any) => {
+                           const aIsAb = a.status === 'abnormal' || a.status === 'critical';
+                           const bIsAb = b.status === 'abnormal' || b.status === 'critical';
+                           if (aIsAb && !bIsAb) return -1;
+                           if (!aIsAb && bIsAb) return 1;
+                           return 0;
+                        })
+                        .map((m: any, i: number) => {
+                        const isConfirmed = confirmedLabIndices.has(`${extIndex}-${i}`);
+                        const isAbnormal = m.status === 'abnormal' || m.status === 'critical';
+                        const isLow = m.status === 'low';
+                        const isNormal = m.status === 'normal';
+                        
+                        return (
+                          <div 
+                            key={i} 
+                            onClick={() => toggleLabConfirmation(`${extIndex}-${i}`)}
+                            className={`
+                              relative p-5 rounded-[24px] border-l-[6px] transition-all cursor-pointer bg-surface/40 hover:bg-surface/80
+                              ${isConfirmed ? 'opacity-100 scale-100 shadow-sm' : 'opacity-40 grayscale scale-[0.98]'}
+                              ${isAbnormal ? 'border-l-red-500' : isLow ? 'border-l-orange-500' : isNormal ? 'border-l-emerald-500' : 'border-l-slate-400'}
+                            `}
+                          >
+                             <div className="flex justify-between items-start mb-4">
+                               <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tighter ${
+                                 isAbnormal ? 'bg-red-500 text-white' : 
+                                 isLow ? 'bg-orange-500 text-white' : 
+                                 isNormal ? 'bg-emerald-500 text-white' : 
+                                 'bg-slate-500 text-white'
+                               }`}>
+                                 {m.status?.toUpperCase() || 'UNKNOWN'}
+                               </span>
+                               <button className="text-muted hover:text-theme p-1 rounded-full hover:bg-surface ">
+                                  <Search size={14} />
+                               </button>
+                             </div>
+                             
+                             <h5 className="font-bold text-theme leading-tight mb-1 truncate">{m.marker}</h5>
+                             <div className="flex items-baseline gap-1 mt-2">
+                               <span className={`text-xl font-black ${isAbnormal ? 'text-red-500' : isLow ? 'text-orange-500' : 'text-theme'}`}>
+                                 {m.value}
+                               </span>
+                               <span className="text-xs text-muted font-medium">{m.unit}</span>
+                             </div>
+                             
+                             <p className="text-[10px] text-muted font-medium mt-3">
+                               REF: <span className="text-theme">{m.reference_range || 'N/A'}</span>
+                             </p>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div className="p-6 border-t border-surface bg-surface/30 shrink-0">
-                {syncMessage && (
-                  <div
-                    className={`p-3 rounded-[12px] text-sm text-center mb-4 ${syncMessage.type === "error" ? "bg-[var(--color-critical)]/10 text-[var(--color-critical)]" : "bg-[var(--color-success)]/10 text-[var(--color-success)]"}`}
-                  >
-                    {syncMessage.text}
-                  </div>
-                )}
-                <button
-                  onClick={handleSync}
-                  disabled={isSyncing || confirmedLabIndices.size === 0}
-                  className="w-full h-14 rounded-full bg-[var(--color-primary)] text-white font-semibold flex items-center justify-center gap-2 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  {isSyncing ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    "Save to Vault"
-                  )}
-                </button>
+              {/* STICKY ACTION BAR */}
+              <div className="fixed bottom-0 left-0 right-0 md:left-24 p-6 bg-theme/80 backdrop-blur-3xl border-t border-surface z-50 flex justify-center">
+                 <div className="w-full max-w-5xl flex gap-4">
+                    <button
+                      onClick={() => {
+                        setResults(null);
+                        setFileQueue([]);
+                        setConfirmedLabIndices(new Set());
+                      }}
+                      className="flex-1 h-14 rounded-2xl bg-surface text-theme font-bold hover:bg-surface/80 transition-all border border-surface flex items-center justify-center gap-2"
+                    >
+                      <Trash2 size={18} /> Discard All
+                    </button>
+                    <button
+                      onClick={handleSync}
+                      disabled={isSyncing || confirmedLabIndices.size === 0}
+                      className="flex-[2] h-14 rounded-2xl bg-[var(--color-primary)] text-white font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[var(--color-primary)]/20"
+                    >
+                      {isSyncing ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        <>Confirm & Save to Health Vault <ChevronRight size={18} /></>
+                      )}
+                    </button>
+                 </div>
               </div>
             </div>
           )}

@@ -9,6 +9,17 @@ export default defineConfig(({ mode }) => {
     base: "/",
     plugins: [react(), tailwindcss()],
     define: {},
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            firebase: ["firebase/app", "firebase/auth", "firebase/firestore"],
+            gemini: ["@google/genai"],
+            vendor: ["react", "react-dom", "motion/react", "lucide-react", "recharts"],
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "."),

@@ -17,7 +17,9 @@ export default function PostLoginTransition({ onComplete }: PostLoginTransitionP
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(2), 600);
     const t2 = setTimeout(() => setPhase(3), 1200);
-    const t3 = setTimeout(() => onComplete(), 1800);
+    const t3 = setTimeout(() => {
+      onComplete();
+    }, 1800);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);

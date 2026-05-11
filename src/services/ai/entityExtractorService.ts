@@ -1,7 +1,6 @@
 import { GoogleGenAI } from "../../lib/geminiClient";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
-
-const ai = new GoogleGenAI({});
+import { safeJsonParse } from "../../utils/aiUtils";
 
 export interface ExtractedClinicalEntities {
   symptoms: string[];
@@ -45,25 +44,23 @@ If information is missing, leave the array empty.`;
 export const extractClinicalEntities = async (
   text: string,
 ): Promise<ExtractedClinicalEntities> => {
+  const ai = new GoogleGenAI({});
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `${EXTRACTION_PROMPT}\n\n<input>\n${text}\n</input>`,
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [{ text: `${EXTRACTION_PROMPT}\n\n<input>\n${text}\n</input>` }] }],
       config: {
         responseMimeType: "application/json",
       },
     });
 
-    const jsonText = response.text || "";
-    if (!jsonText) throw new Error("Empty response from AI");
-
-    let cleanText = jsonText.trim();
-    cleanText = cleanText
-      .replace(/^```[a-z]*\s*/i, "")
-      .replace(/```$/, "")
-      .trim();
-
-    return JSON.parse(cleanText);
+    return safeJsonParse<ExtractedClinicalEntities>(response.text, {
+      symptoms: [],
+      conditions: [],
+      medications: [],
+      appointments: [],
+      summary: "Failed to extract structured data from the provided text.",
+    });
   } catch (error) {
     console.error("Clinical extraction error:", error);
     return {

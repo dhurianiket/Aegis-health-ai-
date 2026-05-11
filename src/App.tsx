@@ -93,7 +93,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setSplashTimeout(true);
-    }, 3000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -224,6 +224,14 @@ export default function App() {
     isChatOpen,
   ]);
 
+  const handleConsentGranted = React.useCallback(() => {
+    setIsConsentGranted(true);
+  }, []);
+
+  const handleConsentChecked = React.useCallback((exists: boolean) => {
+    setIsConsentGranted(exists);
+  }, []);
+
   if (shareId) {
     return (
       <Suspense fallback={<Fallback />}>
@@ -271,10 +279,8 @@ export default function App() {
       <Suspense fallback={<SplashScreen />}>
         <ConsentScreen
           userId={user.uid}
-          onConsentGranted={() => {
-            setIsConsentGranted(true);
-          }}
-          onConsentChecked={(exists) => setIsConsentGranted(exists)}
+          onConsentGranted={handleConsentGranted}
+          onConsentChecked={handleConsentChecked}
           onClose={logOut}
         />
       </Suspense>
@@ -282,7 +288,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen h-[100dvh] bg-theme text-theme overflow-hidden selection:bg-[var(--color-primary)]/20">
+    <div className="flex h-[100dvh] bg-theme text-theme overflow-hidden selection:bg-[var(--color-primary)]/20 touch-none pointer-events-auto">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[var(--color-primary)] text-white px-4 py-2 rounded-full font-bold"
@@ -290,6 +296,19 @@ export default function App() {
         Skip to main content
       </a>
       <OfflineIndicator />
+      
+      {/* Global Loading Bar */}
+      <AnimatePresence>
+        {(isGeneratingSBAR || authLoading) && (
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-teal-400 via-indigo-500 to-teal-400 z-[100] origin-left"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Navigation (Sidebar Desktop / Bottom Bar Mobile) */}
       <AppNav
@@ -304,7 +323,7 @@ export default function App() {
       {/* Main Content Area */}
       <main
         id="main-content"
-        className="flex-1 flex flex-col min-w-0 h-full relative pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0"
+        className="flex-1 flex flex-col min-w-0 h-full relative pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 pointer-events-auto touch-auto"
       >
         {/* Top Header */}
         <header className="sticky top-0 z-30 bg-theme/80 backdrop-blur-3xl border-b border-surface px-6 md:px-10 py-5 flex items-center justify-between shrink-0">
@@ -370,9 +389,9 @@ export default function App() {
 
               <AnimatePresence>
                 {isNotificationsOpen && (
-                  <div className="absolute right-0 mt-2 z-50">
+                  <div className="absolute right-0 mt-2 z-[60]">
                     <div
-                      className="fixed inset-0"
+                      className="fixed inset-0 pointer-events-auto"
                       onClick={() => setIsNotificationsOpen(false)}
                     />
                     <NotificationDropdown
@@ -428,7 +447,7 @@ export default function App() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     className="max-w-[1200px] mx-auto w-full h-full p-6 md:p-10 pb-32"
                   >
                     {activeTab === "home" && (

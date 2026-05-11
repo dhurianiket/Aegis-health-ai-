@@ -159,45 +159,9 @@ export default function Dashboard({
     },
   };
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-6 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-          <AlertTriangle className="w-8 h-8" />
-        </div>
-        <div>
-          <h3 className="text-xl font-bold">Telemetry Sync Failed</h3>
-          <p className="text-sm text-muted mt-2 max-w-xs">{error}</p>
-        </div>
-        <button
-          onClick={() => setRetryCount(c => c + 1)}
-          className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20 transition-transform active:scale-95"
-        >
-          Retry Connection
-        </button>
-      </div>
-    );
-  }
-
-  if (
-    keyLabs.length === 0 &&
-    healthScores.length === 0 &&
-    latestInsights.length === 0
-  ) {
-    return (
-      <Suspense fallback={<DashboardSkeleton />}>
-        <EmptyDashboard userProfile={activeProfile} onUploadClick={onUploadClick} />
-      </Suspense>
-    );
-  }
-
   return (
     <motion.div
-      className="space-y-8 pb-20"
+      className="space-y-8 pb-20 pointer-events-auto"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -218,13 +182,52 @@ export default function Dashboard({
           <ShareReport />
         </Suspense>
       </motion.div>
-      <motion.div variants={tileVariants}>
-        <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
-          <SmartAlerts labs={keyLabs} />
-        </Suspense>
-      </motion.div>
 
-      {/* Top Banner Stats */}
+      {loading && !error && (
+        <div className="space-y-8 animate-pulse">
+          <div className="h-32 bg-surface rounded-[32px]" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="h-32 bg-surface rounded-[32px]" />
+            <div className="h-32 bg-surface rounded-[32px]" />
+            <div className="h-32 bg-surface rounded-[32px]" />
+          </div>
+          <div className="h-64 bg-surface rounded-[32px]" />
+        </div>
+      )}
+
+      {error && (
+        <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-6 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold">Telemetry Sync Failed</h3>
+            <p className="text-sm text-muted mt-2 max-w-xs">{error}</p>
+          </div>
+          <button
+            onClick={() => setRetryCount(c => c + 1)}
+            className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20 transition-transform active:scale-95"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && keyLabs.length === 0 && healthScores.length === 0 && latestInsights.length === 0 && (
+        <Suspense fallback={<DashboardSkeleton />}>
+          <EmptyDashboard userProfile={activeProfile} onUploadClick={onUploadClick} />
+        </Suspense>
+      )}
+
+      {!loading && !error && (keyLabs.length > 0 || healthScores.length > 0 || latestInsights.length > 0) && (
+        <>
+          <motion.div variants={tileVariants}>
+            <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
+              <SmartAlerts labs={keyLabs} />
+            </Suspense>
+          </motion.div>
+
+          {/* Top Banner Stats */}
       <motion.div
         variants={tileVariants}
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
@@ -450,6 +453,8 @@ export default function Dashboard({
           <div className="absolute right-12 top-12 w-32 h-32 bg-purple-400 rounded-full blur-[60px] opacity-10"></div>
         </div>
       </motion.div>
+    </>
+    )}
     </motion.div>
   );
 }

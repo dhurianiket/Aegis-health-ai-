@@ -9,6 +9,8 @@ import {
 } from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 
+import { safeJsonParse } from "../../utils/aiUtils";
+
 const getAI = () => new GoogleGenAI({});
 
 export interface SpecialistAnalysisResponse {
@@ -90,8 +92,8 @@ ${OUTPUT_FORMAT_JSON}
     const ai = getAI();
     if (!ai.isAvailable) throw new Error("Specialist analysis unavailable: API Key missing.");
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -127,21 +129,18 @@ ${OUTPUT_FORMAT_JSON}
       },
     });
 
-    let text = response.text || "{}";
-
-    // Clean codeblock formatting if present
-    text = text
-      .replace(/^```json/, "")
-      .replace(/```$/, "")
-      .trim();
-
-    const jsonStart = text.indexOf("{");
-    const jsonEnd = text.lastIndexOf("}");
-    if (jsonStart !== -1 && jsonEnd !== -1) {
-      text = text.slice(jsonStart, jsonEnd + 1);
-    }
-
-    return JSON.parse(text) as SpecialistAnalysisResponse;
+    const text = response.text || "{}";
+    return safeJsonParse<SpecialistAnalysisResponse>(text, {
+      observations: [],
+      abnormalities: [],
+      patterns: [],
+      recommended_questions: [],
+      suggested_next_steps: [],
+      lifestyle_advice: [],
+      urgency_level: "Normal",
+      confidence_score: 0.5,
+      summary: "Failed to generate specialist analysis.",
+    } as SpecialistAnalysisResponse);
   } catch (error) {
     console.error(`Error in specialist analysis (${specialty}):`, error);
     return null;
@@ -212,20 +211,16 @@ Return valid JSON with exactly these keys:
     const ai = getAI();
     if (!ai.isAvailable) throw new Error("Clinical summary unavailable: API Key missing.");
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
+        maxOutputTokens: 2048,
       },
     });
 
-    let text = response.text || "{}";
-    text = text
-      .replace(/^```json/, "")
-      .replace(/```$/, "")
-      .trim();
-
-    const parsed = JSON.parse(text);
+    const text = response.text || "{}";
+    const parsed = safeJsonParse<any>(text, {});
 
     // Construct the markdown string from the JSON to maintain compatibility with the UI
     return `## Health Summary
@@ -309,22 +304,35 @@ export async function extractMedicalReports(
       * date should be the actual date of the report this medication comes from (YYYY-MM-DD)
     - follow_up_date: (if mentioned)
     
-    If any value is unclear, mark it as null.
+    CRITICAL: 
+    - Be concise. 
+    - If the source text has long repeating phrases or redundant boilerplate (like "Spectrophotometry" repeated 100 times), ignore the repetitions and just extract the core value.
+    - If any value is unclear, mark it as null.
   `;
 
   try {
     const ai = getAI();
     if (!ai.isAvailable) throw new Error("Report extraction unavailable: API Key missing.");
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+
+    const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
+
+    const response = await safeGeminiCall(() => ai.models.generateContent({
+      model: "gemini-2.0-flash",
       contents: [
-        { text: prompt },
-        ...filesData.map((f) => ({
-          inlineData: { data: f.base64Data, mimeType: f.mimeType },
-        })),
+        {
+          role: "user",
+          parts: [
+            { text: prompt },
+            ...filesData.map((f) => ({
+              inlineData: { data: f.base64Data, mimeType: f.mimeType },
+            })),
+          ],
+        },
       ],
       config: {
+        systemInstruction: CORE_SYSTEM_PROMPT,
         responseMimeType: "application/json",
+        maxOutputTokens: 8192,
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -364,17 +372,10 @@ export async function extractMedicalReports(
           },
         },
       },
-    });
+    }));
 
-    let text = response.text || "{}";
-
-    const jsonStart = text.indexOf("{");
-    const jsonEnd = text.lastIndexOf("}");
-    if (jsonStart !== -1 && jsonEnd !== -1) {
-      text = text.slice(jsonStart, jsonEnd + 1);
-    }
-
-    return JSON.parse(text) as ExtractedReportResponse;
+    const text = response.text || "{}";
+    return safeJsonParse<ExtractedReportResponse | null>(text, null);
   } catch (error) {
     console.error("Error extracting report:", error);
     return null;

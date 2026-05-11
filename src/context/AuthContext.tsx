@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (isMounted) {
         setLoading(false);
       }
-    }, 3000);
+    }, 2000);
 
     return () => {
       isMounted = false;

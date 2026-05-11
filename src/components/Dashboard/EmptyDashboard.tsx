@@ -77,7 +77,7 @@ export default function EmptyDashboard({
           <div className="text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-surface)] px-3 py-1 rounded-full border border-[var(--color-border)]">Preview Mode</div>
         </div>
         
-        <div className="opacity-40 pointer-events-none select-none filter blur-[1px]">
+        <div className="opacity-40 pointer-events-none select-none filter blur-[2px] mb-8" aria-hidden="true">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
              <div className="bg-[var(--color-surface)] p-6 rounded-[24px] border border-[var(--color-border)] flex items-center gap-4">
                 <ShieldCheck className="w-10 h-10 text-indigo-400" />

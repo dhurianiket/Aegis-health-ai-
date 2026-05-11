@@ -5,8 +5,12 @@ export class GoogleGenAI {
   private apiKey: string | undefined;
 
   constructor(config: any = {}) {
-    const rawKey = config.apiKey || (import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-    this.apiKey = rawKey?.trim().replace(/^["']|["']$/g, "");
+    this.apiKey = config.apiKey || import.meta.env.VITE_GEMINI_API_KEY;
+    
+    // Clean the key
+    if (this.apiKey) {
+      this.apiKey = this.apiKey.trim().replace(/^["']|["']$/g, "");
+    }
     
     if (this.apiKey && this.apiKey !== "undefined" && this.apiKey !== "null") {
       try {

@@ -116,8 +116,8 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
         </nav>
       </aside>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/80 backdrop-blur-xl border-t border-[var(--color-border)] z-40 pb-safe">
-        <div className="flex items-center justify-around px-2 py-2 relative">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/80 backdrop-blur-xl border-t border-[var(--color-border)] z-50 pb-safe pointer-events-auto overflow-hidden">
+        <div className="flex items-center justify-around px-2 py-2 relative pointer-events-auto">
           {bottomTabs.map((tab) => {
             const isActive =
               activeTab === tab.id ||
@@ -135,7 +135,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className="flex flex-col items-center justify-center -mt-6 focus:outline-none relative z-10"
+                className="flex flex-col items-center justify-center -mt-6 focus:outline-none relative z-10 pointer-events-auto"
                 >
                   <div
                     className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 bg-[var(--color-primary)] text-white`}
@@ -150,7 +150,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-colors focus:outline-none relative ${
+                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-colors focus:outline-none relative pointer-events-auto ${
                   isActive
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"

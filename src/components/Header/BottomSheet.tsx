@@ -27,17 +27,17 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, pointerEvents: "none" }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 z-50 md:hidden"
+            className="fixed inset-0 bg-black/60 z-50 md:hidden pointer-events-auto"
           />
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            exit={{ y: "100%", pointerEvents: "none" }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg)] rounded-t-3xl z-50 md:hidden border-t border-[var(--color-border)] pb-safe"
+            className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg)] rounded-t-3xl z-50 md:hidden border-t border-[var(--color-border)] pb-safe pointer-events-auto"
           >
             <div className="flex justify-center p-3" onClick={onClose}>
               <div className="w-12 h-1.5 bg-[var(--color-border)] rounded-full" />

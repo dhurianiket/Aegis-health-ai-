@@ -54,6 +54,25 @@
     @apply font-sans antialiased selection:bg-teal-500/30;
     background-color: var(--color-bg);
     color: var(--color-text);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button, [role="button"], .card-clickable {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 75ms, opacity 75ms;
+  }
+
+  button:active, [role="button"]:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+  }
+
+  button, a, [role="button"] {
+    touch-action: manipulation;
+    cursor: pointer;
+    pointer-events: auto;
   }
 }
 
