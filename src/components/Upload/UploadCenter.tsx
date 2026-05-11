@@ -170,12 +170,17 @@ export default function UploadCenter({
           base64Data: string;
           mimeType: string;
         }>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error("File read timeout")), 30000);
           const reader = new FileReader();
           reader.onload = () => {
+            clearTimeout(timeout);
             const base64Data = (reader.result as string).split(",")[1];
             resolve({ base64Data, mimeType: item.file.type });
           };
-          reader.onerror = reject;
+          reader.onerror = () => {
+            clearTimeout(timeout);
+            reject(new Error("File read error"));
+          };
           reader.readAsDataURL(item.file);
         });
 

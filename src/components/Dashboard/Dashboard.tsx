@@ -72,39 +72,50 @@ export default function Dashboard({
 }) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Do not block by default
   const [error, setError] = useState<string | null>(null);
   const [healthScores, setHealthScores] = useState<HealthScore[]>([]);
   const [latestInsights, setLatestInsights] = useState<SpecialistInsight[]>([]);
   const [keyLabs, setKeyLabs] = useState<LabResult[]>([]);
+  const [isSyncing, setIsSyncing] = useState(true);
 
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    let isMounted = true;
     async function fetchData() {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      setError(null);
+      if (!user) return;
+      
+      setIsSyncing(true);
       try {
+        // Fetch in parallel but don't block the whole UI if possible
+        // We'll show partial data as it arrives or just show the layout
         const [scores, insights, labs] = await Promise.all([
           getHealthScores(user.uid, activeProfile?.id),
           getLatestInsights(user.uid, activeProfile?.id),
           getLabHistory(user.uid, undefined, activeProfile?.id),
         ]);
-        setHealthScores((scores as HealthScore[]) || []);
-        setLatestInsights((insights as SpecialistInsight[]) || []);
-        setKeyLabs((labs as LabResult[]) || []);
+        
+        if (isMounted) {
+          setHealthScores((scores as HealthScore[]) || []);
+          setLatestInsights((insights as SpecialistInsight[]) || []);
+          setKeyLabs((labs as LabResult[]) || []);
+          setError(null);
+        }
       } catch (err) {
         console.error("Dashboard fetch failed:", err);
-        setError("Failed to load health telemetry. Please check your connection.");
+        if (isMounted) {
+          setError("Failed to load health telemetry. Please check your connection.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setIsSyncing(false);
+          setLoading(false);
+        }
       }
     }
     fetchData();
+    return () => { isMounted = false; };
   }, [user, activeProfile, retryCount]);
 
   const latestScore =
@@ -183,16 +194,8 @@ export default function Dashboard({
         </Suspense>
       </motion.div>
 
-      {loading && !error && (
-        <div className="space-y-8 animate-pulse">
-          <div className="h-32 bg-surface rounded-[32px]" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="h-32 bg-surface rounded-[32px]" />
-            <div className="h-32 bg-surface rounded-[32px]" />
-            <div className="h-32 bg-surface rounded-[32px]" />
-          </div>
-          <div className="h-64 bg-surface rounded-[32px]" />
-        </div>
+      {loading && !error && keyLabs.length === 0 && (
+        <DashboardSkeleton />
       )}
 
       {error && (

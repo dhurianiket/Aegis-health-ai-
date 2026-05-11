@@ -85,32 +85,12 @@ const Fallback = () => (
 );
 
 export default function App() {
-  const [authLoading, setAuthLoading] = useState(true);
-  const [splashTimeout, setSplashTimeout] = useState(false);
   const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
   const isFirstAuthResolution = useRef(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSplashTimeout(true);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-      setAuthLoading(false);
-      if (authUser && isFirstAuthResolution.current) {
-        isFirstAuthResolution.current = false;
-        setShowPostLoginAnimation(true);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
   const [activeTab, setActiveTab] = useState("home");
-  const { user, signIn, logOut } = useAuth();
-  const { profiles, activeProfile, setActiveProfile, createProfile } =
+  const { user, loading: authLoading, signIn, logOut } = useAuth();
+  const { profiles, activeProfile, setActiveProfile, createProfile, isLoading: profileLoading } =
     useProfile();
   const { alerts, dismissedIds, dismissAlert, unreadCount } = useAlerts();
 
@@ -262,8 +242,17 @@ export default function App() {
 
   const activeAlertsCount = unreadCount;
 
-  if (authLoading && !splashTimeout) {
-    return <SplashScreen onComplete={() => setSplashTimeout(true)} />;
+  const [splashTimeout, setSplashTimeout] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSplashTimeout(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const isLoading = authLoading || splashTimeout;
+
+  if (isLoading) {
+    return <SplashScreen />;
   }
 
   if (showPostLoginAnimation && (!user || isConsentGranted === true)) {

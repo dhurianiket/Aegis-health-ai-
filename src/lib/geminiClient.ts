@@ -5,14 +5,23 @@ export class GoogleGenAI {
   private apiKey: string | undefined;
 
   constructor(config: any = {}) {
-    this.apiKey = config.apiKey || import.meta.env.VITE_GEMINI_API_KEY;
+    this.apiKey = config.apiKey 
+      || import.meta.env.VITE_GEMINI_API_KEY 
+      || import.meta.env.VITE_GEMINI_KEY
+      || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined)
+      || "";
     
     // Clean the key
     if (this.apiKey) {
       this.apiKey = this.apiKey.trim().replace(/^["']|["']$/g, "");
     }
     
-    if (this.apiKey && this.apiKey !== "undefined" && this.apiKey !== "null") {
+    console.log("[GeminiLog] API Key present:", !!this.apiKey, "Length:", this.apiKey?.length || 0);
+    if (import.meta.env.DEV) {
+      console.log("[GeminiLog] Env keys:", Object.keys(import.meta.env).filter(k => k.includes("GEMINI")));
+    }
+
+    if (this.apiKey && this.apiKey.length > 10) {
       try {
         this.ai = new GenAI({ apiKey: this.apiKey });
       } catch (err) {
@@ -23,8 +32,8 @@ export class GoogleGenAI {
     }
   }
 
-  get isAvailable() {
-    return this.ai !== null;
+  get isAvailable(): boolean {
+    return !!this.ai && !!this.apiKey && this.apiKey.length > 10;
   }
 
   get models() {

@@ -24,25 +24,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     let isMounted = true;
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const timeout = setTimeout(() => {
       if (isMounted) {
-        setUser(u);
+        console.warn("Auth resolution timeout reached.");
         setLoading(false);
       }
-    });
+    }, 10000);
 
-    const fallbackTimeout = setTimeout(() => {
-      // Accessing state inside closure. It's safe since this effect only mounts once,
-      // but we just enforce unlocking if it fires.
-      if (isMounted) {
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (u) => {
+        clearTimeout(timeout);
+        if (isMounted) {
+          setUser(u ?? null);
+          setLoading(false);
+        }
+      },
+      (error) => {
+        clearTimeout(timeout);
+        console.error("Auth error:", error);
+        if (isMounted) {
+          setUser(null);
+          setLoading(false);
+        }
       }
-    }, 2000);
+    );
 
     return () => {
       isMounted = false;
       unsubscribe();
-      clearTimeout(fallbackTimeout);
+      clearTimeout(timeout);
     };
   }, []);
 
