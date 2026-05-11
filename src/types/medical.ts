@@ -53,7 +53,8 @@ export interface MedicalDocument {
   hospitalName?: string;
   doctorName?: string;
   fileName: string;
-  fileUrl: string;
+  fileUrl?: string;
+  storagePath?: string;
   isProcessed: boolean;
   extractedData?: any;
   createdAt: string;

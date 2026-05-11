@@ -1,23 +1,28 @@
-# Clinical Health Telemetry System
+# Aegis Health AI [![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/dhurianiket/aegis-health-app-90697)
 
-A modern, high-density clinical dashboard for personal health management. This application allows users to upload medical reports, extract key data using Gemini 1.5 Flash, and visualize health trends over time.
+A modern, clinical-grade health management system. Aegis Health AI enables users to centralize medical records, extract intelligence from lab reports using Gemini 1.5 Flash, and monitor long-term clinical narratives.
+
+**Live URL**: [https://aegis-health-app-90697.web.app](https://aegis-health-app-90697.web.app)
 
 ## 🚀 Features
 
-- **AI-Powered Extraction**: Seamlessly parse PDF and image-based medical reports.
-- **Smart Alerts**: Automatic detection of critical lab values and drug-drug interactions.
-- **SBAR Summarization**: Generate professional Situation-Background-Assessment-Recommendation summaries for physicians.
-- **Advanced Visualization**: High-fidelity charts using Recharts for metabolic and cardiovascular trends.
-- **Offline Support**: Robust offline indicator and cached data access.
-- **Privacy First**: Secure handling of medical telemetry via Firebase and local processing.
+- **Google Auth & Secure Vault**: Protected health data storage with Firebase per-user isolation.
+- **AI-Powered Lab Extraction**: Digitalize PDF/Image reports automatically using Gemini 1.5 Flash.
+- **Health Vault (Timeline)**: A chronological clinical narrative of all your medical documents and findings.
+- **Clinical Trend Engine**: Automatically compute metabolic and physiological trends across multiple lab tests.
+- **Smart SBAR Analytics**: Generate clinical summaries for physician consults.
+- **Family Hub**: Manage multiple profiles (children, spouse, parents) from a single account.
+- **CI/CD Integrated**: Automated deployments with GitHub Actions and Firebase Hosting.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, Vite, Tailwind CSS, Motion (formerly Framer Motion)
-- **Backend**: Firebase Firestore, Firebase Authentication
-- **AI**: Google Gemini 1.5 Flash (via @google/genai)
-- **Visuals**: Lucide React, Recharts
-- **Testing**: Vitest, React Testing Library
+- **Framework**: React 19 + Vite
+- **Styling**: Tailwind CSS 4.0 + Motion
+- **Database**: Firebase Firestore
+- **Authentication**: Firebase Auth (Google OAuth)
+- **Storage**: Firebase Storage (PDF/Image hosting)
+- **Intelligence**: Google Gemini 1.5 Flash (@google/genai)
+- **CI/CD**: GitHub Actions + Firebase Hosting
 
 ## 📦 Installation
 

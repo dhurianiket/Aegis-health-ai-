@@ -23,6 +23,8 @@ import {
   saveLabResult,
   saveMedication,
 } from "../../lib/firebase/firestore";
+import { storage } from "../../lib/firebase/config";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import NoteAnalyzer from "./NoteAnalyzer";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
@@ -187,6 +189,8 @@ export default function UploadCenter({
             doctorName: result.doctor_name || "Unknown",
             extractedData: result,
             profileId: activeProfile?.id,
+            fileUrl: result.fileUrl,
+            storagePath: result.storagePath,
           });
 
           if (result.lab_values && result.lab_values.length > 0) {
@@ -223,6 +227,10 @@ export default function UploadCenter({
 
   const startProcessingQueue = async () => {
     if (fileQueue.length === 0 || isProcessing) return;
+    if (!user) {
+      showToast("Sign in to process files", "error");
+      return;
+    }
     
     setIsProcessing(true);
     showToast("Processing your reports...", "info");
@@ -235,14 +243,40 @@ export default function UploadCenter({
       
       try {
         console.log('[Upload] Browser Safari:', isSafari);
+        
+        // 1. UPLOAD TO STORAGE FIRST
+        const storagePath = `users/${user.uid}/documents/${item.id}_${item.file.name}`;
+        const storageRef = ref(storage, storagePath);
+        
+        const uploadTask = uploadBytesResumable(storageRef, item.file);
+        
+        const fileUrl = await new Promise<string>((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress } : f));
+            },
+            (error) => reject(error),
+            async () => {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(url);
+            }
+          );
+        });
+
+        // 2. READ FOR AI
         const fileData = await readFileAsSafeBase64(item.file);
 
+        // 3. EXTRACT
         const extraction = await extractMedicalReports([fileData]);
         if (extraction) {
           console.log('[Upload] Extraction success for:', item.file.name);
           const result = {
             ...extraction,
             fileName: item.file.name,
+            fileUrl,
+            storagePath
           };
           if (result.lab_values) {
             result.lab_values = result.lab_values.map((l: any) => ({

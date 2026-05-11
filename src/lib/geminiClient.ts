@@ -6,8 +6,7 @@ export class GoogleGenAI {
 
   constructor(config: any = {}) {
     this.apiKey = config.apiKey 
-      || import.meta.env.VITE_GEMINI_API_KEY 
-      || "AIzaSy" + "CWRTEehnT8kokTdf_gPPG2aW6vWOy-f7Y"; // Diagnostic fallback matching Firebase pattern if needed
+      || import.meta.env.VITE_GEMINI_API_KEY;
     
     // Clean the key
     if (this.apiKey) {

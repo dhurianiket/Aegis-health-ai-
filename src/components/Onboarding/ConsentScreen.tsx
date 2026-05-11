@@ -67,7 +67,7 @@ export default function ConsentScreen({
   onConsentChecked,
   onClose,
 }: ConsentScreenProps) {
-  const [loading, setLoading] = useState(false); // Render immediately
+  const [loading, setLoading] = useState(true); // Don't render until consent is checked
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [agreements, setAgreements] = useState<Record<string, boolean>>({
@@ -89,11 +89,15 @@ export default function ConsentScreen({
             onConsentChecked(true);
           } else {
             onConsentChecked(false);
+            setLoading(false);
           }
         }
       } catch (error) {
         console.error("Error checking consent:", error);
-        if (isMounted) onConsentChecked(false);
+        if (isMounted) {
+          onConsentChecked(false);
+          setLoading(false);
+        }
       }
     }
     checkConsent();
@@ -150,7 +154,13 @@ export default function ConsentScreen({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+      </div>
+    );
+  }
 
   return (
     <div
