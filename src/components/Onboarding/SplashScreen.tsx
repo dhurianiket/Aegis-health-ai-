@@ -15,50 +15,48 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
-      <div className="flex flex-col items-center">
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-teal-500/20 to-indigo-500/20 border border-white/10 mb-4">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0d0d0d]">
+      <div className="flex flex-col items-center animate-in fade-in duration-700">
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-teal-500/20 to-indigo-500/20 border border-white/10 mb-6 shadow-2xl shadow-teal-500/5">
           <motion.div
-            animate={{ scale: [1, 1.08, 1] }}
-            transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+            animate={{ scale: [1, 1.05, 1], rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 4, ease: "easeInOut", repeat: Infinity }}
           >
-            <ShieldCheck size={64} className="text-teal-400" strokeWidth={1.5} />
+            <ShieldCheck size={68} className="text-teal-400" strokeWidth={1.2} />
           </motion.div>
         </div>
         
-        <motion.div 
-          className="flex flex-col items-center"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          <h1 className="text-white font-bold text-3xl tracking-[0.3em]">
+        <div className="flex flex-col items-center text-center">
+          <h1 className="text-white font-bold text-3xl tracking-[0.3em] ml-[0.3em]">
             AEGIS
           </h1>
-          <h2 className="text-teal-400 text-sm tracking-[0.5em] mt-1">
-            HEALTH AI
+          <h2 className="text-teal-400/80 text-xs tracking-[0.5em] mt-2 font-medium">
+            HEALTH SYSTEMS
           </h2>
-        </motion.div>
+        </div>
 
-        <div className="flex items-center justify-center gap-2 mt-8">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-2 h-2 rounded-full bg-teal-400"
-              animate={{ opacity: [0.2, 1, 0.2] }}
-              transition={{
-                duration: 1.4,
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
+        <div className="mt-12 flex flex-col items-center gap-4">
+          <div className="flex items-center justify-center gap-3">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full bg-teal-400/60"
+                animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: i * 0.3,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] text-teal-400/30 uppercase tracking-[0.2em] font-medium">Initializing neural link...</span>
         </div>
       </div>
 
-      <div className="fixed bottom-12 text-slate-500 text-xs tracking-widest text-center px-4">
-        Your health telemetry, understood.
+      <div className="fixed bottom-12 text-slate-600 text-[10px] uppercase tracking-[0.2em] font-medium animate-pulse">
+        Encrypted Session Active
       </div>
     </div>
   );

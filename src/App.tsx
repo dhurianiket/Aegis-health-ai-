@@ -282,7 +282,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-[100dvh] bg-theme text-theme overflow-hidden selection:bg-[var(--color-primary)]/20">
+    <div className="flex h-screen h-[100dvh] bg-theme text-theme overflow-hidden selection:bg-[var(--color-primary)]/20">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[var(--color-primary)] text-white px-4 py-2 rounded-full font-bold"
