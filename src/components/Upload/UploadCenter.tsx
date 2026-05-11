@@ -58,8 +58,8 @@ const readFileAsSafeBase64 = (file: File): Promise<{
   return new Promise((resolve, reject) => {
     const mimeType = getMimeType(file);
 
-    if (file.size > 10 * 1024 * 1024) {
-      reject(new Error("File too large. Maximum 10MB per file."));
+    if (file.size > 4 * 1024 * 1024) {
+      reject(new Error("File too large. Maximum 4MB per file."));
       return;
     }
 

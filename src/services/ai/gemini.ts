@@ -292,19 +292,36 @@ export async function extractMedicalReports(
   const prompt = `
     Extract the following information from this medical report (image or PDF).
     Extract the information into a single structured JSON format:
-    - document_type: (lab_report, prescription, consultation_note, etc. - choose the most prominent or general type)
-    - date: (YYYY-MM-DD - the date of the report)
-    - hospital_name: (if available)
-    - doctor_name: (if available)
-    - lab_values: (array of objects with {date, marker, value, unit, reference_range, status})
-      * date should be the actual date of the report this lab value comes from (YYYY-MM-DD)
-      * status must be one of: normal, abnormal, critical (all lowercase)
-    - findings: (summary of text results or doctor's impressions)
-    - medications: (array of {date, name, dosage, frequency, purpose})
-      * date should be the actual date of the report this medication comes from (YYYY-MM-DD)
-    - follow_up_date: (if mentioned)
+    {
+      "document_type": "lab_report|prescription|consultation_note|...",
+      "date": "YYYY-MM-DD",
+      "hospital_name": "string or null",
+      "doctor_name": "string or null",
+      "lab_values": [
+        {
+          "date": "YYYY-MM-DD",
+          "marker": "string",
+          "value": "string or number",
+          "unit": "string",
+          "reference_range": "string",
+          "status": "normal|abnormal|critical"
+        }
+      ],
+      "findings": "string summary",
+      "medications": [
+        {
+          "date": "YYYY-MM-DD",
+          "name": "string",
+          "dosage": "string",
+          "frequency": "string",
+          "purpose": "string"
+        }
+      ],
+      "follow_up_date": "YYYY-MM-DD or null"
+    }
     
     CRITICAL: 
+    - Output ONLY valid JSON containing the structure above. No markdown, no explanations.
     - Be concise. 
     - If the source text has long repeating phrases or redundant boilerplate (like "Spectrophotometry" repeated 100 times), ignore the repetitions and just extract the core value.
     - If any value is unclear, mark it as null.
@@ -335,46 +352,9 @@ export async function extractMedicalReports(
       ],
       generationConfig: {
         systemInstruction: CORE_SYSTEM_PROMPT,
+        temperature: 0.1,
         responseMimeType: "application/json",
         maxOutputTokens: 8192,
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            document_type: { type: Type.STRING },
-            date: { type: Type.STRING },
-            hospital_name: { type: Type.STRING },
-            doctor_name: { type: Type.STRING },
-            lab_values: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  date: { type: Type.STRING },
-                  marker: { type: Type.STRING },
-                  value: { type: Type.STRING },
-                  unit: { type: Type.STRING },
-                  reference_range: { type: Type.STRING },
-                  status: { type: Type.STRING },
-                },
-              },
-            },
-            findings: { type: Type.STRING },
-            medications: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  date: { type: Type.STRING },
-                  name: { type: Type.STRING },
-                  dosage: { type: Type.STRING },
-                  frequency: { type: Type.STRING },
-                  purpose: { type: Type.STRING },
-                },
-              },
-            },
-            follow_up_date: { type: Type.STRING },
-          },
-        },
       },
     }));
 
@@ -382,9 +362,15 @@ export async function extractMedicalReports(
     console.log("[Extraction] Gemini raw response length:", text.length);
     const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
     console.log("[Extraction] Parsed result success:", !!result);
+    if (!result) {
+        throw new Error("AI returned an invalid or empty response.");
+    }
     return result;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error extracting report:", error);
-    return null;
+    if (error?.message?.includes("xhr error") || error?.message?.includes("Rpc failed")) {
+      throw new Error("File too large or connection timed out. Please try a smaller file (under 4MB).");
+    }
+    throw new Error(error?.message || "Failed to extract medical report");
   }
 }

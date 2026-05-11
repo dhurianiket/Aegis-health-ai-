@@ -1,6 +1,7 @@
 import {
   collection,
   addDoc,
+  setDoc,
   query,
   where,
   getDocs,
@@ -80,16 +81,17 @@ export async function saveDocument(
   userId: string,
   docData: Partial<MedicalDocument>,
 ) {
-  const path = `users/${userId}/documents`;
+  const docId = docData.id || `doc_${Date.now()}`;
+  const path = `users/${userId}/documents/${docId}`;
   console.log('[Firestore] Saving document to:', path);
   try {
-    const docRef = await addDoc(collection(db, path), sanitizeData({
+    await setDoc(doc(db, "users", userId, "documents", docId), sanitizeData({
       ...docData,
       userId,
       createdAt: serverTimestamp(),
       isProcessed: false,
     }));
-    return docRef.id;
+    return docId;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
