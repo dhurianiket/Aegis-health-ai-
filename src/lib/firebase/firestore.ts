@@ -82,8 +82,8 @@ export async function saveDocument(
   docData: Partial<MedicalDocument>,
 ) {
   const docId = docData.id || `doc_${Date.now()}`;
-  const path = `users/${userId}/documents/${docId}`;
-  console.log('[Firestore] Saving document to:', path);
+  const pathString = `users/${userId}/documents/${docId}`;
+  console.log('[Firestore] Saving document to:', pathString);
   try {
     await setDoc(doc(db, "users", userId, "documents", docId), sanitizeData({
       ...docData,
@@ -93,15 +93,15 @@ export async function saveDocument(
     }));
     return docId;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    handleFirestoreError(error, OperationType.WRITE, pathString);
   }
 }
 
 export async function getDocuments(userId: string, profileId?: string) {
-  const path = `users/${userId}/documents`;
+  const pathString = `users/${userId}/documents`;
   try {
     const q = query(
-      collection(db, path)
+      collection(db, "users", userId, "documents")
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -116,7 +116,7 @@ export async function getDocuments(userId: string, profileId?: string) {
     }
     return docs;
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
 
@@ -125,10 +125,10 @@ export async function getLabHistory(
   markerName?: string,
   profileId?: string,
 ) {
-  const path = `users/${userId}/labResults`;
+  const pathString = `users/${userId}/labResults`;
   try {
     let q = query(
-      collection(db, path)
+      collection(db, "users", userId, "labResults")
     );
     if (markerName) {
       q = query(q, where("markerName", "==", markerName));
@@ -146,14 +146,14 @@ export async function getLabHistory(
     }
     return docs;
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
 
 export async function getMedications(userId: string, profileId?: string) {
-  const path = `users/${userId}/medications`;
+  const pathString = `users/${userId}/medications`;
   try {
-    const q = query(collection(db, path));
+    const q = query(collection(db, "users", userId, "medications"));
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as Medication,
@@ -167,7 +167,7 @@ export async function getMedications(userId: string, profileId?: string) {
     }
     return docs;
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
 
@@ -175,16 +175,16 @@ export async function saveLabResult(
   userId: string,
   labData: Partial<LabResult>,
 ) {
-  const path = `users/${userId}/labResults`;
+  const pathString = `users/${userId}/labResults`;
   try {
-    const docRef = await addDoc(collection(db, path), sanitizeData({
+    const docRef = await addDoc(collection(db, "users", userId, "labResults"), sanitizeData({
       ...labData,
       userId,
       createdAt: serverTimestamp(),
     }));
     return docRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    handleFirestoreError(error, OperationType.WRITE, pathString);
   }
 }
 
@@ -192,24 +192,24 @@ export async function saveMedication(
   userId: string,
   medData: Partial<Medication>,
 ) {
-  const path = `users/${userId}/medications`;
+  const pathString = `users/${userId}/medications`;
   try {
-    const docRef = await addDoc(collection(db, path), sanitizeData({
+    const docRef = await addDoc(collection(db, "users", userId, "medications"), sanitizeData({
       ...medData,
       userId,
       createdAt: serverTimestamp(),
     }));
     return docRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    handleFirestoreError(error, OperationType.WRITE, pathString);
   }
 }
 
 export async function getLatestInsights(userId: string, profileId?: string) {
-  const path = `users/${userId}/insights`;
+  const pathString = `users/${userId}/insights`;
   try {
     const q = query(
-      collection(db, path)
+      collection(db, "users", userId, "insights")
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -228,7 +228,7 @@ export async function getLatestInsights(userId: string, profileId?: string) {
     }
     return docs;
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
 
@@ -236,24 +236,24 @@ export async function saveSpecialistInsight(
   userId: string,
   insightData: Partial<SpecialistInsight>,
 ) {
-  const path = `users/${userId}/insights`;
+  const pathString = `users/${userId}/insights`;
   try {
-    const docRef = await addDoc(collection(db, path), sanitizeData({
+    const docRef = await addDoc(collection(db, "users", userId, "insights"), sanitizeData({
       ...insightData,
       userId,
       timestamp: serverTimestamp(),
     }));
     return docRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    handleFirestoreError(error, OperationType.WRITE, pathString);
   }
 }
 
 export async function getHealthScores(userId: string, profileId?: string) {
-  const path = `users/${userId}/scores`;
+  const pathString = `users/${userId}/scores`;
   try {
     const q = query(
-      collection(db, path)
+      collection(db, "users", userId, "scores")
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -268,30 +268,30 @@ export async function getHealthScores(userId: string, profileId?: string) {
     }
     return docs;
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
 
 export async function saveHealthScore(userId: string, scoreData: any) {
-  const path = `users/${userId}/scores`;
+  const pathString = `users/${userId}/scores`;
   try {
-    const docRef = await addDoc(collection(db, path), sanitizeData({
+    const docRef = await addDoc(collection(db, "users", userId, "scores"), sanitizeData({
       ...scoreData,
       userId,
       createdAt: serverTimestamp(),
     }));
     return docRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    handleFirestoreError(error, OperationType.WRITE, pathString);
   }
 }
 
 export async function deleteDocumentRecord(userId: string, docId: string) {
-  const path = `users/${userId}/documents/${docId}`;
+  const pathString = `users/${userId}/documents/${docId}`;
   try {
     await deleteDoc(doc(db, "users", userId, "documents", docId));
   } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
+    handleFirestoreError(error, OperationType.DELETE, pathString);
   }
 }
 
@@ -305,10 +305,10 @@ export interface ClinicalSummaryRecord {
 }
 
 export async function getClinicalSummary(userId: string, profileId?: string) {
-  const path = `users/${userId}/summaries`;
+  const pathString = `users/${userId}/summaries`;
   try {
     const q = query(
-      collection(db, path)
+      collection(db, "users", userId, "summaries")
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -327,7 +327,7 @@ export async function getClinicalSummary(userId: string, profileId?: string) {
     }
     return docs[0]; // return latest
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
 
@@ -337,9 +337,9 @@ export async function saveClinicalSummary(
   markdown: string,
   dataHash: string,
 ) {
-  const path = `users/${userId}/summaries`;
+  const pathString = `users/${userId}/summaries`;
   try {
-    const docRef = await addDoc(collection(db, path), sanitizeData({
+    const docRef = await addDoc(collection(db, "users", userId, "summaries"), sanitizeData({
       userId,
       profileId: profileId || "Myself",
       markdown,
@@ -348,16 +348,16 @@ export async function saveClinicalSummary(
     }));
     return docRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    handleFirestoreError(error, OperationType.WRITE, pathString);
   }
 }
 
 // Phase 2: Conversations
 export async function getConversations(userId: string, profileId?: string) {
-  const path = `users/${userId}/conversations`;
+  const pathString = `users/${userId}/conversations`;
   try {
     const q = query(
-      collection(db, path),
+      collection(db, "users", userId, "conversations"),
       where("profileId", "==", profileId || "Myself")
     );
     const snapshot = await getDocs(q);
@@ -367,7 +367,7 @@ export async function getConversations(userId: string, profileId?: string) {
        return tB - tA;
     });
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
 
@@ -377,9 +377,9 @@ export async function saveConversation(
   messages: any[],
   title?: string,
 ) {
-  const path = `users/${userId}/conversations`;
+  const pathString = `users/${userId}/conversations`;
   try {
-    const docRef = await addDoc(collection(db, path), sanitizeData({
+    const docRef = await addDoc(collection(db, "users", userId, "conversations"), sanitizeData({
       userId,
       profileId: profileId || "Myself",
       messages,
@@ -392,18 +392,18 @@ export async function saveConversation(
     }));
     return docRef.id;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+    handleFirestoreError(error, OperationType.WRITE, pathString);
   }
 }
 
 // Phase 2: Family Relations
 export async function getFamilyRelations(userId: string) {
-  const path = `users/${userId}/familyRelations`;
+  const pathString = `users/${userId}/familyRelations`;
   try {
-    const q = query(collection(db, path));
+    const q = query(collection(db, "users", userId, "familyRelations"));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }

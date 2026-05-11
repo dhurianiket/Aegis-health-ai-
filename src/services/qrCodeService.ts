@@ -20,7 +20,7 @@ export const generateShareLink = async (
   expiresAt.setHours(expiresAt.getHours() + options.expiryHours);
 
   try {
-    const shareRef = await addDoc(collection(db, "shares"), {
+    const shareRef = await addDoc(collection(db, "users", options.userId, "shares"), {
       ...options,
       expiresAt: Timestamp.fromDate(expiresAt),
       createdAt: Timestamp.now(),
@@ -30,7 +30,7 @@ export const generateShareLink = async (
 
     // Generate the URL. We'll use a query param 'share'
     const baseUrl = window.location.origin;
-    return `${baseUrl}?share=${shareRef.id}`;
+    return `${baseUrl}?share=${shareRef.id}&uid=${options.userId}`;
   } catch (error) {
     console.error("Error generating share link:", error);
     throw error;

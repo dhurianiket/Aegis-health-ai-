@@ -45,8 +45,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
 
     const q = query(
-      collection(db, "profiles"),
-      where("userId", "==", user.uid),
+      collection(db, "users", user.uid, "profiles"),
     );
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -67,7 +66,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
             chronicConditions: [],
             allergies: [],
           };
-          await addDoc(collection(db, "profiles"), {
+          await addDoc(collection(db, "users", user.uid, "profiles"), {
             ...defaultProfile,
             createdAt: serverTimestamp(),
           });
@@ -103,7 +102,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         chronicConditions: [],
         allergies: [],
       };
-      const docRef = await addDoc(collection(db, "profiles"), {
+      const docRef = await addDoc(collection(db, "users", user.uid, "profiles"), {
         ...newProfileData,
         createdAt: serverTimestamp(),
       });
@@ -123,7 +122,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (id: string, newName: string) => {
     if (!user) return;
     try {
-      const docRef = doc(db, "profiles", id);
+      const docRef = doc(db, "users", user.uid, "profiles", id);
       await updateDoc(docRef, { name: newName, fullName: newName });
       setProfiles((prev) =>
         prev.map((p) =>
@@ -149,7 +148,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (profiles.length <= 1) {
         throw new Error("Cannot delete the last profile");
       }
-      const docRef = doc(db, "profiles", id);
+      const docRef = doc(db, "users", user.uid, "profiles", id);
       await deleteDoc(docRef);
       setProfiles((prev) => prev.filter((p) => p.id !== id));
       if (activeProfile?.id === id) {

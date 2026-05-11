@@ -49,8 +49,7 @@ export default function FamilyHub() {
     if (!user) return;
 
     const q = query(
-      collection(db, "familyRelations"),
-      where("userId", "==", user.uid),
+      collection(db, "users", user.uid, "familyRelations"),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -67,7 +66,7 @@ export default function FamilyHub() {
 
     setIsInviting(true);
     try {
-      await addDoc(collection(db, "familyRelations"), {
+      await addDoc(collection(db, "users", user.uid, "familyRelations"), {
         userId: user.uid,
         relatedEmail: inviteEmail.trim(),
         relationType: "dependent",
