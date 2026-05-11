@@ -264,6 +264,12 @@ export default function Medications({
           )}
         </AnimatePresence>
       </div>
+
+      <div className="pt-8 mt-12 border-t border-white/10 opacity-40 text-center">
+        <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.15em]">
+          Built by <span className="text-slate-400">Aniket Dhuri</span> · Powered by Gemini AI
+        </p>
+      </div>
     </div>
   );
 }

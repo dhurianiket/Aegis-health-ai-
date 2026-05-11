@@ -456,6 +456,12 @@ export default function Dashboard({
           <div className="absolute right-12 top-12 w-32 h-32 bg-purple-400 rounded-full blur-[60px] opacity-10"></div>
         </div>
       </motion.div>
+
+      <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
+        <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
+          Built by <span className="text-[var(--color-text-muted)]">Aniket Dhuri</span> · Powered by Gemini AI
+        </p>
+      </div>
     </>
     )}
     </motion.div>

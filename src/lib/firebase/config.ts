@@ -26,8 +26,18 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-if (!firebaseConfig.apiKey) {
-  console.warn("Firebase API key is missing. Ensure VITE_FIREBASE_API_KEY is set in your environment.");
+// Debug log for configuration (without exposing full API key)
+if (import.meta.env.DEV) {
+  console.log("Firebase Config Initialization:", {
+    hasApiKey: !!firebaseConfig.apiKey,
+    authDomain: firebaseConfig.authDomain,
+    projectId: firebaseConfig.projectId,
+  });
+}
+
+if (!firebaseConfig.apiKey || !firebaseConfig.authDomain) {
+  console.error("CRITICAL: Firebase configuration is incomplete. Authentication will fail.");
+  console.warn("Check your .env file for VITE_FIREBASE_API_KEY and VITE_FIREBASE_AUTH_DOMAIN.");
 }
 
 const app = initializeApp(firebaseConfig);

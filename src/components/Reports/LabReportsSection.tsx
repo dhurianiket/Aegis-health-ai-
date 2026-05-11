@@ -319,6 +319,12 @@ export default function LabReportsSection({
           </div>
         )}
       </div>
+
+      <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
+        <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
+          Built by <span className="text-[var(--color-text-muted)]">Aniket Dhuri</span> · Powered by Gemini AI
+        </p>
+      </div>
     </div>
   );
 }
