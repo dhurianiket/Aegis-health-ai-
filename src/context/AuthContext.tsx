@@ -58,12 +58,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const signIn = async () => {
+    console.log("Initiating Google Sign-In...");
     try {
       // Ensure Google provider is clean
       googleProvider.setCustomParameters({
         prompt: 'select_account'
       });
+
+      // Clear any existing callback URLs that might be stuck in state/storage
+      // and ensure we are starting fresh.
+      
+      console.log("Current Origin:", window.location.origin);
+      
       await signInWithPopup(auth, googleProvider);
+      console.log("Sign-in successful.");
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
       
@@ -71,11 +79,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage = error?.message || "";
 
       if (errorCode === "auth/invalid-continue-uri") {
+        console.error("Firebase auth/invalid-continue-uri detected.", {
+          origin: window.location.origin,
+          href: window.location.href
+        });
+        
         alert(
-          "Auth Configuration Error: The current domain is not authorized in your Firebase console. \n\n" +
+          "Auth Configuration Error (auth/invalid-continue-uri): \n\n" +
+          "This usually means the current domain is not authorized in your Firebase console. \n\n" +
+          "Current domain: " + window.location.origin + "\n\n" +
           "1. Go to Firebase Console > Authentication > Settings > Authorized Domains.\n" +
-          "2. Add the current domain to the list.\n" +
-          "3. Also, try opening the app in a new tab if you're in the AI Studio preview."
+          "2. Ensure the above domain is added to the list.\n" +
+          "3. If you are in the AI Studio preview, you MUST open the app in a new tab to sign in successfully."
         );
       } else if (errorMessage.includes("api-key-not-valid") || errorCode === "auth/invalid-api-key") {
         alert(

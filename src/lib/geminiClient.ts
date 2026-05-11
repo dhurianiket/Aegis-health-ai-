@@ -1,3 +1,4 @@
+// API keys synced - May 11 2026
 import { GoogleGenAI as GenAI } from "@google/genai";
 
 export class GoogleGenAI {

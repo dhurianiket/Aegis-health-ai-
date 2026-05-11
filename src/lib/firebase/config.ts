@@ -52,10 +52,10 @@ const db = initializeFirestore(app, {
 
 // Validate connection to Firestore with a slight delay to allow network to settle
 async function testConnection() {
-  // Wait 2 seconds before checking to avoid false positives during initial load
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
   try {
+    // Wait 2 seconds before checking to avoid false positives during initial load
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     // We use a path that might fail permissions but will still trigger a network request
     // to verify the client can reach the Firebase servers.
     await getDocFromServer(doc(db, "_health_check", "ping"));
@@ -75,13 +75,17 @@ async function testConnection() {
     }
   }
 }
-testConnection();
+
+// Run connection test but catch potential top-level crashes
+testConnection().catch(err => {
+  console.error("Critical error during Firestore connection test:", err);
+});
 
 export { db };
 
 // Robust Auth initialization for cross-domain/iframe environments
 export const auth = initializeAuth(app, {
-  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+  persistence: [browserLocalPersistence, indexedDBLocalPersistence],
   popupRedirectResolver: browserPopupRedirectResolver,
 });
 
