@@ -134,11 +134,12 @@ export default function Timeline() {
   };
 
   const handleDelete = async (docResult: MedicalDocument) => {
+    if (!user) return;
     if (!window.confirm("Are you sure you want to delete this record forever?"))
       return;
     setIsDeleting(true);
     try {
-      await deleteDocumentRecord(docResult.id);
+      await deleteDocumentRecord(user.uid, docResult.id);
       setDocuments((prev) => prev.filter((d) => d.id !== docResult.id));
       setSelectedDoc(null);
     } catch (err) {

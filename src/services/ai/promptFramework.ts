@@ -252,7 +252,7 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
     contents: [
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
-    config: { temperature: 0, responseMimeType: "application/json" }
+    generationConfig: { temperature: 0, responseMimeType: "application/json" }
   }));
   return safeJsonParse<any>(response.text, {});
 }
@@ -264,7 +264,7 @@ export async function generateSBAR(patientContextJSON: string, trendSummariesJSO
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in JSON: { "situation": "", "background": "", "assessment": "", "recommendation": "", "disclaimer": "" }\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
-    config: { temperature: 0, responseMimeType: "application/json" }
+    generationConfig: { temperature: 0, responseMimeType: "application/json" }
   }));
   const sbarResult = safeJsonParse<any>(response.text, {});
   
@@ -282,7 +282,7 @@ export async function explainInteraction(medicationContext: any) {
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
-    config: { temperature: 0 }
+    generationConfig: { temperature: 0 }
   }));
   return response.text;
 }
@@ -333,7 +333,7 @@ export async function extractLabData(
     try {
       const response = await safeGeminiCall(() => ai.models.generateContent({
         model: "gemini-2.0-flash",
-        config: {
+        generationConfig: {
           systemInstruction: CORE_SYSTEM_PROMPT,
           temperature: 0,
           responseMimeType: "application/json",

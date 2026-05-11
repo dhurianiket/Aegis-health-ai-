@@ -101,52 +101,61 @@ export default function UploadCenter({
     }
 
     setIsSyncing(true);
-    showToast("Report saved to vault ✓", "success");
+    console.log('[Sync] Starting vault sync for', results.length, 'reports');
     
-    // OPTIMISTIC NAVIGATION
-    setTimeout(() => {
-       window.location.hash = "home";
-       window.location.reload(); // Just to refresh dashboard if needed, or better use context
-    }, 800);
+    // OPTIMISTIC UI
+    showToast("Starting vault sync...", "info");
+    
+    // Sync logic
+    try {
+      const userId = user.uid;
+      for (const [extIndex, result] of results.entries()) {
+        console.log('[Sync] Processing report:', result.fileName);
+        const docId = await saveDocument(userId, {
+          fileName: result.fileName || "Document",
+          type: result.document_type || "Unknown Type",
+          date: result.date || new Date().toISOString(),
+          hospitalName: result.hospital_name || "Unknown",
+          doctorName: result.doctor_name || "Unknown",
+          extractedData: result,
+          profileId: activeProfile?.id,
+        });
 
-    // Sync in background
-    (async () => {
-      try {
-        const userId = user.uid;
-        for (const [extIndex, result] of results.entries()) {
-          const docId = await saveDocument(userId, {
-            fileName: result.fileName || "Document",
-            type: result.document_type || "Unknown Type",
-            date: result.date || new Date().toISOString(),
-            hospitalName: result.hospital_name || "Unknown",
-            doctorName: result.doctor_name || "Unknown",
-            extractedData: result,
-            profileId: activeProfile?.id,
-          });
-
-          if (result.lab_values && result.lab_values.length > 0) {
-            for (let i = 0; i < result.lab_values.length; i++) {
-              if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
-                const lab = result.lab_values[i];
-                await saveLabResult(userId, {
-                  docId: docId || "unknown",
-                  date: lab.date || result.date || new Date().toISOString(),
-                  markerName: lab.marker || "Unknown",
-                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                  unit: lab.unit || "",
-                  referenceRange: lab.reference_range || "",
-                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                  profileId: activeProfile?.id,
-                });
-              }
+        if (result.lab_values && result.lab_values.length > 0) {
+          let savedCount = 0;
+          for (let i = 0; i < result.lab_values.length; i++) {
+            if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
+              const lab = result.lab_values[i];
+              await saveLabResult(userId, {
+                docId: docId || "unknown",
+                date: lab.date || result.date || new Date().toISOString(),
+                markerName: lab.marker || "Unknown",
+                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                unit: lab.unit || "",
+                referenceRange: lab.reference_range || "",
+                status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                profileId: activeProfile?.id,
+              });
+              savedCount++;
             }
           }
+          console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
         }
-      } catch (error) {
-        console.error("Sync failed:", error);
-        showToast("Background sync failed - will retry", "warning");
       }
-    })();
+      
+      showToast("All records saved to health vault ✓", "success");
+      setIsSyncing(false);
+      
+      setTimeout(() => {
+         window.location.hash = "home";
+         window.location.reload(); 
+      }, 1500);
+
+    } catch (error) {
+      console.error("[Sync] Failed:", error);
+      setIsSyncing(false);
+      showToast("Sync encountered issues. Some records may not have saved.", "error");
+    }
   };
 
   const removeFileFromQueue = (id: string) => {
@@ -166,6 +175,7 @@ export default function UploadCenter({
       setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
       
       try {
+        console.log('[Upload] Starting processing for:', item.file.name, item.file.type, (item.file.size / 1024 / 1024).toFixed(2), 'MB');
         const fileData = await new Promise<{
           base64Data: string;
           mimeType: string;
@@ -177,15 +187,17 @@ export default function UploadCenter({
             const base64Data = (reader.result as string).split(",")[1];
             resolve({ base64Data, mimeType: item.file.type });
           };
-          reader.onerror = () => {
+          reader.onerror = (e) => {
             clearTimeout(timeout);
-            reject(new Error("File read error"));
+            console.error('[Upload] FileReader error:', e);
+            reject(new Error("Could not read file"));
           };
           reader.readAsDataURL(item.file);
         });
 
         const extraction = await extractMedicalReports([fileData]);
         if (extraction) {
+          console.log('[Upload] Extraction success for:', item.file.name);
           const result = {
             ...extraction,
             fileName: item.file.name,
@@ -199,10 +211,14 @@ export default function UploadCenter({
           allExtractions.push(result);
           setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done' } : f));
         } else {
+          console.error('[Upload] Extraction returned null for:', item.file.name);
           setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
+          showToast(`Could not extract data from ${item.file.name}`, 'error');
         }
-      } catch (err) {
+      } catch (err: any) {
+        console.error('[Upload] Processing error:', err);
         setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
+        showToast(err.message || "Failed to process file", "error");
       }
     }
     

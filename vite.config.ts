@@ -8,7 +8,9 @@ export default defineConfig(({ mode }) => {
   return {
     base: "/",
     plugins: [react(), tailwindcss()],
-    define: {},
+    define: {
+      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
+    },
     build: {
       rollupOptions: {
         output: {

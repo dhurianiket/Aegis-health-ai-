@@ -94,7 +94,7 @@ ${OUTPUT_FORMAT_JSON}
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
+      generationConfig: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -213,7 +213,7 @@ Return valid JSON with exactly these keys:
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
+      generationConfig: {
         responseMimeType: "application/json",
         maxOutputTokens: 2048,
       },
@@ -316,6 +316,7 @@ export async function extractMedicalReports(
 
     const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
 
+    console.log("[Extraction] Starting report extraction for", filesData.length, "files");
     const response = await safeGeminiCall(() => ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [
@@ -323,13 +324,16 @@ export async function extractMedicalReports(
           role: "user",
           parts: [
             { text: prompt },
-            ...filesData.map((f) => ({
-              inlineData: { data: f.base64Data, mimeType: f.mimeType },
-            })),
+            ...filesData.map((f) => {
+              console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
+              return {
+                inlineData: { data: f.base64Data, mimeType: f.mimeType },
+              };
+            }),
           ],
         },
       ],
-      config: {
+      generationConfig: {
         systemInstruction: CORE_SYSTEM_PROMPT,
         responseMimeType: "application/json",
         maxOutputTokens: 8192,
@@ -375,7 +379,10 @@ export async function extractMedicalReports(
     }));
 
     const text = response.text || "{}";
-    return safeJsonParse<ExtractedReportResponse | null>(text, null);
+    console.log("[Extraction] Gemini raw response length:", text.length);
+    const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
+    console.log("[Extraction] Parsed result success:", !!result);
+    return result;
   } catch (error) {
     console.error("Error extracting report:", error);
     return null;

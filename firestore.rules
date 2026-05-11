@@ -5,14 +5,39 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function isOwner(userId) { return request.auth.uid == userId; }
     
-    match /users/{userId}/consents/{consentId} {
-      allow read, create: if isSignedIn() && isOwner(userId);
-      allow update, delete: if false;
-    }
+    match /users/{userId} {
+      function isMember() { return isSignedIn() && request.auth.uid == userId; }
 
-    match /users/{userId}/auditLogs/{logId} {
-      allow read, create: if isSignedIn() && isOwner(userId);
-      allow update, delete: if false;
+      match /consents/{consentId} {
+        allow read, create: if isMember();
+      }
+      match /auditLogs/{logId} {
+        allow read, create: if isMember();
+      }
+      match /documents/{docId} {
+        allow read, write: if isMember();
+      }
+      match /labResults/{labId} {
+        allow read, write: if isMember();
+      }
+      match /medications/{medId} {
+        allow read, write: if isMember();
+      }
+      match /insights/{insightId} {
+        allow read, write: if isMember();
+      }
+      match /scores/{scoreId} {
+        allow read, write: if isMember();
+      }
+      match /summaries/{summaryId} {
+        allow read, write: if isMember();
+      }
+      match /conversations/{conversationId} {
+        allow read, write: if isMember();
+      }
+      match /familyRelations/{relationId} {
+        allow read, write: if isMember();
+      }
     }
 
     match /profiles/{profileId} {
@@ -23,57 +48,9 @@ service cloud.firestore {
       allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    match /familyRelations/{relationId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
     match /shares/{shareId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    match /documents/{docId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    match /labResults/{labId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    match /medications/{medId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    match /insights/{insightId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    match /scores/{scoreId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    match /summaries/{summaryId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    match /conversations/{conversationId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 

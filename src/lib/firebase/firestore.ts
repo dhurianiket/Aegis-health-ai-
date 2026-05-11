@@ -72,18 +72,23 @@ function handleFirestoreError(
   throw new Error(JSON.stringify(errInfo));
 }
 
+function sanitizeData(data: any): any {
+  return JSON.parse(JSON.stringify(data, (_, v) => v === undefined ? null : v));
+}
+
 export async function saveDocument(
   userId: string,
   docData: Partial<MedicalDocument>,
 ) {
-  const path = "documents";
+  const path = `users/${userId}/documents`;
+  console.log('[Firestore] Saving document to:', path);
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const docRef = await addDoc(collection(db, path), sanitizeData({
       ...docData,
       userId,
       createdAt: serverTimestamp(),
       isProcessed: false,
-    });
+    }));
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -91,11 +96,10 @@ export async function saveDocument(
 }
 
 export async function getDocuments(userId: string, profileId?: string) {
-  const path = "documents";
+  const path = `users/${userId}/documents`;
   try {
     const q = query(
-      collection(db, path),
-      where("userId", "==", userId)
+      collection(db, path)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -119,11 +123,10 @@ export async function getLabHistory(
   markerName?: string,
   profileId?: string,
 ) {
-  const path = "labResults";
+  const path = `users/${userId}/labResults`;
   try {
     let q = query(
-      collection(db, path),
-      where("userId", "==", userId)
+      collection(db, path)
     );
     if (markerName) {
       q = query(q, where("markerName", "==", markerName));
@@ -146,9 +149,9 @@ export async function getLabHistory(
 }
 
 export async function getMedications(userId: string, profileId?: string) {
-  const path = "medications";
+  const path = `users/${userId}/medications`;
   try {
-    const q = query(collection(db, path), where("userId", "==", userId));
+    const q = query(collection(db, path));
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as Medication,
@@ -170,13 +173,13 @@ export async function saveLabResult(
   userId: string,
   labData: Partial<LabResult>,
 ) {
-  const path = "labResults";
+  const path = `users/${userId}/labResults`;
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const docRef = await addDoc(collection(db, path), sanitizeData({
       ...labData,
       userId,
       createdAt: serverTimestamp(),
-    });
+    }));
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -187,13 +190,13 @@ export async function saveMedication(
   userId: string,
   medData: Partial<Medication>,
 ) {
-  const path = "medications";
+  const path = `users/${userId}/medications`;
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const docRef = await addDoc(collection(db, path), sanitizeData({
       ...medData,
       userId,
       createdAt: serverTimestamp(),
-    });
+    }));
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -201,11 +204,10 @@ export async function saveMedication(
 }
 
 export async function getLatestInsights(userId: string, profileId?: string) {
-  const path = "insights";
+  const path = `users/${userId}/insights`;
   try {
     const q = query(
-      collection(db, path),
-      where("userId", "==", userId)
+      collection(db, path)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -232,13 +234,13 @@ export async function saveSpecialistInsight(
   userId: string,
   insightData: Partial<SpecialistInsight>,
 ) {
-  const path = "insights";
+  const path = `users/${userId}/insights`;
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const docRef = await addDoc(collection(db, path), sanitizeData({
       ...insightData,
       userId,
       timestamp: serverTimestamp(),
-    });
+    }));
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -246,11 +248,10 @@ export async function saveSpecialistInsight(
 }
 
 export async function getHealthScores(userId: string, profileId?: string) {
-  const path = "scores";
+  const path = `users/${userId}/scores`;
   try {
     const q = query(
-      collection(db, path),
-      where("userId", "==", userId)
+      collection(db, path)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -270,23 +271,23 @@ export async function getHealthScores(userId: string, profileId?: string) {
 }
 
 export async function saveHealthScore(userId: string, scoreData: any) {
-  const path = "scores";
+  const path = `users/${userId}/scores`;
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const docRef = await addDoc(collection(db, path), sanitizeData({
       ...scoreData,
       userId,
       createdAt: serverTimestamp(),
-    });
+    }));
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
 
-export async function deleteDocumentRecord(docId: string) {
-  const path = `documents/${docId}`;
+export async function deleteDocumentRecord(userId: string, docId: string) {
+  const path = `users/${userId}/documents/${docId}`;
   try {
-    await deleteDoc(doc(db, "documents", docId));
+    await deleteDoc(doc(db, "users", userId, "documents", docId));
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
@@ -302,11 +303,10 @@ export interface ClinicalSummaryRecord {
 }
 
 export async function getClinicalSummary(userId: string, profileId?: string) {
-  const path = "summaries";
+  const path = `users/${userId}/summaries`;
   try {
     const q = query(
-      collection(db, path),
-      where("userId", "==", userId)
+      collection(db, path)
     );
     const snapshot = await getDocs(q);
     let docs = snapshot.docs.map(
@@ -335,15 +335,15 @@ export async function saveClinicalSummary(
   markdown: string,
   dataHash: string,
 ) {
-  const path = "summaries";
+  const path = `users/${userId}/summaries`;
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const docRef = await addDoc(collection(db, path), sanitizeData({
       userId,
       profileId: profileId || "Myself",
       markdown,
       dataHash,
       createdAt: serverTimestamp(),
-    });
+    }));
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -352,11 +352,10 @@ export async function saveClinicalSummary(
 
 // Phase 2: Conversations
 export async function getConversations(userId: string, profileId?: string) {
-  const path = "conversations";
+  const path = `users/${userId}/conversations`;
   try {
     const q = query(
       collection(db, path),
-      where("userId", "==", userId),
       where("profileId", "==", profileId || "Myself")
     );
     const snapshot = await getDocs(q);
@@ -376,9 +375,9 @@ export async function saveConversation(
   messages: any[],
   title?: string,
 ) {
-  const path = "conversations";
+  const path = `users/${userId}/conversations`;
   try {
-    const docRef = await addDoc(collection(db, path), {
+    const docRef = await addDoc(collection(db, path), sanitizeData({
       userId,
       profileId: profileId || "Myself",
       messages,
@@ -388,7 +387,7 @@ export async function saveConversation(
           ? messages[0].content.substring(0, 30) + "..."
           : "New Chat"),
       lastUpdated: serverTimestamp(),
-    });
+    }));
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -397,9 +396,9 @@ export async function saveConversation(
 
 // Phase 2: Family Relations
 export async function getFamilyRelations(userId: string) {
-  const path = "familyRelations";
+  const path = `users/${userId}/familyRelations`;
   try {
-    const q = query(collection(db, path), where("userId", "==", userId));
+    const q = query(collection(db, path));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any);
   } catch (error) {
