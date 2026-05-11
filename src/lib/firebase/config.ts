@@ -1,11 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
-  GoogleAuthProvider, 
-  initializeAuth, 
-  browserLocalPersistence, 
-  browserPopupRedirectResolver,
-  indexedDBLocalPersistence
+  GoogleAuthProvider
 } from "firebase/auth";
 import {
   getFirestore,
@@ -48,7 +44,6 @@ const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
   }),
-  experimentalForceLongPolling: true, // Critical for environments with proxy/iframe issues
 });
 
 // Validate connection to Firestore with a slight delay to allow network to settle
@@ -84,7 +79,6 @@ testConnection().catch(err => {
 
 export { db };
 
-// Standard Auth initialization
 export const auth = getAuth(app);
 
 export const storage = getStorage(app);

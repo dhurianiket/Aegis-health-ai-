@@ -81,16 +81,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (errorCode === "auth/invalid-continue-uri") {
         console.error("Firebase auth/invalid-continue-uri detected.", {
           origin: window.location.origin,
-          href: window.location.href
+          href: window.location.href,
+          authDomain: (auth as any).config?.authDomain
         });
         
         alert(
           "Auth Configuration Error (auth/invalid-continue-uri): \n\n" +
-          "This usually means the current domain is not authorized in your Firebase console. \n\n" +
-          "Current domain: " + window.location.origin + "\n\n" +
-          "1. Go to Firebase Console > Authentication > Settings > Authorized Domains.\n" +
-          "2. Ensure the above domain is added to the list.\n" +
-          "3. If you are in the AI Studio preview, you MUST open the app in a new tab to sign in successfully."
+          "This error typically occurs when the 'authDomain' is incorrect or the current domain is not authorized. \n\n" +
+          "Current domain: " + window.location.origin + "\n" +
+          "Configured Auth Domain: " + (auth as any).config?.authDomain + "\n\n" +
+          "1. In Firebase Console, go to Authentication > Settings > Authorized Domains.\n" +
+          "2. Add '" + window.location.hostname + "' to the list.\n" +
+          "3. Ensure VITE_FIREBASE_AUTH_DOMAIN in your .env matches your project ID (usually project-id.firebaseapp.com)."
         );
       } else if (errorMessage.includes("api-key-not-valid") || errorCode === "auth/invalid-api-key") {
         alert(

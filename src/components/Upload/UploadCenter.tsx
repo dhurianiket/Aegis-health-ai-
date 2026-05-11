@@ -260,7 +260,7 @@ export default function UploadCenter({
             (error) => reject(error),
             async () => {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(url);
+              resolve(url || "");
             }
           );
         });
@@ -269,13 +269,20 @@ export default function UploadCenter({
         const fileData = await readFileAsSafeBase64(item.file);
 
         // 3. EXTRACT
-        const extraction = await extractMedicalReports([fileData]);
+        const extraction: any = await extractMedicalReports([fileData]);
+        
+        // Ensure url and id exist, add null/empty checks
+        if (extraction && typeof extraction === 'object') {
+           extraction.url = extraction.url || "";
+           extraction.id = extraction.id || "";
+        }
+        
         if (extraction) {
           console.log('[Upload] Extraction success for:', item.file.name);
           const result = {
             ...extraction,
             fileName: item.file.name,
-            fileUrl,
+            fileUrl: fileUrl || "",
             storagePath
           };
           if (result.lab_values) {
