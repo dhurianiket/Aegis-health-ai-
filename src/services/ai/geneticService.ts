@@ -45,7 +45,7 @@ export const analyzeSharedRisks = async (
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: `${GENETIC_PROMPT}\n\n<input>\n${JSON.stringify(profilesData)}\n</input>` }] }],
-      config: {
+      generationConfig: {
         responseMimeType: "application/json",
       },
     });

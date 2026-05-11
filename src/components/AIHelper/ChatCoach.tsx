@@ -127,7 +127,7 @@ export default function ChatCoach({
         {
           model: "gemini-2.0-flash",
           contents,
-          config: {
+          generationConfig: {
             systemInstruction: COACH_SYSTEM_INSTRUCTION,
             temperature: 0.2,
           },
@@ -157,7 +157,7 @@ export default function ChatCoach({
                   const filterRes = await ai.models.generateContent({
                     model: "gemini-2.0-flash",
                     contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
-                    config: { 
+                    generationConfig: { 
                       temperature: 0, 
                       responseMimeType: "application/json"
                     }

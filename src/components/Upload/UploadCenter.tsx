@@ -37,6 +37,20 @@ const EXTRACTION_STEPS = [
   { id: 5, label: 'Preparing review', duration: 500 },
 ];
 
+const getMimeType = (file: File): string => {
+  if (file.type && file.type.length > 0) return file.type;
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  const types: Record<string, string> = {
+    'pdf': 'application/pdf',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png'
+  };
+  return types[ext || ''] || 'application/pdf';
+};
+
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 interface FileItem {
   id: string;
   file: File;
@@ -102,6 +116,7 @@ export default function UploadCenter({
 
     setIsSyncing(true);
     console.log('[Sync] Starting vault sync for', results.length, 'reports');
+    console.log('[Sync] Auth UID:', user?.uid);
     
     // OPTIMISTIC UI
     showToast("Starting vault sync...", "info");
@@ -144,17 +159,17 @@ export default function UploadCenter({
       }
       
       showToast("All records saved to health vault ✓", "success");
-      setIsSyncing(false);
       
       setTimeout(() => {
          window.location.hash = "home";
          window.location.reload(); 
       }, 1500);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("[Sync] Failed:", error);
+      showToast(`Sync failed: ${error.message || 'Unknown error'}`, "error");
+    } finally {
       setIsSyncing(false);
-      showToast("Sync encountered issues. Some records may not have saved.", "error");
     }
   };
 
@@ -175,23 +190,41 @@ export default function UploadCenter({
       setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
       
       try {
-        console.log('[Upload] Starting processing for:', item.file.name, item.file.type, (item.file.size / 1024 / 1024).toFixed(2), 'MB');
+        const mimeType = getMimeType(item.file);
+        console.log('[Upload] Browser Safari:', isSafari);
+        console.log('[Upload] Processing file:', item.file.name, 'Type:', item.file.type, 'MIME resolved:', mimeType, 'Size:', (item.file.size / 1024 / 1024).toFixed(2), 'MB');
+        
+        if (item.file.size > 10 * 1024 * 1024) {
+          throw new Error("File too large. Maximum 10MB per file.");
+        }
+
         const fileData = await new Promise<{
           base64Data: string;
           mimeType: string;
         }>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error("File read timeout")), 30000);
+          const timeout = setTimeout(() => reject(new Error("File read timeout (30s exceeded)")), 30000);
           const reader = new FileReader();
-          reader.onload = () => {
-            clearTimeout(timeout);
-            const base64Data = (reader.result as string).split(",")[1];
-            resolve({ base64Data, mimeType: item.file.type });
+          
+          reader.onloadend = () => {
+             if (reader.readyState === FileReader.DONE) {
+               clearTimeout(timeout);
+               const result = reader.result as string;
+               const base64Data = result
+                 .replace(/^.+;base64,/, '')
+                 .trim()
+                 .replace(/\s/g, '');
+               
+               console.log('[Upload] File read complete. Base64 length:', base64Data.length);
+               resolve({ base64Data, mimeType });
+             }
           };
+
           reader.onerror = (e) => {
             clearTimeout(timeout);
             console.error('[Upload] FileReader error:', e);
-            reject(new Error("Could not read file"));
+            reject(new Error("Could not read file - hardware or browser error"));
           };
+
           reader.readAsDataURL(item.file);
         });
 
