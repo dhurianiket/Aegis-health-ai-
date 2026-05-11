@@ -32,9 +32,7 @@ export class GoogleGenAI {
 
   get isAvailable(): boolean {
     const key = this.apiKey?.trim();
-    return typeof key === 'string' && 
-           key.length > 20 && 
-           key.startsWith('AIza');
+    return typeof key === 'string' && key.length > 20;
   }
 
   get models() {
