@@ -4,28 +4,21 @@ import { MedicationStatus } from "../../types/medical";
 
 // Mock the AI SDK
 vi.mock("../../lib/geminiClient", () => {
-  return {
-    GoogleGenAI: vi.fn().mockImplementation(function () {
-      return {
-        models: {
-          generateContent: vi.fn().mockResolvedValue({
-            text: JSON.stringify({
-              situation: "Patient requires review",
-              background: "Patient has hypertension",
-              assessment: "Glucose is high",
-              recommendation: "Increase medication",
-              missing_information: "No recent weight",
-              confidence_note: "High",
-            }),
-          }),
-        },
-        getGenerativeModel: vi.fn().mockReturnValue({
-          generateContent: vi
-            .fn()
-            .mockResolvedValue({ response: { text: () => "{}" } }),
+  const mockAi = {
+    models: {
+      generateContent: vi.fn().mockResolvedValue({
+        text: JSON.stringify({
+          situation: "Patient requires review",
+          background: "Patient has hypertension",
+          assessment: "Glucose is high",
+          recommendation: "Increase medication",
         }),
-      };
-    }),
+      }),
+    },
+  };
+  return {
+    default: vi.fn().mockReturnValue(mockAi),
+    getAI: vi.fn().mockReturnValue(mockAi),
   };
 });
 
@@ -64,8 +57,8 @@ describe("SBARGenerationService", () => {
   it("should generate a fallback SBAR when AI fails", async () => {
     // Mock failure for this specific test
     vi.spyOn(console, "error").mockImplementation(() => {});
-    const GoogleGenAI = (await import("../../lib/geminiClient")).GoogleGenAI;
-    const mockInstance = vi.mocked(GoogleGenAI).mock.results[0].value;
+    const getAI = (await import("../../lib/geminiClient")).default;
+    const mockInstance = (getAI as any).mock.results[0].value;
     vi.mocked(mockInstance.models.generateContent).mockRejectedValueOnce(
       new Error("AI Failure"),
     );

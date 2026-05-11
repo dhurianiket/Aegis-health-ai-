@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type } from "../../lib/geminiClient";
+import { getAI } from "../../lib/geminiClient";
+import { Type } from "../../lib/geminiUtils";
 import {
   Specialty,
   MedicalDocument,
@@ -11,7 +12,8 @@ import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 
 import { safeJsonParse } from "../../utils/aiUtils";
 
-const getAI = () => new GoogleGenAI({});
+// Removed old getAI class wrapper and now using pre-initialized getAI from lib/geminiClient
+// Function is already available via import
 
 export interface SpecialistAnalysisResponse {
   observations: string[];
@@ -90,11 +92,11 @@ ${OUTPUT_FORMAT_JSON}
 
   try {
     const ai = getAI();
-    if (!ai.isAvailable) throw new Error("Specialist analysis unavailable: API Key missing.");
+    
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -209,11 +211,11 @@ Return valid JSON with exactly these keys:
 
   try {
     const ai = getAI();
-    if (!ai.isAvailable) throw new Error("Clinical summary unavailable: API Key missing.");
+    
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
         maxOutputTokens: 2048,
       },
@@ -331,8 +333,7 @@ export async function extractMedicalReports(
   `;
 
     const ai = getAI();
-    if (!ai.isAvailable) throw new Error("Report extraction unavailable: API Key missing.");
-
+    
     const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
 
     console.log("[Extraction] Starting report extraction for", filesData.length, "files");
@@ -352,7 +353,7 @@ export async function extractMedicalReports(
           ],
         },
       ],
-      generationConfig: {
+      config: {
         systemInstruction: CORE_SYSTEM_PROMPT,
         temperature: 0.1,
         responseMimeType: "application/json",

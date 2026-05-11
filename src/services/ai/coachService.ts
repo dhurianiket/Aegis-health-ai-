@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "../../lib/geminiClient";
+import { getAI } from "../../lib/geminiClient";
 import { PatientContext } from "../../types/ai";
 import { formatContextForPrompt } from "./contextService";
 import { runSafetyCheck } from "./safetyGuardrail";
@@ -40,7 +40,7 @@ export const getCoachResponse = async (
   userMessage: string,
   history: { role: "user" | "assistant"; content: string }[] = [],
 ): Promise<AsyncGenerator<string>> => {
-  const ai = new GoogleGenAI({});
+  const ai = getAI();
   const patientDataPrompt = formatContextForPrompt(context);
 
   // GenAI SDK requires strictly alternating roles: user -> model -> user -> model
@@ -88,12 +88,12 @@ export const getCoachResponse = async (
     }
   }
 
-  if (!ai.isAvailable) throw new Error("Aura AI is currently offline. Please check your configuration.");
+  if (!ai) throw new Error("Aura AI is currently offline. Please check your configuration.");
 
   const stream = await ai.models.generateContentStream({
     model: "gemini-2.0-flash",
     contents,
-    generationConfig: {
+    config: {
       systemInstruction: COACH_SYSTEM_INSTRUCTION,
       temperature: 0.1,
     },

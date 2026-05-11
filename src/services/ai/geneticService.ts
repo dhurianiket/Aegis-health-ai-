@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "../../lib/geminiClient";
+import { getAI } from "../../lib/geminiClient";
 import { UserProfile, LabResult } from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 import { safeJsonParse } from "../../utils/aiUtils";
@@ -40,12 +40,12 @@ Maturity Note: Be cautious and use clinical "could suggest" or "potential patter
 export const analyzeSharedRisks = async (
   profilesData: { profile: UserProfile; labs: LabResult[] }[],
 ): Promise<GeneticRiskAnalysis[]> => {
-  const ai = new GoogleGenAI({});
+  const ai = getAI();
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: `${GENETIC_PROMPT}\n\n<input>\n${JSON.stringify(profilesData)}\n</input>` }] }],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
       },
     });

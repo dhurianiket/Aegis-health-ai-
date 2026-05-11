@@ -35,9 +35,13 @@ export default function NoteAnalyzer() {
   const [isAlAvailable, setIsAlAvailable] = useState(true);
 
   React.useEffect(() => {
-    import("../../lib/geminiClient").then(({ GoogleGenAI }) => {
-      const ai = new GoogleGenAI();
-      setIsAlAvailable(ai.isAvailable);
+    import("../../lib/geminiClient").then(({ default: getAI }) => {
+      try {
+        const ai = getAI();
+        setIsAlAvailable(!!ai);
+      } catch {
+        setIsAlAvailable(false);
+      }
     });
   }, []);
 

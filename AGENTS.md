@@ -37,3 +37,34 @@
 - Do NOT add dependencies without asking first
 - Always preserve existing exports when editing a file
 - If unsure, ask before editing core config files
+
+## 🚫 Gemini API Rules — NEVER Violate
+
+### API Key
+- ALWAYS pass apiKey explicitly: new GoogleGenAI({ apiKey })
+- NEVER use new GoogleGenAI({}) with empty object
+- NEVER use new GoogleGenAI() with no arguments
+- apiKey must ALWAYS come from import.meta.env.VITE_GEMINI_API_KEY
+
+### geminiClient.ts
+- This is the SINGLE source of truth for Gemini initialization
+- NEVER initialize GoogleGenAI outside of geminiClient.ts
+- ALL services must import getAI() from geminiClient.ts
+- NEVER export GoogleGenAI, Type, or streamGenerate from geminiClient.ts
+
+### Refactoring Rules
+- If editing geminiClient.ts breaks other files, say so IMMEDIATELY
+- NEVER leave the codebase in a broken/non-compiling state
+- Always run quality control after touching AI service files
+- If a change affects more than 1 file, list ALL affected files first
+
+### Model Rules
+- Current model: gemini-2.0-flash — do NOT change without asking
+- generationConfig is now called config in newer SDK versions
+- NEVER use deprecated isAvailable property
+
+### Safe Edit Checklist
+Before editing any AI file, confirm:
+1. Will this break other imports? 
+2. Does getAI() still work after this change?
+3. Does the build still compile?

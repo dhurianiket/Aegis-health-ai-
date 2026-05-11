@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "../../lib/geminiClient";
+import { getAI } from "../../lib/geminiClient";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
 import { safeJsonParse } from "../../utils/aiUtils";
 
@@ -44,12 +44,12 @@ If information is missing, leave the array empty.`;
 export const extractClinicalEntities = async (
   text: string,
 ): Promise<ExtractedClinicalEntities> => {
-  const ai = new GoogleGenAI({});
+  const ai = getAI();
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: `${EXTRACTION_PROMPT}\n\n<input>\n${text}\n</input>` }] }],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
       },
     });

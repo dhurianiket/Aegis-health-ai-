@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GoogleGenAI } from "../../lib/geminiClient";
+import { getAI } from "../../lib/geminiClient";
 import { safeJsonParse } from "../../utils/aiUtils";
 
 export const CORE_SYSTEM_PROMPT = `
@@ -244,27 +244,25 @@ export async function safeGeminiCall(apiCall: () => Promise<any>): Promise<any> 
 }
 
 export async function classifyDocument(filesData: { base64Data: string; mimeType: string }[]) {
-  const ai = new GoogleGenAI();
-  if (!ai.isAvailable) throw new Error("AI Classification unavailable: API Key missing.");
+  const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: [
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
-    generationConfig: { temperature: 0, responseMimeType: "application/json" }
+    config: { temperature: 0, responseMimeType: "application/json" }
   }));
   return safeJsonParse<any>(response.text, {});
 }
 
 export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[]) {
-  const ai = new GoogleGenAI();
-  if (!ai.isAvailable) throw new Error("SBAR Generation unavailable: API Key missing.");
+  const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in JSON: { "situation": "", "background": "", "assessment": "", "recommendation": "", "disclaimer": "" }\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
-    generationConfig: { temperature: 0, responseMimeType: "application/json" }
+    config: { temperature: 0, responseMimeType: "application/json" }
   }));
   const sbarResult = safeJsonParse<any>(response.text, {});
   
@@ -276,13 +274,12 @@ export async function generateSBAR(patientContextJSON: string, trendSummariesJSO
 }
 
 export async function explainInteraction(medicationContext: any) {
-  const ai = new GoogleGenAI();
-  if (!ai.isAvailable) throw new Error("Interaction Analysis unavailable: API Key missing.");
+  const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
-    generationConfig: { temperature: 0 }
+    config: { temperature: 0 }
   }));
   return response.text;
 }
@@ -293,10 +290,7 @@ export async function explainInteraction(medicationContext: any) {
 export async function extractLabData(
   filesData: { base64Data: string; mimeType: string }[],
 ): Promise<LabExtraction> {
-  const ai = new GoogleGenAI();
-  if (!ai.isAvailable) {
-    throw new Error("Lab extraction unavailable: API Key not defined in the environment.");
-  }
+  const ai = getAI();
   const basePrompt = `
     Extract laboratory results into consistent JSON format.
     - Extract ALL rows from ALL lab result tables on ALL pages.
@@ -333,7 +327,7 @@ export async function extractLabData(
     try {
       const response = await safeGeminiCall(() => ai.models.generateContent({
         model: "gemini-2.0-flash",
-        generationConfig: {
+        config: {
           systemInstruction: CORE_SYSTEM_PROMPT,
           temperature: 0,
           responseMimeType: "application/json",

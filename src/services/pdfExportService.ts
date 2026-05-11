@@ -219,18 +219,16 @@ export const exportToPDF = async (
 };
 
 export const generateTrendNarrative = async (trendSummariesJSON: string, dateRange: string) => {
-  const { GoogleGenAI } = await import("../lib/geminiClient");
+  const getAI = (await import("../lib/geminiClient")).default;
   const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./ai/promptFramework");
   const { safeJsonParse } = await import("../utils/aiUtils");
   
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) throw new Error("VITE_GEMINI_API_KEY is missing");
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate a trend narrative for a PDF report spanning ${dateRange}.\n\nTrends:\n${trendSummariesJSON}\n\nReturn JSON: { "narrative_paragraphs": ["..."], "overall_summary": "...", "disclaimer": "..." }` }] }],
-    generationConfig: { temperature: 0, responseMimeType: "application/json" }
+    config: { temperature: 0, responseMimeType: "application/json" }
   }));
   return safeJsonParse<any>(response.text, {
     narrative_paragraphs: ["Analysis unavailable."],

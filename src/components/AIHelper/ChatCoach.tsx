@@ -5,7 +5,7 @@ import { X, ArrowUp, Square, Sparkles } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { VoiceService } from "../../services/ai/voiceService";
-import { streamGenerate } from "../../lib/geminiClient";
+import { streamGenerate } from "../../lib/geminiUtils";
 import {
   getPatientContext,
   formatContextForPrompt,
@@ -40,9 +40,13 @@ export default function ChatCoach({
   const { user } = useAuth();
 
   useEffect(() => {
-    import("../../lib/geminiClient").then(({ GoogleGenAI }) => {
-      const ai = new GoogleGenAI();
-      setIsAlAvailable(ai.isAvailable);
+    import("../../lib/geminiClient").then(({ default: getAI }) => {
+      try {
+        const ai = getAI();
+        setIsAlAvailable(!!ai);
+      } catch {
+        setIsAlAvailable(false);
+      }
     });
   }, []);
   const { activeProfile } = useProfile();
@@ -100,9 +104,9 @@ export default function ChatCoach({
     abortControllerRef.current = controller;
 
     try {
-      const { GoogleGenAI } = await import("../../lib/geminiClient");
-      const tempAi = new GoogleGenAI();
-      if (!tempAi.isAvailable) {
+      const getAI = (await import("../../lib/geminiClient")).default;
+      const tempAi = getAI();
+      if (!tempAi) {
         throw new Error("AI features are temporarily unavailable (API key missing).");
       }
 
@@ -150,14 +154,14 @@ export default function ChatCoach({
             
             if (needsGuardrail) {
               try {
-                const { GoogleGenAI } = await import("../../lib/geminiClient");
+                const getAI = (await import("../../lib/geminiClient")).default;
                 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
                 if (apiKey) {
-                  const ai = new GoogleGenAI({ apiKey });
+                  const ai = getAI();
                   const filterRes = await ai.models.generateContent({
                     model: "gemini-2.0-flash",
                     contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
-                    generationConfig: { 
+                    config: { 
                       temperature: 0, 
                       responseMimeType: "application/json"
                     }

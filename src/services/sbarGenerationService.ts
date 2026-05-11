@@ -4,7 +4,7 @@ import {
   UserProfile,
   SBARSummary,
 } from "../types/medical";
-import { GoogleGenAI } from "../lib/geminiClient";
+import { getAI } from "../lib/geminiClient";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./ai/promptFramework";
 import { safeJsonParse } from "../utils/aiUtils";
 
@@ -13,7 +13,7 @@ export const generateSBAR = async (
   labs: any[],
   meds: any[],
 ): Promise<SBARSummary> => {
-  const ai = new GoogleGenAI({});
+  const ai = getAI();
   const activeMeds = meds.filter((m: any) => m.status === "active" || true);
 
   const age = profile.dob
@@ -56,7 +56,7 @@ Return valid JSON with exactly these keys: situation (string), background (strin
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
         temperature: 0,
       },
