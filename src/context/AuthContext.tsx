@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       },
       (error) => {
         clearTimeout(timeout);
-        console.error("Auth error:", error);
+        console.error("Auth observer error:", error);
         if (isMounted) {
           setUser(null);
           setLoading(false);
@@ -59,16 +59,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signIn = async () => {
     try {
+      // Ensure Google provider is clean
+      googleProvider.setCustomParameters({
+        prompt: 'select_account'
+      });
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
-      console.error("Error signing in with Google", error);
-      if (error?.message?.includes("api-key-not-valid")) {
+      console.error("Error signing in with Google:", error);
+      
+      const errorCode = error?.code;
+      const errorMessage = error?.message || "";
+
+      if (errorCode === "auth/invalid-continue-uri") {
         alert(
-          "Firebase API key is missing or invalid. Please configure your Firebase environment variables in the Secrets panel.",
+          "Auth Configuration Error: The current domain is not authorized in your Firebase console. \n\n" +
+          "1. Go to Firebase Console > Authentication > Settings > Authorized Domains.\n" +
+          "2. Add the current domain to the list.\n" +
+          "3. Also, try opening the app in a new tab if you're in the AI Studio preview."
         );
+      } else if (errorMessage.includes("api-key-not-valid") || errorCode === "auth/invalid-api-key") {
+        alert(
+          "Firebase API key is missing or invalid. Please check your .env.local file or Secrets panel.",
+        );
+      } else if (errorCode === "auth/popup-blocked") {
+        alert("The sign-in popup was blocked by your browser. Please allow popups for this site.");
+      } else if (errorCode === "auth/cancelled-popup-request") {
+        // User closed the popup, no need for major alert
+        console.log("Sign-in popup closed by user.");
       } else {
         alert(
-          "Failed to sign in. If you are in the AI Studio preview, please open the app in a new tab to sign in with Google or ensure third-party cookies are allowed.",
+          `Failed to sign in (${errorCode || "Unknown Error"}). \n\nIf you are in the AI Studio preview, please open the app in a new tab to sign in with Google.`,
         );
       }
     }

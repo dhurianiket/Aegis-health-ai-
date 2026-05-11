@@ -1,5 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  initializeAuth, 
+  browserLocalPersistence, 
+  browserPopupRedirectResolver,
+  indexedDBLocalPersistence
+} from "firebase/auth";
 import {
   getFirestore,
   initializeFirestore,
@@ -25,27 +32,49 @@ if (!firebaseConfig.apiKey) {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with persistent cache for better reliability
+// Initialize Firestore with persistent cache and long-polling for broad compatibility
 const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
   }),
+  experimentalForceLongPolling: true, // Critical for environments with proxy/iframe issues
 });
 
-// Validate connection to Firestore
+// Validate connection to Firestore with a slight delay to allow network to settle
 async function testConnection() {
+  // Wait 2 seconds before checking to avoid false positives during initial load
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
   try {
-    await getDocFromServer(doc(db, "test", "connection"));
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("offline")) {
-      console.error("Firebase is offline. Check your configuration.");
+    // We use a path that might fail permissions but will still trigger a network request
+    // to verify the client can reach the Firebase servers.
+    await getDocFromServer(doc(db, "_health_check", "ping"));
+    console.log("Firestore connection verified.");
+  } catch (error: any) {
+    // If it's a permission error, it means we ARE online and connected!
+    if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
+      console.log("Firestore connectivity confirmed (reachable).");
+      return;
+    }
+    
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.toLowerCase().includes("offline") || msg.toLowerCase().includes("network")) {
+      console.warn("Firebase appears to be offline. This is common in the AI Studio preview if not opened in a new tab.");
+    } else {
+      console.error("Firestore connection status uncertain:", msg);
     }
   }
 }
 testConnection();
 
 export { db };
-export const auth = getAuth(app);
+
+// Robust Auth initialization for cross-domain/iframe environments
+export const auth = initializeAuth(app, {
+  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
+
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 
