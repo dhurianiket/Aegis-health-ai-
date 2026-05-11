@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import {
-  getFirestore,
-  enableMultiTabIndexedDbPersistence,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -15,23 +16,13 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(
-  app,
-  import.meta.env.VITE_FIREBASE_DATABASE_ID || "ai-studio-aa8f32c9-5d45-4598-860a-1f69826e6e70"
-);
 
-// Enable offline persistence
-enableMultiTabIndexedDbPersistence(db).catch((err) => {
-  if (err.code == "failed-precondition") {
-    console.warn(
-      "Multiple tabs open, persistence can only be enabled in one tab at a a time.",
-    );
-  } else if (err.code == "unimplemented") {
-    console.warn(
-      "The current browser does not support all of the features required to enable persistence",
-    );
-  }
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
 });
+
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
