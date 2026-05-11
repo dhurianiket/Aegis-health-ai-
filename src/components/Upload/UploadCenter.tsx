@@ -51,6 +51,57 @@ const getMimeType = (file: File): string => {
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+const readFileAsSafeBase64 = (file: File): Promise<{
+  base64Data: string;
+  mimeType: string;
+}> => {
+  return new Promise((resolve, reject) => {
+    const mimeType = getMimeType(file);
+
+    if (file.size > 10 * 1024 * 1024) {
+      reject(new Error("File too large. Maximum 10MB per file."));
+      return;
+    }
+
+    const reader = new FileReader();
+
+    const timeout = setTimeout(() => {
+      reject(new Error("File read timeout (30s exceeded)"));
+    }, 30000);
+
+    reader.onloadend = () => {
+      clearTimeout(timeout);
+      if (reader.readyState !== FileReader.DONE) {
+        reject(new Error("FileReader did not complete"));
+        return;
+      }
+      const result = reader.result as string;
+      if (!result || !result.includes(",")) {
+        reject(new Error("Invalid file data"));
+        return;
+      }
+      const base64Data = result
+        .split(",")[1]
+        .replace(/\s/g, "")
+        .replace(/\r?\n/g, "");
+
+      console.log("[Safari Upload] MIME:", mimeType);
+      console.log("[Safari Upload] Base64 length:", base64Data.length);
+      console.log("[Safari Upload] Valid:", base64Data.length > 100);
+
+      resolve({ base64Data, mimeType });
+    };
+
+    reader.onerror = (e) => {
+      clearTimeout(timeout);
+      console.error("[Safari Upload] FileReader error:", e);
+      reject(new Error("Could not read file - hardware or browser error"));
+    };
+
+    reader.readAsDataURL(file);
+  });
+};
+
 interface FileItem {
   id: string;
   file: File;
@@ -114,63 +165,56 @@ export default function UploadCenter({
       return;
     }
 
-    setIsSyncing(true);
+    setIsSyncing(false);
     console.log('[Sync] Starting vault sync for', results.length, 'reports');
     console.log('[Sync] Auth UID:', user?.uid);
     
     // OPTIMISTIC UI
-    showToast("Starting vault sync...", "info");
+    showToast("Report saved to health vault ✓", "success");
+    window.location.hash = "home";
     
-    // Sync logic
-    try {
-      const userId = user.uid;
-      for (const [extIndex, result] of results.entries()) {
-        console.log('[Sync] Processing report:', result.fileName);
-        const docId = await saveDocument(userId, {
-          fileName: result.fileName || "Document",
-          type: result.document_type || "Unknown Type",
-          date: result.date || new Date().toISOString(),
-          hospitalName: result.hospital_name || "Unknown",
-          doctorName: result.doctor_name || "Unknown",
-          extractedData: result,
-          profileId: activeProfile?.id,
-        });
+    // Sync logic (Background)
+    (async () => {
+      try {
+        const userId = user.uid;
+        for (const [extIndex, result] of results.entries()) {
+          console.log('[Sync] Processing report:', result.fileName);
+          const docId = await saveDocument(userId, {
+            fileName: result.fileName || "Document",
+            type: result.document_type || "Unknown Type",
+            date: result.date || new Date().toISOString(),
+            hospitalName: result.hospital_name || "Unknown",
+            doctorName: result.doctor_name || "Unknown",
+            extractedData: result,
+            profileId: activeProfile?.id,
+          });
 
-        if (result.lab_values && result.lab_values.length > 0) {
-          let savedCount = 0;
-          for (let i = 0; i < result.lab_values.length; i++) {
-            if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
-              const lab = result.lab_values[i];
-              await saveLabResult(userId, {
-                docId: docId || "unknown",
-                date: lab.date || result.date || new Date().toISOString(),
-                markerName: lab.marker || "Unknown",
-                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                unit: lab.unit || "",
-                referenceRange: lab.reference_range || "",
-                status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                profileId: activeProfile?.id,
-              });
-              savedCount++;
+          if (result.lab_values && result.lab_values.length > 0) {
+            let savedCount = 0;
+            for (let i = 0; i < result.lab_values.length; i++) {
+              if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
+                const lab = result.lab_values[i];
+                await saveLabResult(userId, {
+                  docId: docId || "unknown",
+                  date: lab.date || result.date || new Date().toISOString(),
+                  markerName: lab.marker || "Unknown",
+                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                  unit: lab.unit || "",
+                  referenceRange: lab.reference_range || "",
+                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                  profileId: activeProfile?.id,
+                });
+                savedCount++;
+              }
             }
+            console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
           }
-          console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
         }
+      } catch (error: any) {
+        console.error("[Sync] Failed:", error);
+        showToast(`Sync failed: ${error.message || 'Unknown error'}`, "error");
       }
-      
-      showToast("All records saved to health vault ✓", "success");
-      
-      setTimeout(() => {
-         window.location.hash = "home";
-         window.location.reload(); 
-      }, 1500);
-
-    } catch (error: any) {
-      console.error("[Sync] Failed:", error);
-      showToast(`Sync failed: ${error.message || 'Unknown error'}`, "error");
-    } finally {
-      setIsSyncing(false);
-    }
+    })();
   };
 
   const removeFileFromQueue = (id: string) => {
@@ -190,43 +234,8 @@ export default function UploadCenter({
       setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
       
       try {
-        const mimeType = getMimeType(item.file);
         console.log('[Upload] Browser Safari:', isSafari);
-        console.log('[Upload] Processing file:', item.file.name, 'Type:', item.file.type, 'MIME resolved:', mimeType, 'Size:', (item.file.size / 1024 / 1024).toFixed(2), 'MB');
-        
-        if (item.file.size > 10 * 1024 * 1024) {
-          throw new Error("File too large. Maximum 10MB per file.");
-        }
-
-        const fileData = await new Promise<{
-          base64Data: string;
-          mimeType: string;
-        }>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error("File read timeout (30s exceeded)")), 30000);
-          const reader = new FileReader();
-          
-          reader.onloadend = () => {
-             if (reader.readyState === FileReader.DONE) {
-               clearTimeout(timeout);
-               const result = reader.result as string;
-               const base64Data = result
-                 .replace(/^.+;base64,/, '')
-                 .trim()
-                 .replace(/\s/g, '');
-               
-               console.log('[Upload] File read complete. Base64 length:', base64Data.length);
-               resolve({ base64Data, mimeType });
-             }
-          };
-
-          reader.onerror = (e) => {
-            clearTimeout(timeout);
-            console.error('[Upload] FileReader error:', e);
-            reject(new Error("Could not read file - hardware or browser error"));
-          };
-
-          reader.readAsDataURL(item.file);
-        });
+        const fileData = await readFileAsSafeBase64(item.file);
 
         const extraction = await extractMedicalReports([fileData]);
         if (extraction) {
