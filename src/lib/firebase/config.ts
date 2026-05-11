@@ -5,6 +5,8 @@ import {
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  doc,
+  getDocFromServer,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -23,7 +25,24 @@ if (!firebaseConfig.apiKey) {
 
 const app = initializeApp(firebaseConfig);
 
-let db: any = getFirestore(app);
+// Initialize Firestore with persistent cache for better reliability
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
+});
+
+// Validate connection to Firestore
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, "test", "connection"));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("offline")) {
+      console.error("Firebase is offline. Check your configuration.");
+    }
+  }
+}
+testConnection();
 
 export { db };
 export const auth = getAuth(app);

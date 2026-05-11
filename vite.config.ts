@@ -8,20 +8,6 @@ export default defineConfig(({ mode }) => {
   return {
     base: "/",
     plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
-    },
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            firebase: ["firebase/app", "firebase/auth", "firebase/firestore"],
-            gemini: ["@google/genai"],
-            vendor: ["react", "react-dom", "motion/react", "lucide-react", "recharts"],
-          },
-        },
-      },
-    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "."),
