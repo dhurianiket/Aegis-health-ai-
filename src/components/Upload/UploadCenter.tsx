@@ -23,8 +23,6 @@ import {
   saveLabResult,
   saveMedication,
 } from "../../lib/firebase/firestore";
-import { storage } from "../../lib/firebase/config";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import NoteAnalyzer from "./NoteAnalyzer";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";

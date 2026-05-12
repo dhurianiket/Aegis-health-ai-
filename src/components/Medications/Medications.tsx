@@ -25,7 +25,7 @@ export default function Medications({
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !activeProfile || !name.trim()) return;
+    if (!user?.uid || !activeProfile?.id || !name.trim()) return;
 
     const newMed = {
       name: name.trim(),
@@ -61,7 +61,7 @@ export default function Medications({
   };
 
   const handleRemove = async (med: any) => {
-    if (!user || !activeProfile) return;
+    if (!user?.uid || !activeProfile?.id) return;
     try {
       const docRef = doc(db, "users", user.uid, "profiles", activeProfile.id);
       await updateDoc(docRef, {
@@ -70,7 +70,7 @@ export default function Medications({
 
       const updatedProfile = {
         ...activeProfile,
-        medications: (activeProfile.medications || []).filter(
+        medications: (activeProfile?.medications || []).filter(
           (m: any) => m.name !== med.name,
         ),
       };

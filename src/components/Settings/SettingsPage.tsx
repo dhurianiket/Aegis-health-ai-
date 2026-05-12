@@ -51,7 +51,7 @@ export default function SettingsPage() {
     }
     if (
       window.confirm(
-        `Are you sure you want to delete the profile "${activeProfile.name}"? This cannot be undone.`,
+        `Are you sure you want to delete the profile "${activeProfile?.name}"? This cannot be undone.`,
       )
     ) {
       try {
