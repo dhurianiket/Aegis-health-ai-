@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { BottomSheet } from "./BottomSheet";
+import { useProfile } from "../../context/ProfileContext";
 
 export interface AppNavProps {
   activeTab: string;
@@ -49,6 +50,7 @@ const bottomTabs = [
 
 export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const { activeProfile } = useProfile();
 
   const handleTabChange = (id: string) => {
     if (id === "chat") {
@@ -62,6 +64,8 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
     onTabChange(id);
     setIsMoreOpen(false);
   };
+
+  const needsProfileUpdate = !activeProfile || !activeProfile.dob || !activeProfile.gender;
 
   return (
     <>
@@ -117,7 +121,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
         </nav>
       </aside>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/80 backdrop-blur-xl border-t border-[var(--color-border)] z-50 pb-safe pointer-events-auto overflow-hidden">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/80 backdrop-blur-xl border-t border-[var(--color-border)] z-50 pb-safe pointer-events-auto">
         <div className="flex items-center justify-around px-2 py-2 relative pointer-events-auto">
           {bottomTabs.map((tab) => {
             const isActive =
@@ -161,6 +165,9 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 <span className="text-[10px] font-medium leading-none">
                   {tab.label}
                 </span>
+                {tab.id === "more" && needsProfileUpdate && (
+                  <div className="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full border border-[var(--color-bg)]" />
+                )}
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
@@ -176,6 +183,20 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
 
       <BottomSheet isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)}>
         <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={() => handleTabChange("settings")}
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative"
+          >
+            <Settings className="w-8 h-8 text-[var(--color-primary)]" />
+            <span className="font-medium text-sm text-[var(--color-text)]">
+              Settings
+            </span>
+            {needsProfileUpdate && (
+              <div className="absolute top-3 right-3 bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase">
+                Update
+              </div>
+            )}
+          </button>
           <button
             onClick={() => handleTabChange("trends")}
             className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3"
@@ -210,15 +231,6 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
             <Pill className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
               Medications
-            </span>
-          </button>
-          <button
-            onClick={() => handleTabChange("settings")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3"
-          >
-            <Settings className="w-8 h-8 text-[var(--color-primary)]" />
-            <span className="font-medium text-sm text-[var(--color-text)]">
-              Settings
             </span>
           </button>
           <button

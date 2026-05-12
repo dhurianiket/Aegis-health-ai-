@@ -26,7 +26,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
     if (!sbar) return;
     setIsExporting(true);
     try {
-      await exportToPDF("sbar-content", `Aura_SBAR_${new Date().toISOString().split('T')[0]}.pdf`);
+      await exportToPDF("sbar-content", `Aegis_SBAR_${new Date().toISOString().split('T')[0]}.pdf`);
       setExportSuccess(true);
       setTimeout(() => setExportSuccess(false), 3000);
     } catch (err) {

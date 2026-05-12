@@ -49,41 +49,46 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     );
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const fetchedProfiles = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as UserProfile,
-      );
+      try {
+        const fetchedProfiles = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() }) as UserProfile,
+        );
 
-      // Store fetched profiles
-      setProfiles(fetchedProfiles);
-      
-      // If none exist, bootstrap in background
-      if (fetchedProfiles.length === 0) {
-        try {
-          const defaultProfile = {
-            name: "Myself",
-            fullName: "Myself",
-            userId: user.uid,
-            chronicConditions: [],
-            allergies: [],
-          };
-          await addDoc(collection(db, "users", user.uid, "profiles"), {
-            ...defaultProfile,
-            createdAt: serverTimestamp(),
-          });
-          // onSnapshot will recapture this after it's created
-        } catch (error) {
-          console.error("Failed to bootstrap profile:", error);
+        // Store fetched profiles
+        setProfiles(fetchedProfiles);
+        
+        // If none exist, bootstrap in background
+        if (fetchedProfiles.length === 0) {
+          try {
+            const defaultProfile = {
+              name: "Myself",
+              fullName: "Myself",
+              userId: user.uid,
+              chronicConditions: [],
+              allergies: [],
+            };
+            await addDoc(collection(db, "users", user.uid, "profiles"), {
+              ...defaultProfile,
+              createdAt: serverTimestamp(),
+            });
+            // onSnapshot will recapture this after it's created
+          } catch (error) {
+            console.error("Failed to bootstrap profile:", error);
+          }
+        } else {
+          // Set active profile if not already set or if it was deleted
+          if (
+            !activeProfile ||
+            !fetchedProfiles.find((p) => p.id === activeProfile.id)
+          ) {
+            setActiveProfile(fetchedProfiles[0]);
+          }
         }
-      } else {
-        // Set active profile if not already set or if it was deleted
-        if (
-          !activeProfile ||
-          !fetchedProfiles.find((p) => p.id === activeProfile.id)
-        ) {
-          setActiveProfile(fetchedProfiles[0]);
-        }
+      } catch (error) {
+        console.error("Error processing profile snapshot:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }, (error) => {
       console.error("Profile onSnapshot error:", error);
       setIsLoading(false);

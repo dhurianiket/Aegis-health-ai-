@@ -350,13 +350,13 @@ export async function extractMedicalReports(
     - Output ONLY valid JSON containing the structure above. No markdown, no explanations.
     - Be concise. 
     - If the source text has long repeating phrases or redundant boilerplate (like "Spectrophotometry" repeated 100 times), ignore the repetitions and just extract the core value.
-    - If any value is unclear, mark it as null.
+    - Even if the document quality is poor, extract whatever data is visible. Return partial results rather than failing. For any field you cannot read, use null instead of 'Unknown'.
   `;
 
     const ai = getAI();
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
       const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
@@ -390,11 +390,27 @@ export async function extractMedicalReports(
       clearTimeout(timeoutId);
 
       const text = response.text || "{}";
-      console.log("[Extraction] Gemini raw response length:", text.length);
+      console.log("RAW_GEMINI:", JSON.stringify(response));
+      console.log("[Extraction] Gemini raw response:", text);
       const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
+      
+      const labs = result?.lab_values || [];
+      console.log("NORMALIZED_LABS:", labs);
+
       console.log("[Extraction] Parsed result success:", !!result);
-      if (!result) {
-          throw new Error("AI returned an invalid or empty response.");
+      
+      // Relaxed validation: only reject if null or empty JSON
+      if (!result || (Object.keys(result).length === 0)) {
+          console.warn("[Extraction] AI returned an empty or invalid response result, but we'll try to provide a skeleton.");
+          return {
+            lab_values: [],
+            document_type: "Unknown",
+            date: new Date().toISOString(),
+            url: "", id: "",
+            hospital_name: null, doctor_name: null,
+            findings: "Extraction resulted in no data.",
+            medications: [], follow_up_date: null
+          };
       }
       return result;
     } catch (error: any) {

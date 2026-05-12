@@ -59,7 +59,7 @@
 - If a change affects more than 1 file, list ALL affected files first
 
 ### Model Rules
-- Current model: gemini-2.5-flash-lite — do NOT change without asking
+- Current model: gemini-2.0-flash — do NOT change without asking
 - generationConfig is now called config in newer SDK versions
 - NEVER use deprecated isAvailable property
 
@@ -68,6 +68,16 @@ Before editing any AI file, confirm:
 1. Will this break other imports? 
 2. Does getAI() still work after this change?
 3. Does the build still compile?
+
+## CRITICAL ARCHITECTURE RULES (Updated May 2026)
+
+1. **AI Model Standardization:** Strictly use `gemini-2.0-flash` for all 8 AI services. Do not use experimental, lite, or pro models unless explicitly approved.
+2. **No Firebase Storage:** The PDF upload pipeline bypasses Firebase Storage completely to avoid billing blocks. Files are read as Base64, sent directly to Gemini, and the extracted data is saved to Firestore.
+3. **Data Isolation:** All queries must use server-side filtering (`where('profileId', '==', profileId)`). No client-side filtering. Public shares use `users/{userId}/shares/{shareId}`.
+4. **Strict UI Safety:** All Firestore reads must use optional chaining and nullish coalescing (e.g., `activeProfile?.chronicConditions ?? []`). Stream generation must be wrapped in `try/catch` blocks to prevent UI crashes.
+5. **Branding:** 
+   - **Aegis AI / Aegis Health Intelligence:** The App / Platform / Clinical Engine.
+   - **Aura AI:** The Chatbot Assistant ONLY.
 
 
 

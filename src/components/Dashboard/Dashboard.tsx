@@ -445,7 +445,7 @@ export default function Dashboard({
                 onClick={onOpenChat}
                 className="flex items-center gap-3 bg-[var(--color-primary)] text-white px-6 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
               >
-                <MessageSquare className="w-4 h-4" /> Ask AURA AI
+                <MessageSquare className="w-4 h-4" /> Ask Aura AI
               </button>
               <button className="flex items-center gap-3 bg-[var(--color-surface)] text-[var(--color-text)] px-6 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all border border-[var(--color-border)]">
                 View Roadmap <ArrowRight className="w-4 h-4" />

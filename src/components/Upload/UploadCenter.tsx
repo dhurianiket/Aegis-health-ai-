@@ -85,6 +85,8 @@ const readFileAsSafeBase64 = (file: File): Promise<{
         .replace(/\s/g, "")
         .replace(/\r?\n/g, "");
 
+      console.log("[Upload Stage 1] File size:", file.size, "bytes");
+      console.log("[Upload Stage 1] Base64 start:", base64Data.substring(0, 100));
       console.log("[Safari Upload] MIME:", mimeType);
       console.log("[Safari Upload] Base64 length:", base64Data.length);
       console.log("[Safari Upload] Valid:", base64Data.length > 100);
@@ -190,6 +192,7 @@ export default function UploadCenter({
             fileUrl: result.fileUrl,
             storagePath: result.storagePath,
           });
+          console.log("[Sync Stage 4] Database doc write SUCCESS for:", result.fileName, "ID:", docId);
 
           if (result.lab_values && result.lab_values.length > 0) {
             let savedCount = 0;
@@ -206,6 +209,7 @@ export default function UploadCenter({
                   status: (lab.status as LabStatus) || LabStatus.NORMAL,
                   profileId: activeProfile?.id,
                 });
+                console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
                 savedCount++;
               }
             }
@@ -213,6 +217,7 @@ export default function UploadCenter({
           }
         }
       } catch (error: any) {
+        console.error("[Sync Stage 4] Database write FAILED:", error);
         console.error("[Sync] Failed:", error);
         showToast(`Sync failed: ${error.message || 'Unknown error'}`, "error");
       }
@@ -254,12 +259,7 @@ export default function UploadCenter({
         // 3. EXTRACT
         const extraction: any = await extractMedicalReports([fileData]);
 
-        if (
-          !extraction ||
-          (extraction.lab_values?.length === 0 &&
-           extraction.document_type === "Unknown" &&
-           extraction.findings === null)
-        ) {
+        if (!extraction || Object.keys(extraction).length === 0) {
           throw new Error(
             "Could not extract data from this document. " +
             "Please ensure it is a clear medical report and try again."
