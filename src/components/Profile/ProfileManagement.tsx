@@ -10,7 +10,7 @@ import {
   Save,
 } from "lucide-react";
 import { useProfile, Profile } from "../../context/ProfileContext";
-import { UserProfile } from "../../types/medical";
+import { Gender, UserProfile } from "../../types/medical";
 import { validateProfileName } from "../../lib/validation";
 import { logger } from "../../lib/logger";
 
@@ -29,8 +29,14 @@ export default function ProfileManagement() {
   const [createError, setCreateError] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
+  const [editFullName, setEditFullName] = useState("");
+  const [editDob, setEditDob] = useState("");
+  const [editGender, setEditGender] = useState<Gender | "">("");
+  const [editBloodType, setEditBloodType] = useState("");
+  const [editDoctorNotes, setEditDoctorNotes] = useState("");
   const [editError, setEditError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -56,21 +62,34 @@ export default function ProfileManagement() {
 
   const handleEdit = (p: UserProfile) => {
     setEditingId(p.id);
-    setEditName(p.fullName || p.name || "");
+    setEditFullName(p.fullName || p.name || "");
+    setEditDob(p.dob || "");
+    setEditGender((p.gender as Gender) || "");
+    setEditBloodType(p.bloodType || "");
+    setEditDoctorNotes(p.doctorNotes?.join("\n") || "");
     setEditError("");
   };
 
   const handleUpdate = async (id: string) => {
-    const validation = validateProfileName(editName);
-    if (!validation.isValid) {
-      setEditError(validation.error || "Invalid name");
-      return;
-    }
-
     try {
-      await updateProfile(id, editName.trim());
-      setEditingId(null);
+      setIsSaving(true);
+      const updates: Partial<UserProfile> = {
+        fullName: editFullName,
+        name: editFullName,
+        dob: editDob,
+        gender: editGender as Gender,
+        bloodType: editBloodType,
+        doctorNotes: editDoctorNotes.split("\n").filter(Boolean),
+      };
+      await updateProfile(id, updates);
+      setIsSaving(false);
+      setIsSaved(true);
+      setTimeout(() => {
+        setIsSaved(false);
+        setEditingId(null);
+      }, 2000);
     } catch (error: any) {
+      setIsSaving(false);
       logger.error("Failed to update profile", { error });
       setEditError("Failed to update profile");
     }
@@ -179,27 +198,77 @@ export default function ProfileManagement() {
 
             <div className={`mt-4 ${editingId === p.id ? "mb-2" : "mb-6"}`}>
               {editingId === p.id ? (
-                <div>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    autoFocus
-                    className={`w-full bg-black/20 border ${editError ? "border-red-500" : "border-white/10"} rounded-md px-3 py-1.5 text-white mb-2 text-sm`}
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      value={editFullName}
+                      onChange={(e) => setEditFullName(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">DOB</label>
+                      <input
+                        type="date"
+                        value={editDob}
+                        onChange={(e) => setEditDob(e.target.value)}
+                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">Gender</label>
+                      <select
+                        value={editGender}
+                        onChange={(e) => setEditGender(e.target.value as Gender)}
+                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                      >
+                        <option value="">Select</option>
+                        {Object.values(Gender).map((g) => (
+                          <option key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Blood Type</label>
+                    <select
+                      value={editBloodType}
+                      onChange={(e) => setEditBloodType(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                    >
+                      <option value="">Select</option>
+                      {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bt => <option key={bt} value={bt}>{bt}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Notes</label>
+                    <textarea
+                      value={editDoctorNotes}
+                      onChange={(e) => setEditDoctorNotes(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm h-20"
+                      placeholder="One note per line"
+                    />
+                  </div>
                   {editError && (
-                    <p className="text-red-400 text-xs mb-2">{editError}</p>
+                    <p className="text-red-400 text-xs">{editError}</p>
                   )}
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => handleUpdate(p.id)}
-                      className="flex items-center gap-1 text-xs px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded hover:bg-indigo-500/30"
+                      disabled={isSaving || isSaved}
+                      className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded transition-colors ${
+                        isSaved ? "bg-green-600 text-white" : "bg-indigo-600 text-white hover:bg-indigo-500"
+                      }`}
                     >
-                      <Save className="w-3 h-3" /> Save
+                      {isSaving ? "Saving..." : isSaved ? "Saved ✓" : <><Save className="w-3 h-3" /> Save</>}
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="text-xs px-2 py-1 text-slate-400 hover:text-white"
+                      disabled={isSaving}
+                      className="text-xs px-3 py-1.5 text-slate-400 hover:text-white"
                     >
                       Cancel
                     </button>
@@ -208,9 +277,9 @@ export default function ProfileManagement() {
               ) : (
                 <h3
                   className="text-xl font-semibold text-white truncate pr-6"
-                  title={p.name}
+                  title={p.fullName || p.name}
                 >
-                  {p.name}
+                  {p.fullName || p.name}
                 </h3>
               )}
             </div>

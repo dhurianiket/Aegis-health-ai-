@@ -23,7 +23,7 @@ interface ProfileContextType {
   activeProfile: UserProfile | null;
   setActiveProfile: (profile: UserProfile) => void;
   createProfile: (name: string) => Promise<void>;
-  updateProfile: (id: string, newName: string) => Promise<void>;
+  updateProfile: (id: string, updates: Partial<UserProfile>) => Promise<void>;
   deleteProfile: (id: string) => Promise<void>;
   isLoading: boolean;
 }
@@ -119,22 +119,16 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateProfile = async (id: string, newName: string) => {
+  const updateProfile = async (id: string, updates: Partial<UserProfile>) => {
     if (!user) return;
     try {
       const docRef = doc(db, "users", user.uid, "profiles", id);
-      await updateDoc(docRef, { name: newName, fullName: newName });
+      await updateDoc(docRef, updates);
       setProfiles((prev) =>
-        prev.map((p) =>
-          p.id === id ? { ...p, name: newName, fullName: newName } : p,
-        ),
+        prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
       );
       if (activeProfile?.id === id) {
-        setActiveProfile({
-          ...activeProfile,
-          name: newName,
-          fullName: newName,
-        });
+        setActiveProfile({ ...activeProfile, ...updates });
       }
     } catch (error) {
       console.error("Failed to update profile:", error);

@@ -337,29 +337,39 @@ export async function extractMedicalReports(
     const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
 
     console.log("[Extraction] Starting report extraction for", filesData.length, "files");
-    const response = await safeGeminiCall(() => ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: [
-        {
-          role: "user",
-          parts: [
-            { text: prompt },
-            ...filesData.map((f) => {
-              console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
-              return {
-                inlineData: { data: f.base64Data, mimeType: f.mimeType },
-              };
-            }),
-          ],
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(
+        "AI analysis timed out. Please try again."
+      )), 30000)
+    );
+
+    const response = await Promise.race([
+      safeGeminiCall(() => ai.models.generateContent({
+        model: "gemini-2.5-flash-lite",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: prompt },
+              ...filesData.map((f) => {
+                console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
+                return {
+                  inlineData: { data: f.base64Data, mimeType: f.mimeType },
+                };
+              }),
+            ],
+          },
+        ],
+        config: {
+          systemInstruction: CORE_SYSTEM_PROMPT,
+          temperature: 0.1,
+          responseMimeType: "application/json",
+          maxOutputTokens: 8192,
         },
-      ],
-      config: {
-        systemInstruction: CORE_SYSTEM_PROMPT,
-        temperature: 0.1,
-        responseMimeType: "application/json",
-        maxOutputTokens: 8192,
-      },
-    }));
+      })),
+      timeoutPromise
+    ]);
 
     const text = response.text || "{}";
     console.log("[Extraction] Gemini raw response length:", text.length);
