@@ -7,9 +7,10 @@ import { format } from "date-fns";
 
 interface SharedProfileProps {
   shareId: string;
+  userId: string;
 }
 
-export default function SharedProfile({ shareId }: SharedProfileProps) {
+export default function SharedProfile({ shareId, userId }: SharedProfileProps) {
   const [shareInfo, setShareInfo] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +19,8 @@ export default function SharedProfile({ shareId }: SharedProfileProps) {
   useEffect(() => {
     async function fetchSharedData() {
       try {
-        const shareDoc = await getDoc(doc(db, "shares", shareId));
+        // Path: users/{userId}/shares/{shareId}
+        const shareDoc = await getDoc(doc(db, "users", userId, "shares", shareId));
         if (!shareDoc.exists()) {
           setError("Share link not found.");
           setLoading(false);
@@ -37,12 +39,12 @@ export default function SharedProfile({ shareId }: SharedProfileProps) {
 
         setShareInfo(data);
 
-        // Fetch the corresponding profile
-        const profileDoc = await getDoc(doc(db, "profiles", data.profileId));
+        // Fetch the corresponding profile: users/{userId}/profiles/{profileId}
+        const profileDoc = await getDoc(doc(db, "users", userId, "profiles", data.profileId));
         if (profileDoc.exists()) {
           setProfileData(profileDoc.data());
           // Update view count
-          await updateDoc(doc(db, "shares", shareId), {
+          await updateDoc(doc(db, "users", userId, "shares", shareId), {
             viewCount: increment(1),
           });
         } else {
@@ -57,7 +59,7 @@ export default function SharedProfile({ shareId }: SharedProfileProps) {
     }
 
     fetchSharedData();
-  }, [shareId]);
+  }, [shareId, userId]);
 
   if (loading) {
     return (

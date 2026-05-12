@@ -100,20 +100,15 @@ export async function saveDocument(
 export async function getDocuments(userId: string, profileId?: string) {
   const pathString = `users/${userId}/documents`;
   try {
-    const q = query(
-      collection(db, "users", userId, "documents")
-    );
+    let q = query(collection(db, "users", userId, "documents"));
+    if (profileId) {
+      q = query(q, where("profileId", "==", profileId));
+    }
     const snapshot = await getDocs(q);
-    let docs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as MedicalDocument,
     ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
-    if (profileId) {
-      docs = docs.filter(
-        (doc) =>
-          doc.profileId === profileId ||
-          (!doc.profileId && profileId === "Myself"),
-      );
-    }
+    
     return docs;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);
@@ -127,23 +122,18 @@ export async function getLabHistory(
 ) {
   const pathString = `users/${userId}/labResults`;
   try {
-    let q = query(
-      collection(db, "users", userId, "labResults")
-    );
+    let q = query(collection(db, "users", userId, "labResults"));
     if (markerName) {
       q = query(q, where("markerName", "==", markerName));
     }
+    if (profileId) {
+      q = query(q, where("profileId", "==", profileId));
+    }
     const snapshot = await getDocs(q);
-    let docs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as LabResult,
     ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
-    if (profileId) {
-      docs = docs.filter(
-        (doc) =>
-          doc.profileId === profileId ||
-          (!doc.profileId && profileId === "Myself"),
-      );
-    }
+    
     return docs;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);
@@ -153,18 +143,15 @@ export async function getLabHistory(
 export async function getMedications(userId: string, profileId?: string) {
   const pathString = `users/${userId}/medications`;
   try {
-    const q = query(collection(db, "users", userId, "medications"));
+    let q = query(collection(db, "users", userId, "medications"));
+    if (profileId) {
+      q = query(q, where("profileId", "==", profileId));
+    }
     const snapshot = await getDocs(q);
-    let docs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as Medication,
     );
-    if (profileId) {
-      docs = docs.filter(
-        (doc) =>
-          doc.profileId === profileId ||
-          (!doc.profileId && profileId === "Myself"),
-      );
-    }
+    
     return docs;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);
@@ -208,24 +195,19 @@ export async function saveMedication(
 export async function getLatestInsights(userId: string, profileId?: string) {
   const pathString = `users/${userId}/insights`;
   try {
-    const q = query(
-      collection(db, "users", userId, "insights")
-    );
+    let q = query(collection(db, "users", userId, "insights"));
+    if (profileId) {
+      q = query(q, where("profileId", "==", profileId));
+    }
     const snapshot = await getDocs(q);
-    let docs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as SpecialistInsight,
     ).sort((a: any, b: any) => {
        const tA = a.timestamp?.toMillis ? a.timestamp.toMillis() : new Date(a.timestamp || 0).getTime();
        const tB = b.timestamp?.toMillis ? b.timestamp.toMillis() : new Date(b.timestamp || 0).getTime();
        return tB - tA;
     });
-    if (profileId) {
-      docs = docs.filter(
-        (doc) =>
-          doc.profileId === profileId ||
-          (!doc.profileId && profileId === "Myself"),
-      );
-    }
+    
     return docs;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);
@@ -252,20 +234,15 @@ export async function saveSpecialistInsight(
 export async function getHealthScores(userId: string, profileId?: string) {
   const pathString = `users/${userId}/scores`;
   try {
-    const q = query(
-      collection(db, "users", userId, "scores")
-    );
+    let q = query(collection(db, "users", userId, "scores"));
+    if (profileId) {
+      q = query(q, where("profileId", "==", profileId));
+    }
     const snapshot = await getDocs(q);
-    let docs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as any,
     ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
-    if (profileId) {
-      docs = docs.filter(
-        (doc) =>
-          doc.profileId === profileId ||
-          (!doc.profileId && profileId === "Myself"),
-      );
-    }
+    
     return docs;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);
@@ -312,24 +289,19 @@ export interface ClinicalSummaryRecord {
 export async function getClinicalSummary(userId: string, profileId?: string) {
   const pathString = `users/${userId}/summaries`;
   try {
-    const q = query(
-      collection(db, "users", userId, "summaries")
-    );
+    let q = query(collection(db, "users", userId, "summaries"));
+    if (profileId) {
+      q = query(q, where("profileId", "==", profileId));
+    }
     const snapshot = await getDocs(q);
-    let docs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as ClinicalSummaryRecord,
     ).sort((a: any, b: any) => {
        const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime();
        const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt || 0).getTime();
        return tB - tA;
     });
-    if (profileId) {
-      docs = docs.filter(
-        (doc) =>
-          doc.profileId === profileId ||
-          (!doc.profileId && profileId === "Myself"),
-      );
-    }
+    
     return docs[0]; // return latest
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);

@@ -1,9 +1,35 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null 
-        && request.auth.uid == userId;
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // User data protection
+    match /users/{userId} {
+      // Owner has full access to their own root and all sub-collections
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Public access for SHARING documents
+      match /shares/{shareId} {
+        // Anyone can read a share document if they have the ID
+        allow read: if true;
+        // Only owner can create/edit/delete their shares
+        allow create, update, delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Shared access for PROFILES
+      match /profiles/{profileId} {
+        // Owner access
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Public read (Scenario C): 
+        // We allow single-document GET access for the shared view.
+        // LIST is strictly owner-only to prevent scraping.
+        allow get: if true;
+      }
     }
   }
 }

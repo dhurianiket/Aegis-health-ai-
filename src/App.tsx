@@ -163,6 +163,7 @@ export default function App() {
   // Check for shared profile in URL
   const searchParams = new URLSearchParams(window.location.search);
   const shareId = searchParams.get("share");
+  const shareUid = searchParams.get("uid");
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -212,10 +213,10 @@ export default function App() {
     setIsConsentGranted(exists);
   }, []);
 
-  if (shareId) {
+  if (shareId && shareUid) {
     return (
       <Suspense fallback={<Fallback />}>
-        <SharedProfile shareId={shareId} />
+        <SharedProfile shareId={shareId} userId={shareUid} />
       </Suspense>
     );
   }
