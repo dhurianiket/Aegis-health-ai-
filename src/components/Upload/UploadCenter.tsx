@@ -244,30 +244,11 @@ export default function UploadCenter({
       try {
         console.log('[Upload] Browser Safari:', isSafari);
         
-        // 1. UPLOAD TO STORAGE FIRST
+        // 1. UPLOAD TO STORAGE FIRST (Placeholder)
+        const fileUrl = "local://" + Date.now();
         const storagePath = `users/${user.uid}/documents/${item.id}_${item.file.name}`;
-        const storageRef = ref(storage, storagePath);
         
-        const uploadTask = uploadBytesResumable(storageRef, item.file);
-        
-        const fileUrl = await new Promise<string>((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress } : f));
-            },
-            (error) => reject(error),
-            async () => {
-              const url = await getDownloadURL(uploadTask.snapshot.ref);
-              if (!url) {
-                reject(new Error("Failed to get download URL from Firebase Storage"));
-                return;
-              }
-              resolve(url);
-            }
-          );
-        });
+        setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress: 100 } : f));
 
         // 2. READ FOR AI
         const fileData = await readFileAsSafeBase64(item.file);

@@ -293,7 +293,6 @@ export interface ExtractedReportResponse {
 export async function extractMedicalReports(
   filesData: { base64Data: string; mimeType: string }[],
 ): Promise<ExtractedReportResponse | null> {
-  try {
     const prompt = `
     Extract the following information from this medical report (image or PDF).
     Extract the information into a single structured JSON format:
@@ -334,18 +333,15 @@ export async function extractMedicalReports(
 
     const ai = getAI();
     
-    const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-    console.log("[Extraction] Starting report extraction for", filesData.length, "files");
+    try {
+      const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(
-        "AI analysis timed out. Please try again."
-      )), 30000)
-    );
+      console.log("[Extraction] Starting report extraction for", filesData.length, "files");
 
-    const response = await Promise.race([
-      safeGeminiCall(() => ai.models.generateContent({
+      const response = await safeGeminiCall(() => ai.models.generateContent({
         model: "gemini-2.5-flash-lite",
         contents: [
           {
@@ -367,31 +363,45 @@ export async function extractMedicalReports(
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
         },
-      })),
-      timeoutPromise
-    ]);
+      }));
 
-    const text = response.text || "{}";
-    console.log("[Extraction] Gemini raw response length:", text.length);
-    const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
-    console.log("[Extraction] Parsed result success:", !!result);
-    if (!result) {
-        throw new Error("AI returned an invalid or empty response.");
+      clearTimeout(timeoutId);
+
+      const text = response.text || "{}";
+      console.log("[Extraction] Gemini raw response length:", text.length);
+      const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
+      console.log("[Extraction] Parsed result success:", !!result);
+      if (!result) {
+          throw new Error("AI returned an invalid or empty response.");
+      }
+      return result;
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === "AbortError" || 
+          error.message?.includes("timed out") ||
+          error.message?.includes("AI analysis")) {
+        return {
+          lab_values: [],
+          document_type: "Unknown",
+          date: new Date().toISOString(),
+          url: "", id: "",
+          hospital_name: null, doctor_name: null,
+          findings: "Upload timed out. Please try again.",
+          medications: [], follow_up_date: null
+        };
+      }
+      console.error("Error extracting report:", error);
+      return {
+        lab_values: [],
+        document_type: "Unknown",
+        date: new Date().toISOString(),
+        url: "",
+        id: "",
+        hospital_name: null,
+        doctor_name: null,
+        findings: null,
+        medications: [],
+        follow_up_date: null
+      };
     }
-    return result;
-  } catch (error: any) {
-    console.error("Error extracting report:", error);
-    return {
-      lab_values: [],
-      document_type: "Unknown",
-      date: new Date().toISOString(),
-      url: "",
-      id: "",
-      hospital_name: null,
-      doctor_name: null,
-      findings: null,
-      medications: [],
-      follow_up_date: null
-    };
-  }
 }
