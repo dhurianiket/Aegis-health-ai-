@@ -260,7 +260,11 @@ export default function UploadCenter({
             (error) => reject(error),
             async () => {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(url || "");
+              if (!url) {
+                reject(new Error("Failed to get download URL from Firebase Storage"));
+                return;
+              }
+              resolve(url);
             }
           );
         });
@@ -324,7 +328,7 @@ export default function UploadCenter({
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
     const newFiles = acceptedFiles.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       file,
       status: 'pending' as const,
       progress: 0
