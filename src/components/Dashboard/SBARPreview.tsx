@@ -6,7 +6,7 @@ import { SBARSummary } from "../../types/medical";
 export interface SBARPreviewProps {
   isOpen: boolean;
   onClose: () => void;
-  sbar: SBARSummary | null;
+  sbar: string | null;
   isLoading?: boolean;
   error?: string | null;
 }
@@ -18,57 +18,6 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
   isLoading,
   error,
 }) => {
-  const [expandedSections, setExpandedSections] = useState<
-    Record<string, boolean>
-  >({
-    situation: true,
-    background: true,
-    assessment: true,
-    recommendation: true,
-  });
-
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  const Section = ({
-    title,
-    content,
-    id,
-  }: {
-    title: string;
-    content: string;
-    id: string;
-  }) => (
-    <div className="border border-[var(--color-border)] rounded-[16px] overflow-hidden bg-[var(--color-surface)]/30 mb-4 transition-colors hover:bg-[var(--color-surface)]/50">
-      <button
-        onClick={() => toggleSection(id)}
-        className="w-full px-5 py-4 flex items-center justify-between text-left focus:outline-none"
-      >
-        <span className="font-semibold text-[var(--color-text)]">{title}</span>
-        {expandedSections[id] ? (
-          <ChevronUp size={20} className="text-[var(--color-text-muted)]" />
-        ) : (
-          <ChevronDown size={20} className="text-[var(--color-text-muted)]" />
-        )}
-      </button>
-      <AnimatePresence initial={false}>
-        {expandedSections[id] && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-5 text-[var(--color-text-muted)] leading-relaxed text-sm whitespace-pre-wrap border-t border-[var(--color-border)] pt-4">
-              {content || "No data provided."}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -85,7 +34,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl bg-[var(--color-bg)] border border-[var(--color-primary)] z-[9910] rounded-[32px] shadow-2xl flex flex-col md:h-[80vh] max-h-[800px]"
+            className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-3xl bg-[var(--color-bg)] border border-[var(--color-primary)] z-[9910] rounded-[32px] shadow-2xl flex flex-col h-[90vh] md:h-[80vh] max-h-[900px]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="sbar-title"
@@ -96,10 +45,10 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                   id="sbar-title"
                   className="text-xl font-semibold text-[var(--color-text)]"
                 >
-                  Clinical Handover
+                  Clinical Handover Summary
                 </h2>
                 <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider mt-1 font-medium">
-                  SBAR Format
+                  SBAR Format (Plain Text)
                 </p>
               </div>
               <button
@@ -110,7 +59,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
               <div className="bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/20 p-4 rounded-2xl flex gap-3 mb-6">
                 <AlertCircle
                   size={20}
@@ -118,11 +67,10 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                 />
                 <div>
                   <h4 className="text-sm font-semibold text-[var(--color-warning)] mb-0.5">
-                    Automated Insight
+                    Professional SBAR Format
                   </h4>
                   <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-                    This summary is AI-generated for your convenience to share
-                    with healthcare providers. It is not a medical diagnosis.
+                    This summary is designed to be handed to a clinician. It is generated in plain text to ensure readability across all clinical systems and for easy printing.
                   </p>
                 </div>
               </div>
@@ -130,8 +78,8 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="w-8 h-8 rounded-full border-2 border-[var(--color-primary)] border-t-transparent animate-spin mb-4" />
-                  <p className="text-[var(--color-text-muted)] text-sm">
-                    Synthesizing clinical data...
+                  <p className="text-[var(--color-text-muted)] text-sm font-medium">
+                    Synthesizing clinical data into SBAR format...
                   </p>
                 </div>
               ) : error ? (
@@ -148,60 +96,45 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                   </p>
                 </div>
               ) : (
-                <>
-                  <Section
-                    id="situation"
-                    title="Situation"
-                    content={sbar?.situation || ""}
-                  />
-                  <Section
-                    id="background"
-                    title="Background"
-                    content={sbar?.background || ""}
-                  />
-                  <Section
-                    id="assessment"
-                    title="Assessment"
-                    content={sbar?.assessment?.join("\n") || ""}
-                  />
-                  <Section
-                    id="recommendation"
-                    title="Recommendation"
-                    content={sbar?.recommendation?.join("\n") || ""}
-                  />
-
-                  <div className="mt-6 text-center">
-                    <span className="text-[var(--color-text-faint)] text-xs">
-                      Generated by Aegis AI. Not a diagnosis.
+                <div className="bg-[var(--color-surface)]/20 p-6 rounded-24px border border-[var(--color-border)]">
+                  <pre className="text-[var(--color-text)] leading-relaxed text-sm whitespace-pre-wrap font-mono">
+                    {sbar || "No data provided."}
+                  </pre>
+                  <div className="mt-8 pt-4 border-t border-[var(--color-border)] text-center">
+                    <span className="text-[var(--color-text-faint)] text-xs italic">
+                      Generated by Aegis AI Clinical Engine. Not a medical diagnosis.
                     </span>
                   </div>
-                </>
+                </div>
               )}
             </div>
 
             <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-bg)] shrink-0 flex flex-col-reverse md:flex-row justify-end gap-3 rounded-b-[32px]">
               <button
                 onClick={onClose}
-                className="px-6 py-3 rounded-full text-sm font-medium border border-surface hover:bg-surface transition-colors focus:outline-none w-full md:w-auto"
+                className="px-8 py-3 rounded-full text-sm font-medium border border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors focus:outline-none w-full md:w-auto"
               >
-                Done
+                Close
               </button>
               <button
                 onClick={async () => {
                   if (navigator.share) {
                     try {
                       await navigator.share({
-                        title: "Health Handover",
-                        text: `Situation:\n${sbar?.situation}\n\nBackground:\n${sbar?.background}\n\nAssessment:\n${sbar?.assessment?.join(", ")}\n\nRecommendation:\n${sbar?.recommendation?.join(", ")}`,
+                        title: "Clinical Handover (SBAR)",
+                        text: sbar || "",
                       });
                     } catch (err) {
                       console.log("Share canceled or failed:", err);
                     }
+                  } else {
+                    navigator.clipboard.writeText(sbar || "");
+                    alert("Summary copied to clipboard!");
                   }
                 }}
-                className="px-6 py-3 rounded-full text-sm font-medium bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity flex items-center justify-center gap-2 focus:outline-none w-full md:w-auto"
+                className="px-8 py-3 rounded-full text-sm font-medium bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity flex items-center justify-center gap-2 focus:outline-none w-full md:w-auto shadow-lg shadow-[var(--color-primary)]/20"
               >
-                Share Report
+                Share SBAR Report
               </button>
             </div>
           </motion.div>

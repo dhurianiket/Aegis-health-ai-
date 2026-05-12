@@ -156,96 +156,118 @@ export async function generateClinicalSummary(
   medications: Medication[],
   insights: SpecialistInsight[],
 ): Promise<string> {
+  const ai = getAI();
+  
+  // Sort labs by date (newest first)
+  const sortedLabs = [...labHistory].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const age = patientData.dob
+    ? Math.floor((new Date().getTime() - new Date(patientData.dob).getTime()) / 3.15576e10)
+    : "Unknown";
+    
+  const today = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
   const prompt = `${CORE_SYSTEM_PROMPT}
 
 <task>
-Explain the provided health summary in simple language for a patient with no medical background.
-Compile all laboratory history, medications, documents, and specialist insights into a cohesive overview.
-Use reassuring but accurate language.
-Do not minimize urgent findings.
-Do not overstate certainty.
+Generate a professional, physician-ready SBAR (Situation, Background, Assessment, Recommendation) clinical summary of the patient's complete medical profile.
+This summary will be used for handovers to new specialists or doctors.
 </task>
 
-<audience>
-Patient
-</audience>
+<output_format_rules>
+- OUTPUT MUST BE PLAIN TEXT ONLY.
+- NO MARKDOWN (Do NOT use ** for bold, do NOT use # for headings).
+- NO CODE BLOCKS.
+- Use standard line breaks and spaces for formatting.
+- Section headers should be in ALL CAPS.
+- The tone must be clinical, precise, and professional.
+- Start EXACTLY with the intro paragraph provided in the example.
+</output_format_rules>
 
-<reading_level>
-Grade 6 to 8
-</reading_level>
+<intro_paragraph>
+Here is the SBAR (Situation, Background, Assessment, Recommendation) summary of your complete medical profile.
+You can keep this on your phone or print it out. It is the perfect format to hand to any new doctor, physical therapist, or specialist so they can understand your entire complex case in under 60 seconds.
+</intro_paragraph>
 
-<input>
+<structure_example>
+SBAR CLINICAL SUMMARY
+Patient: ${patientData.fullName || patientData.name} | Age/Sex: ${age}/${patientData.gender || 'Unknown'} | Date: ${today}
+
+S - SITUATION
+[2-3 sentences: current chief complaint, duration, key recent lab findings, current treatment plan]
+
+B - BACKGROUND (CRITICAL MEDICAL ALERTS)
+• [Grouped by category: Hematology, Medications, Radiology, Urology, etc.]
+• Use bullet points with sub-bullets using *
+• Always include current daily medications
+• Always include all past diagnoses
+• Always include radiology/imaging findings
+
+A - ASSESSMENT
+• [One bullet per system assessed]
+• Include autoimmune clearance if labs show normal HLA-B27, RF, Anti-CCP, ESR, CRP
+• Include kidney function if Creatinine present
+• 🚨 Strict Contraindications: list as sub-bullets using * — include reason for each contraindication
+
+R - RECOMMENDATION / PLAN
+1. Numbered list
+2. Each item is actionable and specific
+3. Include medications with full names and doses
+4. Include lifestyle modifications
+5. Include follow-up instructions with doctor name if available
+</structure_example>
+
+<specific_contraindication_logic>
+You MUST infer and explicitly list these contraindications if relevant:
+- If on Rivaroxaban: NO NSAIDs, NO ESI (Epidural Steroid Injection), NO Spinal Manipulation.
+- If AT-III Deficiency (Antithrombin III Deficiency) is noted: flag ESI as high risk.
+- If on any anticoagulants (e.g., Rivaroxaban, Warfarin, Eliquis): flag chiropractic risk/spinal manipulation risk.
+</specific_contraindication_logic>
+
+<data_input>
 PATIENT PROFILE:
-${JSON.stringify(patientData)}
+${JSON.stringify({ ...patientData, age, today })}
 
-LAB HISTORY:
-${JSON.stringify(labHistory)}
-
-MEDICAL DOCUMENTS:
-${JSON.stringify(
-  documents.map((d: MedicalDocument) => ({
-    type: d.type,
-    date: d.date,
-    extractedFindings: d.extractedData?.findings || "",
-  })),
-)}
-
-MEDICATIONS:
+ALL MEDICATIONS:
 ${JSON.stringify(medications)}
 
-SPECIALIST AI INSIGHTS:
-${JSON.stringify(insights)}
-</input>
+ALL DIAGNOSES:
+${JSON.stringify(patientData.chronicConditions)}
 
-${OUTPUT_FORMAT_JSON}
-Return valid JSON with exactly these keys:
-- task_type (string)
-- summary (string, short overview)
-- key_findings (array of strings, simple explanation of healthy and abnormal items)
-- abnormal_items (array of strings, any flagged or concerning telemetry)
-- urgent_flags (array of strings, critical items requiring immediate attention)
-- follow_up_questions (array of strings, questions patient should ask their doctor)
-- recommended_next_steps (array of strings, actionable advice)
-- safety_disclaimer (string, reminding patient to consult a doctor)
+LAB RESULTS (Sorted newest first, include units and reference range status):
+${JSON.stringify(sortedLabs.map(l => ({
+  date: l.date,
+  marker: l.markerName,
+  value: l.value,
+  unit: l.unit,
+  range: l.referenceRange,
+  status: l.status
+})))}
+
+DOCUMENT SUMMARIES:
+${JSON.stringify(documents.map(d => ({ type: d.type, date: d.date, findings: d.extractedData?.findings })))}
+</data_input>
+
+Generate the summary strictly following the plain text format above.
 `;
 
   try {
-    const ai = getAI();
-    
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
-        responseMimeType: "application/json",
+        temperature: 0,
         maxOutputTokens: 2048,
       },
     });
 
-    const text = response.text || "{}";
-    const parsed = safeJsonParse<any>(text, {});
-
-    // Construct the markdown string from the JSON to maintain compatibility with the UI
-    return `## Health Summary
-${parsed.summary || "No summary provided."}
-
-### Key Findings
-${(parsed.key_findings || []).map((f: string) => `- ${f}`).join("\n") || "None noted."}
-
-### Abnormal Items
-${(parsed.abnormal_items || []).map((f: string) => `- ${f}`).join("\n") || "None noted."}
-
-${parsed.urgent_flags && parsed.urgent_flags.length > 0 ? `### ⚠️ Urgent Flags\n${parsed.urgent_flags.map((f: string) => `- ${f}`).join("\n")}` : ""}
-
-### Recommended Next Steps
-${(parsed.recommended_next_steps || []).map((f: string) => `- ${f}`).join("\n") || "Consult your provider."}
-
-### Questions to Ask Your Doctor
-${(parsed.follow_up_questions || []).map((f: string) => `- ${f}`).join("\n") || "None."}
-
----
-*For informational purposes only. Not medical advice.*
-*${parsed.safety_disclaimer || "Aegis AI Health provides informational summaries, not medical advice. Consult your doctor."}*
-`;
+    return response.text || "Failed to generate summary.";
   } catch (error: any) {
     console.error("Error generating clinical summary:", JSON.stringify(error));
 
@@ -257,10 +279,10 @@ ${(parsed.follow_up_questions || []).map((f: string) => `- ${f}`).join("\n") || 
         (error.message.includes("429") || error.message.includes("quota")));
 
     if (isQuotaError) {
-      return `## ⚠️ AI Service Quota Exceeded\n\nThe AI generation service has reached its rate limit or quota. \n\n*Error: RESOURCE_EXHAUSTED (429)*\n\nUnfortunately, standard AI analysis cannot be performed right now. Please try again later.\n\n*For informational purposes only. Not medical advice.*`;
+      return "AI Service Quota Exceeded. The AI service has reached its usage limit for now. Please wait a few minutes and try again. Your data is perfectly safe.";
     }
 
-    return `Failed to generate report. Please try again. ${error?.message ? `(${error.message})` : ""}\n\n*For informational purposes only. Not medical advice.*`;
+    return `Failed to generate report. Please try again. ${error?.message ? `(${error.message})` : ""}`;
   }
 }
 

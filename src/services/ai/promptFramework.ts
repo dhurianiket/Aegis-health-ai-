@@ -261,16 +261,11 @@ export async function generateSBAR(patientContextJSON: string, trendSummariesJSO
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.0-flash",
-    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in JSON: { "situation": "", "background": "", "assessment": "", "recommendation": "", "disclaimer": "" }\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
-    config: { temperature: 0, responseMimeType: "application/json" }
+    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in PLAIN TEXT. DO NOT use markdown. Start with the patient intro paragraph about handheld/printing utility.\n\nSections: S - SITUATION, B - BACKGROUND, A - ASSESSMENT, R - RECOMMENDATION / PLAN.\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
+    config: { temperature: 0 }
   }));
-  const sbarResult = safeJsonParse<any>(response.text, {});
   
-  // Always enforce the exact disclaimer regardless of what Gemini returned
-  sbarResult.disclaimer = "This summary was prepared by the patient for discussion " +
-    "with their healthcare provider. It is not a medical diagnosis.";
-  
-  return sbarResult;
+  return response.text || "Failed to generate SBAR summary.";
 }
 
 export async function explainInteraction(medicationContext: any) {

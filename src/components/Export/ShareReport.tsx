@@ -11,7 +11,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import Markdown from "react-markdown";
 import ExportButton from "../ui/ExportButton";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
@@ -347,8 +346,10 @@ export default function ShareReport() {
                           </p>
                         </div>
                       </div>
-                      <div className="markdown-body prose prose-invert print:prose-p:text-black print:prose-headings:text-black print:prose-table:text-black print:prose-td:border-slate-300 print:prose-th:border-slate-300 max-w-none text-slate-300">
-                        <Markdown>{summaryMarkdown}</Markdown>
+                      <div className="bg-slate-800/30 p-6 md:p-8 rounded-2xl border border-white/5 shadow-inner min-h-[400px]">
+                        <div className="whitespace-pre-wrap font-sans text-sm md:text-base text-slate-300 leading-relaxed tracking-wide print:text-black">
+                          {summaryMarkdown}
+                        </div>
                       </div>
                       <div className="hidden print:block mt-24 border-t border-slate-300 pt-8 text-center text-xs text-slate-400">
                         Generated securely by Aura AI Health Manager.

@@ -12,67 +12,72 @@ export const generateSBAR = async (
   profile: UserProfile,
   labs: any[],
   meds: any[],
-): Promise<SBARSummary> => {
+): Promise<string> => {
   const ai = getAI();
-  const activeMeds = meds.filter((m: any) => m.status === "active" || true);
+  
+  const sortedLabs = [...labs].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   const age = profile.dob
-    ? Math.floor(
-        (new Date().getTime() - new Date(profile.dob).getTime()) / 3.15576e10,
-      )
+    ? Math.floor((new Date().getTime() - new Date(profile.dob).getTime()) / 3.15576e10)
     : "Unknown";
+    
+  const today = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
 
-  const prompt = `${CORE_SYSTEM_PROMPT}
+  const prompt = `
+Generate a professional, physician-ready SBAR clinical summary.
 
-<task>
-Convert the provided health data into an SBAR handoff note for clinician review.
-Keep it concise, factual, and clinically neutral.
-Do not invent missing details.
+<output_rules>
+- OUTPUT MUST BE PLAIN TEXT ONLY.
+- NO MARKDOWN (no bolding, no headers).
+- Start with the intro paragraph for the patient.
+</output_rules>
 
-Safety constraint: Assessment: restate observed facts in plain language only. Do not name diseases, suggest diagnoses, or recommend specific treatments. Recommendation: phrase as questions for the clinician to consider.
-</task>
+INTRO PARAGRAPH:
+Here is the SBAR (Situation, Background, Assessment, Recommendation) summary of your complete medical profile.
+You can keep this on your phone or print it out. It is the perfect format to hand to any new doctor, physical therapist, or specialist so they can understand your entire complex case in under 60 seconds.
 
-<audience>
-Clinician
-</audience>
+SBAR CLINICAL SUMMARY
+Patient: ${profile.fullName || profile.name} | Age/Sex: ${age}/${profile.gender || 'Unknown'} | Date: ${today}
 
-<input>
-PATIENT CONTEXT:
-- Age: ${age}
-- Gender: ${profile.gender || "Unknown"}
-- Doctor Notes: ${profile.doctorNotes || "None"}
+S - SITUATION
+[Summary]
 
-ACTIVE MEDICATIONS:
-${activeMeds.map((m: any) => `- ${m.name} ${m.dose || m.dosage || ""} (${m.frequency || ""})`).join("\n") || "No active medications"}
+B - BACKGROUND (CRITICAL MEDICAL ALERTS)
+• Categories (Hematology, Medications, Radiology, etc.)
+• Current meds, past diagnoses, imaging.
 
-RECENT LAB OBSERVATIONS:
-${labs.map((l: any) => `- ${l.testName || l.markerName || l.marker}: ${l.valueCanonical ?? l.valueOriginal ?? l.value} ${l.unitCanonical || l.unit || ""} (${l.flag || l.status || "NORMAL"})`).join("\n") || "No recent lab observations"}
-</input>
+A - ASSESSMENT
+• System assessment
+• Contraindications: NO NSAIDs/ESI/Spinal Manipulation for Rivaroxaban; flag ESI risk for AT-III Deficiency; flag chiropractic risk for anticoagulants.
 
-${OUTPUT_FORMAT_JSON}
-Return valid JSON with exactly these keys: situation (string), background (string), assessment (array of strings), recommendation (array of strings).`;
+R - RECOMMENDATION / PLAN
+1. Actionable list
+2. Meds with names/doses
+3. Follow-up instructions
+
+DATA:
+Profile: ${JSON.stringify({ ...profile, age })}
+Medications: ${JSON.stringify(meds)}
+Labs: ${JSON.stringify(sortedLabs)}
+`;
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
-        responseMimeType: "application/json",
         temperature: 0,
+        maxOutputTokens: 2048,
       },
     });
 
-    const parsed = safeJsonParse<any>(response.text, {});
-    return {
-      situation: parsed.situation || "Situation not provided.",
-      background: parsed.background || "Background not provided.",
-      assessment: Array.isArray(parsed.assessment)
-        ? parsed.assessment
-        : [parsed.assessment || "Assessment not provided."],
-      recommendation: Array.isArray(parsed.recommendation)
-        ? parsed.recommendation
-        : [parsed.recommendation || "Recommendation not provided."],
-    } as SBARSummary;
+    return response.text || "Failed to generate summary.";
   } catch (error) {
     console.error("Gemini SBAR Generation failed:", error);
     throw new Error("Unable to generate summary. Please try again.");
