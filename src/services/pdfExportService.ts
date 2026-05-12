@@ -226,7 +226,7 @@ export const generateTrendNarrative = async (trendSummariesJSON: string, dateRan
   const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash-lite",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate a trend narrative for a PDF report spanning ${dateRange}.\n\nTrends:\n${trendSummariesJSON}\n\nReturn JSON: { "narrative_paragraphs": ["..."], "overall_summary": "...", "disclaimer": "..." }` }] }],
     config: { temperature: 0, responseMimeType: "application/json" }
   }));

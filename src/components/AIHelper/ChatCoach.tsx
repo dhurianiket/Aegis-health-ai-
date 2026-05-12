@@ -129,7 +129,7 @@ export default function ChatCoach({
 
       await streamGenerate(
         {
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash-lite",
           contents,
           generationConfig: {
             systemInstruction: COACH_SYSTEM_INSTRUCTION,
@@ -159,7 +159,7 @@ export default function ChatCoach({
                 if (apiKey) {
                   const ai = getAI();
                   const filterRes = await ai.models.generateContent({
-                    model: "gemini-2.0-flash",
+                    model: "gemini-2.5-flash-lite",
                     contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
                     config: { 
                       temperature: 0, 

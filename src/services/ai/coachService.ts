@@ -91,7 +91,7 @@ export const getCoachResponse = async (
   if (!ai) throw new Error("Aura AI is currently offline. Please check your configuration.");
 
   const stream = await ai.models.generateContentStream({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash-lite",
     contents,
     config: {
       systemInstruction: COACH_SYSTEM_INSTRUCTION,

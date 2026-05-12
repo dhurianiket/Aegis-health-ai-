@@ -94,7 +94,7 @@ ${OUTPUT_FORMAT_JSON}
     const ai = getAI();
     
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-lite",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
@@ -213,7 +213,7 @@ Return valid JSON with exactly these keys:
     const ai = getAI();
     
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-lite",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
@@ -338,7 +338,7 @@ export async function extractMedicalReports(
 
     console.log("[Extraction] Starting report extraction for", filesData.length, "files");
     const response = await safeGeminiCall(() => ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-lite",
       contents: [
         {
           role: "user",

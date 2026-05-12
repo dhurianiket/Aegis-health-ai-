@@ -59,7 +59,7 @@
 - If a change affects more than 1 file, list ALL affected files first
 
 ### Model Rules
-- Current model: gemini-2.0-flash — do NOT change without asking
+- Current model: gemini-2.5-flash-lite — do NOT change without asking
 - generationConfig is now called config in newer SDK versions
 - NEVER use deprecated isAvailable property
 
