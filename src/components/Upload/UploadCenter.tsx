@@ -274,6 +274,18 @@ export default function UploadCenter({
 
         // 3. EXTRACT
         const extraction: any = await extractMedicalReports([fileData]);
+
+        if (
+          !extraction ||
+          (extraction.lab_values?.length === 0 &&
+           extraction.document_type === "Unknown" &&
+           extraction.findings === null)
+        ) {
+          throw new Error(
+            "Could not extract data from this document. " +
+            "Please ensure it is a clear medical report and try again."
+          );
+        }
         
         // Ensure url and id exist, add null/empty checks
         if (extraction && typeof extraction === 'object') {

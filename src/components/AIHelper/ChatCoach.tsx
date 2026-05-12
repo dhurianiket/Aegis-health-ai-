@@ -177,14 +177,21 @@ export default function ChatCoach({
               }
             }
             
-            setMessages((prev) => [
-              ...prev,
-              {
-                role: "assistant",
-                content: finalText,
-                timestamp: new Date(),
-              },
-            ]);
+            const cleaned = finalText
+              .replace(/Shield Failure[\s\S]*?System Reboot/gi, "")
+              .replace(/Async Error[\s\S]*?\}/gi, "")
+              .trim();
+
+            if (cleaned.length > 0) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: "assistant",
+                  content: cleaned,
+                  timestamp: new Date(),
+                },
+              ]);
+            }
             setStreamedText("");
             setIsTyping(false);
           })();
@@ -194,8 +201,7 @@ export default function ChatCoach({
     } catch (err: any) {
       if (err.name !== "AbortError") {
         console.error("Chat error:", err);
-        const errorContent =
-          "I encountered a connection issue. Please try again.";
+        const errorContent = "I'm having trouble connecting right now. Please try your question again.";
         setError(errorContent);
         setMessages((prev) => [
           ...prev,
