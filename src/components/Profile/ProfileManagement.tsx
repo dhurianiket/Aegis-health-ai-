@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   Save,
 } from "lucide-react";
-import { useProfile, Profile } from "../../context/ProfileContext";
+import { useProfile } from "../../context/ProfileContext";
 import { Gender, UserProfile } from "../../types/medical";
 import { validateProfileName } from "../../lib/validation";
 import { logger } from "../../lib/logger";
