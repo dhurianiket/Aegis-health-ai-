@@ -123,6 +123,7 @@ export default function UploadCenter({
   const [fileQueue, setFileQueue] = useState<FileItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [hasSynced, setHasSynced] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
   const [confirmedLabIndices, setConfirmedLabIndices] = useState<Set<string>>(
     new Set(),
@@ -155,7 +156,7 @@ export default function UploadCenter({
   };
 
   const handleSync = async () => {
-    if (!results || results.length === 0) return;
+    if (hasSynced || isSyncing || !results || results.length === 0) return;
     if (!user) {
       showToast("Sign in to save records", "error");
       return;
@@ -168,6 +169,7 @@ export default function UploadCenter({
     }
 
     setIsSyncing(true);
+    setHasSynced(true);
     console.log('[Sync] Starting vault sync for', results.length, 'reports');
     console.log('[Sync] Auth UID:', user?.uid);
     
@@ -307,6 +309,7 @@ export default function UploadCenter({
       
       if (allExtractions.length > 0) {
         setResults(allExtractions);
+        setHasSynced(false);
         const initialConfirmed = new Set<string>();
         allExtractions.forEach((ext, extIndex) => {
           if (ext.lab_values && ext.lab_values.length > 0) {
@@ -605,6 +608,7 @@ export default function UploadCenter({
                         setResults(null);
                         setFileQueue([]);
                         setConfirmedLabIndices(new Set());
+                        setHasSynced(false);
                       }}
                       className="flex-1 h-14 rounded-2xl bg-surface text-theme font-bold hover:bg-surface/80 transition-all border border-surface flex items-center justify-center gap-2"
                     >
@@ -612,7 +616,7 @@ export default function UploadCenter({
                     </button>
                     <button
                       onClick={handleSync}
-                      disabled={isSyncing || (results.some((r: any) => r.lab_values?.length > 0) && confirmedLabIndices.size === 0)}
+                      disabled={hasSynced || isSyncing || (results.some((r: any) => r.lab_values?.length > 0) && confirmedLabIndices.size === 0)}
                       className="flex-[2] h-14 rounded-2xl bg-[var(--color-primary)] text-white font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[var(--color-primary)]/20 disabled:opacity-50"
                     >
                       {isSyncing ? (
