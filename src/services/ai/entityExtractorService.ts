@@ -47,7 +47,7 @@ export const extractClinicalEntities = async (
   const ai = getAI();
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: `${EXTRACTION_PROMPT}\n\n<input>\n${text}\n</input>` }] }],
       config: {
         responseMimeType: "application/json",

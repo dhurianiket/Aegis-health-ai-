@@ -89,22 +89,33 @@ export const getCoachResponse = async (
   }
 
   if (!ai) throw new Error("Aura AI is currently offline. Please check your configuration.");
+  
+  try {
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-2.0-flash",
+      contents,
+      config: {
+        systemInstruction: COACH_SYSTEM_INSTRUCTION,
+        temperature: 0.1,
+      },
+    });
 
-  const stream = await ai.models.generateContentStream({
-    model: "gemini-2.5-flash-lite",
-    contents,
-    config: {
-      systemInstruction: COACH_SYSTEM_INSTRUCTION,
-      temperature: 0.1,
-    },
-  });
-
-  return (async function* () {
-    for await (const chunk of stream) {
-      if (chunk.text) {
-        yield chunk.text;
+    return (async function* () {
+      try {
+        for await (const chunk of stream) {
+          if (chunk.text) {
+            yield chunk.text;
+          }
+        }
+      } catch (streamError) {
+        console.error("Stream processing error:", streamError);
+        yield "I'm having trouble connecting right now. Please try again in a moment.";
       }
-    }
-    // Note: The UI is expected to append the global disclaimer.
-  })();
+    })();
+  } catch (error) {
+    console.error("Coach service initialization error:", error);
+    return (async function* () {
+      yield "I'm having trouble connecting right now. Please try again in a moment.";
+    })();
+  }
 };

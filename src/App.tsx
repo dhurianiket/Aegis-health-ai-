@@ -339,12 +339,12 @@ export default function App() {
                                 : activeTab}
             </h1>
             {user && activeProfile && (
-              <div className="hidden sm:flex items-center gap-2 bg-surface px-3 py-1.5 rounded-full border border-surface">
-                <span className="w-2 h-2 rounded-full bg-[var(--color-success)] shadow-[0_0_8px_var(--color-success)]" />
-                <span className="text-xs font-semibold text-theme tracking-wide">
-                  {activeProfile.name}
+              <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-full border border-surface min-w-0">
+                <span className="w-2 h-2 rounded-full bg-[var(--color-success)] shadow-[0_0_8px_var(--color-success)] shrink-0" />
+                <span className="text-xs font-semibold text-theme tracking-wide truncate max-w-[80px] sm:max-w-none">
+                  {activeProfile.name?.split(' ')[0] || 'User'}
                 </span>
-                <span className="text-[10px] text-muted ml-0.5 uppercase tracking-widest">
+                <span className="hidden sm:inline text-[10px] text-muted ml-0.5 uppercase tracking-widest">
                   (Active)
                 </span>
               </div>
@@ -457,9 +457,10 @@ export default function App() {
                             </button>
                             <button
                               onClick={() => setIsChatOpen(true)}
-                              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 rounded-[12px] text-xs font-semibold transition-colors"
+                              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 rounded-[12px] text-xs font-semibold transition-colors"
                             >
-                              <Sparkles className="w-4 h-4" /> Consult AI
+                              <Sparkles className="w-4 h-4" /> 
+                              <span className="hidden sm:inline">Consult AI</span>
                             </button>
                           </div>
                           <motion.div

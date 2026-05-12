@@ -286,15 +286,15 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
                 cursor={{ fill: "var(--color-surface)", opacity: 0.5 }}
               />
 
-              {!isMobile && (
-                <Area
-                  type="step"
-                  dataKey="refRangeArray"
-                  stroke="none"
-                  fill="var(--color-primary)"
-                  fillOpacity={0.08}
-                />
-              )}
+              <Area
+                type="step"
+                dataKey="refRangeArray"
+                stroke={isMobile ? "var(--color-primary)" : "none"}
+                strokeWidth={isMobile ? 1 : 0}
+                strokeDasharray={isMobile ? "3 3" : "0"}
+                fill="var(--color-primary)"
+                fillOpacity={isMobile ? 0.03 : 0.08}
+              />
 
               {isMobile ? (
                 <Bar

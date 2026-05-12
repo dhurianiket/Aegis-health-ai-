@@ -42,6 +42,7 @@ const bottomTabs = [
   { id: "home", label: "Home", icon: LayoutDashboard },
   { id: "reports", label: "Reports", icon: FileText },
   { id: "upload", label: "Upload", icon: Upload },
+  { id: "trends", label: "Trends", icon: TrendingUp },
   { id: "chat", label: "Aura AI", icon: Sparkles },
   { id: "more", label: "More", icon: MoreHorizontal },
 ];
@@ -175,6 +176,15 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
 
       <BottomSheet isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)}>
         <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={() => handleTabChange("trends")}
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3"
+          >
+            <TrendingUp className="w-8 h-8 text-[var(--color-primary)]" />
+            <span className="font-medium text-sm text-[var(--color-text)]">
+              Trends
+            </span>
+          </button>
           <button
             onClick={() => handleTabChange("sbar")}
             className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3"

@@ -11,8 +11,7 @@ import {
   getDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { auth, db, storage } from "./config";
-import { ref, deleteObject } from "firebase/storage";
+import { auth, db } from "./config";
 export { auth, db };
 import {
   MedicalDocument,
@@ -292,20 +291,7 @@ export async function deleteDocumentRecord(userId: string, docId: string) {
   try {
     // 1. Get doc to find storage path
     const docRef = doc(db, "users", userId, "documents", docId);
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      if (data.storagePath) {
-        try {
-          const fileRef = ref(storage, data.storagePath);
-          await deleteObject(fileRef);
-          console.log("[Firestore] Deleted storage file:", data.storagePath);
-        } catch (storageErr) {
-          console.error("[Firestore] Failed to delete storage file:", storageErr);
-        }
-      }
-    }
+    // Storage deletion skipped - using local:// URLs
 
     // 2. Delete Firestore doc
     await deleteDoc(docRef);
