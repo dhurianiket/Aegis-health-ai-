@@ -36,7 +36,7 @@ export default function Medications({
     };
 
     try {
-      const docRef = doc(db, "profiles", activeProfile.id);
+      const docRef = doc(db, "users", user.uid, "profiles", activeProfile.id);
       await updateDoc(docRef, {
         medications: arrayUnion(newMed),
       });
@@ -63,7 +63,7 @@ export default function Medications({
   const handleRemove = async (med: any) => {
     if (!user || !activeProfile) return;
     try {
-      const docRef = doc(db, "profiles", activeProfile.id);
+      const docRef = doc(db, "users", user.uid, "profiles", activeProfile.id);
       await updateDoc(docRef, {
         medications: arrayRemove(med),
       });
