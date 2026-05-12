@@ -408,13 +408,22 @@ export async function extractMedicalReports(
       console.log("[Extraction] Gemini raw response:", text);
       const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
       
+      if (result && Array.isArray(result.lab_values)) {
+        result.lab_values = result.lab_values.map((lab: any) => ({
+          ...lab,
+          unit: lab.unit || "",
+          reference_range: lab.reference_range || "",
+          status: lab.status || "unknown"
+        }));
+      }
+
       const labs = result?.lab_values || [];
       console.log("NORMALIZED_LABS:", labs);
 
       console.log("[Extraction] Parsed result success:", !!result);
       
       // Relaxed validation: only reject if null or empty JSON
-      if (!result || (Object.keys(result).length === 0)) {
+      if (!result || (Object.keys(result).length === 0) || !result.lab_values) {
           console.warn("[Extraction] AI returned an empty or invalid response result, but we'll try to provide a skeleton.");
           return {
             lab_values: [],

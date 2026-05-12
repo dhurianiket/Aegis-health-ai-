@@ -167,61 +167,65 @@ export default function UploadCenter({
       return;
     }
 
-    setIsSyncing(false);
+    setIsSyncing(true);
     console.log('[Sync] Starting vault sync for', results.length, 'reports');
     console.log('[Sync] Auth UID:', user?.uid);
     
-    // OPTIMISTIC UI
-    showToast("Report saved to health vault ✓", "success");
-    window.location.hash = "home";
-    
-    // Sync logic (Background)
-    (async () => {
-      try {
-        const userId = user.uid;
-        for (const [extIndex, result] of results.entries()) {
-          console.log('[Sync] Processing report:', result.fileName);
-          const docId = await saveDocument(userId, {
-            fileName: result.fileName || "Document",
-            type: result.document_type || "Unknown Type",
-            date: result.date || new Date().toISOString(),
-            hospitalName: result.hospital_name || "Unknown",
-            doctorName: result.doctor_name || "Unknown",
-            extractedData: result,
-            profileId: activeProfile?.id,
-            fileUrl: result.fileUrl,
-            storagePath: result.storagePath,
-          });
-          console.log("[Sync Stage 4] Database doc write SUCCESS for:", result.fileName, "ID:", docId);
+    try {
+      const userId = user.uid;
+      let totalSavedDocs = 0;
+      let totalSavedLabs = 0;
 
-          if (result.lab_values && result.lab_values.length > 0) {
-            let savedCount = 0;
-            for (let i = 0; i < result.lab_values.length; i++) {
-              if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
-                const lab = result.lab_values[i];
-                await saveLabResult(userId, {
-                  docId: docId || "unknown",
-                  date: lab.date || result.date || new Date().toISOString(),
-                  markerName: lab.marker || "Unknown",
-                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                  unit: lab.unit || "",
-                  referenceRange: lab.reference_range || "",
-                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                  profileId: activeProfile?.id,
-                });
-                console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
-                savedCount++;
-              }
+      for (const [extIndex, result] of results.entries()) {
+        console.log('[Sync] Processing report:', result.fileName);
+        const docId = await saveDocument(userId, {
+          fileName: result.fileName || "Document",
+          type: result.document_type || "Unknown Type",
+          date: result.date || new Date().toISOString(),
+          hospitalName: result.hospital_name || "Unknown",
+          doctorName: result.doctor_name || "Unknown",
+          extractedData: result,
+          profileId: activeProfile?.id,
+          fileUrl: result.fileUrl,
+          storagePath: result.storagePath,
+        });
+        console.log("[Sync Stage 4] Database doc write SUCCESS for:", result.fileName, "ID:", docId);
+        totalSavedDocs++;
+
+        if (result.lab_values && result.lab_values.length > 0) {
+          let savedCount = 0;
+          for (let i = 0; i < result.lab_values.length; i++) {
+            if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
+              const lab = result.lab_values[i];
+              await saveLabResult(userId, {
+                docId: docId || "unknown",
+                date: lab.date || result.date || new Date().toISOString(),
+                markerName: lab.marker || "Unknown",
+                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                unit: lab.unit || "",
+                referenceRange: lab.reference_range || "",
+                status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                profileId: activeProfile?.id,
+              });
+              console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
+              savedCount++;
             }
-            console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
           }
+          totalSavedLabs += savedCount;
+          console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
         }
-      } catch (error: any) {
-        console.error("[Sync Stage 4] Database write FAILED:", error);
-        console.error("[Sync] Failed:", error);
-        showToast(`Sync failed: ${error.message || 'Unknown error'}`, "error");
       }
-    })();
+
+      console.log(`[Sync] Completed successfully: ${totalSavedDocs} docs, ${totalSavedLabs} labs`);
+      showToast("Report saved to health vault ✓", "success");
+      window.location.hash = "home";
+    } catch (error: any) {
+      console.error("[Sync Stage 4] Database write FAILED:", error);
+      console.error("[Sync] Failed:", error);
+      showToast(`Sync failed: ${error.message || 'Unknown error'}`, "error");
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const removeFileFromQueue = (id: string) => {
@@ -239,81 +243,84 @@ export default function UploadCenter({
     showToast("Processing your reports...", "info");
     const allExtractions: any[] = [];
     
-    for (const item of fileQueue) {
-      if (item.status === 'done') continue;
-      
-      setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
-      
-      try {
-        console.log('[Upload] Browser Safari:', isSafari);
+    try {
+      for (const item of fileQueue) {
+        if (item.status === 'done') continue;
         
-        // 1. UPLOAD TO STORAGE FIRST (Placeholder)
-        const fileUrl = "local://" + Date.now();
-        const storagePath = `users/${user.uid}/documents/${item.id}_${item.file.name}`;
+        setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
         
-        setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress: 100 } : f));
+        try {
+          console.log('[Upload] Browser Safari:', isSafari);
+          
+          // 1. UPLOAD TO STORAGE FIRST (Placeholder)
+          const fileUrl = "local://" + Date.now();
+          const storagePath = `users/${user.uid}/documents/${item.id}_${item.file.name}`;
+          
+          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress: 100 } : f));
 
-        // 2. READ FOR AI
-        const fileData = await readFileAsSafeBase64(item.file);
+          // 2. READ FOR AI
+          const fileData = await readFileAsSafeBase64(item.file);
 
-        // 3. EXTRACT
-        const extraction: any = await extractMedicalReports([fileData]);
+          // 3. EXTRACT
+          const extraction: any = await extractMedicalReports([fileData]);
 
-        if (!extraction || Object.keys(extraction).length === 0) {
-          throw new Error(
-            "Could not extract data from this document. " +
-            "Please ensure it is a clear medical report and try again."
-          );
-        }
-        
-        // Ensure url and id exist, add null/empty checks
-        if (extraction && typeof extraction === 'object') {
-           extraction.url = extraction.url || "";
-           extraction.id = extraction.id || "";
-        }
-        
-        if (extraction) {
-          console.log('[Upload] Extraction success for:', item.file.name);
-          const result = {
-            ...extraction,
-            fileName: item.file.name,
-            fileUrl: fileUrl || "",
-            storagePath
-          };
-          if (result.lab_values) {
-            result.lab_values = result.lab_values.map((l: any) => ({
-              ...l,
-              date: l.date || result.date,
-            }));
+          if (!extraction || Object.keys(extraction).length === 0) {
+            throw new Error(
+              "Could not extract data from this document. " +
+              "Please ensure it is a clear medical report and try again."
+            );
           }
-          allExtractions.push(result);
-          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done' } : f));
-        } else {
-          console.error('[Upload] Extraction returned null for:', item.file.name);
+          
+          // Ensure url and id exist, add null/empty checks
+          if (extraction && typeof extraction === 'object') {
+             extraction.url = extraction.url || "";
+             extraction.id = extraction.id || "";
+          }
+          
+          if (extraction) {
+            console.log('[Upload] Extraction success for:', item.file.name);
+            const result = {
+              ...extraction,
+              fileName: item.file.name,
+              fileUrl: fileUrl || "",
+              storagePath
+            };
+            if (result.lab_values) {
+              result.lab_values = result.lab_values.map((l: any) => ({
+                ...l,
+                date: l.date || result.date,
+              }));
+            }
+            allExtractions.push(result);
+            setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done' } : f));
+          } else {
+            console.error('[Upload] Extraction returned null for:', item.file.name);
+            setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
+            showToast(`Could not extract data from ${item.file.name}`, 'error');
+          }
+        } catch (err: any) {
+          console.error('[Upload] Processing error:', err);
           setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
-          showToast(`Could not extract data from ${item.file.name}`, 'error');
+          showToast(err.message || "Failed to process file", "error");
         }
-      } catch (err: any) {
-        console.error('[Upload] Processing error:', err);
-        setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
-        showToast(err.message || "Failed to process file", "error");
       }
+      
+      if (allExtractions.length > 0) {
+        setResults(allExtractions);
+        const initialConfirmed = new Set<string>();
+        allExtractions.forEach((ext, extIndex) => {
+          if (ext.lab_values && ext.lab_values.length > 0) {
+            ext.lab_values.forEach((_: any, labIndex: number) => {
+              initialConfirmed.add(`${extIndex}-${labIndex}`);
+            });
+          }
+        });
+        setConfirmedLabIndices(initialConfirmed);
+        showToast("Report extracted successfully ✓", "success");
+      }
+    } finally {
+      setIsProcessing(false);
     }
-    
-    if (allExtractions.length > 0) {
-      setResults(allExtractions);
-      const initialConfirmed = new Set<string>();
-      allExtractions.forEach((ext, extIndex) => {
-        if (ext.lab_values && ext.lab_values.length > 0) {
-          ext.lab_values.forEach((_: any, labIndex: number) => {
-            initialConfirmed.add(`${extIndex}-${labIndex}`);
-          });
-        }
-      });
-      setConfirmedLabIndices(initialConfirmed);
-      showToast("Report extracted successfully ✓", "success");
-    }
-    setIsProcessing(false);
   };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
