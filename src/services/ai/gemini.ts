@@ -317,40 +317,13 @@ export async function extractMedicalReports(
 ): Promise<ExtractedReportResponse | null> {
     const prompt = `
     Extract the following information from this medical report (image or PDF).
-    Extract the information into a single structured JSON format:
-    {
-      "document_type": "lab_report|prescription|consultation_note|...",
-      "date": "YYYY-MM-DD",
-      "hospital_name": "string or null",
-      "doctor_name": "string or null",
-      "lab_values": [
-        {
-          "date": "YYYY-MM-DD",
-          "marker": "string",
-          "value": "string or number",
-          "unit": "string",
-          "reference_range": "string",
-          "status": "normal|abnormal|critical"
-        }
-      ],
-      "findings": "string summary",
-      "medications": [
-        {
-          "date": "YYYY-MM-DD",
-          "name": "string",
-          "dosage": "string",
-          "frequency": "string",
-          "purpose": "string"
-        }
-      ],
-      "follow_up_date": "YYYY-MM-DD or null"
-    }
+    Extract the information into a single structured JSON format.
     
     CRITICAL: 
-    - Output ONLY valid JSON containing the structure above. No markdown, no explanations.
+    - Output ONLY valid JSON.
     - Be concise. 
     - If the source text has long repeating phrases or redundant boilerplate (like "Spectrophotometry" repeated 100 times), ignore the repetitions and just extract the core value.
-    - Even if the document quality is poor, extract whatever data is visible. Return partial results rather than failing. For any field you cannot read, use null instead of 'Unknown'.
+    - Even if the document quality is poor, extract whatever data is visible. Return partial results rather than failing. For any field you cannot read, use null.
   `;
 
     const ai = getAI();
@@ -382,8 +355,49 @@ export async function extractMedicalReports(
         config: {
           systemInstruction: CORE_SYSTEM_PROMPT,
           temperature: 0.1,
-          responseMimeType: "application/json",
           maxOutputTokens: 8192,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              document_type: { type: Type.STRING },
+              date: { type: Type.STRING },
+              hospital_name: { type: Type.STRING },
+              doctor_name: { type: Type.STRING },
+              lab_values: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    date: { type: Type.STRING },
+                    marker: { type: Type.STRING },
+                    value: { type: Type.STRING },
+                    unit: { type: Type.STRING },
+                    reference_range: { type: Type.STRING },
+                    status: { type: Type.STRING }
+                  },
+                  required: ["marker", "value"]
+                }
+              },
+              findings: { type: Type.STRING },
+              medications: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    date: { type: Type.STRING },
+                    name: { type: Type.STRING },
+                    dosage: { type: Type.STRING },
+                    frequency: { type: Type.STRING },
+                    purpose: { type: Type.STRING }
+                  },
+                  required: ["name"]
+                }
+              },
+              follow_up_date: { type: Type.STRING }
+            },
+            required: ["document_type", "date", "lab_values"]
+          }
         },
       }));
 

@@ -504,6 +504,12 @@ export default function UploadCenter({
                          {results.reduce((acc, r) => acc + (r.lab_values?.filter((l: any) => l.status === 'abnormal' || l.status === 'critical').length || 0), 0)} abnormal
                        </span>
                     </div>
+                    {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0) === 0 && (
+                      <div className="mt-4 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 text-sm">
+                        <AlertCircle className="inline-block w-4 h-4 mr-2 mb-0.5" />
+                        We couldn’t read any numeric lab values from this file. You can still save the document, but dashboards and SBAR may stay empty.
+                      </div>
+                    )}
                  </div>
                  <button
                     onClick={() => {
@@ -599,8 +605,8 @@ export default function UploadCenter({
                     </button>
                     <button
                       onClick={handleSync}
-                      disabled={isSyncing || confirmedLabIndices.size === 0}
-                      className="flex-[2] h-14 rounded-2xl bg-[var(--color-primary)] text-white font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[var(--color-primary)]/20"
+                      disabled={isSyncing || (results.some((r: any) => r.lab_values?.length > 0) && confirmedLabIndices.size === 0)}
+                      className="flex-[2] h-14 rounded-2xl bg-[var(--color-primary)] text-white font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[var(--color-primary)]/20 disabled:opacity-50"
                     >
                       {isSyncing ? (
                         <Loader2 className="w-6 h-6 animate-spin" />

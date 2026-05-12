@@ -101,17 +101,17 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                     Synthesizing clinical data into SBAR format...
                   </p>
                 </div>
-              ) : error ? (
+              ) : sbar === "No data provided." || sbar?.includes("No data provided.") || sbar?.includes("Empty") || error ? (
                 <div className="bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/20 p-6 rounded-2xl flex flex-col items-center justify-center text-center">
                   <AlertCircle
                     size={32}
-                    className="text-[var(--color-critical)] mb-3"
+                    className="text-[var(--color-warning)] mb-3"
                   />
-                  <h4 className="font-semibold text-[var(--color-critical)] mb-1">
-                    Error
+                  <h4 className="font-semibold text-[var(--color-warning)] mb-1">
+                    No Clinical Data
                   </h4>
-                  <p className="text-sm text-[var(--color-critical)] leading-relaxed">
-                    {error}
+                  <p className="text-sm text-[var(--color-warning)] leading-relaxed">
+                    SBAR cannot be generated yet because no lab results or clinical documents exist for this profile. Upload a report first from Ingest.
                   </p>
                 </div>
               ) : (

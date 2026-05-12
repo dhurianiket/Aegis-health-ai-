@@ -49,9 +49,9 @@ export const formatContextForPrompt = (context: PatientContext): string => {
   prompt += `ACTIVE MEDICATIONS:\n`;
   if (medications.length > 0) {
     medications
-      .filter((m) => m.status === "active")
+      .filter((m) => String(m.status).toLowerCase() === "active" || m.status === undefined)
       .forEach((m) => {
-        prompt += `- ${m.name}: ${m.dosage} ${m.frequency}\n`;
+        prompt += `- ${m.name}: ${m.dosage || ''} ${m.frequency || ''}\n`;
       });
   } else {
     prompt += `- None reported\n`;

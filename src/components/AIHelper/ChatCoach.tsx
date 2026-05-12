@@ -123,7 +123,7 @@ export default function ChatCoach({
       contents.push({
         role: "user",
         parts: [
-          { text: `Clinical Context:\n${context}\n\nUser Question: ${text}` },
+          { text: `System Instruction: You are Aura AI. You have access to the patient's active medications, lab history, and profile. Use the medications list when answering questions like 'My medicines' or 'Any interactions?'. If the medications list is empty, state that directly.\n\nClinical Context:\n${context}\n\nUser Question: ${text}` },
         ],
       });
 
