@@ -121,7 +121,7 @@ export default function ChatCoach({
         }));
 
       const chat = ai.chats.create({
-        model: "gemini-2.5-flash-preview-05-20",
+        model: "gemini-2.0-flash",
         history: historyItems,
         config: {
           systemInstruction: `You are Aura AI. You have access to the patient's active medications, lab history, and profile. Use the medications list when answering questions like 'My medicines' or 'Any interactions?'. If the medications list is empty, state that directly.\n\nClinical Context:\n${context}`,
@@ -157,7 +157,7 @@ export default function ChatCoach({
           const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
           if (apiKey) {
             const filterRes = await ai.models.generateContent({
-              model: "gemini-2.5-flash-preview-05-20",
+              model: "gemini-2.0-flash",
               contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
               config: { 
                 temperature: 0, 

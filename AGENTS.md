@@ -31,7 +31,7 @@ All secrets are stored in GitHub Actions Secrets and never hardcoded:
 - Firebase config variables (API key, project ID, app ID, etc.)
 
 ## Active AI Model
-`gemini-2.5-flash-preview-05-20` is used everywhere — no other models permitted
+`gemini-2.0-flash` is used everywhere — no other models permitted
 
 ## Architecture Rules (Always Follow)
 1. Never hardcode API keys, tokens, URLs, or account IDs in any file
@@ -114,3 +114,16 @@ ci-smoke.yml job:
 - Keep tests lightweight (one happy-path, one auth-race regression) to avoid flakiness.
 - Use a single test account and secrets stored in GitHub Secrets for CI only; never commit credentials.
 - The CI job should run against the deployed URL (aegishealthai.co.in) to validate the full production flow, not only the local build.
+
+## Current-State Safety Rules for AGENTS.md
+
+- Use only the approved Gemini model string listed in this file.
+- Never change the model name unless the owner explicitly approves it.
+- If an AI feature returns a 404 or unsupported-model error, diagnose the SDK, API key, endpoint, and AI Studio availability first before changing code.
+- Do not replace model strings based on memory, assumptions, or guesses.
+- Always verify `import.meta.env.VITE_GEMINI_API_KEY` is present and valid before debugging AI failures.
+- If Cloudflare AI Gateway is enabled, confirm the SDK is using the correct gateway configuration before making broader changes.
+- Do not touch Firebase config, environment files, Firestore rules, Storage rules, or deployment files unless the task explicitly requires it.
+- Keep fixes minimal when the app is already stable.
+- After any AI-layer change, run lint and build, then test ChatCoach, SBAR generation, PDF extraction, and specialist analysis.
+- If a change affects production behavior, prefer a small patch and owner review rather than a broad refactor.
