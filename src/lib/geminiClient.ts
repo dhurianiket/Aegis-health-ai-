@@ -8,7 +8,11 @@ export function getAI(): GoogleGenAI {
     if (!apiKey) {
       throw new Error("VITE_GEMINI_API_KEY is not set");
     }
-    aiInstance = new GoogleGenAI({ apiKey });
+    
+    aiInstance = new GoogleGenAI({ 
+      apiKey,
+      baseUrl: import.meta.env.VITE_CLOUDFLARE_AI_GATEWAY_URL,
+    });
   }
   return aiInstance;
 }
