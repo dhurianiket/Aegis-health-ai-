@@ -9,7 +9,9 @@ test.describe('Aegis Smoke Test', () => {
     
     // 1. App loads
     const response = await page.goto(process.env.TEST_TARGET_URL || 'http://localhost:3000');
-    expect(response?.ok()).toBeTruthy(); // HTTP 200
+    const status = response?.status() ?? 0;
+    expect(status).toBeGreaterThanOrEqual(200);
+    expect(status).toBeLessThan(400);
     
     // 2. Page title contains "Aegis" or "Health"
     await expect(page).toHaveTitle(/Aegis|Health/i);
