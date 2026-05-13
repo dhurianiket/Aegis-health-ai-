@@ -2,10 +2,11 @@ import {
   getLabHistory,
   getMedications,
   getLatestInsights,
+  getDocuments,
 } from "../../lib/firebase/firestore";
 import { getConsolidatedAlerts } from "../alertService";
 import { PatientContext } from "../../types/ai";
-import { UserProfile } from "../../types/medical";
+import { UserProfile, MedicalDocument } from "../../types/medical";
 
 /**
  * ContextService - Consolidates patient telemetry into a standardized format
@@ -17,11 +18,29 @@ export const getPatientContext = async (
 ): Promise<PatientContext> => {
   const profileId = profile?.id === "Myself" ? undefined : profile?.id;
 
-  const [labHistory, medications, recentInsights] = await Promise.all([
+  const [labHistory, medications, recentInsights, documents] = await Promise.all([
     getLabHistory(userId, undefined, profileId),
     getMedications(userId, profileId),
     getLatestInsights(userId, profileId),
+    getDocuments(userId, profileId),
   ]);
+
+  // Extract from documents if possible
+  const docMeds: any[] = [];
+  const docSbars: string[] = [];
+  
+  if (documents) {
+    documents.forEach((doc: MedicalDocument) => {
+      if (doc.extractedData) {
+        if (Array.isArray(doc.extractedData.medications)) {
+          docMeds.push(...doc.extractedData.medications);
+        }
+        if (doc.extractedData.sbar) {
+          docSbars.push(doc.extractedData.sbar);
+        }
+      }
+    });
+  }
 
   // Generate real-time alerts based on latest data
   const alerts = getConsolidatedAlerts(labHistory || [], medications || []);
@@ -29,17 +48,19 @@ export const getPatientContext = async (
   return {
     profile,
     labHistory: labHistory || [],
-    medications: medications || [],
+    medications: [...(medications || []), ...docMeds],
     recentInsights: recentInsights || [],
     alerts,
-  };
+    // Add raw SBAR text for extra context
+    extraContext: docSbars.join("\n\n"),
+  } as any;
 };
 
 /**
  * Formats the patient context into a clean, prompt-friendly string.
  */
-export const formatContextForPrompt = (context: PatientContext): string => {
-  const { profile, labHistory, medications, alerts } = context;
+export const formatContextForPrompt = (context: any): string => {
+  const { profile, labHistory, medications, alerts, extraContext } = context;
 
   let prompt = `PATIENT PROFILE:\n`;
   prompt += `- Name: ${profile?.name || "Unknown"}\n`;
@@ -98,11 +119,15 @@ export const formatContextForPrompt = (context: PatientContext): string => {
 
   prompt += `CLINICAL ALERTS:\n`;
   if (alerts.length > 0) {
-    alerts.forEach((alert) => {
+    alerts.forEach((alert: any) => {
       prompt += `- [${alert.severity.toUpperCase()}] ${alert.title}: ${alert.description}\n`;
     });
   } else {
     prompt += `- No critical alerts detected\n`;
+  }
+
+  if (extraContext) {
+    prompt += `\nPAST SBAR SUMMARIES / MEDICAL NOTES:\n${extraContext}\n`;
   }
 
   return prompt;

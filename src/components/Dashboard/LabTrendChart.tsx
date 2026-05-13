@@ -262,15 +262,15 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
         </div>
       </div>
 
-      <div id="lab-trend-chart-container" ref={containerRef} className="h-[280px] w-full relative">
+      <div id="lab-trend-chart-container" ref={containerRef} className="h-[300px] w-full relative">
         <AIErrorBoundary
           key={chartKey}
           onReset={() => setChartKey((k) => k + 1)}
           fallbackMessage="Chart rendering failed."
         >
           {containerWidth > 0 && (
-            <div style={{ width: "100%", minHeight: 300 }}>
-              <ResponsiveContainer width="100%" minHeight={300} debounce={50}>
+            <div style={{ width: "100%", height: "300px" }}>
+              <ResponsiveContainer width="100%" height={300} debounce={50}>
                 <ChartComponent
                   data={chartData}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
