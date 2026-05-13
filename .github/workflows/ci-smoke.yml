@@ -24,12 +24,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
       - name: Run E2E Smoke Test
         env:
-          VITE_TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          VITE_TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
           TEST_TARGET_URL: 'https://aegishealthai.co.in'
         run: npx playwright test tests/e2e/smoke.spec.ts
 
