@@ -31,7 +31,7 @@ All secrets are stored in GitHub Actions Secrets and never hardcoded:
 - Firebase config variables (API key, project ID, app ID, etc.)
 
 ## Active AI Model
-`gemini-2.0-flash` is used everywhere — no other models permitted
+The approved AI model for this project must always be a currently supported Gemini Flash model verified against the active project account. Currently using `gemini-2.5-flash`.
 
 ## Architecture Rules (Always Follow)
 1. Never hardcode API keys, tokens, URLs, or account IDs in any file
@@ -117,7 +117,7 @@ ci-smoke.yml job:
 
 ## Strict AI System Guardrails
 
-* **Model Standardization:** The only approved AI model for this project is `gemini-2.0-flash`. Do not replace this string unless explicitly instructed. Any future AI model changes must be verified against the currently enabled Gemini API and project documentation before editing code.
+* **Model Standardization:** The approved AI model for this project must always be a currently supported Gemini Flash model verified against the active project account. Currently using `gemini-2.5-flash`. Do not change model strings unless the currently active model is confirmed broken and the replacement model is verified available. If a model returns 404 or unavailable, check the Gemini models list for the active account before editing code.
 * **Storage Integrity:** Do not alter Firebase Storage upload paths, file listing logic, or Security Rules. Per-user file isolation is a strict architectural requirement.
 * **PDF Workflow Protection:** Do not switch PDF ingestion away from Firebase Storage unless the owner explicitly approves an architecture change. The PDF upload/download feature is required for usability and must remain in place.
 

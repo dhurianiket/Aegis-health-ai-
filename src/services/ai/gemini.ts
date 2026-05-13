@@ -94,7 +94,7 @@ ${OUTPUT_FORMAT_JSON}
     const ai = getAI();
     
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
@@ -259,7 +259,7 @@ Generate the summary strictly following the plain text format above.
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         temperature: 0,
@@ -337,7 +337,7 @@ export async function extractMedicalReports(
       console.log("[Extraction] Starting report extraction for", filesData.length, "files");
 
       const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         contents: [
           {
             role: "user",

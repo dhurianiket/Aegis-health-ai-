@@ -92,7 +92,7 @@ export const getCoachResponse = async (
   
   try {
     const stream = await ai.models.generateContentStream({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents,
       config: {
         systemInstruction: COACH_SYSTEM_INSTRUCTION,
