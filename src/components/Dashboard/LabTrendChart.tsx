@@ -269,11 +269,12 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
           fallbackMessage="Chart rendering failed."
         >
           {containerWidth > 0 && (
-            <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <ChartComponent
-                data={chartData}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
+            <div style={{ width: "100%", minHeight: 300 }}>
+              <ResponsiveContainer width="100%" minHeight={300} debounce={50}>
+                <ChartComponent
+                  data={chartData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
               <CartesianGrid
                 strokeDasharray="0"
                 vertical={false}
@@ -333,6 +334,7 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
               )}
             </ChartComponent>
           </ResponsiveContainer>
+          </div>
           )}
         </AIErrorBoundary>
       </div>

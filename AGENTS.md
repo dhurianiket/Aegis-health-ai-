@@ -31,7 +31,7 @@ All secrets are stored in GitHub Actions Secrets and never hardcoded:
 - Firebase config variables (API key, project ID, app ID, etc.)
 
 ## Active AI Model
-`gemini-2.0-flash` is used everywhere — no other models permitted
+`gemini-2.5-flash-preview-05-20` is used everywhere — no other models permitted
 
 ## Architecture Rules (Always Follow)
 1. Never hardcode API keys, tokens, URLs, or account IDs in any file
