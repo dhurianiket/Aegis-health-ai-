@@ -96,16 +96,59 @@ export default function Dashboard({
       try {
         // Fetch in parallel but don't block the whole UI if possible
         // We'll show partial data as it arrives or just show the layout
-        const [scores, insights, labs] = await Promise.all([
+        const [scores, insights, documents] = await Promise.all([
           getHealthScores(user.uid, activeProfile?.id),
           getLatestInsights(user.uid, activeProfile?.id),
-          getLabHistory(user.uid, undefined, activeProfile?.id),
+          getDocuments(user.uid, activeProfile?.id),
         ]);
+        
+        const docs = (documents || []) as MedicalDocument[];
+        // Aggregate all lab_values across documents by marker name
+        const labMap = new Map<string, any[]>();
+        docs.forEach(doc => {
+          if (doc.extractedData?.lab_values) {
+             doc.extractedData.lab_values.forEach((lab: any) => {
+                if (!lab.marker) return;
+                const name = lab.marker;
+                const entry = {
+                   ...lab,
+                   date: lab.date || doc.date || doc.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                   docId: doc.id
+                };
+                if (!labMap.has(name)) labMap.set(name, []);
+                labMap.get(name)!.push(entry);
+             });
+          }
+        });
+        
+        const aggregatedLabs: any[] = [];
+        labMap.forEach((vals, marker) => {
+           vals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+           const latest = vals[0];
+           const previous = vals.length > 1 ? vals[1] : null;
+           let trend = 'stable';
+           if (previous && !isNaN(parseFloat(latest.value)) && !isNaN(parseFloat(previous.value))) {
+              const diff = parseFloat(latest.value) - parseFloat(previous.value);
+              if (diff > 0) trend = 'up';
+              else if (diff < 0) trend = 'down';
+           }
+           aggregatedLabs.push({
+              markerName: marker,
+              value: latest.value,
+              unit: latest.unit,
+              status: latest.status?.toLowerCase() || 'normal',
+              referenceRange: latest.reference_range,
+              date: latest.date,
+              trend,
+              docId: latest.docId,
+              history: vals
+           });
+        });
         
         if (isMounted) {
           setHealthScores((scores as HealthScore[]) || []);
           setLatestInsights((insights as SpecialistInsight[]) || []);
-          setKeyLabs((labs as LabResult[]) || []);
+          setKeyLabs(aggregatedLabs);
           setError(null);
         }
       } catch (err) {
@@ -385,85 +428,78 @@ export default function Dashboard({
         </Suspense>
       </motion.div>
 
-      {/* Action Required & Intelligence Feed */}
-      <motion.div
-        variants={tileVariants}
-        className="grid grid-cols-1 md:grid-cols-2 gap-8"
-      >
-        <div className="bg-[var(--color-surface)] backdrop-blur-xl p-8 rounded-[40px] border border-[var(--color-border)] shadow-2xl border-l-4 border-l-[var(--color-warning)]">
-          <div className="flex items-center gap-3 mb-6 text-[var(--color-warning)]">
-            <AlertTriangle className="w-5 h-5" />
-            <h3 className="font-bold tracking-tight uppercase text-sm">
-              Action Required
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
-              <div className="flex gap-4 items-center">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-[var(--color-warning)]">
-                  <Stethoscope className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-[var(--color-text)]">
-                    Hematology Consultation
-                  </p>
-                  <p className="text-[10px] text-[var(--color-text-muted)] italic">
-                    Discussion of low MCV/MCH patterns
-                  </p>
-                </div>
+          {/* Key Markers & Action Required */}
+          <motion.div
+            variants={tileVariants}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          >
+            {/* Needs Attention */}
+            <div className="bg-[var(--color-surface)] backdrop-blur-xl p-8 rounded-[40px] border border-[var(--color-border)] shadow-2xl border-l-4 border-l-[var(--color-warning)]">
+              <div className="flex items-center gap-3 mb-6 text-[var(--color-warning)]">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="font-bold tracking-tight uppercase text-sm">
+                  Needs Attention
+                </h3>
               </div>
-              <ChevronRight className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-warning)] group-hover:translate-x-1" />
-            </div>
-            <div className="flex items-center justify-between p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
-              <div className="flex gap-4 items-center">
-                <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/20 flex items-center justify-center text-[var(--color-primary)]">
-                  <Microscope className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-[var(--color-text)]">
-                    Follow-up Blood Panel
-                  </p>
-                  <p className="text-[10px] text-[var(--color-text-muted)] italic">
-                    Scheduled: June 15, 2026
-                  </p>
-                </div>
+              <div className="space-y-4">
+                {keyLabs.filter(l => l.status === 'high' || l.status === 'abnormal' || l.status === 'low' || l.status === 'critical').slice(0, 5).map((lab, i) => (
+                  <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
+                     <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-sm text-[var(--color-text)]">{lab.markerName}</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${lab.status === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
+                           {lab.status}
+                        </span>
+                     </div>
+                     <div className="flex justify-between items-end">
+                        <div className="flex items-baseline gap-1">
+                           <span className="text-xl font-bold">{lab.value}</span>
+                           <span className="text-xs text-muted font-medium">{lab.unit}</span>
+                        </div>
+                        <span className="text-[10px] text-muted italic">
+                           Ref: {lab.referenceRange || 'N/A'}
+                        </span>
+                     </div>
+                  </div>
+                ))}
+                {keyLabs.filter(l => l.status === 'high' || l.status === 'abnormal' || l.status === 'low' || l.status === 'critical').length === 0 && (
+                  <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
+                )}
               </div>
-              <ChevronRight className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] group-hover:translate-x-1" />
             </div>
-          </div>
-        </div>
 
-        <div className="bg-[var(--color-primary)]/10 p-8 rounded-[40px] text-[var(--color-text)] shadow-2xl overflow-hidden relative border border-[var(--color-border)]">
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-6">
-              <ShieldCheck className="w-6 h-6 text-[var(--color-primary)]" />
-              <h3 className="font-bold text-lg uppercase tracking-tight">
-                Intelligence Feed
-              </h3>
+            {/* Key Markers */}
+            <div className="bg-[var(--color-surface)] backdrop-blur-xl p-8 rounded-[40px] border border-[var(--color-border)] shadow-2xl">
+               <div className="flex items-center gap-3 mb-6 text-[var(--color-primary)]">
+                  <Activity className="w-5 h-5" />
+                  <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => (
+                     <div key={i} className="p-4 rounded-2xl border border-surface bg-surface/50">
+                        <div className="flex justify-between items-start mb-2">
+                           <p className="text-[10px] font-bold uppercase truncate max-w-[100px]">{lab.markerName}</p>
+                           <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${lab.status === 'normal' ? 'bg-emerald-500/10 text-emerald-500' : lab.status === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
+                              {lab.status}
+                           </span>
+                        </div>
+                        <div className="flex items-end gap-1.5">
+                           <span className="text-lg font-black">{lab.value}</span>
+                           <span className="text-[10px] text-muted font-medium mb-1">{lab.unit}</span>
+                        </div>
+                        <div className="flex items-center gap-1 mt-2">
+                           {lab.trend === 'up' ? <TrendingUp size={12} className="text-red-500" /> : lab.trend === 'down' ? <TrendingDown size={12} className="text-emerald-500" /> : <ArrowRight size={12} className="text-slate-400" />}
+                           <span className="text-[8px] text-muted">{new Date(lab.date).toLocaleDateString()}</span>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+               <div className="mt-6 border-t border-surface pt-4 text-center">
+                  <button onClick={() => window.location.hash = "reports"} className="text-xs font-semibold text-theme hover:underline">View All Trends →</button>
+               </div>
             </div>
-            <p className="text-[var(--color-text-muted)] leading-relaxed text-sm mb-8 font-light italic">
-              "Your cardiovascular trajectory is highly positive. Lipid panel
-              markers are nearing the 95th percentile for your age group after
-              the recent dietary shift."
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <button
-                onClick={onOpenChat}
-                className="flex items-center gap-3 bg-[var(--color-primary)] text-white px-6 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
-              >
-                <MessageSquare className="w-4 h-4" /> Ask Aura AI
-              </button>
-              <button className="flex items-center gap-3 bg-[var(--color-surface)] text-[var(--color-text)] px-6 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all border border-[var(--color-border)]">
-                View Roadmap <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-[var(--color-primary)] rounded-full blur-[80px] opacity-[0.15]"></div>
-          <div className="absolute right-12 top-12 w-32 h-32 bg-purple-400 rounded-full blur-[60px] opacity-10"></div>
-        </div>
-      </motion.div>
+          </motion.div>
 
-      <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
+          <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
         <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
           Built by <span className="text-[var(--color-text-muted)]">Aniket Dhuri</span> · Powered by Gemini AI
         </p>

@@ -352,10 +352,10 @@ export default function UploadCenter({
       }
       
       if (allExtractions.length > 0) {
-        showToast("Done ✅", "success");
+        showToast("Extraction complete", "success");
         setFileQueue([]);
-        // Force refresh or redirect to home to show the new reports
-        window.location.hash = "home";
+        setResults(allExtractions);
+        setProcessingStep(4);
       }
     } finally {
       setIsProcessing(false);
@@ -466,12 +466,21 @@ export default function UploadCenter({
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold uppercase tracking-widest text-muted">Queue ({fileQueue.length})</h4>
                     {!isProcessing && (
-                      <button 
-                         onClick={startProcessingQueue}
-                         className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-full text-xs font-bold shadow-lg"
-                      >
-                         Extract Data →
-                      </button>
+                      fileQueue.every(f => f.status === 'error') ? (
+                        <button 
+                           onClick={() => setFileQueue([])}
+                           className="px-6 py-2 bg-red-500 text-white rounded-full text-xs font-bold shadow-lg flex items-center gap-2"
+                        >
+                           <RefreshCw size={14} /> Try Uploading Again
+                        </button>
+                      ) : fileQueue.some(f => f.status === 'pending' || f.status === 'error') ? (
+                        <button 
+                           onClick={startProcessingQueue}
+                           className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-full text-xs font-bold shadow-lg"
+                        >
+                           Extract Data →
+                        </button>
+                      ) : null
                     )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -559,129 +568,129 @@ export default function UploadCenter({
 
           {results && results.length > 0 && !isProcessing && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50 p-6 rounded-[32px] border border-surface">
-                 <div>
-                    <h3 className="text-2xl font-bold">Review Extracted Results</h3>
-                    <div className="flex items-center gap-3 mt-2">
-                       <span className="px-3 py-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full text-[10px] font-bold uppercase">
-                         {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0)} values found
-                       </span>
-                       <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-bold uppercase">
-                         {results.reduce((acc, r) => acc + (r.lab_values?.filter((l: any) => l.status === 'abnormal' || l.status === 'critical').length || 0), 0)} abnormal
-                       </span>
-                    </div>
-                    {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0) === 0 && (
-                      <div className="mt-4 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 text-sm">
-                        <AlertCircle className="inline-block w-4 h-4 mr-2 mb-0.5" />
-                        We couldn’t read any numeric lab values from this file. You can still save the document, but dashboards and SBAR may stay empty.
-                      </div>
-                    )}
+              <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                 <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                  </div>
-                 <button
-                    onClick={() => {
-                        setResults(null);
-                        setFileQueue([]);
-                        setConfirmedLabIndices(new Set());
-                    }}
-                    className="flex items-center gap-2 px-6 py-3 bg-[var(--color-bg)] hover:bg-surface rounded-2xl text-xs font-bold transition-all border border-surface"
-                 >
-                    <RefreshCw size={16} /> Re-extract
-                 </button>
+                 <h3 className="text-2xl font-bold mb-2">Extraction complete</h3>
+                 <p className="text-muted">
+                    Successfully extracted {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0)} lab values and saved to your health vault.
+                 </p>
+                 {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0) === 0 && (
+                    <div className="mt-4 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 text-sm max-w-lg text-left inline-flex">
+                       <AlertCircle className="shrink-0 w-5 h-5 mr-3 mt-0.5" />
+                       <span>We couldn't read any numeric lab values from this file. It was saved to your vault, but dashboards and charts may stay empty.</span>
+                    </div>
+                 )}
+                 <div className="flex items-center gap-4 mt-8">
+                    <button
+                       onClick={() => {
+                          setResults(null);
+                          setFileQueue([]);
+                          setProcessingStep(0);
+                       }}
+                       className="px-6 py-3 rounded-xl border border-surface hover:bg-surface text-sm font-semibold transition-all"
+                    >
+                       Upload Another
+                    </button>
+                    <button
+                       onClick={() => window.location.hash = "reports"}
+                       className="px-6 py-3 rounded-xl bg-[var(--color-primary)] text-white hover:opacity-90 shadow-lg text-sm font-semibold transition-all"
+                    >
+                       View in Reports
+                    </button>
+                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-8 mt-8">
                 {results.map((result: any, extIndex: number) => (
-                  <div key={extIndex} className="space-y-4">
-                    <div className="flex items-center gap-2 px-2">
-                       <FileText size={16} className="text-[var(--color-primary)]" />
-                       <span className="text-xs font-bold text-muted uppercase tracking-widest">{result.fileName}</span>
+                  <div key={extIndex} className="space-y-6 bg-surface/30 p-6 rounded-[24px] border border-surface">
+                    <div className="flex items-center gap-2 mb-4">
+                       <FileText size={20} className="text-[var(--color-primary)]" />
+                       <span className="font-bold">{result.fileName}</span>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {/* Sort: Abnormal values first */}
-                      {[...(result.lab_values || [])]
-                        .sort((a: any, b: any) => {
-                           const aIsAb = a.status === 'abnormal' || a.status === 'critical';
-                           const bIsAb = b.status === 'abnormal' || b.status === 'critical';
-                           if (aIsAb && !bIsAb) return -1;
-                           if (!aIsAb && bIsAb) return 1;
-                           return 0;
-                        })
-                        .map((m: any, i: number) => {
-                        const isConfirmed = confirmedLabIndices.has(`${extIndex}-${i}`);
-                        const isAbnormal = m.status === 'abnormal' || m.status === 'critical';
-                        const isLow = m.status === 'low';
-                        const isNormal = m.status === 'normal';
-                        
-                        return (
-                          <div 
-                            key={i} 
-                            onClick={() => toggleLabConfirmation(`${extIndex}-${i}`)}
-                            className={`
-                              relative p-5 rounded-[24px] border-l-[6px] transition-all cursor-pointer bg-surface/40 hover:bg-surface/80
-                              ${isConfirmed ? 'opacity-100 scale-100 shadow-sm' : 'opacity-40 grayscale scale-[0.98]'}
-                              ${isAbnormal ? 'border-l-red-500' : isLow ? 'border-l-orange-500' : isNormal ? 'border-l-emerald-500' : 'border-l-slate-400'}
-                            `}
-                          >
-                             <div className="flex justify-between items-start mb-4">
-                               <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tighter ${
-                                 isAbnormal ? 'bg-red-500 text-white' : 
-                                 isLow ? 'bg-orange-500 text-white' : 
-                                 isNormal ? 'bg-emerald-500 text-white' : 
-                                 'bg-slate-500 text-white'
-                               }`}>
-                                 {m.status?.toUpperCase() || 'UNKNOWN'}
-                               </span>
-                               <button className="text-muted hover:text-theme p-1 rounded-full hover:bg-surface ">
-                                  <Search size={14} />
-                               </button>
-                             </div>
-                             
-                             <h5 className="font-bold text-theme leading-tight mb-1 truncate">{m.marker}</h5>
-                             <div className="flex items-baseline gap-1 mt-2">
-                               <span className={`text-xl font-black ${isAbnormal ? 'text-red-500' : isLow ? 'text-orange-500' : 'text-theme'}`}>
-                                 {m.value}
-                               </span>
-                               <span className="text-xs text-muted font-medium">{m.unit}</span>
-                             </div>
-                             
-                             <p className="text-[10px] text-muted font-medium mt-3">
-                               REF: <span className="text-theme">{m.reference_range || 'N/A'}</span>
-                             </p>
-                          </div>
-                        );
-                      })}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                       <div>
+                          <p className="text-xs text-muted font-semibold uppercase">Document Type</p>
+                          <p className="font-medium text-sm mt-1">{result.document_type || "N/A"}</p>
+                       </div>
+                       <div>
+                          <p className="text-xs text-muted font-semibold uppercase">Date</p>
+                          <p className="font-medium text-sm mt-1">{result.date || "N/A"}</p>
+                       </div>
+                       <div>
+                          <p className="text-xs text-muted font-semibold uppercase">Doctor</p>
+                          <p className="font-medium text-sm mt-1">{result.doctor_name || "N/A"}</p>
+                       </div>
+                       <div>
+                          <p className="text-xs text-muted font-semibold uppercase">Hospital</p>
+                          <p className="font-medium text-sm mt-1">{result.hospital_name || "N/A"}</p>
+                       </div>
                     </div>
+
+                    {result.summary && (
+                      <div className="bg-[var(--color-bg)] p-4 rounded-xl mb-6">
+                         <p className="text-sm font-medium">Findings:</p>
+                         <p className="text-sm text-muted mt-1">{result.summary}</p>
+                      </div>
+                    )}
+
+                    {result.medications && result.medications.length > 0 && (
+                      <div className="mb-6">
+                         <p className="text-sm font-medium mb-2">Medications Found:</p>
+                         <div className="flex flex-wrap gap-2">
+                            {result.medications.map((m: any, i: number) => (
+                               <span key={i} className="px-3 py-1 bg-surface rounded-full text-xs font-semibold">
+                                  {m.name || m} {m.dosage && `- ${m.dosage}`}
+                               </span>
+                            ))}
+                         </div>
+                      </div>
+                    )}
+
+                    {result.lab_values && result.lab_values.length > 0 && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                          <thead className="bg-[var(--color-bg)] text-muted text-[11px] uppercase tracking-widest font-semibold border-b border-surface">
+                            <tr>
+                              <th className="px-4 py-3 rounded-tl-xl">Marker</th>
+                              <th className="px-4 py-3 text-right">Value</th>
+                              <th className="px-4 py-3">Status</th>
+                              <th className="px-4 py-3 rounded-tr-xl">Range</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-surface text-theme">
+                            {result.lab_values.map((m: any, i: number) => {
+                              const isHigh = m.status?.toLowerCase() === 'high' || m.status?.toLowerCase() === 'abnormal';
+                              const isLow = m.status?.toLowerCase() === 'low';
+                              const isNormal = m.status?.toLowerCase() === 'normal';
+                              return (
+                                <tr key={i} className="hover:bg-surface/50">
+                                  <td className="px-4 py-3 font-medium">{m.marker}</td>
+                                  <td className="px-4 py-3 text-right font-medium">
+                                     {m.value} <span className="text-muted text-xs font-normal ml-0.5">{m.unit}</span>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                     <span className={`px-2 py-1 flex items-center w-fit rounded text-[10px] uppercase font-bold tracking-wider ${
+                                        isHigh ? 'bg-red-500/10 text-red-500' :
+                                        isLow ? 'bg-orange-500/10 text-orange-500' :
+                                        isNormal ? 'bg-emerald-500/10 text-emerald-500' :
+                                        'bg-slate-500/10 text-slate-500'
+                                     }`}>
+                                        {m.status || 'UNKNOWN'}
+                                     </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-muted text-xs">{m.reference_range || '-'}</td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 ))}
-              </div>
-
-              {/* STICKY ACTION BAR */}
-              <div className="fixed bottom-0 left-0 right-0 md:left-24 p-6 bg-theme/80 backdrop-blur-3xl border-t border-surface z-50 flex justify-center">
-                 <div className="w-full max-w-5xl flex gap-4">
-                    <button
-                      onClick={() => {
-                        setResults(null);
-                        setFileQueue([]);
-                        setConfirmedLabIndices(new Set());
-                        setHasSynced(false);
-                      }}
-                      className="flex-1 h-14 rounded-2xl bg-surface text-theme font-bold hover:bg-surface/80 transition-all border border-surface flex items-center justify-center gap-2"
-                    >
-                      <Trash2 size={18} /> Discard All
-                    </button>
-                    <button
-                      onClick={handleSync}
-                      disabled={hasSynced || isSyncing || (results.some((r: any) => r.lab_values?.length > 0) && confirmedLabIndices.size === 0)}
-                      className="flex-[2] h-14 rounded-2xl bg-[var(--color-primary)] text-white font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[var(--color-primary)]/20 disabled:opacity-50"
-                    >
-                      {isSyncing ? (
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      ) : (
-                        <>Confirm & Save to Health Vault <ChevronRight size={18} /></>
-                      )}
-                    </button>
-                 </div>
               </div>
             </div>
           )}

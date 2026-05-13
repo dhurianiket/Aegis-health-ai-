@@ -12,20 +12,21 @@ import {
   Tooltip,
 } from "recharts";
 import ExportButton from "../ui/ExportButton";
-import { getLabHistory } from "../../lib/firebase/firestore";
+import { getDocuments } from "../../lib/firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { LabResult, LabStatus } from "../../types/medical";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 
 interface LabTrendChartProps {
-  labs?: LabResult[];
+  labs?: any[];
+  reports?: any[];
 }
 
-export default function LabTrendChart({ labs }: LabTrendChartProps) {
+export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
-  const [labResults, setLabResults] = useState<LabResult[]>([]);
+  const [labResults, setLabResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMarker, setSelectedMarker] = useState<string>("");
   const [timeRange, setTimeRange] = useState<"3M" | "6M" | "1Y" | "ALL">("ALL");
@@ -60,15 +61,47 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
       }
       setIsLoading(true);
       try {
-        let results = labs;
-        if (!results) {
-          results = await getLabHistory(user.uid, undefined, activeProfile?.id);
+        let extractedValues: any[] = [];
+        
+        if (labs && labs.length > 0 && labs[0].history) {
+           // Passed from Dashboard
+           labs.forEach(l => {
+              extractedValues.push(...l.history.map((h: any) => ({
+                 ...h,
+                 markerName: h.marker || h.testName || l.markerName
+              })));
+           });
+        } else if (reports && reports.length > 0) {
+           // Passed from Reports
+           reports.forEach(doc => {
+              const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
+              obs.forEach((o: any) => {
+                 extractedValues.push({
+                    ...o,
+                    markerName: o.marker || o.testName,
+                    date: o.date || doc.date || doc.uploadedAt
+                 });
+              });
+           });
+        } else {
+           // Fetch from documents
+           const docs = await getDocuments(user.uid, activeProfile?.id);
+           docs.forEach((doc: any) => {
+              const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
+              obs.forEach((o: any) => {
+                 extractedValues.push({
+                    ...o,
+                    markerName: o.marker || o.testName,
+                    date: o.date || doc.date || doc.createdAt?.toDate?.()?.toISOString()
+                 });
+              });
+           });
         }
-        if (results && results.length > 0) {
-          const normalizedResults = results.map((r) => {
-            const name = r.markerName ? r.markerName.trim() : "Unknown";
-            const titleCaseName =
-              name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        
+        if (extractedValues.length > 0) {
+          const normalizedResults = extractedValues.filter(r => r.markerName).map((r) => {
+            const name = r.markerName.trim();
+            const titleCaseName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
             return {
               ...r,
               markerName: titleCaseName,
@@ -85,20 +118,34 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
       }
     }
     fetchLabs();
-  }, [user, activeProfile, labs]);
+  }, [user, activeProfile, labs, reports]);
 
   const uniqueMarkers = useMemo(() => {
-    const markers = Array.from(
-      new Set(labResults.map((r) => r.markerName).filter(Boolean)),
-    );
-    return markers.sort();
+    const markerCounts = new Map<string, number>();
+    labResults.forEach((r) => {
+       if (r.markerName) {
+          markerCounts.set(r.markerName, (markerCounts.get(r.markerName) || 0) + 1);
+       }
+    });
+    // Only show markers appearing in 2+ reports as requested
+    const markers = Array.from(markerCounts.entries())
+       .filter(([_, count]) => count >= 2)
+       .map(([name]) => name);
+    
+    // Sort with favorites first
+    const favorites = ['Hemoglobin', 'Hba1c', 'Ldl', 'Hdl', 'Uric acid', 'Crp', 'Vitamin d', 'Egfr', 'Lymphocytes'];
+    return markers.sort((a, b) => {
+       const aFav = favorites.findIndex(f => a.toLowerCase().includes(f.toLowerCase()));
+       const bFav = favorites.findIndex(f => b.toLowerCase().includes(f.toLowerCase()));
+       if (aFav !== -1 && bFav !== -1) return aFav - bFav;
+       if (aFav !== -1) return -1;
+       if (bFav !== -1) return 1;
+       return a.localeCompare(b);
+    });
   }, [labResults]);
 
   useEffect(() => {
-    if (
-      uniqueMarkers.length > 0 &&
-      (!selectedMarker || !uniqueMarkers.includes(selectedMarker))
-    ) {
+    if (uniqueMarkers.length > 0 && (!selectedMarker || !uniqueMarkers.includes(selectedMarker))) {
       setSelectedMarker(uniqueMarkers[0]);
     } else if (uniqueMarkers.length === 0 && selectedMarker) {
       setSelectedMarker("");
@@ -111,53 +158,48 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
 
       const filtered = labResults
         .filter((r) => r.markerName === selectedMarker)
-        .sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-        );
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      // Filter by timeRange
       const now = new Date().getTime();
       let cutoff = 0;
       if (timeRange === "3M") cutoff = now - 90 * 24 * 60 * 60 * 1000;
       else if (timeRange === "6M") cutoff = now - 180 * 24 * 60 * 60 * 1000;
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
-      const ranged = filtered.filter(
-        (r) => new Date(r.date).getTime() >= cutoff,
-      );
+      const ranged = filtered.filter((r) => new Date(r.date).getTime() >= cutoff);
 
       return ranged.map((r) => {
         let refMin = undefined;
         let refMax = undefined;
+        const refRange = r.referenceRange || r.reference_range;
 
-        if (r.referenceRange) {
-          const rangeMatch = r.referenceRange.match(
-            /([0-9.]+)\s*-\s*([0-9.]+)/,
-          );
+        if (refRange) {
+          const rangeMatch = refRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
           if (rangeMatch) {
             refMin = parseFloat(rangeMatch[1]);
             refMax = parseFloat(rangeMatch[2]);
           }
         }
 
+        const numericValue = parseFloat(r.valueCanonical ?? r.valueOriginal ?? r.value);
+        let flagCol = 'emerald';
+        const st = (r.status || r.flag || '').toLowerCase();
+        if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
+        else if (st === 'low') flagCol = 'orange';
+
         return {
           timestamp: new Date(r.date).getTime(),
-          date: new Date(r.date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          }),
-          value: r.value,
-          unit: r.unit,
+          date: new Date(r.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          value: !isNaN(numericValue) ? numericValue : undefined,
+          unit: r.unitCanonical || r.unit,
           refMin: !isNaN(refMin as number) ? refMin : undefined,
           refMax: !isNaN(refMax as number) ? refMax : undefined,
-          refRangeArray:
-            !isNaN(refMin as number) && !isNaN(refMax as number)
-              ? [refMin, refMax]
-              : undefined,
-          referenceRange: r.referenceRange,
-          status: r.status,
+          refRangeArray: !isNaN(refMin as number) && !isNaN(refMax as number) ? [refMin, refMax] : undefined,
+          referenceRange: refRange,
+          status: r.status || r.flag,
+          flagCol
         };
-      });
+      }).filter(r => r.value !== undefined);
     } catch (error) {
       return [];
     }
@@ -165,7 +207,7 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
 
   if (isLoading || labResults.length === 0) {
     return (
-      <div className="glass-card p-6 h-[400px] flex items-center justify-center text-muted text-sm">
+      <div className="bg-surface/50 border border-border p-6 rounded-3xl h-[400px] flex items-center justify-center text-muted text-sm">
         {isLoading ? "Loading trends..." : "No laboratory data available yet."}
       </div>
     );
@@ -179,14 +221,7 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
     const delta = latestDataPoint.value - firstDataPoint.value;
     const pct = ((delta / firstDataPoint.value) * 100).toFixed(1);
     const isUp = delta > 0;
-    const statusColor =
-      latestDataPoint.status === LabStatus.CRITICAL
-        ? "text-[var(--color-critical)]"
-        : latestDataPoint.status === LabStatus.ABNORMAL
-          ? "text-[var(--color-warning)]"
-          : "text-[var(--color-success)]";
-
-    summarySentence = `${selectedMarker} ${isUp ? "increased" : "decreased"} ${Math.abs(Number(pct))}% over the period · Currently `;
+    summarySentence = `${selectedMarker} ${isUp ? "increased" : "decreased"} ${Math.abs(Number(pct))}% over this period · Currently `;
   }
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -216,128 +251,135 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
 
   const ChartComponent = isMobile ? BarChart : LineChart;
 
+  const renderCustomDot = (props: any) => {
+     const { cx, cy, payload } = props;
+     const fillCol = payload.flagCol === 'red' ? '#ef4444' : payload.flagCol === 'orange' ? '#f97316' : '#10b981';
+     return <circle cx={cx} cy={cy} r={6} fill={fillCol} stroke="var(--color-bg)" strokeWidth={2} />;
+  };
+
   return (
-    <div className="glass-card p-6 sm:p-8 flex flex-col gap-6">
+    <div className="bg-surface/50 border border-border p-6 sm:p-8 rounded-3xl flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h3 className="section-title mb-1">Trends</h3>
           {latestDataPoint && chartData.length > 1 ? (
             <div className="text-sm text-muted flex items-center gap-2">
               {summarySentence}
-              <span
-                className={`font-semibold ${latestDataPoint.status === LabStatus.CRITICAL ? "text-[var(--color-critical)]" : latestDataPoint.status === LabStatus.ABNORMAL ? "text-[var(--color-warning)]" : "text-[var(--color-success)]"}`}
-              >
+              <span className={`font-semibold ${latestDataPoint.flagCol === 'red' ? "text-red-500" : latestDataPoint.flagCol === 'orange' ? "text-orange-500" : "text-emerald-500"}`}>
                 {latestDataPoint.status || "NORMAL"}
               </span>
             </div>
           ) : (
-            <p className="text-sm text-muted">Tracking over time</p>
+            <p className="text-sm text-muted">{uniqueMarkers.length === 0 ? "You need at least 2 reports of a specific marker to see its trend." : "Tracking over time"}</p>
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <select
-            value={selectedMarker}
-            onChange={(e) => setSelectedMarker(e.target.value)}
-            className="appearance-none bg-surface border-surface text-theme text-xs font-medium uppercase tracking-widest rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
-          >
-            {uniqueMarkers.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
+        {uniqueMarkers.length > 0 && (
+           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+             <select
+               value={selectedMarker}
+               onChange={(e) => setSelectedMarker(e.target.value)}
+               className="appearance-none bg-surface border border-border text-theme text-xs font-medium tracking-widest rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
+             >
+               {uniqueMarkers.map((m) => (
+                 <option key={m} value={m}>
+                   {m}
+                 </option>
+               ))}
+             </select>
 
-          <div className="flex bg-surface rounded-xl p-0.5 border border-surface shadow-sm">
-            {["3M", "6M", "1Y", "ALL"].map((tr) => (
-              <button
-                key={tr}
-                onClick={() => setTimeRange(tr as any)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-[10px] transition-colors ${timeRange === tr ? "bg-[var(--color-primary)] text-white shadow-sm" : "text-muted hover:text-theme"}`}
-              >
-                {tr}
-              </button>
-            ))}
-          </div>
-        </div>
+             <div className="flex bg-surface rounded-xl p-0.5 border border-border">
+               {["3M", "6M", "1Y", "ALL"].map((tr) => (
+                 <button
+                   key={tr}
+                   onClick={() => setTimeRange(tr as any)}
+                   className={`px-3 py-1.5 text-xs font-medium rounded-[10px] transition-colors ${timeRange === tr ? "bg-[var(--color-primary)] text-white shadow-sm" : "text-muted hover:text-theme"}`}
+                 >
+                   {tr}
+                 </button>
+               ))}
+             </div>
+           </div>
+        )}
       </div>
 
-      <div id="lab-trend-chart-container" ref={containerRef} className="h-[300px] w-full relative">
-        <AIErrorBoundary
-          key={chartKey}
-          onReset={() => setChartKey((k) => k + 1)}
-          fallbackMessage="Chart rendering failed."
-        >
-          {containerWidth > 0 && (
-            <div style={{ width: "100%", height: "300px" }}>
-              <ResponsiveContainer width="100%" height={300} debounce={50}>
-                <ChartComponent
-                  data={chartData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-              <CartesianGrid
-                strokeDasharray="0"
-                vertical={false}
-                stroke="rgba(255,255,255,0.04)"
-              />
-              <XAxis
-                dataKey="date"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
-                dy={10}
-                minTickGap={20}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
-                domain={["auto", "auto"]}
-                width={50}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{ fill: "var(--color-surface)", opacity: 0.5 }}
-              />
+      {uniqueMarkers.length > 0 && (
+         <div id="lab-trend-chart-container" ref={containerRef} className="h-[300px] w-full relative">
+           <AIErrorBoundary
+             key={chartKey}
+             onReset={() => setChartKey((k) => k + 1)}
+             fallbackMessage="Chart rendering failed."
+           >
+             {containerWidth > 0 && (
+               <div style={{ width: "100%", height: "300px" }}>
+                 <ResponsiveContainer width="100%" height={300} debounce={50}>
+                   <ChartComponent
+                     data={chartData}
+                     margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                   >
+                 <CartesianGrid
+                   strokeDasharray="0"
+                   vertical={false}
+                   stroke="rgba(150,150,150,0.1)"
+                 />
+                 <XAxis
+                   dataKey="date"
+                   axisLine={false}
+                   tickLine={false}
+                   tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
+                   dy={10}
+                   minTickGap={20}
+                 />
+                 <YAxis
+                   axisLine={false}
+                   tickLine={false}
+                   tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
+                   domain={["auto", "auto"]}
+                   width={50}
+                 />
+                 <Tooltip
+                   content={<CustomTooltip />}
+                   cursor={{ fill: "var(--color-surface)", opacity: 0.5 }}
+                 />
 
-              <Area
-                type="step"
-                dataKey="refRangeArray"
-                stroke={isMobile ? "var(--color-primary)" : "none"}
-                strokeWidth={isMobile ? 1 : 0}
-                strokeDasharray={isMobile ? "3 3" : "0"}
-                fill="var(--color-primary)"
-                fillOpacity={isMobile ? 0.03 : 0.08}
-              />
+                 {/* Reference Band */}
+                 <Area
+                   type="step"
+                   dataKey="refRangeArray"
+                   stroke="none"
+                   fill="var(--color-primary)"
+                   fillOpacity={0.05}
+                 />
 
-              {isMobile ? (
-                <Bar
-                  dataKey="value"
-                  fill="var(--color-primary)"
-                  radius={[4, 4, 0, 0]}
-                />
-              ) : (
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="var(--color-primary)"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{
-                    r: 6,
-                    fill: "var(--color-primary)",
-                    stroke: "var(--color-bg)",
-                    strokeWidth: 2,
-                  }}
-                  animationDuration={1000}
-                />
-              )}
-            </ChartComponent>
-          </ResponsiveContainer>
-          </div>
-          )}
-        </AIErrorBoundary>
-      </div>
+                 {isMobile ? (
+                   <Bar
+                     dataKey="value"
+                     fill="var(--color-primary)"
+                     radius={[4, 4, 0, 0]}
+                   />
+                 ) : (
+                   <Line
+                     type="monotone"
+                     dataKey="value"
+                     stroke="var(--color-primary)"
+                     strokeWidth={2}
+                     dot={renderCustomDot}
+                     activeDot={{
+                       r: 8,
+                       fill: "var(--color-primary)",
+                       stroke: "var(--color-bg)",
+                       strokeWidth: 2,
+                     }}
+                     animationDuration={1000}
+                   />
+                 )}
+               </ChartComponent>
+             </ResponsiveContainer>
+             </div>
+             )}
+           </AIErrorBoundary>
+         </div>
+      )}
     </div>
   );
 }
