@@ -481,32 +481,42 @@ export default function Timeline() {
                   )}
               </div>
 
-              <div className="p-6 md:p-8 border-t border-white/5 flex items-center gap-3 shrink-0 flex-wrap">
-                <button
-                  onClick={() => handleDownload(selectedDoc)}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
-                >
-                  <Download className="w-4 h-4" /> Download JSON
-                </button>
-                <button
-                  onClick={() => handleShare(selectedDoc)}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
-                >
-                  <Share2 className="w-4 h-4" /> Share Info
-                </button>
-                <button
-                  onClick={() => handleDelete(selectedDoc)}
-                  disabled={isDeleting}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center disabled:opacity-50"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-4 h-4" />
-                  )}{" "}
-                  Delete
-                </button>
-              </div>
+                <div className="p-6 md:p-8 border-t border-white/5 flex items-center gap-3 shrink-0 flex-wrap">
+                  {selectedDoc.fileUrl && (
+                    <a
+                      href={selectedDoc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/80 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                    >
+                      <Download className="w-4 h-4" /> Original PDF
+                    </a>
+                  )}
+                  <button
+                    onClick={() => handleDownload(selectedDoc)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                  >
+                    <Download className="w-4 h-4" /> JSON
+                  </button>
+                  <button
+                    onClick={() => handleShare(selectedDoc)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                  >
+                    <Share2 className="w-4 h-4" /> Share Info
+                  </button>
+                  <button
+                    onClick={() => handleDelete(selectedDoc)}
+                    disabled={isDeleting}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center disabled:opacity-50"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}{" "}
+                    Delete
+                  </button>
+                </div>
             </motion.div>
           </motion.div>
         )}

@@ -27,6 +27,17 @@
    - The UI components fetch their respective data from Firestore based on the active profile.
    - The `SpecialistLounge` orchestrates analysis by fetching a cross-section of data and sending it to Gemini for insight generation.
 
+## Data Ingestion & File Handling
+
+**PDF Ingestion & Storage:**
+PDF ingestion utilizes Firebase Storage for secure, per-user file retention. All user documents are uploaded to the path `users/{uid}/documents/{fileName}`. The app generates download URLs for future user access.
+
+**Workflow & Access Rules:**
+- The PDF upload and download feature is a core part of the live user workflow and must remain in place.
+- Uploads are strictly handled through Firebase Storage (do not use Base64-to-Gemini-only ingestion).
+- Each authenticated user only sees and accesses their own uploaded PDFs.
+- File access is strictly controlled by Firebase Security Rules ensuring `request.auth.uid == uid`.
+
 ## Security
 
 - Firestore rules validate all payloads.

@@ -7,6 +7,16 @@
 * **SBAR Clinical Engine:** Generates clinical handover summaries using real patient demographics, labs, and medications from Firestore. Includes PDF export functionality.
 * **Aura AI (Chatbot):** Error-handling implemented (try/catch on streams) to prevent UI crashes. Sanitizes internal AI generation errors (e.g., "Shield Failure") to present a clean, clinical UI.
 
+## Recent Infrastructure Fixes
+
+The following critical infrastructure blockers have been permanently resolved:
+
+* **Auth Fix:** Resolved `auth/invalid-continue-uri` by sanitizing `VITE_FIREBASE_AUTH_DOMAIN` to strip protocols and trailing slashes before initializing the Firebase App.
+* **Storage Fix:** Resolved `403 Unauthorized` uploads by enforcing strict Firebase Security Rules matching `request.auth.uid == uid` at the user document path.
+* **AI Fix:** Resolved Gemini `404 Not Found` by enabling the Generative Language API in Google Cloud and standardizing all AI services to use the `gemini-2.0-flash` model. 
+
+*Note: The Firebase Storage PDF upload/download flow is now fully restored and is a required part of the working product experience. It must not be bypassed.*
+
 ## Recently Fixed (Latest Sprint)
 1.  **PDF Extraction Block (Critical):** Relaxed strict validation in `UploadCenter.tsx` to allow partial data extraction instead of throwing "Could not extract data" errors on poor-quality documents. Added detailed pipeline console logs.
 2.  **Mobile Navbar Bug (High):** Removed `overflow-hidden` from `AppNav.tsx` so the "More" menu and Settings tab render correctly and do not clip on small screens.

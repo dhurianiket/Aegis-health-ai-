@@ -115,12 +115,18 @@ ci-smoke.yml job:
 - Use a single test account and secrets stored in GitHub Secrets for CI only; never commit credentials.
 - The CI job should run against the deployed URL (aegishealthai.co.in) to validate the full production flow, not only the local build.
 
+## Strict AI System Guardrails
+
+* **Model Standardization:** The only approved AI model for this project is `gemini-2.0-flash`. Do not replace this string unless explicitly instructed. Any future AI model changes must be verified against the currently enabled Gemini API and project documentation before editing code.
+* **Storage Integrity:** Do not alter Firebase Storage upload paths, file listing logic, or Security Rules. Per-user file isolation is a strict architectural requirement.
+* **PDF Workflow Protection:** Do not switch PDF ingestion away from Firebase Storage unless the owner explicitly approves an architecture change. The PDF upload/download feature is required for usability and must remain in place.
+
 ## Current-State Safety Rules for AGENTS.md
 
-- Use only the approved Gemini model string listed in this file.
-- Never change the model name unless the owner explicitly approves it.
-- If an AI feature returns a 404 or unsupported-model error, diagnose the SDK, API key, endpoint, and AI Studio availability first before changing code.
-- Do not replace model strings based on memory, assumptions, or guesses.
+- Only use the model currently approved in the project.
+- If a model fails, check the Gemini models list and account access first.
+- Do not global-replace model strings unless the current model is confirmed broken and the replacement is verified.
+- Keep the model string consistent across the repo.
 - Always verify `import.meta.env.VITE_GEMINI_API_KEY` is present and valid before debugging AI failures.
 - If Cloudflare AI Gateway is enabled, confirm the SDK is using the correct gateway configuration before making broader changes.
 - Do not touch Firebase config, environment files, Firestore rules, Storage rules, or deployment files unless the task explicitly requires it.
