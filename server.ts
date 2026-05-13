@@ -2,12 +2,25 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import dotenv from "dotenv";
+import { rateLimit } from "express-rate-limit";
 
 dotenv.config();
+
+// Resolve CodeQL alert: Implement rate limiting to protect file system access
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per 15 mins
+  standardHeaders: true, 
+  legacyHeaders: false,
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Apply rate limiter globally
+  app.use(limiter);
 
   app.use(express.json({ limit: "50mb" }));
 

@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+# Resolve CodeQL alert: Explicitly define minimum permissions
+permissions:
+  contents: read
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
