@@ -9,6 +9,18 @@ interface TrendSparklinesProps {
 }
 
 export default function TrendSparklines({ labs }: TrendSparklinesProps) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      setContainerWidth(entries[0].contentRect.width);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const sparklinesData = useMemo(() => {
     const byMarker: Record<string, LabResult[]> = {};
     labs.forEach((lab) => {
@@ -102,20 +114,22 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
                   </div>
                 )}
               </div>
-              <div className="h-10 w-full mt-3">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={item.data}>
-                    <YAxis domain={["dataMin", "dataMax"]} hide />
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke={isCritical ? "#F59E0B" : "#3B82F6"}
-                      strokeWidth={2}
-                      dot={false}
-                      isAnimationActive={true}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="h-10 w-full mt-3" ref={containerRef}>
+                {containerWidth > 0 && (
+                  <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                    <LineChart data={item.data}>
+                      <YAxis domain={["dataMin", "dataMax"]} hide />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke={isCritical ? "#F59E0B" : "#3B82F6"}
+                        strokeWidth={2}
+                        dot={false}
+                        isAnimationActive={true}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </motion.div>
           );

@@ -246,8 +246,10 @@ export default function UploadCenter({
     const allExtractions: any[] = [];
     
     try {
-      for (const item of fileQueue) {
-        if (item.status === 'done') continue;
+      const itemsToProcess = fileQueue.filter(i => i.status !== 'done');
+      let currentIdx = 0;
+      for (const item of itemsToProcess) {
+        currentIdx++;
         
         setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
         
@@ -305,6 +307,11 @@ export default function UploadCenter({
           setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
           showToast(err.message || "Failed to process file", "error");
         }
+
+        // Add a 5 second delay between processing to respect rate limits if not the last item
+        if (currentIdx < itemsToProcess.length) {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
       }
       
       if (allExtractions.length > 0) {
@@ -328,14 +335,27 @@ export default function UploadCenter({
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
-    const newFiles = acceptedFiles.map((file) => ({
+    
+    // Add file size check (max 4MB)
+    const validFiles = [];
+    for (const file of acceptedFiles) {
+      if (file.size > 4 * 1024 * 1024) {
+        showToast(`File too large: ${file.name} (Max 4MB)`, "error");
+      } else {
+        validFiles.push(file);
+      }
+    }
+    
+    if (validFiles.length === 0) return;
+
+    const newFiles = validFiles.map((file) => ({
       id: crypto.randomUUID(),
       file,
       status: 'pending' as const,
       progress: 0
     }));
     setFileQueue((prev) => [...prev, ...newFiles]);
-  }, []);
+  }, [showToast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -485,7 +505,14 @@ export default function UploadCenter({
               </div>
 
               <h3 className="text-xl font-bold mb-2">Analyzing Health Intelligence</h3>
-              <p className="text-sm text-muted">Usually takes 15-30 seconds</p>
+              <p className="text-sm text-muted">
+                 Usually takes 15-30 seconds per file.
+                 {fileQueue.length > 1 && fileQueue.filter(f => f.status === 'done' || f.status === 'error').length < fileQueue.length && (
+                   <span className="block mt-1 text-[var(--color-primary)] font-semibold">
+                     Processing {fileQueue.filter(f => f.status === 'done' || f.status === 'error').length + 1} of {fileQueue.length}...
+                   </span>
+                 )}
+              </p>
               
               <AnimatePresence mode="wait">
                 <motion.p

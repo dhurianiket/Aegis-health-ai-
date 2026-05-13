@@ -232,15 +232,31 @@ export class GeminiQuotaError extends Error {}
 export class GeminiInputError extends Error {}
 export class GeminiTimeoutError extends Error {}
 
-export async function safeGeminiCall(apiCall: () => Promise<any>): Promise<any> {
-  try {
-    return await apiCall();
-  } catch (error: any) {
-    if (error.message?.includes("429") || error.status === 429) throw new GeminiQuotaError("Quota exceeded.");
-    if (error.message?.includes("400") || error.status === 400) throw new GeminiInputError("Invalid argument.");
-    if (error.message?.includes("504") || error.message?.includes("deadline")) throw new GeminiTimeoutError("Deadline exceeded.");
-    throw error;
-  }
+export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3): Promise<any> {
+    let attempt = 0;
+    while (attempt < retries) {
+        try {
+            return await apiCall();
+        } catch (error: any) {
+            attempt++;
+            const isQuotaError =
+                error?.status === 429 ||
+                error?.code === 429 ||
+                error?.status === "RESOURCE_EXHAUSTED" ||
+                (error?.message && (error.message.includes("429") || error.message.includes("quota")));
+                
+            if (isQuotaError && attempt < retries) {
+                const backoff = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                console.warn(`[Gemini] Quota exceeded. Retrying in ${backoff.toFixed(0)}ms (Attempt ${attempt}/${retries})`);
+                await new Promise(resolve => setTimeout(resolve, backoff));
+                continue;
+            }
+            if (isQuotaError) throw new GeminiQuotaError("Quota exceeded.");
+            if (error?.message?.includes("400") || error?.status === 400) throw new GeminiInputError("Invalid argument.");
+            if (error?.message?.includes("504") || error?.message?.includes("deadline")) throw new GeminiTimeoutError("Deadline exceeded.");
+            throw error;
+        }
+    }
 }
 
 export async function classifyDocument(filesData: { base64Data: string; mimeType: string }[]) {

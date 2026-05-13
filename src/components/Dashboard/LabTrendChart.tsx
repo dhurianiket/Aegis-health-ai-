@@ -31,11 +31,23 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
   const [timeRange, setTimeRange] = useState<"3M" | "6M" | "1Y" | "ALL">("ALL");
   const [width, setWidth] = useState(window.innerWidth);
   const [chartKey, setChartKey] = useState(0);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      setContainerWidth(entries[0].contentRect.width);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   const isMobile = width < 768;
@@ -250,17 +262,18 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
         </div>
       </div>
 
-      <div id="lab-trend-chart-container" className="h-[280px] w-full relative">
+      <div id="lab-trend-chart-container" ref={containerRef} className="h-[280px] w-full relative">
         <AIErrorBoundary
           key={chartKey}
           onReset={() => setChartKey((k) => k + 1)}
           fallbackMessage="Chart rendering failed."
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <ChartComponent
-              data={chartData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-            >
+          {containerWidth > 0 && (
+            <ResponsiveContainer width="100%" height="100%" debounce={50}>
+              <ChartComponent
+                data={chartData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
               <CartesianGrid
                 strokeDasharray="0"
                 vertical={false}
@@ -320,6 +333,7 @@ export default function LabTrendChart({ labs }: LabTrendChartProps) {
               )}
             </ChartComponent>
           </ResponsiveContainer>
+          )}
         </AIErrorBoundary>
       </div>
     </div>
