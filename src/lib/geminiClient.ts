@@ -11,7 +11,7 @@ export function getAI(): GoogleGenAI {
     
     aiInstance = new GoogleGenAI({ 
       apiKey,
-      baseUrl: import.meta.env.VITE_CLOUDFLARE_AI_GATEWAY_URL,
+      httpOptions: { baseUrl: import.meta.env.VITE_CLOUDFLARE_AI_GATEWAY_URL },
     });
   }
   return aiInstance;

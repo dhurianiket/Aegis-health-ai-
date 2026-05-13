@@ -105,113 +105,108 @@ export default function ChatCoach({
 
     try {
       const getAI = (await import("../../lib/geminiClient")).default;
-      const tempAi = getAI();
-      if (!tempAi) {
+      const ai = getAI();
+      if (!ai) {
         throw new Error("AI features are temporarily unavailable (API key missing).");
       }
 
       const patientData = await getPatientContext(user.uid, activeProfile);
       const context = formatContextForPrompt(patientData);
-      const history = messages
+      
+      const historyItems = messages
         .filter((m) => m.role !== "system")
         .map((m) => ({
           role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
           parts: [{ text: m.content }],
         }));
 
-      const contents = [...history];
-      contents.push({
-        role: "user",
-        parts: [
-          { text: `System Instruction: You are Aura AI. You have access to the patient's active medications, lab history, and profile. Use the medications list when answering questions like 'My medicines' or 'Any interactions?'. If the medications list is empty, state that directly.\n\nClinical Context:\n${context}\n\nUser Question: ${text}` },
-        ],
+      const chat = ai.chats.create({
+        model: "gemini-2.0-flash",
+        history: historyItems,
+        config: {
+          systemInstruction: `You are Aura AI. You have access to the patient's active medications, lab history, and profile. Use the medications list when answering questions like 'My medicines' or 'Any interactions?'. If the medications list is empty, state that directly.\n\nClinical Context:\n${context}`,
+          temperature: 0.2,
+        }
       });
 
-      await streamGenerate(
-        {
-          model: "gemini-2.0-flash",
-          contents,
-          generationConfig: {
-            systemInstruction: COACH_SYSTEM_INSTRUCTION,
-            temperature: 0.2,
-          },
-        },
-        (chunk) => {
-          setStreamedText((prev) => prev + chunk);
-        },
-        (finalText) => {
-          // POST-RESPONSE GUARDRAIL
-          (async () => {
-            const DIAGNOSTIC_TRIGGERS = [
-              'you have ', 'you are diagnosed', 'this indicates ', 
-              'this confirms ', 'you suffer from', 'diagnosis is',
-              'you definitely', 'results show you'
-            ];
-            
-            const needsGuardrail = DIAGNOSTIC_TRIGGERS.some(t => 
-              finalText.toLowerCase().includes(t)
-            );
-            
-            if (needsGuardrail) {
-              try {
-                const getAI = (await import("../../lib/geminiClient")).default;
-                const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-                if (apiKey) {
-                  const ai = getAI();
-                  const filterRes = await ai.models.generateContent({
-                    model: "gemini-2.0-flash",
-                    contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
-                    config: { 
-                      temperature: 0, 
-                      responseMimeType: "application/json"
-                    }
-                  });
-                  const { safeJsonParse } = await import("../../utils/aiUtils");
-                  const filterData = safeJsonParse<any>(filterRes.text, { isDiagnosis: false });
-                  if (filterData.isDiagnosis) {
-                     finalText = filterData.safeText || (finalText + "\n\n*(Note: Please consult a healthcare professional for a formal diagnosis.)*");
-                  }
-                }
-              } catch (e) {
-                 console.error("Guardrail check failed", e);
-              }
-            }
-            
-            const cleaned = finalText
-              .replace(/Shield Failure[\s\S]*?System Reboot/gi, "")
-              .replace(/Async Error[\s\S]*?\}/gi, "")
-              .trim();
+      const stream = await chat.sendMessageStream({ message: text });
+      let finalText = "";
+      
+      for await (const chunk of stream) {
+        if (controller.signal.aborted) break;
+        const chunkText = chunk.text || "";
+        finalText += chunkText;
+        setStreamedText((prev) => prev + chunkText);
+      }
+      
+      if (controller.signal.aborted) return;
 
-            if (cleaned.length > 0) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: "assistant",
-                  content: cleaned,
-                  timestamp: new Date(),
-                },
-              ]);
-            }
-            setStreamedText("");
-            setIsTyping(false);
-          })();
-        },
-        controller.signal,
+      // POST-RESPONSE GUARDRAIL
+      const DIAGNOSTIC_TRIGGERS = [
+        'you have ', 'you are diagnosed', 'this indicates ', 
+        'this confirms ', 'you suffer from', 'diagnosis is',
+        'you definitely', 'results show you'
+      ];
+      
+      const needsGuardrail = DIAGNOSTIC_TRIGGERS.some(t => 
+        finalText.toLowerCase().includes(t)
       );
-    } catch (err: any) {
-      if (err.name !== "AbortError") {
-        console.error("Chat error:", err);
-        const errorContent = "I'm having trouble connecting right now. Please try your question again.";
-        setError(errorContent);
+      
+      if (needsGuardrail) {
+        try {
+          const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+          if (apiKey) {
+            const filterRes = await ai.models.generateContent({
+              model: "gemini-2.0-flash",
+              contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
+              config: { 
+                temperature: 0, 
+                responseMimeType: "application/json"
+              }
+            });
+            const { safeJsonParse } = await import("../../utils/aiUtils");
+            const filterData = safeJsonParse<any>(filterRes.text, { isDiagnosis: false });
+            if (filterData.isDiagnosis) {
+               finalText = filterData.safeText || (finalText + "\n\n*(Note: Please consult a healthcare professional for a formal diagnosis.)*");
+            }
+          }
+        } catch (e) {
+           console.error("Guardrail check failed", e);
+        }
+      }
+      
+      const cleaned = finalText
+        .replace(/Shield Failure[\s\S]*?System Reboot/gi, "")
+        .replace(/Async Error[\s\S]*?\}/gi, "")
+        .trim();
+
+      if (cleaned.length > 0) {
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: errorContent,
+            content: cleaned,
             timestamp: new Date(),
           },
         ]);
       }
+      setStreamedText("");
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        console.log("Chat aborted silently");
+        return;
+      }
+      console.error("Chat error:", err);
+      const errorContent = "AI is temporarily unavailable.";
+      setError(errorContent);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: errorContent,
+          timestamp: new Date(),
+        },
+      ]);
       setStreamedText("");
     } finally {
       setIsTyping(false);

@@ -28,13 +28,14 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { MedicationStatus, LabStatus } from "../../types/medical";
 import { useToast } from "../../context/ToastContext";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../lib/firebase/config";
 
 const EXTRACTION_STEPS = [
-  { id: 1, label: 'Reading document', duration: 1000 },
-  { id: 2, label: 'Extracting text', duration: 2000 },
-  { id: 3, label: 'AI analyzing report', duration: 8000 },
-  { id: 4, label: 'Structuring health data', duration: 2000 },
-  { id: 5, label: 'Preparing review', duration: 500 },
+  { id: 1, label: 'Uploading...', duration: 1000 },
+  { id: 2, label: 'Extracting with AI...', duration: 8000 },
+  { id: 3, label: 'Saving...', duration: 2000 },
+  { id: 4, label: 'Done ✅', duration: 500 },
 ];
 
 const getMimeType = (file: File): string => {
@@ -131,18 +132,9 @@ export default function UploadCenter({
   const [processingStep, setProcessingStep] = useState(0);
 
   useEffect(() => {
-    let interval: any;
-    if (isProcessing) {
-      interval = setInterval(() => {
-        setProcessingStep((prev) => {
-          if (prev < EXTRACTION_STEPS.length - 1) return prev + 1;
-          return prev;
-        });
-      }, 3000);
-    } else {
+    if (!isProcessing) {
       setProcessingStep(0);
     }
-    return () => clearInterval(interval);
   }, [isProcessing]);
 
   const toggleLabConfirmation = (indexStr: string) => {
@@ -254,18 +246,28 @@ export default function UploadCenter({
         setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
         
         try {
-          console.log('[Upload] Browser Safari:', isSafari);
+          // Status 1: Uploading...
+          setProcessingStep(0);
           
-          // 1. UPLOAD TO STORAGE FIRST (Placeholder)
-          const fileUrl = "local://" + Date.now();
-          const storagePath = `users/${user.uid}/documents/${item.id}_${item.file.name}`;
-          
-          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress: 100 } : f));
+          // Step 1: uploadBytes
+          const storagePath = `users/${user.uid}/documents/${crypto.randomUUID()}_${item.file.name.replace(/[^a-zA-Z0-9.\-]/g, '_')}`;
+          const fileRef = ref(storage, storagePath);
+          await uploadBytes(fileRef, item.file);
 
-          // 2. READ FOR AI
+          // Step 2: getDownloadURL
+          const fileUrl = await getDownloadURL(fileRef);
+          
+          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress: 33 } : f));
+
+          // Status 2: Extracting with AI...
+          setProcessingStep(1);
+
+          // Step 3: Read file as base64 for Gemini inline data
           const fileData = await readFileAsSafeBase64(item.file);
 
-          // 3. EXTRACT
+          // Step 4: Call extractMedicalReports (which uses safeGeminiCall under the hood)
+          // The instruction says "Call safeGeminiCall() with base64 content + prompt".
+          // We can use the existing `extractMedicalReports` which does exactly this.
           const extraction: any = await extractMedicalReports([fileData]);
 
           if (!extraction || Object.keys(extraction).length === 0) {
@@ -275,58 +277,78 @@ export default function UploadCenter({
             );
           }
           
-          // Ensure url and id exist, add null/empty checks
           if (extraction && typeof extraction === 'object') {
              extraction.url = extraction.url || "";
              extraction.id = extraction.id || "";
           }
           
-          if (extraction) {
-            console.log('[Upload] Extraction success for:', item.file.name);
-            const result = {
-              ...extraction,
-              fileName: item.file.name,
-              fileUrl: fileUrl || "",
-              storagePath
-            };
-            if (result.lab_values) {
-              result.lab_values = result.lab_values.map((l: any) => ({
-                ...l,
-                date: l.date || result.date,
-              }));
-            }
-            allExtractions.push(result);
-            setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done' } : f));
-          } else {
-            console.error('[Upload] Extraction returned null for:', item.file.name);
-            setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
-            showToast(`Could not extract data from ${item.file.name}`, 'error');
+          // Status 3: Saving...
+          setProcessingStep(2);
+          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, progress: 80 } : f));
+
+          const result = {
+            ...extraction,
+            fileName: item.file.name,
+            fileUrl,
+            storagePath
+          };
+          if (result.lab_values) {
+            result.lab_values = result.lab_values.map((l: any) => ({
+              ...l,
+              date: l.date || result.date || new Date().toISOString(),
+            }));
           }
+
+          // Step 5: setDoc with extracted data
+          const docId = await saveDocument(user.uid, {
+            fileName: result.fileName,
+            type: result.document_type || "Unknown Type",
+            date: result.date || new Date().toISOString(),
+            hospitalName: result.hospital_name || "Unknown",
+            doctorName: result.doctor_name || "Unknown",
+            extractedData: result,
+            profileId: activeProfile?.id,
+            fileUrl: result.fileUrl,
+            storagePath: result.storagePath,
+          });
+
+          if (result.lab_values && result.lab_values.length > 0) {
+            for (let i = 0; i < result.lab_values.length; i++) {
+              const lab = result.lab_values[i];
+              await saveLabResult(user.uid, {
+                docId: docId || "unknown",
+                date: lab.date,
+                markerName: lab.marker || "Unknown",
+                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                unit: lab.unit || "",
+                referenceRange: lab.reference_range || "",
+                status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                profileId: activeProfile?.id,
+              });
+            }
+          }
+          
+          setProcessingStep(3);
+          setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done', progress: 100 } : f));
+          allExtractions.push(result);
+          
         } catch (err: any) {
           console.error('[Upload] Processing error:', err);
           setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
-          showToast(err.message || "Failed to process file", "error");
+          showToast(`Error processing ${item.file.name}: ${err.message || "Failed to process"}`, "error");
         }
 
-        // Add a 5 second delay between processing to respect rate limits if not the last item
+        // Delay between sequence
         if (currentIdx < itemsToProcess.length) {
             await new Promise(resolve => setTimeout(resolve, 5000));
         }
       }
       
       if (allExtractions.length > 0) {
-        setResults(allExtractions);
-        setHasSynced(false);
-        const initialConfirmed = new Set<string>();
-        allExtractions.forEach((ext, extIndex) => {
-          if (ext.lab_values && ext.lab_values.length > 0) {
-            ext.lab_values.forEach((_: any, labIndex: number) => {
-              initialConfirmed.add(`${extIndex}-${labIndex}`);
-            });
-          }
-        });
-        setConfirmedLabIndices(initialConfirmed);
-        showToast("Report extracted successfully ✓", "success");
+        showToast("Done ✅", "success");
+        setFileQueue([]);
+        // Force refresh or redirect to home to show the new reports
+        window.location.hash = "home";
       }
     } finally {
       setIsProcessing(false);

@@ -20,14 +20,14 @@
       (function() {
         var root = document.getElementById('root');
         function fail(msg) {
-          console.error("Critical Boot Error:", msg);
+          console.error("Boot message:", msg);
           if (root) {
-            root.innerHTML = '<div style="padding:40px 20px;font-family:sans-serif;color:white;background:#0d0d0d;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;"><div style="background:rgba(239, 68, 68, 0.1);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:24px;max-width:400px;width:100%;"><h2 style="color:#ef4444;margin:0 0 12px 0;">Shield Failure</h2><p style="color:#9ca3af;line-height:1.5;margin-bottom:20px;">' + (msg || "Core system initialization failed.") + '</p><button onclick="window.location.reload()" style="cursor:pointer;width:100%;padding:12px;background:#3b82f6;border:none;border-radius:12px;color:white;font-weight:600;">System Reboot</button></div></div>';
+            root.innerHTML = '<div style="padding:40px 20px;font-family:sans-serif;color:white;background:#0d0d0d;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;"><div style="background:rgba(59, 130, 246, 0.1);border:1px solid rgba(59,130,246,0.2);border-radius:16px;padding:24px;max-width:400px;width:100%;"><h2 style="color:#ef4444;margin:0 0 12px 0;">Loading</h2><p style="color:#9ca3af;line-height:1.5;margin-bottom:20px;">' + ("Taking longer than expected.") + '</p><button onclick="window.location.reload()" style="cursor:pointer;width:100%;padding:12px;background:#3b82f6;border:none;border-radius:12px;color:white;font-weight:600;">Reload</button></div></div>';
           }
         }
-        window.addEventListener('error', function(e) { fail(e.message); });
+        window.addEventListener('error', function(e) { console.error(e) });
         window.addEventListener('unhandledrejection', function(e) { 
-          fail('Async Error: ' + (e.reason && e.reason.message ? e.reason.message : JSON.stringify(e.reason))); 
+           console.error(e)
         });
         
         // Timeout for script loading

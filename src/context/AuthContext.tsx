@@ -10,6 +10,7 @@ import { auth, googleProvider } from "../lib/firebase/config";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  authResolved: boolean;
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
 }
@@ -21,6 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authResolved, setAuthResolved] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -28,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (isMounted) {
         console.warn("Auth resolution timeout reached.");
         setLoading(false);
+        setAuthResolved(true);
       }
     }, 10000);
 
@@ -38,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (isMounted) {
           setUser(u ?? null);
           setLoading(false);
+          setAuthResolved(true);
         }
       },
       (error) => {
@@ -46,6 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (isMounted) {
           setUser(null);
           setLoading(false);
+          setAuthResolved(true);
         }
       }
     );
@@ -120,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, logOut }}>
+    <AuthContext.Provider value={{ user, loading, authResolved, signIn, logOut }}>
       {children}
     </AuthContext.Provider>
   );

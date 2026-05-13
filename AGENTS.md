@@ -58,3 +58,59 @@ users/
 - Make minimal focused changes — do not refactor unrelated code
 - Confirm build passes after every change
 - Summarize exactly which files were changed and why
+
+## Additions: Tests, CI, Backoff logging
+
+### ADDITION — Tests, CI smoke, and backoff logging
+
+#### 1) Unit test — AuthContext + Dashboard regression
+- Purpose: Prevent regressions where Dashboard fetches before auth initializes.
+- File to add: tests/auth-dash.spec.ts (or update existing test folder)
+- Test intent: confirm `authResolved` exported and Dashboard does not call Firestore when false.
+
+Example (pseudo-code):
+```markdown
+Test: AuthContext exposes authResolved and Dashboard waits
+- Mock onAuthStateChanged to delay initial callback.
+- Render AuthContext provider and Dashboard.
+- Assert: Dashboard shows loading spinner while authResolved is false.
+- After resolving auth, assert: Dashboard fires a Firestore read once.
+```
+
+#### 2) CI smoke E2E — nightly deploy check
+- Purpose: Run a minimal end-to-end smoke test after deploy (or nightly) to catch regressions early.
+- Add a GitHub Actions job `ci-smoke.yml` that:
+  - Runs on: push to main (optional) and schedule: nightly
+  - Steps:
+    1. Checkout repo
+    2. Use Node.js LTS
+    3. Install deps: npm ci
+    4. Start build or hit deployed URL directly
+    5. Run Playwright/Cypress test that: signs in with a test Google test account, uploads a tiny PDF, waits for report tile, asserts presence
+  - On failure: open an issue and notify owners via Slack/email (webhook)
+
+Example job summary (for docs):
+```markdown
+ci-smoke.yml job:
+- name: Nightly smoke
+- runs-on: ubuntu-latest
+- schedule: cron(0 1 * * *)  # 01:00 UTC nightly
+- steps: checkout -> npm ci -> run smoke tests -> report
+```
+
+#### 3) Backoff logging / metric hook
+- Purpose: Surface retry/backoff events to logs so you can monitor rate limits without deep log combing.
+- Change location: src/services/ai/promptFramework.ts (inside safeGeminiCall)
+- Behavior to add:
+  - On each retry, emit a structured console.debug / console.info:
+    - { event: "gemini_backoff", attempt: n, delayMs, errorCode (if present) }
+  - Optionally increment an in-process counter: `console.count('gemini_backoff')` or push to analytics when available.
+- Example log line:
+```markdown
+{ "event":"gemini_backoff", "attempt":2, "delayMs":2000, "status":"429" }
+```
+
+#### Implementation notes
+- Keep tests lightweight (one happy-path, one auth-race regression) to avoid flakiness.
+- Use a single test account and secrets stored in GitHub Secrets for CI only; never commit credentials.
+- The CI job should run against the deployed URL (aegishealthai.co.in) to validate the full production flow, not only the local build.

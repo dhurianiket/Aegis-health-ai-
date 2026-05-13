@@ -70,23 +70,29 @@ export default function Dashboard({
   onOpenChat?: () => void;
   onUploadClick?: () => void;
 }) {
-  const { user } = useAuth();
+  const { user, authResolved } = useAuth();
   const { activeProfile } = useProfile();
-  const [loading, setLoading] = useState(false); // Do not block by default
+  const [loading, setLoading] = useState(true); // change from false to true
   const [error, setError] = useState<string | null>(null);
   const [healthScores, setHealthScores] = useState<HealthScore[]>([]);
   const [latestInsights, setLatestInsights] = useState<SpecialistInsight[]>([]);
   const [keyLabs, setKeyLabs] = useState<LabResult[]>([]);
-  const [isSyncing, setIsSyncing] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
     async function fetchData() {
-      if (!user) return;
+      if (!authResolved) return;
+      if (!user) {
+        setLoading(false);
+        setIsSyncing(false);
+        return;
+      }
       
       setIsSyncing(true);
+      setLoading(true);
       try {
         // Fetch in parallel but don't block the whole UI if possible
         // We'll show partial data as it arrives or just show the layout
@@ -116,7 +122,7 @@ export default function Dashboard({
     }
     fetchData();
     return () => { isMounted = false; };
-  }, [user, activeProfile, retryCount]);
+  }, [user, activeProfile, retryCount, authResolved]);
 
   const latestScore =
     healthScores[0] ||

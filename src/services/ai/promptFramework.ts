@@ -246,15 +246,15 @@ export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3): 
                 (error?.message && (error.message.includes("429") || error.message.includes("quota")));
                 
             if (isQuotaError && attempt < retries) {
-                const backoff = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                console.warn(`[Gemini] Quota exceeded. Retrying in ${backoff.toFixed(0)}ms (Attempt ${attempt}/${retries})`);
+                const backoff = attempt === 1 ? 1000 : attempt === 2 ? 2000 : 4000;
+                console.warn(`[Gemini] Quota exceeded. Retrying in ${backoff}ms (Attempt ${attempt}/${retries})`);
                 await new Promise(resolve => setTimeout(resolve, backoff));
                 continue;
             }
-            if (isQuotaError) throw new GeminiQuotaError("Quota exceeded.");
+            if (isQuotaError) throw new GeminiQuotaError("Final failure: Gemini Quota exceeded after 3 attempts.");
             if (error?.message?.includes("400") || error?.status === 400) throw new GeminiInputError("Invalid argument.");
             if (error?.message?.includes("504") || error?.message?.includes("deadline")) throw new GeminiTimeoutError("Deadline exceeded.");
-            throw error;
+            throw new Error(`Gemini Call Failed: ${error?.message || 'Unknown error'}`);
         }
     }
 }
