@@ -312,6 +312,13 @@ export default function UploadCenter({
             storagePath: result.storagePath,
           });
 
+          // Track storage usage
+          try {
+             import("../../services/usageService").then(({ trackStorageUsage }) => {
+                trackStorageUsage(user.uid, item.file.size).catch(e => console.error(e));
+             });
+          } catch(e) {}
+
           if (result.lab_values && result.lab_values.length > 0) {
             for (let i = 0; i < result.lab_values.length; i++) {
               const lab = result.lab_values[i];

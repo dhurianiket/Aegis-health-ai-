@@ -131,6 +131,24 @@ ${OUTPUT_FORMAT_JSON}
       },
     });
 
+    try {
+      if (response?.usageMetadata) {
+         const { auth } = await import("../../lib/firebase/config");
+         const userId = auth?.currentUser?.uid;
+         if (userId) {
+            const { trackUsage } = await import("../usageService");
+            await trackUsage(userId, {
+               promptTokens: response.usageMetadata.promptTokenCount,
+               responseTokens: response.usageMetadata.candidatesTokenCount,
+               totalTokens: response.usageMetadata.totalTokenCount,
+               feature: 'specialist'
+            });
+         }
+      }
+    } catch (e) {
+      console.error("Usage track err:", e);
+    }
+
     const text = response.text || "{}";
     return safeJsonParse<SpecialistAnalysisResponse>(text, {
       observations: [],
@@ -267,6 +285,24 @@ Generate the summary strictly following the plain text format above.
       },
     });
 
+    try {
+      if (response?.usageMetadata) {
+         const { auth } = await import("../../lib/firebase/config");
+         const userId = auth?.currentUser?.uid;
+         if (userId) {
+            const { trackUsage } = await import("../usageService");
+            await trackUsage(userId, {
+               promptTokens: response.usageMetadata.promptTokenCount,
+               responseTokens: response.usageMetadata.candidatesTokenCount,
+               totalTokens: response.usageMetadata.totalTokenCount,
+               feature: 'summary'
+            });
+         }
+      }
+    } catch (e) {
+      console.error("Usage track err:", e);
+    }
+
     return response.text || "Failed to generate summary.";
   } catch (error: any) {
     console.error("Error generating clinical summary:", JSON.stringify(error));
@@ -399,7 +435,7 @@ export async function extractMedicalReports(
             required: ["document_type", "date", "lab_values"]
           }
         },
-      }));
+      }), 3, "pdf_extraction");
 
       clearTimeout(timeoutId);
 

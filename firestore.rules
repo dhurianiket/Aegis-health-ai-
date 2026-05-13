@@ -7,10 +7,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Admin access check
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'dhurianiket@gmail.com';
+    }
+
     // User data protection
     match /users/{userId} {
       // Owner has full access to their own root and all sub-collections
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Admin has full read access to everything
+      allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+      allow write: if request.auth != null && request.auth.uid == userId;
 
       // Public access for SHARING documents
       match /shares/{shareId} {

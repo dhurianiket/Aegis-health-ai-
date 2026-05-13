@@ -76,6 +76,7 @@ const SettingsPage = lazy(() => import("./components/Settings/SettingsPage"));
 const LabReportsSection = lazy(
   () => import("./components/Reports/LabReportsSection"),
 );
+const AdminDashboard = lazy(() => import("./components/Admin/AdminDashboard"));
 
 // Loading Fallback
 const Fallback = () => (
@@ -177,6 +178,7 @@ export default function App() {
       "medications",
       "settings",
       "profile",
+      "admin",
     ];
     if (validTabs.includes(hash)) {
       setActiveTab(hash);
@@ -524,6 +526,11 @@ export default function App() {
                     {activeTab === "family" && (
                       <SectionErrorBoundary sectionName="Family Hub">
                         <FamilyHub />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "admin" && user?.email === "dhurianiket@gmail.com" && (
+                      <SectionErrorBoundary sectionName="Admin">
+                        <AdminDashboard />
                       </SectionErrorBoundary>
                     )}
                   </motion.div>

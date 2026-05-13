@@ -229,7 +229,7 @@ export const generateTrendNarrative = async (trendSummariesJSON: string, dateRan
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate a trend narrative for a PDF report spanning ${dateRange}.\n\nTrends:\n${trendSummariesJSON}\n\nReturn JSON: { "narrative_paragraphs": ["..."], "overall_summary": "...", "disclaimer": "..." }` }] }],
     config: { temperature: 0, responseMimeType: "application/json" }
-  }));
+  }), 3, "pdf_export");
   return safeJsonParse<any>(response.text, {
     narrative_paragraphs: ["Analysis unavailable."],
     overall_summary: "No summary available.",

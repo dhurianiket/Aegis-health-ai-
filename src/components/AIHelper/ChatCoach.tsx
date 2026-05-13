@@ -131,15 +131,28 @@ export default function ChatCoach({
 
       const stream = await chat.sendMessageStream({ message: text });
       let finalText = "";
+      let finalUsage: any = null;
       
       for await (const chunk of stream) {
         if (controller.signal.aborted) break;
         const chunkText = chunk.text || "";
         finalText += chunkText;
         setStreamedText((prev) => prev + chunkText);
+        if (chunk.usageMetadata) finalUsage = chunk.usageMetadata;
       }
       
       if (controller.signal.aborted) return;
+      
+      if (finalUsage && user?.uid) {
+         import("../../services/usageService").then(({ trackUsage }) => {
+            trackUsage(user.uid, {
+               promptTokens: finalUsage.promptTokenCount,
+               responseTokens: finalUsage.candidatesTokenCount,
+               totalTokens: finalUsage.totalTokenCount,
+               feature: 'chat'
+            }).catch(console.error);
+         });
+      }
 
       // POST-RESPONSE GUARDRAIL
       const DIAGNOSTIC_TRIGGERS = [

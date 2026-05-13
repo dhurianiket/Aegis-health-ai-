@@ -232,11 +232,31 @@ export class GeminiQuotaError extends Error {}
 export class GeminiInputError extends Error {}
 export class GeminiTimeoutError extends Error {}
 
-export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3): Promise<any> {
+export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3, featureName?: string): Promise<any> {
     let attempt = 0;
     while (attempt < retries) {
         try {
-            return await apiCall();
+            const response = await apiCall();
+            
+            try {
+              if (response?.usageMetadata) {
+                 const { auth } = await import("../../lib/firebase/config");
+                 const userId = auth?.currentUser?.uid;
+                 if (userId) {
+                    const { trackUsage } = await import("../usageService");
+                    await trackUsage(userId, {
+                       promptTokens: response.usageMetadata.promptTokenCount,
+                       responseTokens: response.usageMetadata.candidatesTokenCount,
+                       totalTokens: response.usageMetadata.totalTokenCount,
+                       feature: featureName || 'general'
+                    });
+                 }
+              }
+            } catch (err) {
+              console.error("Usage tracking failed", err);
+            }
+            
+            return response;
         } catch (error: any) {
             attempt++;
             const isQuotaError =
@@ -247,7 +267,7 @@ export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3): 
                 
             if (isQuotaError && attempt < retries) {
                 const backoff = attempt === 1 ? 1000 : attempt === 2 ? 2000 : 4000;
-                console.warn(`[Gemini] Quota exceeded. Retrying in ${backoff}ms (Attempt ${attempt}/${retries})`);
+                console.info(JSON.stringify({ event: "gemini_backoff", attempt, delayMs: backoff, status: "429" }));
                 await new Promise(resolve => setTimeout(resolve, backoff));
                 continue;
             }
@@ -268,7 +288,7 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
     config: { temperature: 0, responseMimeType: "application/json" }
-  }));
+  }), 3, "classify_doc");
   return safeJsonParse<any>(response.text, {});
 }
 
@@ -279,7 +299,7 @@ export async function generateSBAR(patientContextJSON: string, trendSummariesJSO
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in PLAIN TEXT. DO NOT use markdown. Start with the patient intro paragraph about handheld/printing utility.\n\nSections: S - SITUATION, B - BACKGROUND, A - ASSESSMENT, R - RECOMMENDATION / PLAN.\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
     config: { temperature: 0 }
-  }));
+  }), 3, "sbar");
   
   return response.text || "Failed to generate SBAR summary.";
 }
@@ -291,7 +311,7 @@ export async function explainInteraction(medicationContext: any) {
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
     config: { temperature: 0 }
-  }));
+  }), 3, "med_interaction");
   return response.text;
 }
 

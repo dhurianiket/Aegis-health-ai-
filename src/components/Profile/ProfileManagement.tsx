@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Users,
@@ -8,11 +8,14 @@ import {
   X,
   AlertTriangle,
   Save,
+  Activity
 } from "lucide-react";
 import { useProfile } from "../../context/ProfileContext";
 import { Gender, UserProfile } from "../../types/medical";
 import { validateProfileName } from "../../lib/validation";
 import { logger } from "../../lib/logger";
+import { getUserUsageStats } from "../../services/usageService";
+import { auth } from "../../lib/firebase/config";
 
 export default function ProfileManagement() {
   const {
@@ -23,6 +26,16 @@ export default function ProfileManagement() {
     updateProfile,
     deleteProfile,
   } = useProfile();
+
+  const [usageStats, setUsageStats] = useState<any>(null);
+
+  useEffect(() => {
+    if (auth.currentUser?.uid) {
+       getUserUsageStats(auth.currentUser.uid).then(stats => {
+          if (stats) setUsageStats(stats);
+       }).catch(console.error);
+    }
+  }, [auth.currentUser?.uid]);
 
   const [isCreating, setIsCreating] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
@@ -130,6 +143,27 @@ export default function ProfileManagement() {
           </button>
         )}
       </div>
+
+      {usageStats && (
+        <div className="bg-slate-800/40 backdrop-blur-md rounded-[24px] border border-slate-700/50 p-6 flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-slate-700/50">
+          <div className="flex-1 px-4 py-2 sm:py-0">
+             <p className="text-slate-400 text-sm mb-1">Documents Uploaded</p>
+             <p className="text-2xl font-bold text-white">{usageStats.documentsUploaded || 0}</p>
+          </div>
+          <div className="flex-1 px-4 py-2 sm:py-0">
+             <p className="text-slate-400 text-sm mb-1">Storage Used</p>
+             <p className="text-2xl font-bold text-white">
+                {((usageStats.totalStorageBytes || 0) / (1024 * 1024)).toFixed(2)} MB
+             </p>
+          </div>
+          <div className="flex-1 px-4 py-2 sm:py-0 text-indigo-400">
+             <p className="text-indigo-400/80 text-sm mb-1">AI Interactions (This Month)</p>
+             <p className="text-2xl font-bold">
+                {((usageStats.monthlyUsage && usageStats.monthlyUsage[new Date().toISOString().substring(0, 7)]) || 0).toLocaleString()}
+             </p>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {isCreating && (
