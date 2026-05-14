@@ -141,6 +141,7 @@ export async function getLabHistory(
 }
 
 export async function getMedications(userId: string, profileId?: string) {
+  if (!userId) return [];
   const pathString = `users/${userId}/medications`;
   try {
     let q = query(collection(db, "users", userId, "medications"));

@@ -97,7 +97,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl">
+    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-indigo-500/20 rounded-xl">
           <Network className="w-5 h-5 text-indigo-400" />

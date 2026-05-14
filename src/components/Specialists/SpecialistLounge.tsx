@@ -141,6 +141,8 @@ export default function SpecialistLounge() {
 
   const [initialLoading, setInitialLoading] = useState(true);
 
+  const [dateRangeStr, setDateRangeStr] = useState<string>("");
+
   useEffect(() => {
     const timer = setTimeout(() => setInitialLoading(false), 800);
     return () => clearTimeout(timer);
@@ -156,16 +158,18 @@ export default function SpecialistLounge() {
     return <SpecialistsSkeleton />;
   }
 
-  const [dateRangeStr, setDateRangeStr] = useState<string>("");
+
+  const [error, setError] = useState<string | null>(null);
 
   const runAnalysis = async () => {
     if (!activeSpecialist) return;
     if (!user || !activeProfile) {
-      alert("Please ensure you are signed in and have an active profile.");
+      setError("Please ensure you are signed in and have an active profile.");
       return;
     }
     setIsAnalyzing(true);
     setInsight(null);
+    setError(null);
     try {
       const userId = user.uid;
       const profileId = activeProfile.id;
@@ -223,7 +227,7 @@ export default function SpecialistLounge() {
       }
     } catch (error: any) {
       console.error("Analysis failed:", error);
-      alert(error.message || "An error occurred while generating the analysis.");
+      setError("Unable to generate summary. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -443,6 +447,32 @@ export default function SpecialistLounge() {
                     </p>
                   </div>
                 </div>
+              </motion.div>
+            ) : error ? (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex-1 flex flex-col items-center justify-center p-20 text-center gap-6 md:gap-8 min-h-[400px]"
+              >
+                <div className="w-16 h-16 md:w-24 md:h-24 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/20 shadow-inner">
+                  <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-light text-white mb-2 md:mb-3">
+                    Analysis Failed
+                  </h3>
+                  <p className="text-red-400 text-xs md:text-sm max-w-sm mx-auto leading-relaxed font-light">
+                    {error}
+                  </p>
+                </div>
+                <button
+                  onClick={runAnalysis}
+                  className="px-6 md:px-10 py-3 md:py-4 rounded-2xl font-bold uppercase tracking-widest text-[9px] md:text-[11px] shadow-2xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/30 hover:scale-105 transition-all"
+                >
+                  Retry Analysis
+                </button>
               </motion.div>
             ) : insight ? (
               <motion.div

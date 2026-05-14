@@ -30,7 +30,7 @@ export default function ComparativeAnalysis({
   if (latestLabs.length === 0) return null;
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl">
+    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-emerald-500/20 rounded-xl">
           <BarChart2 className="w-5 h-5 text-emerald-400" />

@@ -31,6 +31,7 @@ describe('ContextService Medication Deduplication', () => {
     expect(context.medications).toHaveLength(2);
     // Metformin from manual should win
     const metformin = context.medications.find((m: any) => m.name === 'Metformin');
-    expect(metformin.dosage).toBe('500mg');
+    expect(metformin).toBeDefined();
+    expect(metformin?.dosage).toBe('500mg');
   });
 });
