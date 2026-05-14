@@ -242,6 +242,7 @@ function HealthReportPrintable({
       id={reportId}
       className="w-[800px] bg-white text-slate-900 p-12 font-sans"
     >
+      {/* Cover Page / Header */}
       <div className="flex justify-between items-start mb-12 border-b-4 border-indigo-600 pb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -252,13 +253,13 @@ function HealthReportPrintable({
               AURA HEALTH
             </h1>
           </div>
-          <p className="text-slate-500 font-medium">
-            Digital Medical Record Summary
+          <p className="text-slate-500 font-medium text-lg">
+            Patient: {context.userName}
           </p>
         </div>
         <div className="text-right">
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-            Report Date
+            Export Date
           </p>
           <p className="text-xl font-bold">
             {format(new Date(), "MMMM dd, yyyy")}
@@ -266,33 +267,23 @@ function HealthReportPrintable({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-8 mb-12">
-        <div className="col-span-2 space-y-6">
-          <h2 className="text-2xl font-bold border-l-4 border-indigo-600 pl-4">
-            Patient Information
-          </h2>
-          <div className="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                Name
-              </p>
-              <p className="font-bold text-lg">{context.userName}</p>
-            </div>
-            <div>
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold border-b-2 border-slate-200 pb-3 mb-6 uppercase tracking-widest text-indigo-700">
+          Executive Summary
+        </h2>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="bg-slate-50 p-6 rounded-2xl">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                 Health Score
               </p>
-              <p className="font-bold text-lg text-indigo-600">
+              <p className="font-bold text-xl text-indigo-600">
                 {context.healthScore}% - Optimal
               </p>
-            </div>
           </div>
-        </div>
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold border-l-4 border-red-500 pl-4">
-            Top Flags
-          </h2>
           <div className="bg-red-50 p-6 rounded-2xl space-y-2">
+              <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">
+                Top Flags
+              </p>
             {context.topFlags.length > 0 ? (
               context.topFlags.map((flag: string, i: number) => (
                 <div
@@ -304,7 +295,7 @@ function HealthReportPrintable({
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-red-500">
                 No critical flags detected.
               </p>
             )}
@@ -312,8 +303,70 @@ function HealthReportPrintable({
         </div>
       </div>
 
-      <div className="space-y-8 mb-12">
-        <h2 className="text-2xl font-bold border-l-4 border-indigo-600 pl-4">
+      <div className="space-y-6 mb-12">
+        <h2 className="text-2xl font-bold border-b-2 border-slate-200 pb-3 mb-6 uppercase tracking-widest text-indigo-700">
+          Lab Values & Trends
+        </h2>
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b-2 border-slate-200">
+              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Marker
+              </th>
+              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Value
+              </th>
+              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Trend
+              </th>
+              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {context.recentTrends.length > 0 ? (
+              context.recentTrends.map((trend: any, i: number) => {
+                const isOutOfRange = trend.direction === "up" || trend.direction === "down";
+                const statusColor = isOutOfRange ? "text-red-600 bg-red-50" : "text-emerald-600 bg-emerald-50";
+                const statusText = isOutOfRange ? "Out of Range" : "Normal";
+                
+                return (
+                  <tr key={i} className="border-b border-slate-100 last:border-0">
+                    <td className="py-4 font-bold text-slate-700">{trend.marker}</td>
+                    <td className="py-4 text-slate-600 font-medium">
+                      {trend.value} <span className="text-xs text-slate-400">{trend.unit}</span>
+                    </td>
+                    <td className="py-4">
+                      {trend.direction === "up" ? (
+                        <span className="text-red-500 font-bold flex items-center gap-1">↑ High</span>
+                      ) : trend.direction === "down" ? (
+                        <span className="text-red-500 font-bold flex items-center gap-1">↓ Low</span>
+                      ) : (
+                        <span className="text-slate-500 font-medium flex items-center gap-1">- Stable</span>
+                      )}
+                    </td>
+                    <td className="py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${statusColor}`}>
+                        {statusText}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={4} className="py-4 text-slate-500">
+                  No recent lab values found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="space-y-6 mb-12">
+        <h2 className="text-2xl font-bold border-b-2 border-slate-200 pb-3 mb-6 uppercase tracking-widest text-indigo-700">
           Current Medications
         </h2>
         <table className="w-full text-left">
@@ -328,24 +381,20 @@ function HealthReportPrintable({
               <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
                 Frequency
               </th>
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                Status
-              </th>
             </tr>
           </thead>
           <tbody>
             {context.medications.length > 0 ? (
               context.medications.map((med: any, i: number) => (
                 <tr key={i} className="border-b border-slate-100 last:border-0">
-                  <td className="py-4 font-bold">{med.name}</td>
-                  <td className="py-4 text-slate-600">{med.dosage}</td>
-                  <td className="py-4 text-slate-600">{med.frequency}</td>
-                  <td className="py-4 font-bold text-emerald-600">Active</td>
+                  <td className="py-4 font-bold text-slate-700">{med.name}</td>
+                  <td className="py-4 text-slate-600">{med.dosage || "-"}</td>
+                  <td className="py-4 text-slate-600">{med.frequency || "-"}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="py-4 text-slate-500">
+                <td colSpan={3} className="py-4 text-slate-500">
                   No medications listed.
                 </td>
               </tr>
@@ -354,60 +403,17 @@ function HealthReportPrintable({
         </table>
       </div>
 
-      <div className="space-y-8 mb-12">
-        <h2 className="text-2xl font-bold border-l-4 border-indigo-600 pl-4">
-          Clinical Insights
-        </h2>
-        <div className="grid grid-cols-2 gap-8">
-          <div className="p-6 bg-slate-50 rounded-3xl">
-            <h3 className="font-bold mb-4 text-slate-700">Recent Trends</h3>
-            <div className="space-y-4">
-              {context.recentTrends.map((trend: any, i: number) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center border-b border-slate-200 pb-2"
-                >
-                  <span className="text-sm font-medium text-slate-600">
-                    {trend.marker}
-                  </span>
-                  <span
-                    className={`text-sm font-bold ${trend.direction === "up" ? "text-red-500" : "text-emerald-500"}`}
-                  >
-                    {trend.value} {trend.unit}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-3xl">
-            <h3 className="font-bold mb-4 text-slate-700">Medical Notes</h3>
-            <div className="space-y-3">
-              {context.doctorNotes.length > 0 ? (
-                context.doctorNotes.map((note: string, i: number) => (
-                  <p
-                    key={i}
-                    className="text-sm italic text-slate-600 leading-relaxed border-l-2 border-slate-200 pl-3"
-                  >
-                    "{note}"
-                  </p>
-                ))
-              ) : (
-                <p className="text-sm text-slate-500">
-                  No recent physician notes.
-                </p>
-              )}
-            </div>
-          </div>
+      <div className="mt-auto pt-16 border-t border-slate-200 flex items-center justify-between">
+        <div>
+          <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">
+            Confidential Health Report • For Informational Purposes Only
+          </p>
         </div>
-      </div>
-
-      <div className="mt-auto pt-12 border-t border-slate-200 text-center">
-        <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">
-          Confidential Health Report • For Informational Purposes Only
-        </p>
-        <p className="text-[10px] text-slate-300 mt-2">
-          Generated via Aura Intelligence.
-        </p>
+        <div>
+          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <Activity className="w-4 h-4 text-indigo-400" /> Generated by Aegis Health AI
+          </p>
+        </div>
       </div>
     </div>
   );

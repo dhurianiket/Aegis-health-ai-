@@ -27,7 +27,7 @@ export async function streamGenerate(
     onDone(fullText);
   } catch (err: any) {
     if (err.name === "AbortError") {
-      console.log("AI Streaming aborted by user.");
+      if (import.meta.env.DEV) console.log("AI Streaming aborted by user.");
       return;
     }
     console.error("Streaming error:", err);

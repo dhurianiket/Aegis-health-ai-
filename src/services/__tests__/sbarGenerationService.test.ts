@@ -45,7 +45,7 @@ describe("SBARGenerationService", () => {
   ];
 
   it("should generate SBAR when AI succeeds", async () => {
-    const sbar = await generateSBAR(mockProfile, mockLabs, mockMeds);
+    const sbar = await generateSBAR("test-userId", mockProfile as any);
     expect(sbar).toContain("SITUATION:\nPatient requires review");
     expect(sbar).toContain("BACKGROUND:\nPatient has hypertension");
     expect(sbar).toContain("ASSESSMENT:\nGlucose is high");
@@ -63,7 +63,7 @@ describe("SBARGenerationService", () => {
       new Error("AI Failure"),
     );
 
-    const sbar = await generateSBAR(mockProfile, mockLabs, mockMeds);
+    const sbar = await generateSBAR("test-userId", mockProfile as any);
 
     expect(sbar).toContain("SITUATION:");
     expect(sbar).toContain("BACKGROUND:");

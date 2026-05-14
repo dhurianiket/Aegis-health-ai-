@@ -1,23 +1,17 @@
 import {
-  LabResult,
-  Medication,
   UserProfile,
-  SBARSummary,
 } from "../types/medical";
 import { getAI } from "../lib/geminiClient";
-import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./ai/promptFramework";
-import { safeJsonParse } from "../utils/aiUtils";
+import { getPatientContext, formatContextForPrompt } from "./ai/contextService";
 
 export const generateSBAR = async (
+  userId: string,
   profile: UserProfile,
-  labs: any[],
-  meds: any[],
 ): Promise<string> => {
   const ai = getAI();
+  if (!ai) throw new Error("Aura AI is currently offline.");
   
-  const sortedLabs = [...labs].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const patientData = await getPatientContext(userId, profile);
 
   const age = profile.dob
     ? Math.floor((new Date().getTime() - new Date(profile.dob).getTime()) / 3.15576e10)
@@ -54,17 +48,15 @@ B - BACKGROUND (CRITICAL MEDICAL ALERTS)
 
 A - ASSESSMENT
 • System assessment
-• Contraindications: NO NSAIDs/ESI/Spinal Manipulation for Rivaroxaban; flag ESI risk for AT-III Deficiency; flag chiropractic risk for anticoagulants.
+• Contraindications: Identify any severe risks (e.g. NO NSAIDs/ESI/Spinal Manipulation for Rivaroxaban; flag ESI risk for AT-III Deficiency; flag chiropractic risk for anticoagulants).
 
 R - RECOMMENDATION / PLAN
 1. Actionable list
 2. Meds with names/doses
 3. Follow-up instructions
 
-DATA:
-Profile: ${JSON.stringify({ ...profile, age })}
-Medications: ${JSON.stringify(meds)}
-Labs: ${JSON.stringify(sortedLabs)}
+CLINICAL CONTEXT:
+${formatContextForPrompt(patientData)}
 `;
 
   try {

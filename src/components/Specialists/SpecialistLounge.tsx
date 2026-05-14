@@ -156,6 +156,8 @@ export default function SpecialistLounge() {
     return <SpecialistsSkeleton />;
   }
 
+  const [dateRangeStr, setDateRangeStr] = useState<string>("");
+
   const runAnalysis = async () => {
     if (!activeSpecialist) return;
     if (!user || !activeProfile) {
@@ -173,6 +175,20 @@ export default function SpecialistLounge() {
         getLabHistory(userId, undefined, profileId),
         getMedications(userId, profileId),
       ]);
+
+      // Calculate date range string
+      const dates = [
+        ...(recentReports || []).map((d) => d.date ? new Date(d.date).getTime() : NaN),
+        ...(recentLabs || []).map((l) => l.date ? new Date(l.date).getTime() : NaN)
+      ].filter((n) => !isNaN(n));
+
+      if (dates.length > 0) {
+        const minDate = new Date(Math.min(...dates)).toLocaleDateString();
+        const maxDate = new Date(Math.max(...dates)).toLocaleDateString();
+        setDateRangeStr(`Based on ${(recentReports?.length || 0) + (recentLabs?.length || 0)} records from ${minDate} to ${maxDate}`);
+      } else {
+        setDateRangeStr("Based on current active records");
+      }
 
       // We need to pass the actual objects or formatted summaries to the specialist
       // analyzeWithSpecialist expects UserProfile and MedicalDocument[]
@@ -205,9 +221,9 @@ export default function SpecialistLounge() {
           "We couldn't generate an analysis at this time. Please try again.",
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Analysis failed:", error);
-      alert("An error occurred while generating the analysis.");
+      alert(error.message || "An error occurred while generating the analysis.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -458,12 +474,25 @@ export default function SpecialistLounge() {
                       {activeSpecialist?.name} Findings
                     </h3>
                   </div>
-                  <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-indigo-400">
+                  <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-indigo-400 shrink-0">
                     {activeSpecialist && (
                       <activeSpecialist.icon className="w-7 h-7" />
                     )}
                   </div>
                 </div>
+
+                {dateRangeStr && (
+                  <p className="text-[11px] font-medium text-indigo-300 uppercase tracking-widest">{dateRangeStr}</p>
+                )}
+
+                {insight.key_concern && (
+                  <div className="bg-red-500/10 border border-red-500/30 p-6 rounded-2xl">
+                    <h4 className="text-xs font-bold text-red-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                       <AlertCircle className="w-4 h-4" /> Key Concern
+                    </h4>
+                    <p className="text-sm text-red-200">{insight.key_concern}</p>
+                  </div>
+                )}
 
                 <div className="p-8 bg-white/5 rounded-3xl border border-white/10 border-l-4 border-l-indigo-500 prose prose-invert prose-lg max-w-none">
                   <ReactMarkdown>{insight.summary}</ReactMarkdown>
@@ -471,6 +500,22 @@ export default function SpecialistLounge() {
                     For informational purposes only. Not medical advice.
                   </p>
                 </div>
+
+                {insight.analyzed_markers && insight.analyzed_markers.length > 0 && (
+                   <div className="space-y-4">
+                     <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-3">
+                       <Droplets className="w-4 h-4 text-emerald-400" /> Lab Values Analyzed
+                     </h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {insight.analyzed_markers.map((marker: any, idx: number) => (
+                           <div key={idx} className="bg-white/5 p-4 rounded-xl border border-white/10">
+                              <p className="text-sm font-bold text-white">{marker.marker}</p>
+                              <p className="text-xs text-slate-400 mt-1 leading-relaxed">{marker.reason}</p>
+                           </div>
+                        ))}
+                     </div>
+                   </div>
+                )}
 
                 <div className="grid md:grid-cols-2 gap-12">
                   <div className="space-y-6">

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
-import { X, ArrowUp, Square, Sparkles } from "lucide-react";
+import { X, ArrowUp, Square, Sparkles, Loader2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { VoiceService } from "../../services/ai/voiceService";
@@ -58,6 +58,28 @@ export default function ChatCoach({
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const [processingMessage, setProcessingMessage] = useState("Analyzing your request...");
+  useEffect(() => {
+    if (!isTyping) {
+      setProcessingMessage("Analyzing your request...");
+      return;
+    }
+    const messages = [
+      "Analyzing your request...",
+      "Reading clinical context...",
+      "Identifying lab values...",
+      "Checking reference ranges...",
+      "Preparing your analysis...",
+      "Almost done..."
+    ];
+    let idx = 0;
+    const interval = setInterval(() => {
+      idx = (idx + 1) % messages.length;
+      setProcessingMessage(messages[idx]);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isTyping]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -124,7 +146,7 @@ export default function ChatCoach({
         model: "gemini-2.5-flash",
         history: historyItems,
         config: {
-          systemInstruction: `You are Aura AI. You have access to the patient's active medications, lab history, and profile. Use the medications list when answering questions like 'My medicines' or 'Any interactions?'. If the medications list is empty, state that directly.\n\nClinical Context:\n${context}`,
+          systemInstruction: `You are Aura AI. Today's date is ${new Date().toISOString().split("T")[0]}. You have access to the patient's active medications, lab history, and profile. Use the medications list when answering questions like 'My medicines' or 'Any interactions?'. If the medications list is empty, state that directly.\n\nClinical Context:\n${context}`,
           temperature: 0.2,
         }
       });
@@ -206,11 +228,11 @@ export default function ChatCoach({
       setStreamedText("");
     } catch (err: any) {
       if (err.name === "AbortError") {
-        console.log("Chat aborted silently");
+        if (import.meta.env.DEV) console.log("Chat aborted silently");
         return;
       }
       console.error("Chat error:", err);
-      const errorContent = "AI is temporarily unavailable.";
+      const errorContent = err instanceof Error ? err.message : "AI is temporarily unavailable.";
       setError(errorContent);
       setMessages((prev) => [
         ...prev,
@@ -232,9 +254,9 @@ export default function ChatCoach({
   };
 
   const suggestedQuestions = [
-    "How is my cholesterol looking?",
-    "Explain my latest lab results",
-    "Are there any drug interactions?",
+    "What are my abnormal values?",
+    "Explain my cholesterol results",
+    "What should I discuss with my doctor?",
   ];
 
   return (
@@ -298,16 +320,19 @@ export default function ChatCoach({
                         strokeWidth={1}
                       />
                       <p className="text-[1.125rem] font-medium">
-                        How can I help you understand your health today?
+                        Ask me anything about your health
                       </p>
                       <p className="text-sm text-muted px-4">
-                        I can analyze your uploaded lab reports or answer
-                        general medical questions.
+                        Upload a report to get started — I can then analyse your results and answer questions about your health
                       </p>
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      {suggestedQuestions.map((q, i) => (
+                      {[
+                        "What are my abnormal values?",
+                        "Explain my cholesterol results",
+                        "What should I discuss with my doctor?"
+                      ].map((q, i) => (
                         <button
                           key={i}
                           onClick={() => handleSendMessage(q)}
@@ -339,6 +364,9 @@ export default function ChatCoach({
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                       )}
+                      <div className={`text-[10px] opacity-60 mt-1.5 ${msg.role === "user" ? "text-right" : "text-left"}`}>
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -357,30 +385,11 @@ export default function ChatCoach({
 
                 {isTyping && !streamedText && (
                   <div className="flex justify-start">
-                    <div className="bg-[var(--color-surface)] rounded-2xl px-4 py-3 flex gap-1.5 items-center h-[52px]">
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
-                        transition={{ repeat: Infinity, duration: 1.2 }}
-                        className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full"
-                      />
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1.2,
-                          delay: 0.2,
-                        }}
-                        className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full"
-                      />
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 1, 0.3] }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1.2,
-                          delay: 0.4,
-                        }}
-                        className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full"
-                      />
+                    <div className="bg-[var(--color-surface)] rounded-2xl px-4 py-3 flex gap-3 items-center min-h-[52px]">
+                      <Loader2 className="w-4 h-4 text-[var(--color-primary)] animate-spin" />
+                      <span className="text-sm font-medium text-[var(--color-text-muted)] animate-pulse">
+                         {processingMessage}
+                      </span>
                     </div>
                   </div>
                 )}

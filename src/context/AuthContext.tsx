@@ -6,6 +6,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase/config";
+import { markUserActive } from "../services/usageService";
 
 interface AuthContextType {
   user: User | null;
@@ -15,7 +16,7 @@ interface AuthContextType {
   logOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -42,6 +43,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(u ?? null);
           setLoading(false);
           setAuthResolved(true);
+          if (u) {
+            markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
+          }
         }
       },
       (error) => {
@@ -63,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const signIn = async () => {
-    console.log("Initiating Google Sign-In...");
+    if (import.meta.env.DEV) console.log("Initiating Google Sign-In...");
     try {
       // Ensure Google provider is clean
       googleProvider.setCustomParameters({

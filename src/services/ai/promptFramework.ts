@@ -288,7 +288,7 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
     config: { temperature: 0, responseMimeType: "application/json" }
-  }), 3, "classify_doc");
+  }), 3, "pdf_extraction");
   return safeJsonParse<any>(response.text, {});
 }
 
@@ -297,7 +297,7 @@ export async function generateSBAR(patientContextJSON: string, trendSummariesJSO
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in PLAIN TEXT. DO NOT use markdown. Start with the patient intro paragraph about handheld/printing utility.\n\nSections: S - SITUATION, B - BACKGROUND, A - ASSESSMENT, R - RECOMMENDATION / PLAN.\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
+    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in PLAIN TEXT. DO NOT use markdown.\n\nUse EXACTLY these headings: S - SITUATION, B - BACKGROUND, A - ASSESSMENT, R - RECOMMENDATION.\nIn B - BACKGROUND, include the dates of all uploaded reports and all current medications.\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
     config: { temperature: 0 }
   }), 3, "sbar");
   
@@ -367,7 +367,7 @@ export async function extractLabData(
         contents: [
           { role: "user", parts: [{ text: finalPrompt }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
         ],
-      }));
+      }), 3, "pdf_extraction");
 
       const parsed = safeJsonParse<any>(response.text, {});
 

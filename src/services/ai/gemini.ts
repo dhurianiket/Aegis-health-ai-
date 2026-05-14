@@ -16,6 +16,11 @@ import { safeJsonParse } from "../../utils/aiUtils";
 // Function is already available via import
 
 export interface SpecialistAnalysisResponse {
+  analyzed_markers: {
+    marker: string;
+    reason: string;
+  }[];
+  key_concern: string;
   observations: string[];
   abnormalities: string[];
   patterns: string[];
@@ -101,6 +106,17 @@ ${OUTPUT_FORMAT_JSON}
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            analyzed_markers: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  marker: { type: Type.STRING },
+                  reason: { type: Type.STRING }
+                }
+              }
+            },
+            key_concern: { type: Type.STRING },
             observations: { type: Type.ARRAY, items: { type: Type.STRING } },
             abnormalities: { type: Type.ARRAY, items: { type: Type.STRING } },
             patterns: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -151,6 +167,8 @@ ${OUTPUT_FORMAT_JSON}
 
     const text = response.text || "{}";
     return safeJsonParse<SpecialistAnalysisResponse>(text, {
+      analyzed_markers: [],
+      key_concern: "No specific concerns identified.",
       observations: [],
       abnormalities: [],
       patterns: [],
@@ -370,7 +388,7 @@ export async function extractMedicalReports(
     try {
       const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
 
-      console.log("[Extraction] Starting report extraction for", filesData.length, "files");
+      if (import.meta.env.DEV) console.log("[Extraction] Starting report extraction for", filesData.length, "files");
 
       const response = await safeGeminiCall(() => ai.models.generateContent({
         model: "gemini-2.5-flash",

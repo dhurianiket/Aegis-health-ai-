@@ -15,9 +15,11 @@ import {
   Settings,
   User,
   MoreHorizontal,
+  ShieldAlert,
 } from "lucide-react";
 import { BottomSheet } from "./BottomSheet";
 import { useProfile } from "../../context/ProfileContext";
+import { useAuth } from "../../context/AuthContext";
 
 export interface AppNavProps {
   activeTab: string;
@@ -51,6 +53,12 @@ const bottomTabs = [
 export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const { activeProfile } = useProfile();
+  const { user } = useAuth();
+  
+  const desktopTabs = [...ALL_DESKTOP_TABS];
+  if (user?.email === "dhurianiket@gmail.com") {
+    desktopTabs.push({ id: "admin", label: "Admin Console", icon: ShieldAlert });
+  }
 
   const handleTabChange = (id: string) => {
     if (id === "chat") {
@@ -82,7 +90,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
         </div>
 
         <nav className="flex-1 px-4 overflow-y-auto space-y-1">
-          {ALL_DESKTOP_TABS.map((tab, idx) => {
+          {desktopTabs.map((tab, idx) => {
             if (tab === null) {
               return (
                 <div

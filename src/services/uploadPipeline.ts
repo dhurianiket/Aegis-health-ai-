@@ -6,7 +6,7 @@ import { LabStatus } from "../types/medical";
 import { LabObservation } from "../types/health";
 
 const logAuditEvent = async (userId: string, action: string, data: any) => {
-  console.log("Audit log:", userId, action, data);
+  if (import.meta.env.DEV) console.log("Audit log:", userId, action, data);
 };
 
 export const executeFullUploadPipeline = async (

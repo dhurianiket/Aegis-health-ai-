@@ -134,9 +134,8 @@ export default function App() {
             });
             const meds = activeProfile.medications || [];
             const data = await generateSBAR(
-              activeProfile as unknown as UserProfile,
-              observations,
-              meds,
+              user.uid,
+              activeProfile as unknown as UserProfile
             );
             setSbarData(data);
           } catch (e) {
@@ -528,11 +527,16 @@ export default function App() {
                         <FamilyHub />
                       </SectionErrorBoundary>
                     )}
-                    {activeTab === "admin" && user?.email === "dhurianiket@gmail.com" && (
-                      <SectionErrorBoundary sectionName="Admin">
-                        <AdminDashboard />
-                      </SectionErrorBoundary>
-                    )}
+                    {(() => {
+                      if (activeTab === "admin") {
+                        if (import.meta.env.DEV) console.log("[Admin] user email:", user?.email);
+                      }
+                      return activeTab === "admin" && user?.email === "dhurianiket@gmail.com" && (
+                        <SectionErrorBoundary sectionName="Admin">
+                          <AdminDashboard />
+                        </SectionErrorBoundary>
+                      );
+                    })()}
                   </motion.div>
                 </AnimatePresence>
               )}

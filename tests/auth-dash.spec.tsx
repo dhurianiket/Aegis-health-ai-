@@ -25,16 +25,16 @@ const mockAuthContextValue = {
   user: { uid: 'test-user-id' } as any,
   loading: false,
   authResolved: false, // simulating auth not resolved yet
-  signInWithGoogle: vi.fn(),
-  logout: vi.fn(),
+  signIn: vi.fn(),
+  logOut: vi.fn(),
 };
 
 const mockProfileContextValue = {
   activeProfile: null as any,
   profiles: [],
-  loading: false,
+  isLoading: false,
+  setActiveProfile: vi.fn(),
   createProfile: vi.fn(),
-  switchProfile: vi.fn(),
   updateProfile: vi.fn(),
   deleteProfile: vi.fn(),
 };

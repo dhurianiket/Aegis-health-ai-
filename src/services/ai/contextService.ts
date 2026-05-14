@@ -28,12 +28,17 @@ export const getPatientContext = async (
   // Extract from documents if possible
   const docMeds: any[] = [];
   const docSbars: string[] = [];
+  const docDates: string[] = [];
   
   if (documents) {
     documents.forEach((doc: MedicalDocument) => {
+      if (doc.date) docDates.push(new Date(doc.date).toLocaleDateString());
       if (doc.extractedData) {
         if (Array.isArray(doc.extractedData.medications)) {
-          docMeds.push(...doc.extractedData.medications);
+          doc.extractedData.medications.forEach((m: any) => {
+            if (typeof m === 'string') docMeds.push({ name: m });
+            else docMeds.push(m);
+          });
         }
         if (doc.extractedData.sbar) {
           docSbars.push(doc.extractedData.sbar);
@@ -43,16 +48,17 @@ export const getPatientContext = async (
   }
 
   // Generate real-time alerts based on latest data
-  const alerts = getConsolidatedAlerts(labHistory || [], medications || []);
+  const allMedications = [...(medications || []), ...docMeds];
+  const alerts = getConsolidatedAlerts(labHistory || [], allMedications);
 
   return {
     profile,
     labHistory: labHistory || [],
-    medications: [...(medications || []), ...docMeds],
+    medications: allMedications,
     recentInsights: recentInsights || [],
     alerts,
     // Add raw SBAR text for extra context
-    extraContext: docSbars.join("\n\n"),
+    extraContext: docSbars.join("\n\n") + (docDates.length ? `\n\nUPLOADED REPORT DATES:\n${docDates.join(', ')}` : ''),
   } as any;
 };
 
@@ -70,8 +76,8 @@ export const formatContextForPrompt = (context: any): string => {
   prompt += `ACTIVE MEDICATIONS:\n`;
   if (medications.length > 0) {
     medications
-      .filter((m) => String(m.status).toLowerCase() === "active" || m.status === undefined)
-      .forEach((m) => {
+      .filter((m: any) => String(m.status).toLowerCase() === "active" || m.status === undefined)
+      .forEach((m: any) => {
         prompt += `- ${m.name}: ${m.dosage || ''} ${m.frequency || ''}\n`;
       });
   } else {
@@ -81,7 +87,7 @@ export const formatContextForPrompt = (context: any): string => {
 
   let lastReportDate = "None";
   if (labHistory.length > 0) {
-    const dates = labHistory.map((l) => new Date(l.date).getTime()).filter(n => !isNaN(n));
+    const dates = labHistory.map((l: any) => new Date(l.date).getTime()).filter((n: any) => !isNaN(n));
     if (dates.length > 0) {
       lastReportDate = new Date(Math.max(...dates)).toISOString().split("T")[0];
     }
@@ -91,7 +97,7 @@ export const formatContextForPrompt = (context: any): string => {
   prompt += `LATEST LAB RESULTS (Top 10 by severity):\n`;
   if (labHistory.length > 0) {
     const latestLabs = new Map();
-    labHistory.forEach((lab) => {
+    labHistory.forEach((lab: any) => {
       const existing = latestLabs.get(lab.markerName);
       if (!existing || new Date(lab.date) > new Date(existing.date)) {
          latestLabs.set(lab.markerName, lab);

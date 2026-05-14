@@ -156,7 +156,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                         text: sbar || "",
                       });
                     } catch (err) {
-                      console.log("Share canceled or failed:", err);
+                      if (import.meta.env.DEV) console.log("Share canceled or failed:", err);
                     }
                   } else {
                     navigator.clipboard.writeText(sbar || "");

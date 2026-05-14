@@ -83,7 +83,7 @@ export async function saveDocument(
 ) {
   const docId = docData.id || `doc_${Date.now()}`;
   const pathString = `users/${userId}/documents/${docId}`;
-  console.log('[Firestore] Saving document to:', pathString);
+  if (import.meta.env.DEV) console.log('[Firestore] Saving document to:', pathString);
   try {
     await setDoc(doc(db, "users", userId, "documents", docId), sanitizeData({
       ...docData,

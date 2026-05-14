@@ -1,0 +1,15 @@
+{
+  "name": "Aegis Health AI",
+  "short_name": "Aegis",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f6f2",
+  "theme_color": "#01696f",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

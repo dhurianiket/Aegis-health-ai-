@@ -86,7 +86,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         } else {
            // Fetch from documents
            const docs = await getDocuments(user.uid, activeProfile?.id);
-           docs.forEach((doc: any) => {
+           (docs || []).forEach((doc: any) => {
               const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
               obs.forEach((o: any) => {
                  extractedValues.push({
@@ -217,7 +217,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const firstDataPoint = chartData[0];
 
   let summarySentence = "Not enough data points for trend analysis.";
-  if (latestDataPoint && firstDataPoint && chartData.length > 1) {
+  if (latestDataPoint && firstDataPoint && chartData.length > 1 && latestDataPoint.value !== undefined && firstDataPoint.value !== undefined) {
     const delta = latestDataPoint.value - firstDataPoint.value;
     const pct = ((delta / firstDataPoint.value) * 100).toFixed(1);
     const isUp = delta > 0;

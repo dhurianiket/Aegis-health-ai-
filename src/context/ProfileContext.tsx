@@ -28,7 +28,7 @@ interface ProfileContextType {
   isLoading: boolean;
 }
 
-const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+export const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();

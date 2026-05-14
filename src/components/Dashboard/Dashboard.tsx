@@ -29,6 +29,7 @@ import {
   getHealthScores,
   getLatestInsights,
   getLabHistory,
+  getDocuments,
 } from "../../lib/firebase/firestore";
 import {
   Specialty,
@@ -112,7 +113,7 @@ export default function Dashboard({
                 const name = lab.marker;
                 const entry = {
                    ...lab,
-                   date: lab.date || doc.date || doc.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                   date: lab.date || doc.date || (typeof doc.createdAt === 'string' ? doc.createdAt : (doc.createdAt as any)?.toDate?.()?.toISOString()) || new Date().toISOString(),
                    docId: doc.id
                 };
                 if (!labMap.has(name)) labMap.set(name, []);
@@ -442,11 +443,11 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {keyLabs.filter(l => l.status === 'high' || l.status === 'abnormal' || l.status === 'low' || l.status === 'critical').slice(0, 5).map((lab, i) => (
+                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => (
                   <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
                      <div className="flex justify-between items-center mb-2">
                         <span className="font-semibold text-sm text-[var(--color-text)]">{lab.markerName}</span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${lab.status === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${(lab.status as any) === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
                            {lab.status}
                         </span>
                      </div>
@@ -461,7 +462,7 @@ export default function Dashboard({
                      </div>
                   </div>
                 ))}
-                {keyLabs.filter(l => l.status === 'high' || l.status === 'abnormal' || l.status === 'low' || l.status === 'critical').length === 0 && (
+                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
               </div>
@@ -478,7 +479,7 @@ export default function Dashboard({
                      <div key={i} className="p-4 rounded-2xl border border-surface bg-surface/50">
                         <div className="flex justify-between items-start mb-2">
                            <p className="text-[10px] font-bold uppercase truncate max-w-[100px]">{lab.markerName}</p>
-                           <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${lab.status === 'normal' ? 'bg-emerald-500/10 text-emerald-500' : lab.status === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
+                           <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${(lab.status as any) === 'normal' ? 'bg-emerald-500/10 text-emerald-500' : (lab.status as any) === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
                               {lab.status}
                            </span>
                         </div>
@@ -487,7 +488,7 @@ export default function Dashboard({
                            <span className="text-[10px] text-muted font-medium mb-1">{lab.unit}</span>
                         </div>
                         <div className="flex items-center gap-1 mt-2">
-                           {lab.trend === 'up' ? <TrendingUp size={12} className="text-red-500" /> : lab.trend === 'down' ? <TrendingDown size={12} className="text-emerald-500" /> : <ArrowRight size={12} className="text-slate-400" />}
+                           {(lab as any).trend === 'up' ? <TrendingUp size={12} className="text-red-500" /> : (lab as any).trend === 'down' ? <TrendingDown size={12} className="text-emerald-500" /> : <ArrowRight size={12} className="text-slate-400" />}
                            <span className="text-[8px] text-muted">{new Date(lab.date).toLocaleDateString()}</span>
                         </div>
                      </div>

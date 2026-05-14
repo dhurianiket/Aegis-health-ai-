@@ -55,7 +55,19 @@
     background-color: var(--color-bg);
     color: var(--color-text);
     -webkit-tap-highlight-color: transparent;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* Typography Apple Standard */
+  input, textarea, select {
+    font-size: 16px;
+  }
+  
+  p, div, span, label {
+    line-height: 1.5;
+  }
+
 
   button, [role="button"], .card-clickable {
     cursor: pointer;
@@ -134,5 +146,10 @@
   .scrollbar-none {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
   }
 }

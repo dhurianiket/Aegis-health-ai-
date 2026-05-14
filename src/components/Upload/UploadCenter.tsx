@@ -86,7 +86,7 @@ const readFileAsSafeBase64 = (file: File): Promise<{
         .replace(/\s/g, "")
         .replace(/\r?\n/g, "");
 
-      console.log("[Upload Stage 1] File size:", file.size, "bytes");
+      if (import.meta.env.DEV) console.log("[Upload Stage 1] File size:", file.size, "bytes");
       console.log("[Upload Stage 1] Base64 start:", base64Data.substring(0, 100));
       console.log("[Safari Upload] MIME:", mimeType);
       console.log("[Safari Upload] Base64 length:", base64Data.length);
@@ -130,11 +130,29 @@ export default function UploadCenter({
     new Set(),
   );
   const [processingStep, setProcessingStep] = useState(0);
+  const [processingMessage, setProcessingMessage] = useState("Reading your report...");
 
   useEffect(() => {
     if (!isProcessing) {
       setProcessingStep(0);
+      setProcessingMessage("Reading your report...");
+      return;
     }
+    
+    const messages = [
+      "Reading your report...",
+      "Identifying lab values...",
+      "Checking reference ranges...",
+      "Preparing your analysis...",
+      "Almost done..."
+    ];
+    let idx = 0;
+    const interval = setInterval(() => {
+      idx = (idx + 1) % messages.length;
+      setProcessingMessage(messages[idx]);
+    }, 2000);
+    
+    return () => clearInterval(interval);
   }, [isProcessing]);
 
   const toggleLabConfirmation = (indexStr: string) => {
@@ -525,21 +543,8 @@ export default function UploadCenter({
                  />
               </div>
               
-              <div className="grid grid-cols-5 gap-4 mb-12 w-full max-w-md">
-                 {EXTRACTION_STEPS.map((step, i) => (
-                   <div key={step.id} className="flex flex-col items-center gap-2">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                        processingStep > i ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white' : 
-                        processingStep === i ? 'border-[var(--color-primary)] text-[var(--color-primary)] animate-pulse' : 
-                        'border-surface text-muted'
-                      }`}>
-                         {processingStep > i ? <Check size={16} /> : step.id}
-                      </div>
-                      <span className={`text-[8px] font-bold uppercase tracking-widest ${processingStep === i ? 'text-[var(--color-primary)]' : 'text-muted'}`}>
-                        {step.label.split(' ')[0]}
-                      </span>
-                   </div>
-                 ))}
+              <div className="flex justify-center mb-8">
+                 <Loader2 className="w-16 h-16 text-[var(--color-primary)] animate-spin opacity-80" strokeWidth={1.5} />
               </div>
 
               <h3 className="text-xl font-bold mb-2">Analyzing Health Intelligence</h3>
@@ -554,13 +559,13 @@ export default function UploadCenter({
               
               <AnimatePresence mode="wait">
                 <motion.p
-                  key={processingStep}
+                  key={processingMessage}
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="mt-6 text-[var(--color-primary)] font-medium text-sm"
+                  className="mt-6 text-[var(--color-primary)] font-medium text-sm h-6"
                 >
-                  {EXTRACTION_STEPS[processingStep].label}...
+                  {processingMessage}
                 </motion.p>
               </AnimatePresence>
             </div>
@@ -569,9 +574,13 @@ export default function UploadCenter({
           {results && results.length > 0 && !isProcessing && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-                 <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
+                 <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                    className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
                     <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-                 </div>
+                 </motion.div>
                  <h3 className="text-2xl font-bold mb-2">Extraction complete</h3>
                  <p className="text-muted">
                     Successfully extracted {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0)} lab values and saved to your health vault.

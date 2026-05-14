@@ -95,6 +95,7 @@ export const exportToPDF = async (
       background-color: transparent !important;
       text-shadow: none !important;
       box-shadow: none !important;
+      font-family: -apple-system, Arial, sans-serif !important;
     }
     .light-mode-pdf-container {
       background-color: #ffffff !important;
@@ -133,10 +134,12 @@ export const exportToPDF = async (
       pixelRatio: 4, // Higher density for laser-sharp text and charts
       width: targetWidth,
       cacheBust: true,
+      fontEmbedCSS: "", // Skip fetching external CSS/fonts
       style: {
         transform: "none",
         opacity: "1",
         visibility: "visible",
+        fontFamily: "-apple-system, Arial, sans-serif",
       },
     });
 

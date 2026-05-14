@@ -404,6 +404,10 @@ export default function ProfileManagement() {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      <div className="text-center text-slate-500 text-xs mt-12 pb-8">
+        Built by Aniket Dhuri • Version 1.0.0
+      </div>
     </div>
   );
 }
