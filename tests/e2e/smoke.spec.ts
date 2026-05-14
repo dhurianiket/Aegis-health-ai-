@@ -7,8 +7,11 @@ test.describe('Aegis Smoke Test', () => {
       errors.push(err.message);
     });
     
+    const targetUrl = process.env.TEST_TARGET_URL;
+    expect(targetUrl, 'TEST_TARGET_URL must be set in CI').toBeTruthy();
+    
     // 1. App loads
-    const response = await page.goto(process.env.TEST_TARGET_URL || 'http://localhost:3000');
+    const response = await page.goto(targetUrl!);
     const status = response?.status() ?? 0;
     expect(status).toBeGreaterThanOrEqual(200);
     expect(status).toBeLessThan(400);
