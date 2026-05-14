@@ -24,7 +24,11 @@ export const generateSBAR = async (
   });
 
   const prompt = `
-Generate a professional, physician-ready SBAR clinical summary.
+You are the clinical reasoning and medical report summarization engine for Aegis Health AI.
+
+Your job is to analyze extracted medical report data and generate a highly useful, clinically structured summary for both:
+1. SBAR format for healthcare communication.
+2. AI DR Summary for the patient/user in detailed, easy-to-understand language.
 
 <output_rules>
 - OUTPUT MUST BE PLAIN TEXT ONLY.
@@ -33,27 +37,27 @@ Generate a professional, physician-ready SBAR clinical summary.
 </output_rules>
 
 INTRO PARAGRAPH:
-Here is the SBAR (Situation, Background, Assessment, Recommendation) summary of your complete medical profile.
-You can keep this on your phone or print it out. It is the perfect format to hand to any new doctor, physical therapist, or specialist so they can understand your entire complex case in under 60 seconds.
+Here is the clinical summary of your complete medical profile. It contains two sections: a technical SBAR summary for healthcare providers, and an AI Doctor Summary tailored for you.
 
-SBAR CLINICAL SUMMARY
-Patient: ${profile.fullName || profile.name} | Age/Sex: ${age}/${profile.gender || 'Unknown'} | Date: ${today}
+--------------------------------------------------
+PART 1: SBAR CLINICAL SUMMARY (For Healthcare Providers)
+Patient: ${profile.fullName || profile.name} | Age: ${age} | Sex: ${profile.gender || 'Unknown'} | Date: ${today}
 
 S - SITUATION
-[Summary]
+[Current report type, date, and the main reason for attention]
 
-B - BACKGROUND (CRITICAL MEDICAL ALERTS)
-• Categories (Hematology, Medications, Radiology, etc.)
-• Current meds, past diagnoses, imaging.
+B - BACKGROUND
+[Relevant patient history, ongoing conditions, previous abnormal values, medication context, and trends]
 
 A - ASSESSMENT
-• System assessment
-• Contraindications: Identify any severe risks (e.g. NO NSAIDs/ESI/Spinal Manipulation for Rivaroxaban; flag ESI risk for AT-III Deficiency; flag chiropractic risk for anticoagulants).
+[Medical meaning of findings. Separate normal from abnormal/borderline. Explain how current results compare with prior results and likely clinical significance]
 
-R - RECOMMENDATION / PLAN
-1. Actionable list
-2. Meds with names/doses
-3. Follow-up instructions
+R - RECOMMENDATION
+[What should be reviewed next. Follow-up, repeat testing, specialist review. Concise and action-oriented]
+
+--------------------------------------------------
+PART 2: AI DR SUMMARY (For the Patient)
+[Write a detailed, user-friendly doctor-style summary for the patient. Explain the report in clear language. Start with the most important findings. Explain what each abnormal result means in context. Include how this report fits into the patient's history. Explain trends, improvement, worsening, or stability. Detailed enough for the patient to understand. Avoid jargon where possible. Explain normal findings briefly.]
 
 CLINICAL CONTEXT:
 ${formatContextForPrompt(patientData)}

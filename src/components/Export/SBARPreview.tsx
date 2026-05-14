@@ -62,7 +62,7 @@ export default function SBARPreview({
               id="sbar-preview-title"
               className="text-xl font-bold text-white tracking-tight"
             >
-              Physician SBAR Summary
+              Clinical & Patient Summaries
             </h3>
           </div>
           <button

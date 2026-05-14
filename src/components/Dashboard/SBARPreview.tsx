@@ -64,10 +64,10 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                   id="sbar-title"
                   className="text-xl font-semibold text-[var(--color-text)]"
                 >
-                  Clinical Handover Summary
+                  Clinical Handover & Patient Summary
                 </h2>
                 <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider mt-1 font-medium">
-                  SBAR Format (Plain Text)
+                  SBAR & AI DR Format (Plain Text)
                 </p>
               </div>
               <button
@@ -86,10 +86,10 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                 />
                 <div>
                   <h4 className="text-sm font-semibold text-[var(--color-warning)] mb-0.5">
-                    Professional SBAR Format
+                    Professional SBAR & Patient Summary
                   </h4>
                   <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-                    This summary is designed to be handed to a clinician. It is generated in plain text to ensure readability across all clinical systems and for easy printing.
+                    This summary contains two sections: one designed to be handed to a clinician, and another (AI DR) designed to help you understand your medical reports in clear layperson terms.
                   </p>
                 </div>
               </div>

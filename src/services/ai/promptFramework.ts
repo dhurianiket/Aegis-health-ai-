@@ -296,13 +296,57 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
 export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[]) {
   const ai = getAI();
   
+  const promptText = `${CORE_SYSTEM_PROMPT}
+
+You are the clinical reasoning and medical report summarization engine for Aegis Health AI.
+
+Your job is to analyze extracted medical report data and generate a highly useful, clinically structured summary for both:
+1. SBAR format for healthcare communication.
+2. AI DR Summary for the patient/user in detailed, easy-to-understand language.
+
+<output_rules>
+- OUTPUT MUST BE PLAIN TEXT ONLY.
+- NO MARKDOWN (no bolding, no headers).
+</output_rules>
+
+--------------------------------------------------
+PART 1: SBAR CLINICAL SUMMARY (For Healthcare Providers)
+S - SITUATION
+[Current report type, date, and the main reason for attention]
+
+B - BACKGROUND
+[Relevant patient history from earlier reports. Known ongoing conditions, previous abnormal values, and medication context. Mention relevant trends over time.]
+
+A - ASSESSMENT
+[Explain the medical meaning of the current findings. Separate normal findings, abnormal findings, and borderline findings. Explain how current results compare with prior results. Include likely clinical significance of the pattern seen.]
+
+R - RECOMMENDATION
+[What should be reviewed next. Whether follow-up, repeat testing, or specialist review may be relevant. Keep this concise and action-oriented.]
+
+--------------------------------------------------
+PART 2: AI DR SUMMARY (For the Patient)
+[Write a detailed, user-friendly doctor-style summary for the patient. Explain the report in clear language. Start with the most important findings. Explain what each abnormal result means in context. Include how this report fits into the patient's history. Explain trends, improvement, worsening, or stability. Make the summary detailed enough that a patient can understand why the report matters. Use medical clarity, but avoid jargon where possible. If the report is mostly normal, still explain that clearly and briefly describe the few important points.]
+
+Patient Context:
+${patientContextJSON}
+
+Trends:
+${trendSummariesJSON}
+
+Medications:
+${JSON.stringify(medications)}
+
+Symptoms:
+${JSON.stringify(symptoms)}
+`;
+
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate physician-ready SBAR summary in PLAIN TEXT. DO NOT use markdown.\n\nUse EXACTLY these headings: S - SITUATION, B - BACKGROUND, A - ASSESSMENT, R - RECOMMENDATION.\nIn B - BACKGROUND, include the dates of all uploaded reports and all current medications.\n\nPatient Context:\n${patientContextJSON}\n\nTrends:\n${trendSummariesJSON}\n\nMedications:\n${JSON.stringify(medications)}\n\nSymptoms:\n${JSON.stringify(symptoms)}` }] }],
+    contents: [{ role: "user", parts: [{ text: promptText }] }],
     config: { temperature: 0 }
   }), 3, "sbar");
   
-  return response.text || "Failed to generate SBAR summary.";
+  return response.text || "Failed to generate summary.";
 }
 
 export async function explainInteraction(medicationContext: any) {
