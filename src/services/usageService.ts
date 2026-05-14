@@ -54,10 +54,10 @@ const updateGlobalStats = async (updates: any) => {
       try {
         await setDoc(globalRef, dataToSet);
       } catch (e) {
-        console.error("Failed to create global stats", e);
+        // Silently swallow missing permissions on set
       }
     } else {
-      console.error("Global stats tracking error:", error);
+      // Silently swallow global stats errors
     }
   }
 };
@@ -136,7 +136,7 @@ export const trackUsage = async (userId: string, data: UsageData) => {
       });
       globalUpdates.totalUsers = increment(1);
     } else {
-      console.error("Usage tracking error:", error);
+      // Silently swallow
     }
   }
 
@@ -170,7 +170,7 @@ export const trackStorageUsage = async (userId: string, fileSizeInBytes: number)
       });
       await updateGlobalStats({ totalUsers: increment(1) });
     } else {
-      console.error("Storage tracking error:", error);
+      // Silently swallow
     }
   }
 

@@ -39,24 +39,28 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // 1. Fetch Users
-      const usersData = await getAllUsersUsage();
-      setUsers(usersData);
+      try {
+        // 1. Fetch Users
+        const usersData = await getAllUsersUsage();
+        setUsers(usersData);
 
-      // 2. Fetch Global Stats
-      const statDoc = await getDoc(doc(db, "analytics/globalStats"));
-      if (statDoc.exists()) {
-        setGlobalStats(statDoc.data());
-      } else {
-        setGlobalStats({
-          totalUsers: usersData.length,
-          activeUsersToday: usersData.filter((u) => u.isActiveToday).length,
-          activeUsersThisMonth: usersData.filter((u) => u.isActiveThisMonth).length,
-          totalDocumentsUploaded: usersData.reduce((acc, u) => acc + (u.documentsUploaded || 0), 0),
-          totalStorageBytes: usersData.reduce((acc, u) => acc + (u.totalStorageBytes || 0), 0),
-          totalTokensUsed: usersData.reduce((acc, u) => acc + (u.totalTokensUsed || 0), 0),
-          estimatedCostUSD: 0,
-        });
+        // 2. Fetch Global Stats
+        const statDoc = await getDoc(doc(db, "analytics/globalStats"));
+        if (statDoc.exists()) {
+          setGlobalStats(statDoc.data());
+        } else {
+          setGlobalStats({
+             totalUsers: usersData?.length || 0,
+             activeUsersToday: usersData?.filter((u) => u.isActiveToday).length || 0,
+             activeUsersThisMonth: usersData?.filter((u) => u.isActiveThisMonth).length || 0,
+             totalDocumentsUploaded: usersData?.reduce((acc, u) => acc + (u.documentsUploaded || 0), 0) || 0,
+             totalStorageBytes: usersData?.reduce((acc, u) => acc + (u.totalStorageBytes || 0), 0) || 0,
+             totalTokensUsed: usersData?.reduce((acc, u) => acc + (u.totalTokensUsed || 0), 0) || 0,
+             estimatedCostUSD: 0,
+          });
+        }
+      } catch (e) {
+        console.error("Failed to fetch dashboard core data:", e);
       }
 
       // 3. Fake daily uploads or fetch real if feasible (we will try fetching)
