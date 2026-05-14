@@ -82,8 +82,10 @@ export default function AdminDashboard() {
              estimatedCostUSD: 0,
           });
         }
-      } catch (e) {
-        console.error("Failed to fetch dashboard core data:", e);
+      } catch (e: any) {
+        if (e.code !== 'permission-denied') {
+           console.error("Failed to fetch dashboard core data:", e);
+        }
       }
 
       // 3. Fake daily uploads or fetch real if feasible (we will try fetching)
@@ -93,8 +95,11 @@ export default function AdminDashboard() {
         docsSnap.forEach((d) => {
           const data = d.data();
           if (data.createdAt) {
-            const dateStr = new Date(data.createdAt).toISOString().split("T")[0];
-            counts[dateStr] = (counts[dateStr] || 0) + 1;
+            const dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+            if (!isNaN(dateObj.getTime())) {
+               const dateStr = dateObj.toISOString().split("T")[0];
+               counts[dateStr] = (counts[dateStr] || 0) + 1;
+            }
           }
         });
         const uploads = Object.keys(counts)
@@ -102,8 +107,10 @@ export default function AdminDashboard() {
           .slice(-30)
           .map((k) => ({ date: k, count: counts[k] }));
         setDailyUploads(uploads);
-      } catch (e) {
-        console.error("Failed to fetch documents for chart", e);
+      } catch (e: any) {
+        if (e.code !== 'permission-denied') {
+           console.error("Failed to fetch documents for chart", e);
+        }
       }
 
       setLoading(false);
@@ -302,7 +309,7 @@ export default function AdminDashboard() {
                     <td className="py-4 px-4 font-mono text-xs text-purple-600">{(row.thinkingTokens || 0).toLocaleString()}</td>
                     <td className="py-4 px-4 font-mono text-xs text-green-600">${rowCost.toFixed(4)}</td>
                     <td className="py-4 px-4 text-xs text-muted">
-                      {row.lastActive ? new Date(row.lastActive).toLocaleDateString() : "N/A"}
+                      {row.lastActive && !isNaN(new Date(row.lastActive).getTime()) ? new Date(row.lastActive).toLocaleDateString() : "N/A"}
                     </td>
                     <td className="py-4 px-4 text-center">
                       {row.isActiveToday ? "✅" : "❌"}

@@ -256,8 +256,10 @@ export const getAllUsersUsage = async () => {
     });
 
     return usageData;
-  } catch (error) {
-    console.error("Error fetching all users:", error);
+  } catch (error: any) {
+    if (error.code !== 'permission-denied') {
+       console.error("Error fetching all users:", error);
+    }
     return [];
   }
 };

@@ -38,9 +38,12 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
         : "UNKNOWN";
       markerSet.add(name);
       if (!byMarkerAndDate[name]) byMarkerAndDate[name] = {};
-      // Group by day
-      const dateStr = new Date(lab.date).toISOString().split("T")[0];
-      byMarkerAndDate[name][dateStr] = lab.value;
+      // Group by day safely
+      const dateObj = new Date(lab.date);
+      if (!isNaN(dateObj.getTime())) {
+        const dateStr = dateObj.toISOString().split("T")[0];
+        byMarkerAndDate[name][dateStr] = lab.value;
+      }
     });
 
     const topMarkers = Array.from(markerSet).slice(0, 5); // Limit to top 5 for UI simplicity

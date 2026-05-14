@@ -82,6 +82,12 @@ export default function Dashboard({
 
   const [retryCount, setRetryCount] = useState(0);
 
+  const safeFormatDate = (d: any) => {
+    if (!d) return "N/A";
+    const dateObj = new Date(d);
+    return isNaN(dateObj.getTime()) ? "N/A" : dateObj.toLocaleDateString();
+  };
+
   useEffect(() => {
     let isMounted = true;
     async function fetchData() {
@@ -127,7 +133,11 @@ export default function Dashboard({
         
         const aggregatedLabs: any[] = [];
         labMap.forEach((vals, marker) => {
-           vals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+           vals.sort((a, b) => {
+             const timeA = new Date(a.date).getTime() || 0;
+             const timeB = new Date(b.date).getTime() || 0;
+             return timeB - timeA;
+           });
            const latest = vals[0];
            const previous = vals.length > 1 ? vals[1] : null;
            let trend = 'stable';
@@ -492,7 +502,7 @@ export default function Dashboard({
                         </div>
                         <div className="flex items-center gap-1 mt-2">
                            {(lab as any).trend === 'up' ? <TrendingUp size={12} className="text-red-500" /> : (lab as any).trend === 'down' ? <TrendingDown size={12} className="text-emerald-500" /> : <ArrowRight size={12} className="text-slate-400" />}
-                           <span className="text-[8px] text-muted">{new Date(lab.date).toLocaleDateString()}</span>
+                           <span className="text-[8px] text-muted">{safeFormatDate(lab.date)}</span>
                         </div>
                      </div>
                   ))}

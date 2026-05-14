@@ -34,9 +34,11 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
     const processed = Object.entries(byMarker)
       .map(([name, results]) => {
         // Sort chronologically
-        const sorted = results.sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-        );
+        const sorted = results.sort((a, b) => {
+          const timeA = new Date(a.date).getTime() || 0;
+          const timeB = new Date(b.date).getTime() || 0;
+          return timeA - timeB;
+        });
         return {
           name,
           data: sorted.map((s) => ({ value: s.value, date: s.date })),

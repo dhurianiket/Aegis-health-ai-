@@ -157,7 +157,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       if (!selectedMarker) return [];
 
       const filtered = labResults
-        .filter((r) => r.markerName === selectedMarker)
+        .filter((r) => r.markerName === selectedMarker && r.date && !isNaN(new Date(r.date).getTime()))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       const now = new Date().getTime();
