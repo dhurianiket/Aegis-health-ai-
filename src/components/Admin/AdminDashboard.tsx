@@ -26,6 +26,7 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
+import { version } from "../../../package.json";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8A2BE2"];
 
@@ -272,7 +273,7 @@ export default function AdminDashboard() {
       </div>
       
       <div className="text-center text-muted text-xs mt-8">
-        Built by Aniket Dhuri • Version 1.0.0
+        Built by Aniket Dhuri • Version {version}
       </div>
     </div>
   );

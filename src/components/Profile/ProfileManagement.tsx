@@ -16,6 +16,7 @@ import { validateProfileName } from "../../lib/validation";
 import { logger } from "../../lib/logger";
 import { getUserUsageStats } from "../../services/usageService";
 import { auth } from "../../lib/firebase/config";
+import { version } from "../../../package.json";
 
 export default function ProfileManagement() {
   const {
@@ -406,7 +407,7 @@ export default function ProfileManagement() {
       </AnimatePresence>
       
       <div className="text-center text-slate-500 text-xs mt-12 pb-8">
-        Built by Aniket Dhuri • Version 1.0.0
+        Built by Aniket Dhuri • Version {version}
       </div>
     </div>
   );
