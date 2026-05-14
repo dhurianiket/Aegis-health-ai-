@@ -230,7 +230,7 @@ export default function LandingPage() {
 
           {/* Phase 3: The Bento Dashboard Reveal */}
           <motion.div
-            className="absolute w-full md:w-1/2 h-full flex flex-col justify-end md:justify-center p-6 pb-24 md:pb-6 md:p-12 z-20 max-w-2xl right-0"
+            className="absolute w-full md:w-1/2 h-[100dvh] flex flex-col justify-end md:justify-center p-4 pb-20 md:pb-6 md:p-12 z-20 max-w-2xl right-0"
             style={{ 
               opacity: dashboardOpacity,
               x: isMobile ? 0 : dashboardXTransform,
@@ -238,11 +238,11 @@ export default function LandingPage() {
               pointerEvents: useTransform(smoothProgress, v => v > 0.6 ? "auto" : "none") as any
             }}
           >
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-2 md:gap-4 overflow-y-auto no-scrollbar max-h-full py-4 mt-16 md:mt-0 pointer-events-auto">
               
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
+              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl relative overflow-hidden group shrink-0">
                 <div className="absolute inset-0 bg-[#10B981]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-3 md:mb-4">
                   <div className="w-8 h-8 rounded-full bg-[#10B981]/20 flex items-center justify-center">
                     <Activity className="w-4 h-4 text-[#10B981]" />
                   </div>
@@ -259,9 +259,9 @@ export default function LandingPage() {
                 <div className="mt-3 text-slate-400 text-xs font-light">eGFR 112 • Creatinine 0.8</div>
               </div>
 
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
+              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl relative overflow-hidden group shrink-0">
                 <div className="absolute inset-0 bg-[#F59E0B]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-3 md:mb-4">
                   <div className="w-8 h-8 rounded-full bg-[#F59E0B]/20 flex items-center justify-center">
                     <TrendingUp className="w-4 h-4 text-[#F59E0B]" />
                   </div>
@@ -277,9 +277,9 @@ export default function LandingPage() {
                 <div className="mt-3 text-slate-400 text-xs font-light">LDL-C 125 mg/dL • Up 10% from last year</div>
               </div>
 
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
+              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl relative overflow-hidden group shrink-0">
                 <div className="absolute inset-0 bg-[#EF4444]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-3 md:mb-4">
                   <div className="w-8 h-8 rounded-full bg-[#EF4444]/20 flex items-center justify-center">
                     <AlertCircle className="w-4 h-4 text-[#EF4444]" />
                   </div>
@@ -295,12 +295,12 @@ export default function LandingPage() {
                 <div className="mt-3 text-[#EF4444] text-xs font-medium">18 ng/mL • Action required</div>
               </div>
 
-              <div className="mt-6 md:mt-8 flex flex-col items-center md:items-start gap-4 text-center md:text-left">
-                <h3 className="text-2xl md:text-3xl font-bold tracking-tight">Decoded. Secure. Yours.</h3>
+              <div className="mt-4 md:mt-8 flex flex-col items-center md:items-start gap-3 md:gap-4 text-center md:text-left shrink-0 pb-4">
+                <h3 className="text-xl md:text-3xl font-bold tracking-tight">Decoded. Secure. Yours.</h3>
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
-                  className="px-8 py-4 mt-2 rounded-full bg-[#20C997] text-[#0A192F] font-bold text-sm tracking-wide flex items-center justify-center gap-2 hover:bg-[#64FFDA] transition-colors shadow-[0_0_20px_rgba(32,201,151,0.4)] hover:shadow-[0_0_40px_rgba(100,255,218,0.6)] w-full md:w-auto min-w-[220px]"
+                  className="px-6 py-3 md:px-8 md:py-4 mt-2 rounded-full bg-[#20C997] text-[#0A192F] font-bold text-sm tracking-wide flex items-center justify-center gap-2 hover:bg-[#64FFDA] transition-colors shadow-[0_0_20px_rgba(32,201,151,0.4)] hover:shadow-[0_0_40px_rgba(100,255,218,0.6)] w-full md:w-auto min-w-[220px] pointer-events-auto"
                 >
                   {isSigningIn ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
