@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
+import { exportToPDF } from "../../services/pdfExportService";
 
 interface ExportButtonProps {
   variant?: "compact" | "full";
@@ -22,7 +23,6 @@ export default function ExportButton({
     setIsExporting(true);
     setError(null);
     try {
-      const { exportToPDF } = await import("../../services/pdfExportService");
       await exportToPDF(elementId, filename, orientation);
     } catch (err) {
       console.error("Export failed", err);

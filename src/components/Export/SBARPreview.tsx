@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FileText, Copy, Check, X, Download } from "lucide-react";
+import { exportToPDF } from "../../services/pdfExportService";
 
 interface SBARPreviewProps {
   sbarText: string;
@@ -33,7 +34,6 @@ export default function SBARPreview({
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const { exportToPDF } = await import("../../services/pdfExportService");
       await exportToPDF("sbar-content", "AI_Physician_SBAR.pdf");
     } catch (err) {
       console.error(err);

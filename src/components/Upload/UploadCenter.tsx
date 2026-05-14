@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { extractMedicalReports } from "../../services/ai/gemini";
+import { trackStorageUsage } from "../../services/usageService";
 import {
   saveDocument,
   saveLabResult,
@@ -337,9 +338,7 @@ export default function UploadCenter({
 
           // Track storage usage
           try {
-             import("../../services/usageService").then(({ trackStorageUsage }) => {
-                trackStorageUsage(user.uid, item.file.size).catch(e => console.error(e));
-             });
+             trackStorageUsage(user.uid, item.file.size).catch(e => console.error(e));
           } catch(e) {}
 
           if (result.lab_values && result.lab_values.length > 0) {

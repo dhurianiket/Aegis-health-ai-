@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { getAI } from "../../lib/geminiClient";
 import { safeJsonParse } from "../../utils/aiUtils";
+import { auth } from "../../lib/firebase/config";
+import { trackUsage } from "../usageService";
 
 export const CORE_SYSTEM_PROMPT = `
 <role>
@@ -240,10 +242,8 @@ export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3, f
             
             try {
               if (response?.usageMetadata) {
-                 const { auth } = await import("../../lib/firebase/config");
                  const userId = auth?.currentUser?.uid;
                  if (userId) {
-                    const { trackUsage } = await import("../usageService");
                     await trackUsage(userId, {
                        promptTokens: response.usageMetadata.promptTokenCount,
                        responseTokens: response.usageMetadata.candidatesTokenCount,

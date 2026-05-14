@@ -88,9 +88,9 @@ export async function saveDocument(
     await setDoc(doc(db, "users", userId, "documents", docId), sanitizeData({
       ...docData,
       userId,
-      createdAt: serverTimestamp(),
-      isProcessed: false,
-    }));
+      createdAt: docData.createdAt || serverTimestamp(), // Avoid overwriting if existing
+      isProcessed: docData.isProcessed ?? false,
+    }), { merge: true });
     return docId;
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, pathString);
@@ -171,8 +171,8 @@ export async function saveLabResult(
       await setDoc(docRef, sanitizeData({
         ...labData,
         userId,
-        createdAt: serverTimestamp(),
-      }));
+        createdAt: (labData as any).createdAt || serverTimestamp(),
+      }), { merge: true });
       return labData.id;
     } else {
       docRef = await addDoc(collection(db, "users", userId, "labResults"), sanitizeData({
@@ -199,8 +199,8 @@ export async function saveMedication(
       await setDoc(docRef, sanitizeData({
         ...medData,
         userId,
-        createdAt: serverTimestamp(),
-      }));
+        createdAt: (medData as any).createdAt || serverTimestamp(),
+      }), { merge: true });
       return medData.id;
     } else {
       docRef = await addDoc(collection(db, "users", userId, "medications"), sanitizeData({

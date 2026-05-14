@@ -51,6 +51,7 @@ const SharedProfile = lazy(() => import("./components/Export/SharedProfile"));
 import { generateSBAR } from "./services/sbarGenerationService";
 import { validateProfileName } from "./lib/validation";
 import { logger } from "./lib/logger";
+import { getDocuments } from "./lib/firebase/firestore";
 
 declare global {
   interface Window {
@@ -122,7 +123,6 @@ export default function App() {
           setIsGeneratingSBAR(true);
           setSbarError(null);
           try {
-            const { getDocuments } = await import("./lib/firebase/firestore");
             const docs = await getDocuments(user.uid, activeProfile.id);
             let observations: any[] = [];
             docs?.slice(0, 3).forEach((doc: any) => {

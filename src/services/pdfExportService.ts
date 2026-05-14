@@ -1,5 +1,8 @@
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
+import getAI from "../lib/geminiClient";
+import { safeGeminiCall, CORE_SYSTEM_PROMPT } from "./ai/promptFramework";
+import { safeJsonParse } from "../utils/aiUtils";
 
 /**
  * Modern PDF Export Service
@@ -222,10 +225,6 @@ export const exportToPDF = async (
 };
 
 export const generateTrendNarrative = async (trendSummariesJSON: string, dateRange: string) => {
-  const getAI = (await import("../lib/geminiClient")).default;
-  const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./ai/promptFramework");
-  const { safeJsonParse } = await import("../utils/aiUtils");
-  
   const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({

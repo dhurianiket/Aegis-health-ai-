@@ -8,9 +8,10 @@ import {
   SpecialistInsight,
   UserProfile,
 } from "../../types/medical";
-import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON } from "./promptFramework";
-
+import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON, safeGeminiCall } from "./promptFramework";
 import { safeJsonParse } from "../../utils/aiUtils";
+import { auth } from "../../lib/firebase/config";
+import { trackUsage } from "../usageService";
 
 // Removed old getAI class wrapper and now using pre-initialized getAI from lib/geminiClient
 // Function is already available via import
@@ -149,10 +150,8 @@ ${OUTPUT_FORMAT_JSON}
 
     try {
       if (response?.usageMetadata) {
-         const { auth } = await import("../../lib/firebase/config");
          const userId = auth?.currentUser?.uid;
          if (userId) {
-            const { trackUsage } = await import("../usageService");
             await trackUsage(userId, {
                promptTokens: response.usageMetadata.promptTokenCount,
                responseTokens: response.usageMetadata.candidatesTokenCount,
@@ -305,10 +304,8 @@ Generate the summary strictly following the plain text format above.
 
     try {
       if (response?.usageMetadata) {
-         const { auth } = await import("../../lib/firebase/config");
          const userId = auth?.currentUser?.uid;
          if (userId) {
-            const { trackUsage } = await import("../usageService");
             await trackUsage(userId, {
                promptTokens: response.usageMetadata.promptTokenCount,
                responseTokens: response.usageMetadata.candidatesTokenCount,
@@ -386,8 +383,6 @@ export async function extractMedicalReports(
     const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
-      const { safeGeminiCall, CORE_SYSTEM_PROMPT } = await import("./promptFramework");
-
       if (import.meta.env.DEV) console.log("[Extraction] Starting report extraction for", filesData.length, "files");
 
       const response = await safeGeminiCall(() => ai.models.generateContent({

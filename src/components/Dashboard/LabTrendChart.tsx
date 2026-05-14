@@ -17,6 +17,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { LabResult, LabStatus } from "../../types/medical";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
+import { ChevronDown } from "lucide-react";
 
 interface LabTrendChartProps {
   labs?: any[];
@@ -276,17 +277,22 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
 
         {uniqueMarkers.length > 0 && (
            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-             <select
-               value={selectedMarker}
-               onChange={(e) => setSelectedMarker(e.target.value)}
-               className="appearance-none bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-medium tracking-widest rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
-             >
-               {uniqueMarkers.map((m) => (
-                 <option key={m} value={m} className="bg-[var(--color-bg)] text-[var(--color-text)]">
-                   {m}
-                 </option>
-               ))}
-             </select>
+             <div className="relative">
+               <select
+                 value={selectedMarker}
+                 onChange={(e) => setSelectedMarker(e.target.value)}
+                 className="appearance-none bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-medium tracking-widest rounded-xl px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
+               >
+                 {uniqueMarkers.map((m) => (
+                   <option key={m} value={m} className="text-slate-900 bg-white dark:text-slate-100 dark:bg-slate-900">
+                     {m}
+                   </option>
+                 ))}
+               </select>
+               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[var(--color-text-muted)]">
+                 <ChevronDown className="w-4 h-4" />
+               </div>
+             </div>
 
              <div className="flex bg-surface rounded-xl p-0.5 border border-border">
                {["3M", "6M", "1Y", "ALL"].map((tr) => (

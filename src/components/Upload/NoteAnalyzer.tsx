@@ -20,6 +20,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { saveDocument } from "../../lib/firebase/firestore";
 import { DocumentType } from "../../types/medical";
+import getAI from "../../lib/geminiClient";
 
 export default function NoteAnalyzer() {
   const [note, setNote] = useState("");
@@ -35,14 +36,12 @@ export default function NoteAnalyzer() {
   const [isAlAvailable, setIsAlAvailable] = useState(true);
 
   React.useEffect(() => {
-    import("../../lib/geminiClient").then(({ default: getAI }) => {
-      try {
-        const ai = getAI();
-        setIsAlAvailable(!!ai);
-      } catch {
-        setIsAlAvailable(false);
-      }
-    });
+    try {
+      const ai = getAI();
+      setIsAlAvailable(!!ai);
+    } catch {
+      setIsAlAvailable(false);
+    }
   }, []);
 
   const handleAnalyze = async () => {

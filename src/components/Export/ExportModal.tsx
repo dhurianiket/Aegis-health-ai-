@@ -12,6 +12,7 @@ import {
   Activity,
 } from "lucide-react";
 import { format, subDays, subMonths, subYears } from "date-fns";
+import { exportToPDF } from "../../services/pdfExportService";
 
 interface ExportModalProps {
   onClose: () => void;
@@ -57,7 +58,6 @@ export default function ExportModal({
       await new Promise((resolve) => setTimeout(resolve, 500));
       setExportProgress(60);
 
-      const { exportToPDF } = await import("../../services/pdfExportService");
       const fileName = `Health_Report_${format(new Date(), "yyyy-MM-dd")}.pdf`;
       await exportToPDF(reportId, fileName, "portrait");
 

@@ -12,6 +12,9 @@ import {
 } from "../../services/ai/contextService";
 import { COACH_SYSTEM_INSTRUCTION } from "../../services/ai/coachService";
 import { ChatMessage } from "../../types/ai";
+import getAI from "../../lib/geminiClient";
+import { safeJsonParse } from "../../utils/aiUtils";
+import { trackUsage } from "../../services/usageService";
 
 interface ChatCoachProps {
   externalOpen?: boolean;
@@ -40,14 +43,12 @@ export default function ChatCoach({
   const { user } = useAuth();
 
   useEffect(() => {
-    import("../../lib/geminiClient").then(({ default: getAI }) => {
-      try {
-        const ai = getAI();
-        setIsAlAvailable(!!ai);
-      } catch {
-        setIsAlAvailable(false);
-      }
-    });
+    try {
+      const ai = getAI();
+      setIsAlAvailable(!!ai);
+    } catch {
+      setIsAlAvailable(false);
+    }
   }, []);
   const { activeProfile } = useProfile();
   const [contextStats, setContextStats] = useState({ meds: 0, reports: 0 });
@@ -132,7 +133,6 @@ export default function ChatCoach({
     abortControllerRef.current = controller;
 
     try {
-      const getAI = (await import("../../lib/geminiClient")).default;
       const ai = getAI();
       if (!ai) {
         throw new Error("AI features are temporarily unavailable (API key missing).");
@@ -185,14 +185,12 @@ ${context}`;
       if (controller.signal.aborted) return;
       
       if (finalUsage && user?.uid) {
-         import("../../services/usageService").then(({ trackUsage }) => {
-            trackUsage(user.uid, {
-               promptTokens: finalUsage.promptTokenCount,
-               responseTokens: finalUsage.candidatesTokenCount,
-               totalTokens: finalUsage.totalTokenCount,
-               feature: 'chat'
-            }).catch(console.error);
-         });
+         trackUsage(user.uid, {
+            promptTokens: finalUsage.promptTokenCount,
+            responseTokens: finalUsage.candidatesTokenCount,
+            totalTokens: finalUsage.totalTokenCount,
+            feature: 'chat'
+         }).catch(console.error);
       }
 
       // POST-RESPONSE GUARDRAIL
@@ -218,7 +216,6 @@ ${context}`;
                 responseMimeType: "application/json"
               }
             });
-            const { safeJsonParse } = await import("../../utils/aiUtils");
             const filterData = safeJsonParse<any>(filterRes.text, { isDiagnosis: false });
             if (filterData.isDiagnosis) {
                finalText = filterData.safeText || (finalText + "\n\n*(Note: Please consult a healthcare professional for a formal diagnosis.)*");
