@@ -169,6 +169,9 @@ export default function LandingPage() {
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
               Your health data is <br/><span className="text-slate-500 font-mono tracking-tighter">a foreign language.</span>
             </h1>
+            <p className="text-lg md:text-xl text-slate-400 mt-4 max-w-2xl mx-auto font-light">
+              Raw lab reports are messy, confusing, and hard to read.
+            </p>
           </motion.div>
 
           {/* Phase 2 Copy */}
@@ -177,8 +180,11 @@ export default function LandingPage() {
             style={{ opacity: copy2Opacity, y: copy2Y }}
           >
             <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
-              Aegis translates chaos <br className="md:hidden" /><span className="text-[#20C997]">into clarity.</span>
+              Upload. Extract. <br className="md:hidden" /><span className="text-[#20C997]">Understand.</span>
             </h2>
+            <p className="text-lg md:text-xl text-slate-400 mt-4 max-w-2xl mx-auto font-light">
+              Aegis Health AI translates clinical chaos into a clear, visual story of your health over time.
+            </p>
           </motion.div>
 
           {/* Morphing Central Object */}
@@ -247,7 +253,7 @@ export default function LandingPage() {
                     <Activity className="w-4 h-4 text-[#10B981]" />
                   </div>
                   <h3 className="font-semibold text-white tracking-wide">Kidney Function</h3>
-                  <span className="ml-auto px-2 py-1 rounded-md bg-[#10B981]/20 text-[#10B981] text-[10px] font-bold tracking-wider">OPTIMAL</span>
+                  <span className="ml-auto px-2 py-1 rounded-md bg-[#10B981]/20 text-[#10B981] text-[10px] font-bold tracking-wider">NORMAL</span>
                 </div>
                 {/* Animated bar */}
                 <div className="h-2 w-full bg-[#0A192F] rounded-full overflow-hidden shadow-inner">
@@ -256,7 +262,13 @@ export default function LandingPage() {
                     style={{ width: useTransform(smoothProgress, [0.7, 0.8], ["0%", "85%"]) }}
                   />
                 </div>
-                <div className="mt-3 text-slate-400 text-xs font-light">eGFR 112 • Creatinine 0.8</div>
+                <div className="mt-3 flex justify-between items-center text-xs">
+                  <span className="text-slate-400 font-light">eGFR 112 • Creatinine 0.8</span>
+                  <Activity className="w-3 h-3 text-[#10B981] opacity-50" />
+                </div>
+                <p className="mt-2 text-xs text-slate-500 font-light leading-relaxed">
+                  Your kidney function is within the healthy range. Keep staying hydrated to maintain these optimal levels.
+                </p>
               </div>
 
               <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl relative overflow-hidden group shrink-0">
@@ -274,7 +286,13 @@ export default function LandingPage() {
                     style={{ width: useTransform(smoothProgress, [0.75, 0.85], ["0%", "60%"]) }}
                   />
                 </div>
-                <div className="mt-3 text-slate-400 text-xs font-light">LDL-C 125 mg/dL • Up 10% from last year</div>
+                <div className="mt-3 flex justify-between items-center text-xs">
+                  <span className="text-slate-400 font-light text-[#F59E0B]">LDL-C 125 mg/dL</span>
+                  <TrendingUp className="w-3 h-3 text-[#F59E0B]" />
+                </div>
+                <p className="mt-2 text-xs text-slate-500 font-light leading-relaxed">
+                  Your 'bad' cholesterol is slightly elevated and trending upward. Consider discussing dietary changes with your doctor.
+                </p>
               </div>
 
               <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl relative overflow-hidden group shrink-0">
@@ -284,7 +302,7 @@ export default function LandingPage() {
                     <AlertCircle className="w-4 h-4 text-[#EF4444]" />
                   </div>
                   <h3 className="font-semibold text-white tracking-wide">Vitamin D</h3>
-                  <span className="ml-auto px-2 py-1 rounded-md bg-[#EF4444]/20 text-[#EF4444] text-[10px] font-bold tracking-wider">DEFICIENT</span>
+                  <span className="ml-auto px-2 py-1 rounded-md bg-[#EF4444]/20 text-[#EF4444] text-[10px] font-bold tracking-wider">ABNORMAL</span>
                 </div>
                 <div className="h-2 w-full bg-[#0A192F] rounded-full overflow-hidden shadow-inner">
                   <motion.div 
@@ -292,11 +310,20 @@ export default function LandingPage() {
                     style={{ width: useTransform(smoothProgress, [0.8, 0.9], ["0%", "15%"]) }}
                   />
                 </div>
-                <div className="mt-3 text-[#EF4444] text-xs font-medium">18 ng/mL • Action required</div>
+                <div className="mt-3 flex justify-between items-center text-xs">
+                  <span className="text-[#EF4444] font-medium">18 ng/mL</span>
+                  <AlertCircle className="w-3 h-3 text-[#EF4444]" />
+                </div>
+                <p className="mt-2 text-xs text-slate-500 font-light leading-relaxed">
+                  Your levels indicate a deficiency. Supplementation may be needed to support immune function and bone health.
+                </p>
               </div>
 
               <div className="mt-4 md:mt-8 flex flex-col items-center md:items-start gap-3 md:gap-4 text-center md:text-left shrink-0 pb-4">
-                <h3 className="text-xl md:text-3xl font-bold tracking-tight">Decoded. Secure. Yours.</h3>
+                <h3 className="text-2xl md:text-3xl font-bold tracking-tight">Your report, visualized.</h3>
+                <p className="text-sm md:text-base text-slate-400 max-w-md font-light leading-relaxed">
+                  Instantly see what is normal, borderline, and abnormal, with clear human explanations and long-term trend tracking.
+                </p>
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
