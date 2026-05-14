@@ -92,7 +92,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                  extractedValues.push({
                     ...o,
                     markerName: o.marker || o.testName,
-                    date: o.date || doc.date || doc.createdAt?.toDate?.()?.toISOString()
+                    date: o.date || doc.date || (typeof doc.createdAt === 'string' ? doc.createdAt : (doc.createdAt as any)?.toDate?.()?.toISOString())
                  });
               });
            });

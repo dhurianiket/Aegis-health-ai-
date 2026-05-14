@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { getAllUsersUsage } from "../../services/usageService";
 import {
   ShieldAlert,
@@ -27,6 +27,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { version } from "../../../package.json";
+import SkeletonLoader from "../ui/SkeletonLoader";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8A2BE2"];
 
@@ -94,9 +95,20 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="animate-spin text-[var(--color-primary)]">
-          <Zap className="w-8 h-8" />
+      <div className="max-w-7xl mx-auto space-y-8 pb-16">
+        <SkeletonLoader className="h-10 w-64 mb-8" />
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <SkeletonLoader className="h-24 rounded-2xl" />
+          <SkeletonLoader className="h-24 rounded-2xl" />
+          <SkeletonLoader className="h-24 rounded-2xl" />
+          <SkeletonLoader className="h-24 rounded-2xl" />
+          <SkeletonLoader className="h-24 rounded-2xl" />
+          <SkeletonLoader className="h-24 rounded-2xl" />
+        </div>
+        <SkeletonLoader className="h-64 rounded-3xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonLoader className="h-64 rounded-3xl" />
+          <SkeletonLoader className="h-64 rounded-3xl" />
         </div>
       </div>
     );

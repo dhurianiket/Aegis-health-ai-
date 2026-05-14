@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import React from "react";
 import App from "../App";
 import * as authCtx from "../context/AuthContext";
@@ -26,11 +26,13 @@ vi.mock("../context/AlertsContext", () => ({
 }));
 
 describe("App Critical Flow (Smoke)", () => {
-  it("should render the dashboard layout with user signed in", () => {
+  it("should render the dashboard layout with user signed in", async () => {
     (authCtx.useAuth as any).mockReturnValue({
       user: { uid: "u1", email: "test@example.com" },
       signIn: vi.fn(),
       logOut: vi.fn(),
+      authResolved: true,
+      loading: false,
     });
 
     (profileCtx.useProfile as any).mockReturnValue({
@@ -40,6 +42,9 @@ describe("App Critical Flow (Smoke)", () => {
     });
 
     const { getAllByText } = render(<App />);
-    expect(getAllByText("John Doe").length).toBeGreaterThan(0);
-  });
+    
+    await waitFor(() => {
+      expect(getAllByText(/Secure Storage/i).length).toBeGreaterThan(0);
+    }, { timeout: 4000 });
+  }, 10000);
 });

@@ -50,8 +50,14 @@ export default function ChatCoach({
     });
   }, []);
   const { activeProfile } = useProfile();
-
-  // Local state for chat management
+  const [contextStats, setContextStats] = useState({ meds: 0, reports: 0 });
+  useEffect(() => {
+    if (isOpen && user && activeProfile) {
+      getPatientContext(user.uid, activeProfile).then(ctx => {
+        setContextStats({ meds: ctx.medications?.length || 0, reports: ctx.labHistory?.length || 0 });
+      }).catch(console.error);
+    }
+  }, [isOpen, user, activeProfile]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamedText, setStreamedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -136,17 +142,30 @@ export default function ChatCoach({
       const context = formatContextForPrompt(patientData);
       
       const historyItems = messages
-        .filter((m) => m.role !== "system")
+        .filter((m) => m.role !== "system" && (m.role as string) !== "context_note")
         .map((m) => ({
           role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
           parts: [{ text: m.content }],
         }));
 
+      const sysInstruction = `You are Aegis Health AI. Today's date is ${new Date().toISOString().split("T")[0]}. 
+Clinical Context is provided below. 
+
+STRICT RULES:
+1. NEVER invent or guess medications, conditions, or lab results.
+2. If data is missing or uncertain, state clearly: "I don't have that information in your profile."
+3. Prefer manually entered medications over extracted ones.
+4. If the user says a medication or result is "wrong", acknowledge it, do not repeat the incorrect data, and say: "I may be using outdated or incorrectly extracted data. Please update your records in the Medications/Profile section, or tell me the correct information and I will use that for our conversation."
+5. Be concise, empathetic, and always add a disclaimer to consult a doctor.
+
+Clinical Context:
+${context}`;
+
       const chat = ai.chats.create({
         model: "gemini-2.5-flash",
         history: historyItems,
         config: {
-          systemInstruction: `You are Aura AI. Today's date is ${new Date().toISOString().split("T")[0]}. You have access to the patient's active medications, lab history, and profile. Use the medications list when answering questions like 'My medicines' or 'Any interactions?'. If the medications list is empty, state that directly.\n\nClinical Context:\n${context}`,
+          systemInstruction: sysInstruction,
           temperature: 0.2,
         }
       });
@@ -294,11 +313,18 @@ export default function ChatCoach({
                   <h3 id="chat-title" className="section-title">
                     Aura AI
                   </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${isAlAvailable ? 'bg-[var(--color-primary)] animate-pulse' : 'bg-red-500'}`} />
-                    <span className="label-caps !text-[10px]">
-                      {isAlAvailable ? 'Clinical Engine Active' : 'Neural Link Offline'}
-                    </span>
+                  <div className="flex flex-col mt-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-1.5 h-1.5 rounded-full ${isAlAvailable ? 'bg-[var(--color-primary)] animate-pulse' : 'bg-red-500'}`} />
+                      <span className="label-caps !text-[10px]">
+                        {isAlAvailable ? 'Clinical Engine Active' : 'Neural Link Offline'}
+                      </span>
+                    </div>
+                    {isAlAvailable && contextStats.reports > 0 && (
+                      <span className="text-[10px] text-muted mt-1">
+                        Aware of {contextStats.meds} meds, {contextStats.reports} recent data points
+                      </span>
+                    )}
                   </div>
                 </div>
                 <button

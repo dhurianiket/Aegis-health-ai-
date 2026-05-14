@@ -95,13 +95,16 @@ export default function Dashboard({
       setIsSyncing(true);
       setLoading(true);
       try {
-        // Fetch in parallel but don't block the whole UI if possible
-        // We'll show partial data as it arrives or just show the layout
-        const [scores, insights, documents] = await Promise.all([
+        // Fetch in parallel, but handle rejections individually so one failure doesn't block the rest
+        const [scoresResult, insightsResult, documentsResult] = await Promise.allSettled([
           getHealthScores(user.uid, activeProfile?.id),
           getLatestInsights(user.uid, activeProfile?.id),
           getDocuments(user.uid, activeProfile?.id),
         ]);
+        
+        const scores = scoresResult.status === 'fulfilled' ? scoresResult.value : [];
+        const insights = insightsResult.status === 'fulfilled' ? insightsResult.value : [];
+        const documents = documentsResult.status === 'fulfilled' ? documentsResult.value : [];
         
         const docs = (documents || []) as MedicalDocument[];
         // Aggregate all lab_values across documents by marker name

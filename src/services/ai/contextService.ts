@@ -26,18 +26,23 @@ export const getPatientContext = async (
   ]);
 
   // Extract from documents if possible
-  const docMeds: any[] = [];
   const docSbars: string[] = [];
   const docDates: string[] = [];
-  
+  const parsedMeds: any[] = [];
+
+  // A) Manual Medications
+  (medications || []).forEach(m => {
+     parsedMeds.push({ ...m, source: 'manual', priority: 1 });
+  });
+
   if (documents) {
     documents.forEach((doc: MedicalDocument) => {
       if (doc.date) docDates.push(new Date(doc.date).toLocaleDateString());
       if (doc.extractedData) {
         if (Array.isArray(doc.extractedData.medications)) {
           doc.extractedData.medications.forEach((m: any) => {
-            if (typeof m === 'string') docMeds.push({ name: m });
-            else docMeds.push(m);
+            const medObj = typeof m === 'string' ? { name: m } : m;
+            parsedMeds.push({ ...medObj, source: 'report', priority: 3, date: doc.date });
           });
         }
         if (doc.extractedData.sbar) {
@@ -47,8 +52,16 @@ export const getPatientContext = async (
     });
   }
 
-  // Generate real-time alerts based on latest data
-  const allMedications = [...(medications || []), ...docMeds];
+  // Deduplicate by name, keeping highest priority first
+  const deduplicatedMeds = new Map();
+  parsedMeds.sort((a,b) => a.priority - b.priority).forEach(m => {
+     const key = m.name?.toLowerCase().trim();
+     if (key && !deduplicatedMeds.has(key)) {
+        deduplicatedMeds.set(key, m);
+     }
+  });
+
+  const allMedications = Array.from(deduplicatedMeds.values());
   const alerts = getConsolidatedAlerts(labHistory || [], allMedications);
 
   return {

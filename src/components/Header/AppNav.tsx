@@ -250,6 +250,17 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
               Profile
             </span>
           </button>
+          {user?.email === "dhurianiket@gmail.com" && (
+             <button
+              onClick={() => handleTabChange("admin")}
+              className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative"
+            >
+              <ShieldAlert className="w-8 h-8 text-[var(--color-primary)]" />
+              <span className="font-medium text-sm text-[var(--color-text)]">
+                Admin Console
+              </span>
+            </button>
+          )}
         </div>
       </BottomSheet>
     </>

@@ -268,6 +268,7 @@ export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3, f
             if (isQuotaError && attempt < retries) {
                 const backoff = attempt === 1 ? 1000 : attempt === 2 ? 2000 : 4000;
                 console.info(JSON.stringify({ event: "gemini_backoff", attempt, delayMs: backoff, status: "429" }));
+                console.count('gemini_backoff');
                 await new Promise(resolve => setTimeout(resolve, backoff));
                 continue;
             }

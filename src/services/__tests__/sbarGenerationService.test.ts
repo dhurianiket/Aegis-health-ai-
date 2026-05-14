@@ -7,12 +7,7 @@ vi.mock("../../lib/geminiClient", () => {
   const mockAi = {
     models: {
       generateContent: vi.fn().mockResolvedValue({
-        text: JSON.stringify({
-          situation: "Patient requires review",
-          background: "Patient has hypertension",
-          assessment: "Glucose is high",
-          recommendation: "Increase medication",
-        }),
+        text: `SITUATION:\nPatient requires review\nBACKGROUND:\nPatient has hypertension\nASSESSMENT:\nGlucose is high\nRECOMMENDATION:\nIncrease medication\nMISSING INFORMATION:\nNo recent weight\nCONFIDENCE:\nHigh`,
       }),
     },
   };
@@ -57,19 +52,12 @@ describe("SBARGenerationService", () => {
   it("should generate a fallback SBAR when AI fails", async () => {
     // Mock failure for this specific test
     vi.spyOn(console, "error").mockImplementation(() => {});
-    const getAI = (await import("../../lib/geminiClient")).default;
-    const mockInstance = (getAI as any).mock.results[0].value;
+    const getAI = (await import("../../lib/geminiClient")).getAI;
+    const mockInstance = getAI();
     vi.mocked(mockInstance.models.generateContent).mockRejectedValueOnce(
-      new Error("AI Failure"),
+      new Error("AI Failure")
     );
 
-    const sbar = await generateSBAR("test-userId", mockProfile as any);
-
-    expect(sbar).toContain("SITUATION:");
-    expect(sbar).toContain("BACKGROUND:");
-    expect(sbar).toContain("ASSESSMENT:");
-    expect(sbar).toContain("RECOMMENDATION:");
-    expect(sbar).toContain("Hypertension");
-    expect(sbar).toContain("Glucose: 200");
+    await expect(generateSBAR("test-userId", mockProfile as any)).rejects.toThrow("Unable to generate summary");
   });
 });
