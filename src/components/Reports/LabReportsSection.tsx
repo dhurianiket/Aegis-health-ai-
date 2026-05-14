@@ -56,6 +56,14 @@ function ReportCard({ report }: { report: LabReport }) {
   const observationCount = observations.length;
   const status = report.status || "complete";
 
+  const downloadSummary = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report.extractedData, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `aegis_extraction_${report.fileName || 'report'}.json`);
+    dlAnchorElem.click();
+  };
+
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-4 hover:shadow-md transition-all">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -81,17 +89,21 @@ function ReportCard({ report }: { report: LabReport }) {
         </div>
 
         <div className="flex sm:flex-col gap-2 justify-end sm:items-end w-full sm:w-auto">
-          {report.fileUrl && (
+          {report.fileUrl ? (
              <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-lg border border-border transition-colors">
                 <Download size={14} /> PDF
              </a>
+          ) : (
+             <button onClick={downloadSummary} className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-lg border border-border transition-colors">
+                <Download size={14} /> JSON
+             </button>
           )}
           {observationCount > 0 && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-[var(--color-primary)] hover:underline focus:outline-none bg-primary/5 rounded-lg transition-colors border border-primary/10"
+              className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-[var(--color-primary)] hover:underline focus:outline-none bg-[var(--color-primary)]/5 rounded-lg transition-colors border border-[var(--color-primary)]/10"
             >
-              {expanded ? "Hide Results" : "View Table"}
+              {expanded ? "Hide Results" : "View Details"}
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
           )}

@@ -161,16 +161,27 @@ export async function getMedications(userId: string, profileId?: string) {
 
 export async function saveLabResult(
   userId: string,
-  labData: Partial<LabResult>,
+  labData: Partial<LabResult> & { id?: string },
 ) {
   const pathString = `users/${userId}/labResults`;
   try {
-    const docRef = await addDoc(collection(db, "users", userId, "labResults"), sanitizeData({
-      ...labData,
-      userId,
-      createdAt: serverTimestamp(),
-    }));
-    return docRef.id;
+    let docRef;
+    if (labData.id) {
+      docRef = doc(db, "users", userId, "labResults", labData.id);
+      await setDoc(docRef, sanitizeData({
+        ...labData,
+        userId,
+        createdAt: serverTimestamp(),
+      }));
+      return labData.id;
+    } else {
+      docRef = await addDoc(collection(db, "users", userId, "labResults"), sanitizeData({
+        ...labData,
+        userId,
+        createdAt: serverTimestamp(),
+      }));
+      return docRef.id;
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, pathString);
   }
@@ -178,16 +189,27 @@ export async function saveLabResult(
 
 export async function saveMedication(
   userId: string,
-  medData: Partial<Medication>,
+  medData: Partial<Medication> & { id?: string },
 ) {
   const pathString = `users/${userId}/medications`;
   try {
-    const docRef = await addDoc(collection(db, "users", userId, "medications"), sanitizeData({
-      ...medData,
-      userId,
-      createdAt: serverTimestamp(),
-    }));
-    return docRef.id;
+    let docRef;
+    if (medData.id) {
+      docRef = doc(db, "users", userId, "medications", medData.id);
+      await setDoc(docRef, sanitizeData({
+        ...medData,
+        userId,
+        createdAt: serverTimestamp(),
+      }));
+      return medData.id;
+    } else {
+      docRef = await addDoc(collection(db, "users", userId, "medications"), sanitizeData({
+        ...medData,
+        userId,
+        createdAt: serverTimestamp(),
+      }));
+      return docRef.id;
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, pathString);
   }

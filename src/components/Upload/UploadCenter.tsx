@@ -267,8 +267,12 @@ export default function UploadCenter({
           // Status 1: Uploading...
           setProcessingStep(0);
           
+          // Generate deterministic ID
+          const stableIdString = `${item.file.name}_${item.file.size}_${item.file.lastModified}`;
+          const stableId = `doc_${btoa(unescape(encodeURIComponent(stableIdString))).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32)}`;
+          
           // Step 1: uploadBytes
-          const storagePath = `users/${user.uid}/documents/${crypto.randomUUID()}_${item.file.name.replace(/[^a-zA-Z0-9.\-]/g, '_')}`;
+          const storagePath = `users/${user.uid}/documents/${stableId}_${item.file.name.replace(/[^a-zA-Z0-9.\-]/g, '_')}`;
           const fileRef = ref(storage, storagePath);
           await uploadBytes(fileRef, item.file);
 
@@ -319,6 +323,7 @@ export default function UploadCenter({
 
           // Step 5: setDoc with extracted data
           const docId = await saveDocument(user.uid, {
+            id: stableId,
             fileName: result.fileName,
             type: result.document_type || "Unknown Type",
             date: result.date || new Date().toISOString(),
@@ -341,13 +346,30 @@ export default function UploadCenter({
             for (let i = 0; i < result.lab_values.length; i++) {
               const lab = result.lab_values[i];
               await saveLabResult(user.uid, {
-                docId: docId || "unknown",
+                id: `${stableId}_lab_${i}`,
+                docId: stableId,
                 date: lab.date,
                 markerName: lab.marker || "Unknown",
                 value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
                 unit: lab.unit || "",
                 referenceRange: lab.reference_range || "",
                 status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                profileId: activeProfile?.id,
+              });
+            }
+          }
+
+          if (result.medications && result.medications.length > 0) {
+            for (let i = 0; i < result.medications.length; i++) {
+              const med = result.medications[i];
+              const medName = typeof med === 'string' ? med : (med.name || "Unknown");
+              await saveMedication(user.uid, {
+                id: `${stableId}_med_${i}`,
+                name: medName,
+                dosage: typeof med === 'object' ? (med.dose || med.dosage || "") : "",
+                frequency: typeof med === 'object' ? (med.frequency || "") : "",
+                status: MedicationStatus.ACTIVE,
+                startDate: result.date || new Date().toISOString().split("T")[0],
                 profileId: activeProfile?.id,
               });
             }
