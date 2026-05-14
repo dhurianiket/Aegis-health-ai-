@@ -28,6 +28,8 @@ class GlobalErrorBoundary extends Component<{children: ReactNode}, {hasError: bo
   }
 }
 
+import { BrowserRouter } from "react-router-dom";
+
 const rootElement = document.getElementById("root");
 
 if (rootElement) {
@@ -35,17 +37,19 @@ if (rootElement) {
   root.render(
     <StrictMode>
       <GlobalErrorBoundary>
-        <AuthProvider>
-          <ToastProvider>
-            <ProfileProvider>
-              <AlertsProvider>
-                <RemindersProvider>
-                  <App />
-                </RemindersProvider>
-              </AlertsProvider>
-            </ProfileProvider>
-          </ToastProvider>
-        </AuthProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <ToastProvider>
+              <ProfileProvider>
+                <AlertsProvider>
+                  <RemindersProvider>
+                    <App />
+                  </RemindersProvider>
+                </AlertsProvider>
+              </ProfileProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </GlobalErrorBoundary>
     </StrictMode>
   );

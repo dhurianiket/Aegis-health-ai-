@@ -1,4 +1,6 @@
 import React, { useState, Suspense, lazy, useEffect, useRef } from "react";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import LandingPage from "./components/LandingPage/LandingPage";
 import { ShieldCheck } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase/config";
@@ -86,7 +88,7 @@ const Fallback = () => (
   </div>
 );
 
-export default function App() {
+function MainApp() {
   const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
   const isFirstAuthResolution = useRef(true);
 
@@ -545,34 +547,6 @@ export default function App() {
                   </motion.div>
                 </AnimatePresence>
               )}
-              {!user && (
-                <div className="flex flex-col items-center justify-center h-full pt-16">
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="flex flex-col items-center text-center"
-                  >
-                    <div className="p-6 rounded-3xl bg-gradient-to-br from-teal-500/20 to-indigo-500/20 border border-white/10 mb-4">
-                      <ShieldCheck size={48} className="text-teal-400" strokeWidth={1.5} />
-                    </div>
-                    <h1 className="text-theme font-bold text-2xl tracking-[0.3em] mb-1">AEGIS HEALTH AI</h1>
-                    <p className="text-muted text-xs tracking-widest text-center mb-8">Your health telemetry, understood.</p>
-                    <button
-                      onClick={signIn}
-                      disabled={isSigningIn}
-                      className="flex items-center gap-2 px-8 py-3 bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 text-white rounded-[12px] text-sm font-semibold transition-all shadow-sm disabled:cursor-not-allowed"
-                    >
-                      {isSigningIn ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <LogIn className="w-4 h-4" />
-                      )}
-                      <span>{isSigningIn ? "Signing In..." : "Sign In with Google"}</span>
-                    </button>
-                  </motion.div>
-                </div>
-              )}
             </Suspense>
           </ErrorBoundary>
         </div>
@@ -738,5 +712,33 @@ export default function App() {
         </Suspense>
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  const { user, loading: authLoading } = useAuth();
+  const [splashTimeout, setSplashTimeout] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSplashTimeout(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const isLoading = authLoading || splashTimeout;
+
+  if (isLoading) {
+    return <SplashScreen />;
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={!user ? <LandingPage /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/dashboard" element={user ? <MainApp /> : <Navigate to="/" replace />} />
+      {/* 
+        Route all other existing frontend hashes to MainApp for backwards compatibility 
+        By redirecting them to /dashboard#their-path or just serving MainApp and letting the hash router logic work.
+      */}
+      <Route path="*" element={user ? <MainApp /> : <Navigate to="/" replace />} />
+    </Routes>
   );
 }
