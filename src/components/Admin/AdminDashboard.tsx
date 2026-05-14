@@ -185,104 +185,125 @@ export default function AdminDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { icon: Users, label: "Total Users", val: globalStats?.totalUsers || users.length },
-          { icon: Activity, label: "Active Today", val: globalStats?.activeUsersToday || users.filter(u => u.isActiveToday).length },
-          { icon: Activity, label: "Active This Mth", val: globalStats?.activeUsersThisMonth || users.filter(u => u.isActiveThisMonth).length },
-          { icon: FileText, label: "Total Docs", val: globalStats?.totalDocumentsUploaded || 0 },
-          { icon: Database, label: "Total Storage", val: formatBytes(globalStats?.totalStorageBytes || 0) },
-          { icon: DollarSign, label: "Est. Cost (USD)", val: `$${estimatedCost.toFixed(2)}` },
+          { icon: Users, label: "Total Users", val: globalStats?.totalUsers || users.length, desc: "Across platform" },
+          { icon: Activity, label: "Active Today", val: globalStats?.activeUsersToday || users.filter(u => u.isActiveToday).length, desc: "Last 24 hours" },
+          { icon: Activity, label: "Active This Mth", val: globalStats?.activeUsersThisMonth || users.filter(u => u.isActiveThisMonth).length, desc: "Last 30 days" },
+          { icon: FileText, label: "Total Docs", val: globalStats?.totalDocumentsUploaded || 0, desc: "Uploaded PDFs" },
+          { icon: Database, label: "Total Storage", val: formatBytes(globalStats?.totalStorageBytes || 0), desc: "Vault size" },
+          { icon: DollarSign, label: "Est. Cost (USD)", val: `$${estimatedCost.toFixed(2)}`, desc: "Gemini API spent" },
         ].map((kpi, i) => (
-          <div key={i} className="bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-surface flex flex-col gap-2">
+          <div key={i} className="bg-[var(--color-surface)] backdrop-blur-xl rounded-2xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-2">
             <div className="flex items-center gap-2 text-muted">
               <kpi.icon className="w-4 h-4" />
               <span className="text-xs font-semibold uppercase">{kpi.label}</span>
             </div>
-            <div className="text-2xl font-bold">{kpi.val}</div>
+            <div className="flex flex-col">
+               <div className="text-2xl font-bold text-theme">{kpi.val}</div>
+               {(kpi.val === 0 || kpi.val === "0 MB" || kpi.val === "$0.00") && (
+                 <span className="text-[10px] text-muted mt-1">Waiting for data...</span>
+               )}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Projections */}
-      <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-surface">
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-[var(--color-primary)]" />
-          <h2 className="text-lg font-bold">Revenue & Cost Projections</h2>
+          <h2 className="text-lg font-bold text-theme">Revenue & Cost Projections</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <div>
             <div className="text-sm text-muted">Current Spend (USD)</div>
-            <div className="text-xl font-bold">${estimatedCost.toFixed(2)}</div>
+            <div className="text-xl font-bold text-theme">${estimatedCost.toFixed(2)}</div>
           </div>
           <div>
             <div className="text-sm text-muted">Avg Cost / User (USD)</div>
-            <div className="text-xl font-bold">${avgCostPerUser.toFixed(4)}</div>
+            <div className="text-xl font-bold text-theme">${avgCostPerUser.toFixed(4)}</div>
           </div>
           <div>
             <div className="text-sm text-muted">Break-even at ₹99/m</div>
-            <div className="text-xl font-bold">{breakEven99} users</div>
+            <div className="text-xl font-bold text-theme">{breakEven99} users</div>
           </div>
           <div>
             <div className="text-sm text-muted">Break-even at ₹499/m</div>
-            <div className="text-xl font-bold">{breakEven499} users</div>
+            <div className="text-xl font-bold text-theme">{breakEven499} users</div>
           </div>
         </div>
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-surface">
+        <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Top 10 Users by Tokens</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={topUsersByTokens} layout="vertical" margin={{ left: 50 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" />
-              <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
-              <Tooltip cursor={{ fill: "transparent" }} />
-              <Bar dataKey="totalTokensUsed" fill="#0088FE" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {topUsersByTokens.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={topUsersByTokens} layout="vertical" margin={{ left: 50 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" />
+                <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
+                <Tooltip cursor={{ fill: "transparent" }} />
+                <Bar dataKey="totalTokensUsed" fill="#0088FE" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No token usage data</div>
+          )}
         </div>
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-surface">
+        <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Top 10 Users by Storage (MB)</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={topUsersByStorage.map(u => ({ ...u, mb: (u.totalStorageBytes || 0) / 1024 / 1024 }))} layout="vertical" margin={{ left: 50 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" />
-              <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
-              <Tooltip cursor={{ fill: "transparent" }} />
-              <Bar dataKey="mb" fill="#00C49F" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {topUsersByStorage.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={topUsersByStorage.map(u => ({ ...u, mb: (u.totalStorageBytes || 0) / 1024 / 1024 }))} layout="vertical" margin={{ left: 50 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" />
+                <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
+                <Tooltip cursor={{ fill: "transparent" }} />
+                <Bar dataKey="mb" fill="#00C49F" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No storage data</div>
+          )}
         </div>
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-surface">
+        <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Daily Uploads (Last 30 Days)</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={dailyUploads} margin={{ left: -20, bottom: -10 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="#FFBB28" strokeWidth={3} dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
+          {dailyUploads.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={dailyUploads} margin={{ left: -20, bottom: -10 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="count" stroke="#FFBB28" strokeWidth={3} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+             <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No uploads data</div>
+          )}
         </div>
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-surface">
+        <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Token Usage by Feature</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie data={featureTokensArray} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                {featureTokensArray.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          {featureTokensArray.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie data={featureTokensArray} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                  {featureTokensArray.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No feature usage data</div>
+          )}
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/40 shadow-xl shadow-[var(--color-primary)]/5 p-8">
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl border border-[var(--color-border)] shadow-xl shadow-black/5 p-8">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

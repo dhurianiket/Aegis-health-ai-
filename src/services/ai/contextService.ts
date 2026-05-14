@@ -87,12 +87,17 @@ export const formatContextForPrompt = (context: any): string => {
   prompt += `- Allergies: ${profile?.allergies?.join(", ") || "None reported"}\n\n`;
 
   prompt += `ACTIVE MEDICATIONS:\n`;
-  if (medications.length > 0) {
-    medications
-      .filter((m: any) => String(m.status).toLowerCase() === "active" || m.status === undefined)
-      .forEach((m: any) => {
-        prompt += `- ${m.name}: ${m.dosage || ''} ${m.frequency || ''}\n`;
-      });
+  if (medications && medications.length > 0) {
+    const activeMeds = medications.filter((m: any) => {
+      const status = String(m.status || "").toLowerCase();
+      return status === "active" || status === "current" || status === "ongoing" || m.status === undefined || m.status === null || status === "";
+    });
+    
+    const displayMeds = activeMeds.length > 0 ? activeMeds : medications;
+    
+    displayMeds.forEach((m: any) => {
+      prompt += `- ${m.name || 'Unknown Medication'}: ${m.dosage || ''} ${m.frequency || ''}\n`;
+    });
   } else {
     prompt += `- None reported\n`;
   }

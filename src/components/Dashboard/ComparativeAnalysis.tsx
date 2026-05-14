@@ -29,7 +29,14 @@ export default function ComparativeAnalysis({
     return Object.values(latest).slice(0, 4); // Take top 4
   }, [labs]);
 
-  if (latestLabs.length === 0) return null;
+  if (latestLabs.length === 0) {
+    return (
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl h-[200px] flex flex-col items-center justify-center text-muted text-sm gap-2">
+         <BarChart2 className="w-6 h-6 opacity-30 text-slate-400" />
+         <span>No comparatives available yet.</span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">

@@ -54,7 +54,14 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
     return processed;
   }, [labs]);
 
-  if (sparklinesData.length === 0) return null;
+  if (sparklinesData.length === 0) {
+    return (
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl h-[200px] flex items-center justify-center text-muted text-sm flex-col gap-2">
+         <Activity className="w-6 h-6 opacity-30 text-slate-400" />
+         <span>No trend data available yet. Need at least 2 readings.</span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">

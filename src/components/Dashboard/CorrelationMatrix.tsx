@@ -88,7 +88,12 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
   }, [labs]);
 
   if (markers.length < 2) {
-    return null;
+    return (
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl h-[200px] flex flex-col items-center justify-center text-muted text-sm gap-2">
+         <Network className="w-6 h-6 opacity-30 text-slate-400" />
+         <span>Not enough distinct markers for correlation.</span>
+      </div>
+    );
   }
 
   const getColor = (val: number) => {
