@@ -36,6 +36,7 @@ vi.mock('../src/context/AlertsContext', () => ({
 const mockAuthContextValue = {
   user: { uid: 'test-user-id' } as any,
   loading: false,
+  isSigningIn: false,
   authResolved: false, // simulating auth not resolved yet
   signIn: vi.fn(),
   logOut: vi.fn(),

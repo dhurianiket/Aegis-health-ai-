@@ -29,6 +29,18 @@ export class AIErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Report to central logger (connected to observability in production)
     logger.error("AI Component Error:", { error, errorInfo });
+    
+    const msg = error.message || "";
+    if (
+      msg.includes("Failed to fetch dynamically imported module") ||
+      msg.includes("is not a valid JavaScript MIME type") ||
+      msg.includes("Loading chunk") 
+    ) {
+      if (!sessionStorage.getItem("aegis_reloaded_from_chunk_error")) {
+        sessionStorage.setItem("aegis_reloaded_from_chunk_error", "true");
+        window.location.reload();
+      }
+    }
   }
 
   handleReset = () => {

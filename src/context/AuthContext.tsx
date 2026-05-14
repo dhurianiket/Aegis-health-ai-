@@ -11,6 +11,7 @@ import { markUserActive } from "../services/usageService";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isSigningIn: boolean;
   authResolved: boolean;
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
@@ -23,6 +24,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const signInInProgress = React.useRef(false);
   const [authResolved, setAuthResolved] = useState(false);
 
   useEffect(() => {
@@ -67,6 +70,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const signIn = async () => {
+    if (signInInProgress.current) {
+      console.log("Sign-in already in progress, ignoring duplicate request.");
+      return;
+    }
+    
+    signInInProgress.current = true;
+    setIsSigningIn(true);
     if (import.meta.env.DEV) console.log("Initiating Google Sign-In...");
     try {
       // Ensure Google provider is clean
@@ -108,15 +118,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           "Firebase API key is missing or invalid. Please check your .env.local file or Secrets panel.",
         );
       } else if (errorCode === "auth/popup-blocked") {
-        alert("The sign-in popup was blocked by your browser. Please allow popups for this site.");
-      } else if (errorCode === "auth/cancelled-popup-request") {
+        console.warn("Popup blocked. Falling back to redirect...");
+        alert("The sign-in popup was blocked. Redirecting you to sign in...");
+        try {
+          // Import conditionally or just call if imported
+          const { signInWithRedirect } = await import("firebase/auth");
+          await signInWithRedirect(auth, googleProvider);
+        } catch (redirectError) {
+          console.error("Redirect fallback failed:", redirectError);
+        }
+      } else if (errorCode === "auth/cancelled-popup-request" || errorCode === "auth/popup-closed-by-user") {
         // User closed the popup, no need for major alert
-        console.log("Sign-in popup closed by user.");
+        console.log("Sign-in popup closed by user or cancelled.");
       } else {
         alert(
-          `Failed to sign in (${errorCode || "Unknown Error"}). \n\nIf you are in the AI Studio preview, please open the app in a new tab to sign in with Google.`,
+          `Failed to sign in (${errorCode || "Unknown Error"}). \n\nIf you are in the AI Studio preview, please open the app in a new tab to sign in with Google.`
         );
       }
+    } finally {
+      setIsSigningIn(false);
+      signInInProgress.current = false;
     }
   };
 
@@ -129,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, authResolved, signIn, logOut }}>
+    <AuthContext.Provider value={{ user, loading, isSigningIn, authResolved, signIn, logOut }}>
       {children}
     </AuthContext.Provider>
   );

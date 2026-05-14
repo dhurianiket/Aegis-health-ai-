@@ -91,7 +91,7 @@ export default function App() {
   const isFirstAuthResolution = useRef(true);
 
   const [activeTab, setActiveTab] = useState("home");
-  const { user, loading: authLoading, signIn, logOut } = useAuth();
+  const { user, loading: authLoading, isSigningIn, signIn, logOut } = useAuth();
   const { profiles, activeProfile, setActiveProfile, createProfile, isLoading: profileLoading } =
     useProfile();
   const { alerts, dismissedIds, dismissAlert, unreadCount } = useAlerts();
@@ -418,10 +418,15 @@ export default function App() {
             ) : (
               <button
                 onClick={signIn}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-[12px] text-sm font-semibold transition-all shadow-sm ml-1"
+                disabled={isSigningIn}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 text-white rounded-[12px] text-sm font-semibold transition-all shadow-sm ml-1 disabled:cursor-not-allowed"
               >
-                <LogIn className="w-4 h-4" />
-                <span className="hidden sm:inline">Sign In</span>
+                {isSigningIn ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <LogIn className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">{isSigningIn ? "Signing In..." : "Sign In"}</span>
               </button>
             )}
           </div>
@@ -555,10 +560,15 @@ export default function App() {
                     <p className="text-muted text-xs tracking-widest text-center mb-8">Your health telemetry, understood.</p>
                     <button
                       onClick={signIn}
-                      className="flex items-center gap-2 px-8 py-3 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-[12px] text-sm font-semibold transition-all shadow-sm"
+                      disabled={isSigningIn}
+                      className="flex items-center gap-2 px-8 py-3 bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 text-white rounded-[12px] text-sm font-semibold transition-all shadow-sm disabled:cursor-not-allowed"
                     >
-                      <LogIn className="w-4 h-4" />
-                      <span>Sign In with Google</span>
+                      {isSigningIn ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <LogIn className="w-4 h-4" />
+                      )}
+                      <span>{isSigningIn ? "Signing In..." : "Sign In with Google"}</span>
                     </button>
                   </motion.div>
                 </div>
