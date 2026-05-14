@@ -11,17 +11,14 @@ Aegis is a personal health management Progressive Web App (PWA) that allows user
 - **AI:** Google Gemini API (@google/genai) routed via Cloudflare AI Gateway
 - **CI/CD:** GitHub Actions → auto-deploys on push to main branch
 
-## Key Files
-- `src/lib/geminiClient.ts` — Gemini API client initialization with Cloudflare gateway baseUrl
-- `src/services/ai/gemini.ts` — AI service functions (SBAR generation, lab extraction)
-- `src/services/ai/promptFramework.ts` — all Gemini prompts + safeGeminiCall() with exponential backoff
-- `src/components/Upload/UploadCenter.tsx` — PDF upload, extraction, vault sync with hasSynced lock
-- `src/components/AIHelper/ChatCoach.tsx` — Aura AI health coach chat
-- `src/components/Dashboard/LabTrendChart.tsx` — Recharts lab trend charts
-- `src/components/Dashboard/TrendSparklines.tsx` — Recharts sparkline charts
-- `src/services/pdfExportService.ts` — PDF export service
-- `src/vite-env.d.ts` — TypeScript environment variable declarations
-- `.env.example` — environment variable documentation
+## Operational Guidance for Agents (CRITICAL)
+
+- **Deployment Truth Rule:** Local code changes are NOT production fixes until GitHub Actions or a manual Firebase deploy has completed successfully.
+- **Verification Rule:** Do not mark issues as fixed based on build/lint passes alone; require live runtime verification and fresh console output.
+- **Admin Access Rule:** `collectionGroup` usage reads (and similar global queries) must be strictly role-gated. They must fail gracefully for non-admin users without causing uncaught promise rejections or UI crashes.
+- **React Hooks Rule:** Hooks (`useState`, `useEffect`, etc.) must never be declared conditionally or after an early return. They must always be called unconditionally at the top level of the component.
+- **Firebase Hosting Rule:** Auth popup issues and Cross-Origin-Opener-Policy (COOP) header changes in `firebase.json` require a full hosting redeploy before they take effect in production. Always document and verify these changes post-deploy.
+- **Debugging Rule:** When fixing bugs, always record the exact root cause, the specific files changed, and the precise post-deploy validation steps taken to confirm the fix in production.
 
 ## Environment Variables
 All secrets are stored in GitHub Actions Secrets and never hardcoded:
@@ -43,6 +40,12 @@ The approved AI model for this project must always be a currently supported Gemi
 7. Chart components use ResizeObserver with debounce={50} — never render with width/height of -1
 8. Maximum file size for upload is 4MB — rejected at drop with toast notification
 
+## Strict AI System Guardrails
+
+* **Model Standardization:** The approved AI model for this project must always be a currently supported Gemini Flash model verified against the active project account. Currently using `gemini-2.5-flash`. Do not change model strings unless the currently active model is confirmed broken and the replacement model is verified available. If a model returns 404 or unavailable, check the Gemini models list for the active account before editing code.
+* **Storage Integrity:** Do not alter Firebase Storage upload paths, file listing logic, or Security Rules. Per-user file isolation is a strict architectural requirement.
+* **PDF Workflow Protection:** Do not switch PDF ingestion away from Firebase Storage unless the owner explicitly approves an architecture change. The PDF upload/download feature is required for usability and must remain in place.
+
 ## Data Structure (Firestore)
 ```
 users/
@@ -53,83 +56,7 @@ users/
     medications/  ← medication records
 ```
 
-## When Making Changes
-- Read the relevant file before editing
-- Make minimal focused changes — do not refactor unrelated code
-- Confirm build passes after every change
-- Summarize exactly which files were changed and why
-
 ## Additions: Tests, CI, Backoff logging
-
-### ADDITION — Tests, CI smoke, and backoff logging
-
-#### 1) Unit test — AuthContext + Dashboard regression
-- Purpose: Prevent regressions where Dashboard fetches before auth initializes.
-- File to add: tests/auth-dash.spec.ts (or update existing test folder)
-- Test intent: confirm `authResolved` exported and Dashboard does not call Firestore when false.
-
-Example (pseudo-code):
-```markdown
-Test: AuthContext exposes authResolved and Dashboard waits
-- Mock onAuthStateChanged to delay initial callback.
-- Render AuthContext provider and Dashboard.
-- Assert: Dashboard shows loading spinner while authResolved is false.
-- After resolving auth, assert: Dashboard fires a Firestore read once.
-```
-
-#### 2) CI smoke E2E — nightly deploy check
-- Purpose: Run a minimal end-to-end smoke test after deploy (or nightly) to catch regressions early.
-- Add a GitHub Actions job `ci-smoke.yml` that:
-  - Runs on: push to main (optional) and schedule: nightly
-  - Steps:
-    1. Checkout repo
-    2. Use Node.js LTS
-    3. Install deps: npm ci
-    4. Start build or hit deployed URL directly
-    5. Run Playwright/Cypress test that: signs in with a test Google test account, uploads a tiny PDF, waits for report tile, asserts presence
-  - On failure: open an issue and notify owners via Slack/email (webhook)
-
-Example job summary (for docs):
-```markdown
-ci-smoke.yml job:
-- name: Nightly smoke
-- runs-on: ubuntu-latest
-- schedule: cron(0 1 * * *)  # 01:00 UTC nightly
-- steps: checkout -> npm ci -> run smoke tests -> report
-```
-
-#### 3) Backoff logging / metric hook
-- Purpose: Surface retry/backoff events to logs so you can monitor rate limits without deep log combing.
-- Change location: src/services/ai/promptFramework.ts (inside safeGeminiCall)
-- Behavior to add:
-  - On each retry, emit a structured console.debug / console.info:
-    - { event: "gemini_backoff", attempt: n, delayMs, errorCode (if present) }
-  - Optionally increment an in-process counter: `console.count('gemini_backoff')` or push to analytics when available.
-- Example log line:
-```markdown
-{ "event":"gemini_backoff", "attempt":2, "delayMs":2000, "status":"429" }
-```
-
-#### Implementation notes
-- Keep tests lightweight (one happy-path, one auth-race regression) to avoid flakiness.
-- Use a single test account and secrets stored in GitHub Secrets for CI only; never commit credentials.
-- The CI job should run against the deployed URL (aegishealthai.co.in) to validate the full production flow, not only the local build.
-
-## Strict AI System Guardrails
-
-* **Model Standardization:** The approved AI model for this project must always be a currently supported Gemini Flash model verified against the active project account. Currently using `gemini-2.5-flash`. Do not change model strings unless the currently active model is confirmed broken and the replacement model is verified available. If a model returns 404 or unavailable, check the Gemini models list for the active account before editing code.
-* **Storage Integrity:** Do not alter Firebase Storage upload paths, file listing logic, or Security Rules. Per-user file isolation is a strict architectural requirement.
-* **PDF Workflow Protection:** Do not switch PDF ingestion away from Firebase Storage unless the owner explicitly approves an architecture change. The PDF upload/download feature is required for usability and must remain in place.
-
-## Current-State Safety Rules for AGENTS.md
-
-- Only use the model currently approved in the project.
-- If a model fails, check the Gemini models list and account access first.
-- Do not global-replace model strings unless the current model is confirmed broken and the replacement is verified.
-- Keep the model string consistent across the repo.
-- Always verify `import.meta.env.VITE_GEMINI_API_KEY` is present and valid before debugging AI failures.
-- If Cloudflare AI Gateway is enabled, confirm the SDK is using the correct gateway configuration before making broader changes.
-- Do not touch Firebase config, environment files, Firestore rules, Storage rules, or deployment files unless the task explicitly requires it.
-- Keep fixes minimal when the app is already stable.
-- After any AI-layer change, run lint and build, then test ChatCoach, SBAR generation, PDF extraction, and specialist analysis.
-- If a change affects production behavior, prefer a small patch and owner review rather than a broad refactor.
+- Unit tests required for AuthContext regression preventions.
+- CI smoke E2E nightly deploy checks guard against regressions.
+- `gemini_backoff` structure logging required for rate-limit visibility.

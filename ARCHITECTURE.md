@@ -1,45 +1,45 @@
 # Architecture
 
 ## Technical Stack
-
 - **Frontend**: React 18, Vite, Tailwind CSS, Motion (framer-motion)
 - **Backend/Database**: Firebase (Firestore)
 - **Authentication**: Firebase Auth (Google Sign-In)
 - **AI Integration**: Gemini API (`@google/genai`)
 
-## Directory Structure
+## Auth and Role Model
+- Users authenticate via Firebase. Their `uid` is used across all Firestore interactions.
+- The `users/{uid}` document contains the definitive user `role` (e.g., `"admin"`).
+- Admin-only flows must explicitly verify this role before executing privileged reads or operations.
 
-- `src/components`: UI components organized by feature (Dashboard, Upload, Timeline, Specialists, Medications)
-- `src/context`: React Context providers for global state (AuthContext, ProfileContext)
-- `src/services/ai`: AI integration logic (Gemini API calls for extracting data and generating insights)
-- `src/lib/firebase`: Firebase configuration and Firestore helper functions
-- `src/types`: Global TypeScript definitions
+## Admin Analytics Data Flow
+- The Admin dashboard utilizes `collectionGroup` queries to aggregate usage analytics across the platform.
+- These queries execute only **after** verifying the user's admin role explicitly.
+- Non-admin users are shown a gracefully restricted UI rather than causing unhandled promise rejections.
 
-## Data Flow
+## Usage Tracking Behavior
+- Background usage tracking mechanisms (like global stats increments) are designed to be explicitly best-effort.
+- Write operations that fail due to standard Security Rules strictly catch and silence their errors, ensuring end-user flows (like ChatCoach interactions) are never interrupted or broken by analytics tracking.
 
-1. **Authentication**: Users authenticate via Firebase. Their `uid` is used across all Firestore interactions.
-2. **Profile Management**: A user can manage multiple profiles (e.g., themselves, a child). A global `ProfileContext` tracks the `activeProfile`.
-3. **Data Ingestion**:
-   - Files are uploaded and processed client-side.
-   - The contents are structured and sent to Gemini for extraction.
-   - Extracted data (documents, labs, medications) is saved to Firestore under the current user and active profile.
-4. **Data Visualization & Analysis**:
-   - The UI components fetch their respective data from Firestore based on the active profile.
-   - The `SpecialistLounge` orchestrates analysis by fetching a cross-section of data and sending it to Gemini for insight generation.
+## Frontend Stability Rules
+- **React Hook Ordering**: Hooks (`useState`, `useEffect`, etc.) must be declared at the highest scope. Conditional early-return statements must never appear before all hook declarations are complete to prevent React minified errors.
+- Chart components utilize `ResizeObserver` with debounce patterns to guarantee performance and stability.
 
-## Data Ingestion & File Handling
+## Hosting and Auth Popup Behavior
+- Firebase Hosting provisions response headers configured via `firebase.json`.
+- Missing or misconfigured headers (like Cross-Origin-Opener-Policy) can negatively impact OAuth providers such as the Google Auth popup.
+- Header changes must be officially redeployed to production infrastructure before taking effect on deployed domains.
 
-**PDF Ingestion & Storage:**
-PDF ingestion utilizes Firebase Storage for secure, per-user file retention. All user documents are uploaded to the path `users/{uid}/documents/{fileName}`. The app generates download URLs for future user access.
-
-**Workflow & Access Rules:**
-- The PDF upload and download feature is a core part of the live user workflow and must remain in place.
-- Uploads are strictly handled through Firebase Storage (do not use Base64-to-Gemini-only ingestion).
-- Each authenticated user only sees and accesses their own uploaded PDFs.
-- File access is strictly controlled by Firebase Security Rules ensuring `request.auth.uid == uid`.
+## Data Structure (Firestore)
+```
+users/
+  {uid}/
+    documents/
+      {docId}/    ← lab report documents
+    profile/      ← user profile data
+    medications/  ← medication records
+    usage/        ← per-user tracking analytics
+```
 
 ## Security
-
-- Firestore rules validate all payloads.
-- Environment variables securely handle API keys.
-- Authentication dictates reading and writing limits.
+- Firestore rules validate all payloads, restrict read paths to `request.auth.uid`, and provision administrative views based on `isAdmin()`.
+- Access and environment variables cleanly safeguard API keys.

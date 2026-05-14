@@ -29,16 +29,39 @@ import {
 import { version } from "../../../package.json";
 import SkeletonLoader from "../ui/SkeletonLoader";
 
+import { useAuth } from "../../context/AuthContext";
+
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8A2BE2"];
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [globalStats, setGlobalStats] = useState<any>(null);
   const [dailyUploads, setDailyUploads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMSG, setErrorMSG] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) {
+         setLoading(false);
+         return;
+      }
+      
+      // Enforce role check
+      try {
+        const userDoc = await getDoc(doc(db, `users/${user.uid}`));
+        if (!userDoc.exists() || userDoc.data().role !== "admin") {
+          setErrorMSG("You do not have permission to view the admin dashboard.");
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+          setErrorMSG("Failed to verify permissions.");
+          setLoading(false);
+          return;
+      }
+
       try {
         // 1. Fetch Users
         const usersData = await getAllUsersUsage();
@@ -114,6 +137,15 @@ export default function AdminDashboard() {
           <SkeletonLoader className="h-64 rounded-3xl" />
           <SkeletonLoader className="h-64 rounded-3xl" />
         </div>
+      </div>
+    );
+  }
+
+  if (errorMSG) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-8 pb-16 flex flex-col items-center justify-center pt-20">
+         <h2 className="text-2xl text-red-400 font-medium mb-2">Access Restricted</h2>
+         <p className="text-gray-400">{errorMSG}</p>
       </div>
     );
   }

@@ -142,6 +142,7 @@ export default function SpecialistLounge() {
   const [initialLoading, setInitialLoading] = useState(true);
 
   const [dateRangeStr, setDateRangeStr] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setInitialLoading(false), 800);
@@ -157,9 +158,6 @@ export default function SpecialistLounge() {
   if (initialLoading) {
     return <SpecialistsSkeleton />;
   }
-
-
-  const [error, setError] = useState<string | null>(null);
 
   const runAnalysis = async () => {
     if (!activeSpecialist) return;
