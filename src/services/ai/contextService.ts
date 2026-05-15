@@ -32,7 +32,12 @@ export const getPatientContext = async (
 
   // A) Manual Medications
   (medications || []).forEach(m => {
-     parsedMeds.push({ ...m, source: 'manual', priority: 1 });
+     parsedMeds.push({ 
+       ...m, 
+       name: m.name || m.medicationName || m.drugName || "Unknown Medication",
+       source: 'manual', 
+       priority: 1 
+     });
   });
 
   if (documents) {

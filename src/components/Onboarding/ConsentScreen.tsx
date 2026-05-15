@@ -78,6 +78,12 @@ export default function ConsentScreen({
 
   useEffect(() => {
     let isMounted = true;
+
+    if (localStorage.getItem("aegis_consent_granted") === "true") {
+      onConsentChecked(true);
+      return;
+    }
+
     async function checkConsent() {
       try {
         const consentsRef = collection(db, "users", userId, "consents");
@@ -86,6 +92,7 @@ export default function ConsentScreen({
 
         if (isMounted) {
           if (!querySnapshot.empty) {
+            localStorage.setItem("aegis_consent_granted", "true");
             onConsentChecked(true);
           } else {
             onConsentChecked(false);
@@ -127,6 +134,7 @@ export default function ConsentScreen({
           items: Object.keys(agreements),
         });
 
+        localStorage.setItem("aegis_consent_granted", "true");
         logAuditEvent(userId, "GRANT_CONSENT", "initial_consent_v2.0");
         clearTimeout(safetyTimeout);
         onConsentGranted();

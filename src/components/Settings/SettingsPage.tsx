@@ -19,15 +19,19 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState("light");
 
   React.useEffect(() => {
-    const currentTheme =
-      document.documentElement.getAttribute("data-theme") || "light";
+    const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
     setTheme(currentTheme);
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", newTheme);
   };
 
   const handleEmergencyMode = async () => {

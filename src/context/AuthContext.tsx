@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   User,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
@@ -30,6 +32,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     let isMounted = true;
+
+    getRedirectResult(auth).then((result) => {
+      if (result?.user) {
+        if (isMounted) {
+          setUser(result.user);
+          setLoading(false);
+          setAuthResolved(true);
+        }
+      }
+    }).catch((error) => {
+      console.error("Error with redirect sign-in:", error);
+    });
+
     const timeout = setTimeout(() => {
       if (isMounted) {
         console.warn("Auth resolution timeout reached.");
@@ -89,8 +104,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       
       console.log("Current Origin:", window.location.origin);
       
-      await signInWithPopup(auth, googleProvider);
-      console.log("Sign-in successful.");
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        await signInWithPopup(auth, googleProvider);
+        console.log("Sign-in successful.");
+      }
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
       

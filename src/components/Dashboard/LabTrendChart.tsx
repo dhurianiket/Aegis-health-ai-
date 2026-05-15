@@ -160,9 +160,15 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     try {
       if (!selectedMarker) return [];
 
+      const safeGetTime = (dateStr: any) => {
+        if (!dateStr) return 0;
+        const ts = new Date(dateStr).getTime();
+        return isNaN(ts) ? new Date(String(dateStr).replace(/-/g, '/')).getTime() || 0 : ts;
+      };
+
       const filtered = labResults
-        .filter((r) => r.markerName === selectedMarker && r.actualDate && !isNaN(new Date(r.actualDate).getTime()))
-        .sort((a, b) => new Date(a.actualDate).getTime() - new Date(b.actualDate).getTime());
+        .filter((r) => r.markerName === selectedMarker && r.actualDate)
+        .sort((a, b) => safeGetTime(a.actualDate) - safeGetTime(b.actualDate));
 
       const now = new Date().getTime();
       let cutoff = 0;
@@ -170,13 +176,16 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       else if (timeRange === "6M") cutoff = now - 180 * 24 * 60 * 60 * 1000;
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
-      const ranged = filtered.filter((r) => new Date(r.actualDate).getTime() >= cutoff);
+      const ranged = filtered.filter((r) => {
+        const t = safeGetTime(r.actualDate);
+        return t === 0 || t >= cutoff;
+      });
 
       return ranged.map((r) => {
         let refMin = undefined;
         let refMax = undefined;
         const refRange = r.referenceRange || r.reference_range;
-        const numericValue = parseFloat(r.numeric_value ?? r.valueCanonical ?? r.valueOriginal ?? r.value);
+        const numericValue = parseFloat(String(r.numeric_value || r.display_value || r.value).replace(/[^0-9.-]/g, ''));
 
         if (refRange) {
           const rangeMatch = refRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
@@ -204,9 +213,10 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
         else if (st === 'low') flagCol = 'orange';
 
+        const safeTime = safeGetTime(r.actualDate);
         return {
-          timestamp: new Date(r.actualDate).getTime(),
-          date: new Date(r.actualDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          timestamp: safeTime,
+          date: safeTime ? new Date(safeTime).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : String(r.actualDate),
           value: !isNaN(numericValue) ? numericValue : undefined,
           unit: r.unitCanonical || r.unit,
           refMin: !isNaN(refMin as number) ? refMin : undefined,

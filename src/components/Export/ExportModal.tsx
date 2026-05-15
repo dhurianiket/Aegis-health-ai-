@@ -23,6 +23,7 @@ interface ExportModalProps {
     medications: any[];
     recentTrends: any[];
     doctorNotes: string[];
+    aiClinicalSummary?: string;
   };
 }
 
@@ -250,7 +251,7 @@ function HealthReportPrintable({
               <Activity className="text-white w-6 h-6" />
             </div>
             <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
-              AURA HEALTH
+              AEGIS HEALTH AI
             </h1>
           </div>
           <p className="text-slate-500 font-medium text-lg">
@@ -302,6 +303,19 @@ function HealthReportPrintable({
           </div>
         </div>
       </div>
+
+      {context.aiClinicalSummary && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold border-b-2 border-slate-200 pb-3 mb-6 uppercase tracking-widest text-indigo-700">
+            Clinical AI Summary (SBAAR)
+          </h2>
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+            <div className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">
+              {context.aiClinicalSummary}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-6 mb-12">
         <h2 className="text-2xl font-bold border-b-2 border-slate-200 pb-3 mb-6 uppercase tracking-widest text-indigo-700">

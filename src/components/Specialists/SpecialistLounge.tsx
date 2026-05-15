@@ -167,14 +167,14 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[800px] max-h-[85vh]">
         {/* Sidebar */}
-        <div className="lg:col-span-4 bg-white/5 border border-white/10 rounded-3xl p-4 overflow-y-auto hidden-scrollbar">
+        <div className="lg:col-span-4 bg-white/5 border border-white/10 rounded-3xl p-4 overflow-x-auto lg:overflow-y-auto hidden-scrollbar">
           <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 px-2">Select Specialist</h3>
-          <div className="space-y-2">
+          <div className="flex flex-row lg:flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
               <button
                 key={s.id}
                 onClick={() => setActiveSpecialist(s.id)}
-                className={`w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
+                className={`flex-shrink-0 w-48 lg:w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
                   activeSpecialist === s.id 
                   ? 'bg-indigo-600 text-white shadow-lg' 
                   : 'hover:bg-white/10 text-slate-400'

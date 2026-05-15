@@ -134,7 +134,8 @@ export const exportToPDF = async (
     const dataUrl = await toPng(clone, {
       backgroundColor: "#ffffff",
       quality: 1.0,
-      pixelRatio: 4, // Higher density for laser-sharp text and charts
+      pixelRatio: 2, // Higher density for laser-sharp text and charts
+      skipAutoScale: true,
       width: targetWidth,
       cacheBust: true,
       fontEmbedCSS: "", // Skip fetching external CSS/fonts
