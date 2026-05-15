@@ -23,7 +23,29 @@ export interface Conversation {
   title?: string;
 }
 
-export interface PatientContext {
+export type SpecialistId = 
+  | 'cardiologist'
+  | 'endocrinologist'
+  | 'neurologist'
+  | 'gastroenterologist'
+  | 'pulmonologist'
+  | 'nephrologist'
+  | 'psychiatrist'
+  | 'dermatologist'
+  | 'orthopedist'
+  | 'oncologist';
+
+export interface SpecialistProfile {
+  id: SpecialistId;
+  name: string;
+  displayName: string;
+  specialty: string;
+  description: string;
+  expertise: string[];
+  guidelines: string[];
+  systemPrompt: string;
+}
+
   profile: UserProfile;
   labHistory: LabResult[];
   medications: Medication[];
