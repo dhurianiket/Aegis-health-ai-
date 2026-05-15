@@ -79,33 +79,33 @@ export default function LandingPage() {
 
   return (
     <ErrorBoundary>
-      <div className="bg-[#0A192F] text-white min-h-screen font-sans overflow-x-hidden selection:bg-emerald-500/30">
+      <div className="bg-[#0A192F] text-white min-h-screen font-sans selection:bg-emerald-500/30">
         
         {/* Persistent Sticky Navbar */}
         <nav className="fixed w-full z-50 top-0 left-0">
-          <div className="absolute inset-0 bg-[#0A192F]/80 backdrop-blur-xl border-b border-white/5" />
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between relative z-10 transition-all duration-300">
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
-              <span className="font-bold border-l border-white/20 pl-3 text-sm md:text-lg tracking-[0.2em] text-emerald-400">
+          <div className="absolute inset-0 bg-[#0A192F]/70 backdrop-blur-md border-b border-white/5" />
+          <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-2 md:gap-3">
+              <ShieldCheck className="w-5 h-5 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
+              <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400">
                 AEGIS
               </span>
             </div>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn}
-                className="px-4 md:px-5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 items-center justify-center gap-2"
               >
                 <Activity className="w-3 md:w-4 h-3 md:h-4" />
-                <span className="hidden xs:inline">UPLOAD</span>
+                <span>UPLOAD</span>
               </button>
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn}
-                className="px-5 md:px-6 py-2 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full text-[10px] md:text-xs font-bold tracking-wide transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-w-[80px]"
+                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-[10px] md:text-xs font-black tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               >
-                {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "LOGIN"}
+                {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "TRY FREE"}
               </button>
             </div>
           </div>
@@ -196,8 +196,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* 2. STICKY SCROLL STORY */}
-        <div ref={stickyRef} className="relative w-full h-[250vh]">
+        <div ref={stickyRef} className="relative w-full h-[300vh]">
           <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden">
             
             <div className="absolute inset-0 bg-[#0A192F] pointer-events-none -z-20" />
@@ -318,6 +317,21 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-24 text-center">
+              <div className="mb-16 inline-grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto border-t border-b border-white/5 py-12">
+                <div className="px-4">
+                  <h4 className="text-white font-bold mb-2">HIPAA Ready</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-tighter">Your data is stored with enterprise-grade encryption and privacy controls.</p>
+                </div>
+                <div className="px-4 border-y md:border-y-0 md:border-x border-white/5">
+                  <h4 className="text-white font-bold mb-2">Clinical Precision</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-tighter">Powered by high-context clinical models with 99.8% extraction accuracy.</p>
+                </div>
+                <div className="px-4">
+                  <h4 className="text-white font-bold mb-2">Zero Data Sale</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-tighter">We never sell your health information to insurers or third parties. Period.</p>
+                </div>
+              </div>
+
               <p className="text-emerald-400 font-medium mb-4 tracking-widest text-xs uppercase">Your health, decoded.</p>
               <h3 className="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight max-w-2xl mx-auto leading-tight">
                 Stop guessing. Start knowing.
@@ -343,14 +357,14 @@ export default function LandingPage() {
                   &copy; {new Date().getFullYear()} Aegis Health AI. All rights reserved.
                 </p>
                 <p className="text-[10px] text-slate-600 tracking-[0.2em] font-mono">
-                  VERSION 2.4 / SECURE ENCRYPTION ACTIVE
+                  VERSION 1.6.0 / SECURE ENCRYPTION ACTIVE
                 </p>
               </div>
 
               <div className="text-center md:text-right">
                 <p className="text-xs text-slate-400 tracking-wide mb-2 flex items-center justify-center md:justify-end gap-2">
                   <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  Designed & Developed by <span className="text-white font-medium">Aniket Dhuri</span>
+                  Developed by <span className="text-white font-medium">Aniket Dhuri</span>
                 </p>
                 <p className="text-[10px] text-slate-500 flex items-center justify-center md:justify-end gap-1 font-medium italic">
                   Powered by <span className="text-slate-300">Gemini AI Studio</span>
