@@ -43,7 +43,6 @@ export default function LandingPage() {
     offset: ["start start", "end start"]
   });
 
-  const coreBlur = useTransform(heroProgress, [0, 0.8], [20, 0]);
   const coreScale = useTransform(heroProgress, [0, 0.8], [0.9, 1.1]);
 
   // Sticky Scroll Story (Chaos to Clarity)
@@ -52,22 +51,26 @@ export default function LandingPage() {
     target: stickyRef,
     offset: ["start start", "end end"]
   });
-  const stickyProgress = useSpring(stickyRaw, { stiffness: 60, damping: 20 });
-
-  // 1. Chaos: Fades out from 0% to 25%
-  const chaosOpacity = useTransform(stickyProgress, [0, 0.25], [1, 0]);
   
-  // 2. Bridge: Fades in at 10%, peaks at 35%-50%, fades out by 65%
-  const bridgeOpacity = useTransform(stickyProgress, [0.1, 0.35, 0.5, 0.65], [0, 1, 1, 0]);
-  const bridgeScale = useTransform(stickyProgress, [0.1, 0.35], [0.8, 1]);
+  // Smooth the scroll
+  const stickyProgress = useSpring(stickyRaw, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
-  // 3. Shield: Fades in at 45% (while bridge is still visible). Moves up starting at 65%.
-  const shieldOpacity = useTransform(stickyProgress, [0.45, 0.65], [0, 1]);
-  const shieldY = useTransform(stickyProgress, [0.65, 0.85], ["0%", "-35%"]);
+  // Phase 1: Chaos (0 to 25%)
+  const chaosOpacity = useTransform(stickyProgress, [0, 0.2, 0.3], [1, 1, 0]);
+  const chaosScale = useTransform(stickyProgress, [0, 0.3], [1, 1.2]);
 
-  // 4. Cards: Fades in and slides up starting at 65% (matching the shield's movement). Stays at 1.0 to the end.
+  // Phase 2: Decoding Bridge (20% to 50%)
+  const bridgeOpacity = useTransform(stickyProgress, [0.2, 0.35, 0.45, 0.6], [0, 1, 1, 0]);
+  const bridgeScale = useTransform(stickyProgress, [0.2, 0.5], [0.8, 1.1]);
+
+  // Phase 3: Shield / Processing Core (45% to End)
+  const shieldOpacity = useTransform(stickyProgress, [0.45, 0.6], [0, 1]);
+  const shieldY = useTransform(stickyProgress, [0.65, 0.9], ["0vh", "-30vh"]);
+  const shieldScale = useTransform(stickyProgress, [0.45, 0.6, 0.9], [0.6, 1, 0.7]);
+
+  // Phase 4: Validated Insights (65% to End)
   const insightOpacity = useTransform(stickyProgress, [0.65, 0.9, 1], [0, 1, 1]);
-  const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], [50, 0, 0]);
+  const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], ["20vh", "5vh", "5vh"]);
 
   const handleSignIn = async () => {
     try {
@@ -116,7 +119,7 @@ export default function LandingPage() {
           {/* Background subtle glow */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-          <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full relative z-10">
+          <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 lg:gap-12 items-center w-full relative z-10 transform-gpu">
             {/* Left Content */}
             <div className="max-w-2xl">
               <motion.h1 
@@ -133,10 +136,21 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="text-lg md:text-xl text-slate-400 mb-10 font-light max-w-lg leading-relaxed"
+                className="text-lg md:text-xl text-slate-400 mb-8 font-light max-w-lg leading-relaxed"
               >
                 Understand what is normal, what needs attention, and what changed over time. Your personal clinical AI assistant.
               </motion.p>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 text-xs md:text-sm font-medium text-emerald-400/80"
+              >
+                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> HIPAA Compliant</div>
+                <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Instant Analysis</div>
+                <div className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> AI-Powered</div>
+              </motion.div>
               
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -147,14 +161,17 @@ export default function LandingPage() {
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
-                  className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-[#0A192F] rounded-full font-bold tracking-wide transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2"
+                  className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-[#0A192F] rounded-full font-bold tracking-wide transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex flex-col items-center justify-center"
                 >
-                  {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "START FOR FREE"}
+                  <div className="flex items-center gap-2 text-base">
+                    {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "START FOR FREE"}
+                  </div>
+                  <span className="text-[10px] font-semibold opacity-75 mt-0.5 tracking-wider">NO CREDIT CARD REQUIRED</span>
                 </button>
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
-                  className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-white/10 tracking-wide transition-all flex items-center justify-center gap-2"
+                  className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-white/10 tracking-wide transition-all flex items-center justify-center gap-2 relative shadow-lg"
                 >
                   VIEW DEMO <ArrowRight className="w-4 h-4" />
                 </button>
@@ -162,11 +179,10 @@ export default function LandingPage() {
             </div>
 
             {/* Right Content: Floating Health Core */}
-            <div className="relative h-[400px] md:h-[600px] flex items-center justify-center pointer-events-none origin-center">
+            <div className="relative h-[400px] md:h-[600px] flex items-center justify-center pointer-events-none origin-center mt-24 lg:mt-0">
               <motion.div 
-                className="absolute w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-tr from-emerald-500/20 to-teal-400/20 border border-emerald-500/30 flex items-center justify-center will-change-[transform,filter]"
+                className="absolute w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-tr from-emerald-500/20 to-teal-400/20 border border-emerald-500/30 flex items-center justify-center will-change-transform"
                 style={{
-                  filter: useTransform(coreBlur, v => `blur(${v}px)`),
                   scale: coreScale,
                 }}
               >
@@ -196,8 +212,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div ref={stickyRef} className="relative w-full h-[200vh]">
-          <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden">
+        <div ref={stickyRef} className="relative w-full h-[250vh]">
+          <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-clip transform-gpu will-change-transform">
             
             <div className="absolute inset-0 bg-[#0A192F] pointer-events-none -z-20" />
 
@@ -206,65 +222,105 @@ export default function LandingPage() {
 
             {/* LAYER 1: Raw Report Blur (Chaos) */}
             <motion.div 
-              className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none will-change-[opacity]"
+              className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none will-change-transform transform-gpu"
               style={{ 
-                opacity: chaosOpacity, 
+                opacity: chaosOpacity,
+                scale: chaosScale,
               }}
             >
-              <div className="text-center opacity-40 font-mono text-sm md:text-lg tracking-widest text-emerald-500/50 filter blur-[2px]">
-                <p>MCHC 33.5 RDW 14.2 PLT 150</p>
-                <p>GLUCOSE 110 H BUN 15</p>
-                <p>CHOLESTEROL TOTAL: 240 mg/dL</p>
+              <div className="relative w-full h-full max-w-5xl mx-auto flex items-center justify-center overflow-hidden">
+                {/* Floating Scattered Data */}
+                <div className="absolute top-[25%] left-[5%] md:left-[15%] text-emerald-500/40 font-mono text-xl md:text-3xl filter blur-[1px] md:blur-[2px] whitespace-nowrap">WBC 12.5 H</div>
+                <div className="absolute top-[65%] left-[10%] md:left-[25%] text-rose-500/30 font-mono text-2xl md:text-5xl filter blur-[2px] md:blur-[4px] whitespace-nowrap">RBC 4.2 L</div>
+                <div className="absolute top-[20%] right-[5%] md:right-[20%] text-emerald-500/20 font-mono text-lg md:text-2xl whitespace-nowrap">HGB 12.1</div>
+                <div className="absolute bottom-[20%] right-[10%] md:right-[25%] text-amber-500/40 font-mono text-3xl md:text-4xl filter blur-[1px] md:blur-[3px] whitespace-nowrap">PLT 150</div>
+                <div className="absolute top-[45%] left-[2%] md:left-[10%] text-slate-400/50 font-mono text-lg filter blur-[1px] md:blur-[2px] whitespace-nowrap">MCHC 33.5</div>
+                <div className="absolute bottom-[40%] right-[2%] md:right-[15%] text-rose-500/20 font-mono text-xl md:text-3xl filter blur-[2px] md:blur-[5px] whitespace-nowrap">GLUCOSE 110</div>
+
+                {/* Center Core Text */}
+                <div className="text-center font-mono text-sm md:text-2xl tracking-[0.3em] md:tracking-[0.5em] text-emerald-400/80 font-bold z-10 filter drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">
+                  READING CLINICAL VECTORS...
+                </div>
               </div>
             </motion.div>
 
             {/* LAYER 2: BRIDGE (Fills the dead zone) */}
             <motion.div 
               style={{ opacity: bridgeOpacity, scale: bridgeScale }}
-              className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none"
+              className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none will-change-transform transform-gpu"
             >
-              <h2 className="text-2xl md:text-4xl font-light tracking-widest text-emerald-400 animate-pulse text-center px-4">
-                DECODING CLINICAL DATA...
-              </h2>
+              <div className="relative flex flex-col items-center">
+                <div className="absolute inset-0 bg-emerald-500/20 blur-[60px] rounded-full scale-150" />
+                <h2 className="text-xl md:text-4xl font-light tracking-[0.2em] md:tracking-[0.4em] text-emerald-400 animate-pulse text-center px-4 relative z-10">
+                  EXTRACTING INSIGHTS
+                </h2>
+                <div className="h-0.5 w-32 md:w-48 bg-gradient-to-r from-transparent via-emerald-400 to-transparent mt-4 opacity-50" />
+              </div>
             </motion.div>
 
             {/* LAYER 3: The Shield/Health Core */}
             <motion.div 
-              className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none will-change-[transform,opacity,filter]"
+              className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none will-change-transform transform-gpu"
               style={{ 
                 opacity: shieldOpacity,
                 y: shieldY,
+                scale: shieldScale,
               }}
             >
-              <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center backdrop-blur-xl shadow-[0_0_40px_rgba(16,185,129,0.2)]">
-                <ShieldCheck className="w-20 h-20 md:w-24 md:h-24 text-emerald-400" strokeWidth={1.5} />
+              <div className="relative w-32 h-32 md:w-56 md:h-56 rounded-full bg-[#0A192F] border-2 border-emerald-500/50 flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+                <div className="absolute inset-0 rounded-full border border-emerald-400/20 animate-[spin_10s_linear_infinite]" />
+                <div className="absolute inset-2 rounded-full border border-dashed border-emerald-500/30 animate-[spin_15s_linear_infinite_reverse]" />
+                <ShieldCheck className="w-16 h-16 md:w-24 md:h-24 text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" strokeWidth={1.5} />
               </div>
             </motion.div>
 
             {/* LAYER 4: The Dashboard Cards / Insights */}
             <motion.div 
-              className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none px-4 w-full max-w-md mx-auto"
+              className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none px-4 w-full max-w-lg mx-auto will-change-transform transform-gpu"
               style={{ 
                 opacity: insightOpacity, 
                 y: insightY,
               }}
             >
-              <div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-col gap-3 md:gap-4 w-full">
                 {/* Emerald Card */}
-                <div className="p-5 rounded-2xl bg-[#0A192F]/80 backdrop-blur-md border border-emerald-500/30 flex items-start gap-4 shadow-lg">
-                  <Activity className="text-emerald-400 mt-1 shrink-0" />
+                <div className="p-4 md:p-5 rounded-2xl bg-[#0A192F]/90 backdrop-blur-xl border border-emerald-500/40 flex items-start gap-3 md:gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transform transition-transform hover:scale-[1.02]">
+                  <div className="p-2 md:p-3 bg-emerald-500/10 rounded-xl shrink-0">
+                    <Activity className="text-emerald-400 w-5 h-5 md:w-6 md:h-6" />
+                  </div>
                   <div>
-                    <h3 className="text-emerald-400 font-medium">Hemoglobin Optimal</h3>
-                    <p className="text-sm text-slate-400 mt-1 leading-relaxed">Levels are perfectly balanced, ensuring optimal oxygen flow.</p>
+                    <h3 className="text-emerald-400 font-bold text-sm md:text-base tracking-wide">Hemoglobin Optimal</h3>
+                    <p className="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">Levels are perfectly balanced, ensuring optimal oxygen flow across vitals.</p>
                   </div>
                 </div>
 
                 {/* Amber Card */}
-                <div className="p-5 rounded-2xl bg-[#0A192F]/80 backdrop-blur-md border border-amber-500/30 flex items-start gap-4 shadow-lg">
-                  <AlertCircle className="text-amber-400 mt-1 shrink-0" />
+                <div className="p-4 md:p-5 rounded-2xl bg-[#0A192F]/90 backdrop-blur-xl border border-amber-500/40 flex items-start gap-3 md:gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transform transition-transform hover:scale-[1.02]">
+                  <div className="p-2 md:p-3 bg-amber-500/10 rounded-xl shrink-0">
+                    <AlertCircle className="text-amber-400 w-5 h-5 md:w-6 md:h-6" />
+                  </div>
                   <div>
-                    <h3 className="text-amber-400 font-medium">HbA1c Borderline</h3>
-                    <p className="text-sm text-slate-400 mt-1 leading-relaxed">Slightly elevated. Monitor dietary sugar and activity.</p>
+                    <h3 className="text-amber-400 font-bold text-sm md:text-base tracking-wide">HbA1c Borderline</h3>
+                    <p className="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">Slightly elevated relative to baseline. Monitor dietary sugar and activity.</p>
+                  </div>
+                </div>
+
+                {/* Info Table / List */}
+                <div className="p-4 md:p-5 rounded-2xl bg-[#0A192F]/90 backdrop-blur-xl border border-white/10 flex flex-col gap-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transform transition-transform hover:scale-[1.02]">
+                  <div className="text-sm font-semibold tracking-wide text-slate-300">CLINICAL VECTORS</div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-xs md:text-sm">
+                      <span className="text-slate-400">Total Cholesterol</span>
+                      <span className="text-amber-400 font-mono">240 mg/dL ↑</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs md:text-sm border-t border-white/5 pt-2">
+                      <span className="text-slate-400">Vitamin D</span>
+                      <span className="text-rose-400 font-mono">18 ng/mL ↓</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs md:text-sm border-t border-white/5 pt-2">
+                      <span className="text-slate-400">WBC Count</span>
+                      <span className="text-emerald-400 font-mono">6.5 K/uL ✓</span>
+                    </div>
                   </div>
                 </div>
               </div>
