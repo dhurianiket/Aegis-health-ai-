@@ -59,17 +59,17 @@ export default function LandingPage() {
   const chaosScale = useTransform(stickyProgress, [0, 0.25], [1, 0.9]);
   
   // Phase 2: BRIDGE (Fills the dead zone)
-  const bridgeOpacity = useTransform(stickyProgress, [0.15, 0.35, 0.5], [0, 1, 0]);
-  const bridgeScale = useTransform(stickyProgress, [0.15, 0.35], [0.9, 1]);
+  const bridgeOpacity = useTransform(stickyProgress, [0.15, 0.3, 0.45, 0.55], [0, 1, 1, 0]);
+  const bridgeScale = useTransform(stickyProgress, [0.15, 0.3], [0.9, 1]);
 
   // Phase 3: Shield (Health Core)
-  const shieldOpacity = useTransform(stickyProgress, [0.25, 0.45], [0, 1]);
-  const shieldY = useTransform(stickyProgress, [0.5, 0.7], ["0%", "-40%"]);
-  const shieldScale = useTransform(stickyProgress, [0.5, 0.7], [1, 0.8]);
+  const shieldOpacity = useTransform(stickyProgress, [0.15, 0.35], [0, 1]);
+  const shieldY = useTransform(stickyProgress, [0.45, 0.6], ["0%", "-35%"]);
+  const shieldScale = useTransform(stickyProgress, [0.45, 0.6], [1, 0.8]);
 
   // Phase 4: Dashboard Cards / Insights (The Reveal)
-  const insightOpacity = useTransform(stickyProgress, [0.55, 0.8], [0, 1]);
-  const insightY = useTransform(stickyProgress, [0.55, 0.8], [50, 0]);
+  const insightOpacity = useTransform(stickyProgress, [0.45, 0.6], [0, 1]);
+  const insightY = useTransform(stickyProgress, [0.45, 0.6], [40, 0]);
 
   const handleSignIn = async () => {
     try {
@@ -250,7 +250,7 @@ export default function LandingPage() {
 
             {/* LAYER 4: The Dashboard Cards / Insights */}
             <motion.div 
-              className="absolute inset-0 flex flex-col items-center justify-center mt-32 z-30 w-full max-w-5xl px-6 pointer-events-none"
+              className="absolute inset-0 flex flex-col items-center justify-center z-30 w-full max-w-5xl px-6 pointer-events-none"
               style={{ 
                 opacity: insightOpacity, 
                 y: insightY,
