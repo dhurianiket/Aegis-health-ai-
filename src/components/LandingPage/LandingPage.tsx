@@ -55,22 +55,17 @@ export default function LandingPage() {
   const stickyProgress = useSpring(stickyRaw, { stiffness: 60, damping: 20 });
 
   // Phase 1: Chaos Texts
-  const chaosOpacity = useTransform(stickyProgress, [0, 0.15, 0.25], [0, 1, 0]);
-  const chaosScale = useTransform(stickyProgress, [0, 0.25], [0.8, 1.1]);
+  const chaosOpacity = useTransform(stickyProgress, [0, 0.3], [1, 0]);
+  const chaosScale = useTransform(stickyProgress, [0, 0.3], [1, 0.9]);
   
   // Phase 2: Shield (Health Core) movement in Sticky Section
-  // On desktop: moves left. On mobile: moves UP.
-  const shieldY = useTransform(stickyProgress, [0.3, 0.5], [0, isMobile ? -140 : 0]);
-  const shieldScale = useTransform(stickyProgress, [0.3, 0.5], [1, isMobile ? 0.65 : 1]);
-  const shieldOpacity = useTransform(stickyProgress, [0.2, 0.3], [0, 1]);
+  const shieldOpacity = useTransform(stickyProgress, [0.1, 0.4], [0, 1]);
+  const shieldY = useTransform(stickyProgress, [0.4, 0.6], ["0%", "-35%"]);
+  const shieldScale = useTransform(stickyProgress, [0.4, 0.6], [1, 0.8]);
 
-  // Phase 2: Highlighted Values (Faux Lab Report format)
-  const reportOpacity = useTransform(stickyProgress, [0.35, 0.45, 0.65], [0, 1, 0]);
-  const reportY = useTransform(stickyProgress, [0.35, 0.65], [isMobile ? 100 : 50, isMobile ? 0 : -50]);
-
-  // Phase 3: Clear Insight
-  const insightOpacity = useTransform(stickyProgress, [0.6, 0.75, 1], [0, 1, 1]);
-  const insightY = useTransform(stickyProgress, [0.6, 0.75], [isMobile ? 100 : 30, 0]);
+  // Phase 3: Dashboard Cards / Insights
+  const insightOpacity = useTransform(stickyProgress, [0.45, 0.75], [0, 1]);
+  const insightY = useTransform(stickyProgress, [0.45, 0.75], [100, 0]);
 
   const handleSignIn = async () => {
     try {
@@ -200,32 +195,22 @@ export default function LandingPage() {
         </div>
 
         {/* 2. STICKY SCROLL STORY */}
-        <div ref={stickyRef} className="relative w-full h-[400vh]">
+        <div ref={stickyRef} className="relative w-full h-[300vh]">
           <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden">
             
             <div className="absolute inset-0 bg-[#0A192F] pointer-events-none -z-20" />
 
             {/* Cinematic Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0A192F] via-transparent to-[#0A192F] z-10 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0A192F] via-transparent to-[#0A192F] z-50 pointer-events-none" />
 
-            {/* SHARED ASSET: The Shield/Health Core (Responsive Animation) */}
+            {/* LAYER 1: Raw Report Blur (Chaos) */}
             <motion.div 
-              className="absolute z-30 flex items-center justify-center will-change-[transform,opacity,filter]"
+              className="absolute inset-0 flex flex-wrap content-center justify-center gap-4 p-8 z-10 will-change-[transform,opacity]"
               style={{ 
-                opacity: shieldOpacity,
-                scale: shieldScale,
-                y: shieldY,
+                opacity: chaosOpacity, 
+                scale: chaosScale,
+                pointerEvents: useTransform(chaosOpacity, v => v > 0 ? "auto" : "none") as any
               }}
-            >
-              <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center backdrop-blur-sm">
-                <ShieldCheck className="w-20 h-20 md:w-24 md:h-24 text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]" />
-              </div>
-            </motion.div>
-
-            {/* PHASE 1: Raw Report Blur (Chaos) */}
-            <motion.div 
-              className="absolute inset-0 flex flex-wrap content-center justify-center gap-4 p-8 will-change-[transform,opacity]"
-              style={{ opacity: chaosOpacity, scale: chaosScale }}
             >
               {CHAOS_TEXT.map((txt, i) => (
                 <span key={i} className="font-mono text-slate-500/40 text-xl md:text-3xl font-bold tracking-tighter filter blur-[2px]">
@@ -234,76 +219,76 @@ export default function LandingPage() {
               ))}
             </motion.div>
 
-            {/* PHASE 2: Report Values Focus */}
+            {/* LAYER 2: The Shield/Health Core */}
             <motion.div 
-              className="absolute w-full max-w-2xl px-6 flex flex-col gap-4 will-change-[transform,opacity]"
-              style={{ opacity: reportOpacity, y: reportY }}
+              className="absolute inset-0 flex items-center justify-center z-20 will-change-[transform,opacity,filter]"
+              style={{ 
+                opacity: shieldOpacity,
+                scale: shieldScale,
+                y: shieldY,
+                pointerEvents: useTransform(shieldOpacity, v => v > 0 ? "auto" : "none") as any
+              }}
             >
-              <div className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 font-mono text-sm md:text-base text-slate-300 shadow-2xl">
-                <div className="flex justify-between border-b border-white/10 pb-2 mb-2 opacity-50">
-                  <span>TEST NAME</span><span>RESULT</span><span>REF RANGE</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-white/5">
-                  <span className="text-white">Hemoglobin, Blood</span><span className="text-emerald-400">14.2</span><span className="opacity-50">13.0 - 17.0</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-white/5">
-                  <span className="text-white">Hemoglobin A1c</span><span className="text-amber-400">5.8</span><span className="opacity-50">&lt; 5.7</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-white">Vitamin D, 25-OH</span><span className="text-rose-400">18</span><span className="opacity-50">30 - 100</span>
-                </div>
+              <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center backdrop-blur-sm shadow-[0_0_50px_rgba(16,185,129,0.1)]">
+                <ShieldCheck className="w-20 h-20 md:w-24 md:h-24 text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]" />
               </div>
             </motion.div>
 
-            {/* PHASE 3: Clear Insight */}
+            {/* LAYER 3: The Dashboard Cards / Insights */}
             <motion.div 
-              className="absolute w-full max-w-5xl px-6 grid md:grid-cols-2 gap-8 z-20 will-change-[transform,opacity]"
-              style={{ opacity: insightOpacity, y: insightY }}
+              className="absolute inset-0 flex flex-col items-center justify-center mt-32 z-30 w-full max-w-5xl px-6 pointer-events-none"
+              style={{ 
+                opacity: insightOpacity, 
+                y: insightY,
+                pointerEvents: useTransform(insightOpacity, v => v > 0.5 ? "auto" : "none") as any
+              }}
             >
-              {/* Going Right */}
-              <div className="bg-emerald-950/20 border border-emerald-500/20 backdrop-blur-xl rounded-3xl p-8 shadow-[0_0_40px_rgba(16,185,129,0.05)]">
-                <h3 className="text-emerald-400 font-bold text-xl md:text-2xl mb-6 flex items-center gap-3">
-                  <Activity className="w-6 h-6" /> What is going right
-                </h3>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-4">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                    <div>
-                      <p className="font-semibold text-white">Hemoglobin is normal</p>
-                      <p className="text-sm text-slate-400">Your red blood cells are healthy, ensuring good oxygen flow.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-4">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                    <div>
-                      <p className="font-semibold text-white">Kidney function stable</p>
-                      <p className="text-sm text-slate-400">Creatinine and eGFR are moving in a positive direction.</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
+              <div className="grid md:grid-cols-2 gap-8 w-full">
+                {/* Going Right */}
+                <div className="bg-emerald-950/20 border border-emerald-500/20 backdrop-blur-xl rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_0_40px_rgba(16,185,129,0.05)]">
+                  <h3 className="text-emerald-400 font-bold text-lg md:text-xl mb-4 md:mb-6 flex items-center gap-3">
+                    <Activity className="w-5 h-5 md:w-6 md:h-6" /> What is going right
+                  </h3>
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-4">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      <div>
+                        <p className="font-semibold text-white text-sm md:text-base">Hemoglobin is normal</p>
+                        <p className="text-xs md:text-sm text-slate-400">Your red blood cells are healthy, ensuring good oxygen flow.</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-4">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      <div>
+                        <p className="font-semibold text-white text-sm md:text-base">Kidney function stable</p>
+                        <p className="text-xs md:text-sm text-slate-400">Creatinine and eGFR are moving in a positive direction.</p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
 
-              {/* Needs Attention */}
-              <div className="bg-rose-950/20 border border-rose-500/20 backdrop-blur-xl rounded-3xl p-8 shadow-[0_0_40px_rgba(225,29,72,0.05)]">
-                <h3 className="text-rose-400 font-bold text-xl md:text-2xl mb-6 flex items-center gap-3">
-                  <AlertCircle className="w-6 h-6" /> What needs attention
-                </h3>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-4">
-                    <span className="w-2 h-2 rounded-full bg-rose-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(251,113,133,0.8)]" />
-                    <div>
-                      <p className="font-semibold text-white">Vitamin D is low</p>
-                      <p className="text-sm text-slate-400">Deficient at 18 ng/mL. Sunlight and supplementation recommended.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-4">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
-                    <div>
-                      <p className="font-semibold text-white">CRP is elevated</p>
-                      <p className="text-sm text-slate-400">Mild inflammation detected. Correlates with borderline HbA1c.</p>
-                    </div>
-                  </li>
-                </ul>
+                {/* Needs Attention */}
+                <div className="bg-rose-950/20 border border-rose-500/20 backdrop-blur-xl rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_0_40px_rgba(225,29,72,0.05)]">
+                  <h3 className="text-rose-400 font-bold text-lg md:text-xl mb-4 md:mb-6 flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 md:w-6 md:h-6" /> What needs attention
+                  </h3>
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-4">
+                      <span className="w-2 h-2 rounded-full bg-rose-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(251,113,133,0.8)]" />
+                      <div>
+                        <p className="font-semibold text-white text-sm md:text-base">Vitamin D is low</p>
+                        <p className="text-xs md:text-sm text-slate-400">Deficient at 18 ng/mL. Sunlight and supplementation recommended.</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-4">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                      <div>
+                        <p className="font-semibold text-white text-sm md:text-base">CRP is elevated</p>
+                        <p className="text-xs md:text-sm text-slate-400">Mild inflammation detected. High sensitivity required.</p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </motion.div>
 
