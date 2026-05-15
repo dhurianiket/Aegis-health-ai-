@@ -1,45 +1,36 @@
 # Architecture
+**Current Version:** 1.6.0
 
 ## Technical Stack
-- **Frontend**: React 18, Vite, Tailwind CSS, Motion (framer-motion)
-- **Backend/Database**: Firebase (Firestore)
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
+- **Backend/Database**: Firebase (Firestore, Storage, Hosting)
 - **Authentication**: Firebase Auth (Google Sign-In)
-- **AI Integration**: Gemini API (`@google/genai`)
+- **AI Integration**: Gemini API (`@google/genai`) via Cloudflare Gateway
 
-## Auth and Role Model
-- Users authenticate via Firebase. Their `uid` is used across all Firestore interactions.
-- The `users/{uid}` document contains the definitive user `role` (e.g., `"admin"`).
-- Admin-only flows must explicitly verify this role before executing privileged reads or operations.
+## Core Pipelines (v1.6.0)
 
-## Admin Analytics Data Flow
-- The Admin dashboard utilizes `collectionGroup` queries to aggregate usage analytics across the platform.
-- These queries execute only **after** verifying the user's admin role explicitly.
-- Non-admin users are shown a gracefully restricted UI rather than causing unhandled promise rejections.
+### 1. Ingestion & Extraction
+- **Flow:** PDF/Image -> Firebase Storage -> `promptFramework.ts` -> Zod Schema Validation -> Firestore.
+- Extracts `display_value` (e.g., "< 0.1") for UI accuracy and stripped `numeric_value` for deterministic chart math.
 
-## Usage Tracking Behavior
-- Background usage tracking mechanisms (like global stats increments) are designed to be explicitly best-effort.
-- Write operations that fail due to standard Security Rules strictly catch and silence their errors, ensuring end-user flows (like ChatCoach interactions) are never interrupted or broken by analytics tracking.
+### 2. Context Aggregation (`contextService.ts`)
+- Acts as the RAG engine. Groups historical lab results chronologically.
+- Consolidates manual medications (handling schema fallbacks like `name` vs `medicationName`) and injects a master `PatientContext` into AI prompts.
 
-## Frontend Stability Rules
-- **React Hook Ordering**: Hooks (`useState`, `useEffect`, etc.) must be declared at the highest scope. Conditional early-return statements must never appear before all hook declarations are complete to prevent React minified errors.
-- Chart components utilize `ResizeObserver` with debounce patterns to guarantee performance and stability.
+### 3. Virtual Polyclinic (`specialistFactory.ts`)
+- Utilizes a Factory Pattern to route user chats to 10 specific AI personas.
+- Grounded in real-world clinical guidelines (e.g., ACC/AHA, ADA).
 
-## Hosting and Auth Popup Behavior
-- Firebase Hosting provisions response headers configured via `firebase.json`.
-- Missing or misconfigured headers (like Cross-Origin-Opener-Policy) can negatively impact OAuth providers such as the Google Auth popup.
-- Header changes must be officially redeployed to production infrastructure before taking effect on deployed domains.
+### 4. AI Chat & SBAAR Generation
+- **Streaming:** Handled via `useCoach.ts` using `AbortController` and `try/catch` fallbacks.
+- **Proactive Summaries:** Intent detection triggers structured SBAAR outputs and plain-language summaries.
 
-## Data Structure (Firestore)
-```
-users/
-  {uid}/
-    documents/
-      {docId}/    ← lab report documents
-    profile/      ← user profile data
-    medications/  ← medication records
-    usage/        ← per-user tracking analytics
-```
+### 5. PDF Handoff (`pdfExportService.ts`)
+- Captures SVG Recharts accurately using `html-to-image` on a hidden DOM node, bridges to a multi-page A4 document via `jspdf`.
 
-## Security
-- Firestore rules validate all payloads, restrict read paths to `request.auth.uid`, and provision administrative views based on `isAdmin()`.
-- Access and environment variables cleanly safeguard API keys.
+## Admin & Security Flow
+- Definitive user `role` is stored in `users/{uid}`.
+- Admin dashboard utilizes `collectionGroup` queries, executing only **after** verifying the admin role explicitly.
+- Usage tracking (global stats) relies on best-effort writes, silently catching errors to prevent UI interruptions for non-admins.
+- Hook Ordering: Conditional early-returns must never appear before all hook declarations are complete.
+- Firebase Hosting relies on strict COOP headers (`same-origin-allow-popups`) deployed via `firebase.json` for OAuth stability.

@@ -1,36 +1,19 @@
 # Aegis Health Intelligence - Development Tracker
+**Status:** v1.6.0 Production Build (Release Candidate)
 
-This document is the single source of truth for the app’s current status.
+## Recently Completed Milestones (v1.6.0)
+- **[x] AI Specialist Lounge:** Deployed 10 guideline-backed AI specialists with a mobile-optimized horizontal scroll UI (Resolving React minified error #310).
+- **[x] SBAAR Generation:** AI proactively generates clinical-grade SBAAR summaries and plain-language patient summaries.
+- **[x] SBAR PDF Export:** Implemented a high-fidelity, hardware-safe (`pixelRatio: 2`) PDF export pipeline capturing Recharts and AI summaries into a branded Aegis dossier.
+- **[x] Deterministic Charting:** Fixed Recharts Safari parsing bugs and enforced robust floating-point regex parsing.
+- **[x] App Performance & Auth Loops:** Implemented `localStorage` fast-paths for consent/theme toggles, and verified `firebase.json` COOP headers (`same-origin-allow-popups`) to resolve Google Auth popup blocking.
+- **[x] Data Resilience:** Patched context ingestion to perfectly map manually added medications into the AI's memory window.
+- **[x] Admin Analytics Stabilization:** Enforced strict admin role checks for `collectionGroup` fetches, with silent error wrapping for best-effort global stats tracking.
 
-## Current Local Status (Implemented locally)
-The following files were changed in the latest fix session:
-- `src/components/Specialists/SpecialistLounge.tsx`
-- `src/services/usageService.ts`
-- `src/components/Admin/AdminDashboard.tsx`
-- `firebase.json`
-- `firestore.rules`
-
-### Local Code Status
-- **SpecialistLounge React #310**: Implemented locally. Hook-order issue addressed by moving conditional early returns below all hook declarations.
-- **Admin Dashboard Permission Handling**: Implemented locally. Enforced strict admin role checks before performing `collectionGroup` fetches, with graceful fallback UI for non-admins.
-- **Global Stats Tracking**: Implemented locally. Ensured best-effort writes by silently wrapping errors to prevent unhandled promise rejections on permission failures for non-admin users.
-- **Firebase Hosting COOP Policies**: Implemented locally. Updated header matcher in `firebase.json` to properly apply `Cross-Origin-Opener-Policy: same-origin-allow-popups` to `/**` to resolve Google Auth popup warnings.
-- **Build / Lint**: Passed locally.
-
-## Current Deployment Status (Pending deployment)
-- **Firestore Rules**: Pending deployment. Must be deployed manually via `firebase deploy --only firestore:rules` or through GitHub Actions.
-- **Firebase Hosting**: Pending deployment. Must be deployed manually via `firebase deploy --only hosting` or through GitHub Actions.
-
-## Last Known Production Symptoms (Before Redeploy)
-- React minified error #310 triggered when using `SpecialistLounge.tsx`.
-- Uncaught "Missing or insufficient permissions" failures generated in `AdminDashboard.tsx` for non-admin users.
-- `Global stats tracking error: FirebaseError: Missing or insufficient permissions` logging as uncaught error.
-- Browser warnings: `Cross-Origin-Opener-Policy policy would block the window.closed call` blocking Google sign-in.
-
-## Production Verification Status (Pending production verification)
-- Verification cannot be completed until the deployment succeeds. 
-- Required Next Steps:
-  1. Push changes to remote.
-  2. Let GitHub Actions deploy, or deploy manually via Firebase CLI.
-  3. Retest production URL.
-  4. Update this document's status based solely on live runtime evidence.
+## Current Focus
+- Maintaining system stability for v1.6.0 post-deployment.
+- Monitoring production usage:
+  1. Verifying Google Auth popup/redirect flow on mobile devices.
+  2. Monitoring Gemini API quota consumption and Cloudflare AI Gateway routing.
+  3. Validating Firebase read/write loads from Admin `collectionGroup` queries.
+- Ensuring zero regressions in the `pdfExportService.ts` and `LabTrendChart.tsx` modules.
