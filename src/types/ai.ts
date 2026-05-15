@@ -29,4 +29,11 @@ export interface PatientContext {
   medications: Medication[];
   recentInsights: SpecialistInsight[];
   alerts: HealthAlert[];
+  reportedSymptoms?: string[];
+  knownConditions?: string[];
+  demographics?: {
+    age: string;
+    gender: string;
+  };
+  extraContext?: string;
 }

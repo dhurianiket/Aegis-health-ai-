@@ -72,19 +72,27 @@ export const getPatientContext = async (
     alerts,
     // Add raw SBAR text for extra context
     extraContext: docSbars.join("\n\n") + (docDates.length ? `\n\nUPLOADED REPORT DATES:\n${docDates.join(', ')}` : ''),
-  } as any;
+    reportedSymptoms: [], // Populate from chat history if possible
+    knownConditions: profile?.chronicConditions || [],
+    demographics: {
+      age: profile?.dob && !isNaN(new Date(profile.dob).getTime()) ? `${new Date().getFullYear() - new Date(profile.dob).getFullYear()} years` : "Not provided",
+      gender: profile?.gender || "Not provided"
+    }
+  } as PatientContext;
 };
 
 /**
  * Formats the patient context into a clean, prompt-friendly string.
  */
 export const formatContextForPrompt = (context: any): string => {
-  const { profile, labHistory, medications, alerts, extraContext } = context;
+  const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics } = context;
 
   let prompt = `PATIENT PROFILE:\n`;
-  prompt += `- Name: ${profile?.name || "Unknown"}\n`;
-  prompt += `- Chronic Conditions: ${profile?.chronicConditions?.join(", ") || "None reported"}\n`;
-  prompt += `- Allergies: ${profile?.allergies?.join(", ") || "None reported"}\n\n`;
+  prompt += `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`;
+  prompt += `- Demographics: Age: ${demographics?.age || "Not provided"}, Gender: ${demographics?.gender || "Not provided"}\n`;
+  prompt += `- Chronic Conditions: ${knownConditions?.join(", ") || profile?.chronicConditions?.join(", ") || "None reported"}\n`;
+  prompt += `- Allergies: ${profile?.allergies?.join(", ") || "None reported"}\n`;
+  prompt += `- Reported Symptoms: ${reportedSymptoms?.join(", ") || "None reported"}\n\n`;
 
   prompt += `ACTIVE MEDICATIONS:\n`;
   if (medications && medications.length > 0) {
@@ -112,14 +120,13 @@ export const formatContextForPrompt = (context: any): string => {
   }
   prompt += `LAST REPORT DATE: ${lastReportDate}\n\n`;
 
-  prompt += `LATEST LAB RESULTS (Top 10 by severity):\n`;
+  prompt += `LAB RESULTS HISTORY (Grouped by Marker, chronological):\n`;
   if (labHistory.length > 0) {
-    const latestLabs = new Map();
+    const labsByMarker = new Map();
     labHistory.forEach((lab: any) => {
-      const existing = latestLabs.get(lab.markerName);
-      if (!existing || new Date(lab.date) > new Date(existing.date)) {
-         latestLabs.set(lab.markerName, lab);
-      }
+      const existing = labsByMarker.get(lab.markerName) || [];
+      existing.push(lab);
+      labsByMarker.set(lab.markerName, existing);
     });
 
     const severityScore = (status: string) => {
@@ -129,12 +136,26 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
-    const sortedLabs = Array.from(latestLabs.values()).sort((a, b) => {
-      return severityScore(b.status) - severityScore(a.status);
+    // Sort markers by severity of their most recent lab
+    const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
+      const labsA = labsByMarker.get(a);
+      const labsB = labsByMarker.get(b);
+      const latestA = labsA.sort((x: any, y: any) => new Date(y.extractedDate || y.date).getTime() - new Date(x.extractedDate || x.date).getTime())[0];
+      const latestB = labsB.sort((x: any, y: any) => new Date(y.extractedDate || y.date).getTime() - new Date(x.extractedDate || x.date).getTime())[0];
+      return severityScore(latestB.status) - severityScore(latestA.status);
     });
 
-    sortedLabs.slice(0, 10).forEach((lab) => {
-      prompt += `- ${lab.markerName}: ${lab.value} ${lab.unit} (${lab.status}) on ${lab.date}\n`;
+    sortedMarkers.slice(0, 15).forEach((markerName) => {
+      prompt += `- ${markerName}:\n`;
+      const labs = labsByMarker.get(markerName)
+        .sort((a: any, b: any) => new Date(a.extractedDate || a.date).getTime() - new Date(b.extractedDate || b.date).getTime())
+        .slice(-5); // Get up to 5 most recent
+      labs.forEach((lab: any) => {
+        const dateStr = lab.extractedDate || lab.date;
+        const formattedDate = new Date(dateStr).toISOString().split("T")[0];
+        const valStr = lab.display_value || lab.numeric_value || lab.value;
+        prompt += `  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})\n`;
+      });
     });
   } else {
     prompt += `- None reported\n`;

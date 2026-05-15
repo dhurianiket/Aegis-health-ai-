@@ -37,7 +37,16 @@ export function useCoach(userId: string, activeProfile: UserProfile | null) {
             content: m.content,
           }));
 
-        const stream = await getCoachResponse(context, text, history);
+        const SUMMARY_TRIGGER_PHRASES = [
+          "how am i doing", "what's my health status", "summarize my labs", 
+          "health summary", "what does this mean", "latest results"
+        ];
+        const isSummaryRequest = SUMMARY_TRIGGER_PHRASES.some(phrase => 
+          text.toLowerCase().includes(phrase)
+        );
+
+        const abortController = new AbortController();
+        const stream = await getCoachResponse(context, text, history, abortController.signal, isSummaryRequest);
 
         let assistantContent = "";
 
@@ -51,13 +60,25 @@ export function useCoach(userId: string, activeProfile: UserProfile | null) {
           },
         ]);
 
-        for await (const chunk of stream) {
-          assistantContent += chunk;
+        try {
+          for await (const chunk of stream) {
+            assistantContent += chunk;
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              const lastMsg = newMessages[newMessages.length - 1];
+              if (lastMsg.role === "assistant") {
+                lastMsg.content = assistantContent;
+              }
+              return [...newMessages];
+            });
+          }
+        } catch (streamError) {
+          console.error("Stream interrupted:", streamError);
           setMessages((prev) => {
             const newMessages = [...prev];
             const lastMsg = newMessages[newMessages.length - 1];
             if (lastMsg.role === "assistant") {
-              lastMsg.content = assistantContent;
+              lastMsg.content += "\n\n[Network interrupted. Please try again.]";
             }
             return [...newMessages];
           });

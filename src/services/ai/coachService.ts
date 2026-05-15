@@ -22,10 +22,24 @@ Patient
 Grade 6 to 8
 </reading_level>
 
+<clinical_safety_rules>
+- NEVER diagnose conditions or prescribe medications
+- ALWAYS recommend consulting a healthcare professional for medical decisions
+- If user asks for diagnosis, respond: "I cannot diagnose you. Please consult a doctor."
+- Flag critical values (e.g., HbA1c > 12, LDL > 190) with urgent warning
+</clinical_safety_rules>
+
+<edge_case_handling>
+- Conflicting values: If labs contradict, note the discrepancy and suggest physician review.
+- Missing markers: If asked about a marker not provided, cleanly state it is missing from the data.
+- Extreme outliers: Flag immediately and strongly urge medical attention without assuming lab error.
+</edge_case_handling>
+
 <additional_instructions>
 1. ALWAYS cite the specific data point you are referencing (e.g., "Your fasting glucose was 115 mg/dL on Oct 10").
-2. Provide actionable, evidence-based lifestyle suggestions (diet, exercise, sleep) related to their lab results.
-3. Be empathetic but professional and clinical in tone.
+2. ALWAYS use the exact provided historical values (e.g., if a value is "< 0.1", use "< 0.1" rather than "0").
+3. Provide actionable, evidence-based lifestyle suggestions (diet, exercise, sleep) related to their lab results.
+4. Be empathetic but professional and clinical in tone.
 </additional_instructions>
 `;
 
@@ -39,9 +53,36 @@ export const getCoachResponse = async (
   context: PatientContext,
   userMessage: string,
   history: { role: "user" | "assistant"; content: string }[] = [],
+  signal?: AbortSignal,
+  isSummaryRequest?: boolean
 ): Promise<AsyncGenerator<string>> => {
   const ai = getAI();
   const patientDataPrompt = formatContextForPrompt(context);
+
+  let systemInstruction = COACH_SYSTEM_INSTRUCTION;
+  if (isSummaryRequest) {
+    systemInstruction += `\n
+### HEALTH SUMMARY GENERATION RULES
+When the user asks for a health status (e.g., "How am I doing?", "Summarize my labs") or asks what their new lab results mean:
+1. ALWAYS generate a SBAAR-formatted health summary first (Subjective, Background, Assessment, Analysis, Recommendation).
+2. Follow immediately with an "AI Doctor Summary" in plain, empathetic language.
+3. Use EXACT \`display_value\` strings from the injected lab data (e.g., "< 0.1", not "0").
+4. Show trends: Explicitly compare current values to historical values.
+5. Flag critical values with emojis:
+   - 🔴 CRITICAL: Life-threatening (e.g., HbA1c > 12)
+   - ⚠️ WARNING: Needs attention (e.g., HbA1c > 7)
+   - 🟡 NOTICE: Monitor closely (e.g., Vitamin D < 20)
+6. ALWAYS include the mandatory medical disclaimer at the end.
+
+### SBAAR FORMAT REQUIREMENTS
+- **Subjective:** Symptoms user reported in the chat history.
+- **Background:** Age, gender, conditions, medications (if known).
+- **Assessment:** Markdown table with \`Marker | Your Value | Normal Range | Status\`.
+- **Analysis:** Trend arrows (⬆️⬇️➡️) and chronological comparison.
+- **Recommendation:** Numbered list grouped by Immediate, Lifestyle, and Follow-up.
+`;
+  }
+
 
   // GenAI SDK requires strictly alternating roles: user -> model -> user -> model
   const contents: { role: "user" | "model"; parts: { text: string }[] }[] = [];
@@ -95,7 +136,7 @@ export const getCoachResponse = async (
       model: "gemini-2.5-flash",
       contents,
       config: {
-        systemInstruction: COACH_SYSTEM_INSTRUCTION,
+        systemInstruction,
         maxOutputTokens: 8192,
         temperature: 0.1,
       },

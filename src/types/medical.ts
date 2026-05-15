@@ -72,6 +72,8 @@ export interface LabResult {
   uploadedAt?: string;
   markerName: string;
   value: number;
+  numeric_value?: number;
+  display_value?: string;
   unit: string;
   referenceRange?: string;
   status: LabStatus | string;

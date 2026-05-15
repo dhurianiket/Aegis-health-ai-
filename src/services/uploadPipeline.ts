@@ -44,15 +44,17 @@ export const executeFullUploadPipeline = async (
 
   if (extraction.observations) {
     for (const obs of extraction.observations) {
-      if (obs.valueCanonical !== undefined && obs.valueCanonical !== null) {
+      if ((obs.valueCanonical !== undefined && obs.valueCanonical !== null) || obs.numeric_value !== undefined) {
         await saveLabResult(userId, {
           docId: docId || "unknown",
           date: new Date().toISOString(),
           extractedDate: collectionDate,
           uploadedAt: new Date().toISOString(),
           markerName: obs.testName || "Unknown",
-          value: obs.valueCanonical,
-          unit: obs.unitCanonical || "",
+          value: obs.valueCanonical ?? obs.numeric_value ?? obs.valueOriginal ?? 0,
+          numeric_value: obs.numeric_value ?? obs.valueCanonical ?? undefined,
+          display_value: obs.display_value ?? undefined,
+          unit: obs.unitCanonical || obs.unitOriginal || "",
           referenceRange: `${obs.referenceLow || ""} - ${obs.referenceHigh || ""}`,
           status: (obs.flag as LabStatus) || LabStatus.NORMAL,
           profileId,
