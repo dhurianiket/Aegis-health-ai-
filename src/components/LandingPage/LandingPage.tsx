@@ -54,18 +54,22 @@ export default function LandingPage() {
   });
   const stickyProgress = useSpring(stickyRaw, { stiffness: 60, damping: 20 });
 
-  // Phase 1: Chaos Texts
-  const chaosOpacity = useTransform(stickyProgress, [0, 0.3], [1, 0]);
-  const chaosScale = useTransform(stickyProgress, [0, 0.3], [1, 0.9]);
+  // Phase 1: Chaos Texts (Leaves early)
+  const chaosOpacity = useTransform(stickyProgress, [0, 0.25], [1, 0]);
+  const chaosScale = useTransform(stickyProgress, [0, 0.25], [1, 0.9]);
   
-  // Phase 2: Shield (Health Core) movement in Sticky Section
-  const shieldOpacity = useTransform(stickyProgress, [0.1, 0.4], [0, 1]);
-  const shieldY = useTransform(stickyProgress, [0.4, 0.6], ["0%", "-35%"]);
-  const shieldScale = useTransform(stickyProgress, [0.4, 0.6], [1, 0.8]);
+  // Phase 2: BRIDGE (Fills the dead zone)
+  const bridgeOpacity = useTransform(stickyProgress, [0.15, 0.35, 0.5], [0, 1, 0]);
+  const bridgeScale = useTransform(stickyProgress, [0.15, 0.35], [0.9, 1]);
 
-  // Phase 3: Dashboard Cards / Insights
-  const insightOpacity = useTransform(stickyProgress, [0.45, 0.75], [0, 1]);
-  const insightY = useTransform(stickyProgress, [0.45, 0.75], [100, 0]);
+  // Phase 3: Shield (Health Core)
+  const shieldOpacity = useTransform(stickyProgress, [0.25, 0.45], [0, 1]);
+  const shieldY = useTransform(stickyProgress, [0.5, 0.7], ["0%", "-40%"]);
+  const shieldScale = useTransform(stickyProgress, [0.5, 0.7], [1, 0.8]);
+
+  // Phase 4: Dashboard Cards / Insights (The Reveal)
+  const insightOpacity = useTransform(stickyProgress, [0.55, 0.8], [0, 1]);
+  const insightY = useTransform(stickyProgress, [0.55, 0.8], [50, 0]);
 
   const handleSignIn = async () => {
     try {
@@ -195,7 +199,7 @@ export default function LandingPage() {
         </div>
 
         {/* 2. STICKY SCROLL STORY */}
-        <div ref={stickyRef} className="relative w-full h-[300vh]">
+        <div ref={stickyRef} className="relative w-full h-[250vh]">
           <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden">
             
             <div className="absolute inset-0 bg-[#0A192F] pointer-events-none -z-20" />
@@ -209,7 +213,7 @@ export default function LandingPage() {
               style={{ 
                 opacity: chaosOpacity, 
                 scale: chaosScale,
-                pointerEvents: useTransform(chaosOpacity, v => v > 0 ? "auto" : "none") as any
+                pointerEvents: useTransform(chaosOpacity, v => v > 0.1 ? "auto" : "none") as any
               }}
             >
               {CHAOS_TEXT.map((txt, i) => (
@@ -219,14 +223,24 @@ export default function LandingPage() {
               ))}
             </motion.div>
 
-            {/* LAYER 2: The Shield/Health Core */}
+            {/* LAYER 2: BRIDGE (Fills the dead zone) */}
+            <motion.div 
+              style={{ opacity: bridgeOpacity, scale: bridgeScale }}
+              className="absolute inset-0 flex flex-col items-center justify-center z-15 pointer-events-none"
+            >
+              <h2 className="text-xl md:text-3xl font-light tracking-widest text-emerald-400 animate-pulse">
+                DECODING CLINICAL DATA...
+              </h2>
+            </motion.div>
+
+            {/* LAYER 3: The Shield/Health Core */}
             <motion.div 
               className="absolute inset-0 flex items-center justify-center z-20 will-change-[transform,opacity,filter]"
               style={{ 
                 opacity: shieldOpacity,
                 scale: shieldScale,
                 y: shieldY,
-                pointerEvents: useTransform(shieldOpacity, v => v > 0 ? "auto" : "none") as any
+                pointerEvents: useTransform(shieldOpacity, v => v > 0.1 ? "auto" : "none") as any
               }}
             >
               <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center backdrop-blur-sm shadow-[0_0_50px_rgba(16,185,129,0.1)]">
@@ -234,7 +248,7 @@ export default function LandingPage() {
               </div>
             </motion.div>
 
-            {/* LAYER 3: The Dashboard Cards / Insights */}
+            {/* LAYER 4: The Dashboard Cards / Insights */}
             <motion.div 
               className="absolute inset-0 flex flex-col items-center justify-center mt-32 z-30 w-full max-w-5xl px-6 pointer-events-none"
               style={{ 
