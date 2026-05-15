@@ -69,18 +69,20 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
            labs.forEach(l => {
               extractedValues.push(...l.history.map((h: any) => ({
                  ...h,
-                 markerName: h.marker || h.testName || l.markerName
+                 markerName: h.marker || h.testName || l.markerName,
+                 actualDate: h.extractedDate || h.collection_date || null
               })));
            });
         } else if (reports && reports.length > 0) {
            // Passed from Reports
            reports.forEach(doc => {
               const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
+              const docDate = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || null;
               obs.forEach((o: any) => {
                  extractedValues.push({
                     ...o,
                     markerName: o.marker || o.testName,
-                    date: o.date || doc.date || doc.uploadedAt
+                    actualDate: o.extractedDate || docDate
                  });
               });
            });
@@ -89,11 +91,12 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
            const docs = await getDocuments(user.uid, activeProfile?.id);
            (docs || []).forEach((doc: any) => {
               const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
+              const docDate = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || null;
               obs.forEach((o: any) => {
                  extractedValues.push({
                     ...o,
                     markerName: o.marker || o.testName,
-                    date: o.date || doc.date || (typeof doc.createdAt === 'string' ? doc.createdAt : (doc.createdAt as any)?.toDate?.()?.toISOString())
+                    actualDate: o.extractedDate || docDate
                  });
               });
            });
@@ -158,8 +161,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       if (!selectedMarker) return [];
 
       const filtered = labResults
-        .filter((r) => r.markerName === selectedMarker && r.date && !isNaN(new Date(r.date).getTime()))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        .filter((r) => r.markerName === selectedMarker && r.actualDate && !isNaN(new Date(r.actualDate).getTime()))
+        .sort((a, b) => new Date(a.actualDate).getTime() - new Date(b.actualDate).getTime());
 
       const now = new Date().getTime();
       let cutoff = 0;
@@ -167,30 +170,43 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       else if (timeRange === "6M") cutoff = now - 180 * 24 * 60 * 60 * 1000;
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
-      const ranged = filtered.filter((r) => new Date(r.date).getTime() >= cutoff);
+      const ranged = filtered.filter((r) => new Date(r.actualDate).getTime() >= cutoff);
 
       return ranged.map((r) => {
         let refMin = undefined;
         let refMax = undefined;
         const refRange = r.referenceRange || r.reference_range;
+        const numericValue = parseFloat(r.numeric_value ?? r.valueCanonical ?? r.valueOriginal ?? r.value);
 
         if (refRange) {
           const rangeMatch = refRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
           if (rangeMatch) {
             refMin = parseFloat(rangeMatch[1]);
             refMax = parseFloat(rangeMatch[2]);
+          } else if (refRange.includes("<=") || refRange.includes("<")) {
+            const numMatch = refRange.match(/([0-9.]+)/);
+            if (numMatch) {
+              refMin = 0;
+              refMax = parseFloat(numMatch[1]);
+            }
+          } else if (refRange.includes(">=") || refRange.includes(">")) {
+            const numMatch = refRange.match(/([0-9.]+)/);
+            if (numMatch) {
+              const val = parseFloat(numMatch[1]);
+              refMin = val;
+              refMax = Math.max(val * 1.5, numericValue * 1.5);
+            }
           }
         }
 
-        const numericValue = parseFloat(r.valueCanonical ?? r.valueOriginal ?? r.value);
         let flagCol = 'emerald';
         const st = (r.status || r.flag || '').toLowerCase();
         if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
         else if (st === 'low') flagCol = 'orange';
 
         return {
-          timestamp: new Date(r.date).getTime(),
-          date: new Date(r.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          timestamp: new Date(r.actualDate).getTime(),
+          date: new Date(r.actualDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           value: !isNaN(numericValue) ? numericValue : undefined,
           unit: r.unitCanonical || r.unit,
           refMin: !isNaN(refMin as number) ? refMin : undefined,
@@ -355,6 +371,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                    stroke="none"
                    fill="var(--color-primary)"
                    fillOpacity={0.05}
+                   isAnimationActive={!isMobile}
                  />
 
                  {isMobile ? (
@@ -362,6 +379,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                      dataKey="value"
                      fill="var(--color-primary)"
                      radius={[4, 4, 0, 0]}
+                     isAnimationActive={!isMobile}
                    />
                  ) : (
                    <Line
@@ -370,6 +388,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                      stroke="var(--color-primary)"
                      strokeWidth={2}
                      dot={renderCustomDot}
+                     isAnimationActive={!isMobile}
                      activeDot={{
                        r: 8,
                        fill: "var(--color-primary)",

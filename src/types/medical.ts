@@ -48,8 +48,10 @@ export interface MedicalDocument {
   id: string;
   userId: string;
   profileId?: string;
-  type: DocumentType;
+  type: DocumentType | string;
   date: string;
+  extractedDate?: string;
+  uploadedAt?: string;
   hospitalName?: string;
   doctorName?: string;
   fileName: string;
@@ -66,11 +68,13 @@ export interface LabResult {
   profileId?: string;
   docId: string;
   date: string;
+  extractedDate?: string;
+  uploadedAt?: string;
   markerName: string;
   value: number;
   unit: string;
   referenceRange?: string;
-  status: LabStatus;
+  status: LabStatus | string;
 }
 
 export interface Medication {

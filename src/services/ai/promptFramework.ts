@@ -65,6 +65,7 @@ Do not include prose outside the schema.
  * LabExtractionSchema - Comprehensive Zod schema for laboratory results.
  */
 export const LabExtractionSchema = z.object({
+  collection_date: z.string().describe("CRITICAL: The exact date the lab sample was collected or generated. MUST be formatted exactly as YYYY-MM-DD. Do NOT use today's date.").nullable().optional(),
   patient: z.object({
     name: z.string().nullable(),
     dob: z.string().nullable(),
@@ -83,13 +84,15 @@ export const LabExtractionSchema = z.object({
         panel: z.string().nullable(),
         testName: z.string(),
         loincLikeName: z.string().nullable(),
+        display_value: z.string().nullable().describe("The exact string from the report, e.g., '< 0.1'"),
+        numeric_value: z.number().nullable().describe("The parsed numeric value after stripping operators (<, >, <=, >=, ~)"),
         valueOriginal: z.preprocess((val) => {
           if (typeof val === "string") {
             const n = parseFloat(val);
             return isNaN(n) ? null : n;
           }
           return val;
-        }, z.number().nullable()),
+        }, z.number().nullable()).optional(),
         unitOriginal: z.string().nullable(),
         valueCanonical: z.number().nullable(),
         unitCanonical: z.string().nullable(),
@@ -129,7 +132,8 @@ export function normalizeObservation<
   T extends {
     testName: string;
     unitOriginal?: string | null;
-    valueOriginal: any;
+    valueOriginal?: any;
+    numeric_value?: number | null;
     valueCanonical?: number | null;
     unitCanonical?: string | null;
   },
@@ -137,12 +141,15 @@ export function normalizeObservation<
   const result = { ...obs };
   const unit = (obs.unitOriginal || "").toLowerCase();
   const test = (obs.testName || "").toLowerCase();
-  const valRaw =
-    typeof obs.valueOriginal === "number"
+  
+  let valRaw = obs.numeric_value;
+  if (valRaw === undefined || valRaw === null) {
+    valRaw = typeof obs.valueOriginal === "number"
       ? obs.valueOriginal
       : parseFloat(String(obs.valueOriginal));
+  }
 
-  if (isNaN(valRaw)) return result;
+  if (valRaw === undefined || valRaw === null || isNaN(valRaw)) return result;
   const val = valRaw;
 
   // Glucose
@@ -379,10 +386,11 @@ export async function extractLabData(
 
     SCHEMA SPECIFICATION:
     {
+      "collection_date": "YYYY-MM-DD",
       "patient": { "name", "dob", "sex", "id" },
       "reportMetadata": { "labName", "accessionNumber", "collectionDate", "reportDate" },
       "observations": [{
-        "panel", "testName", "loincLikeName", "valueOriginal", "unitOriginal", 
+        "panel", "testName", "loincLikeName", "display_value", "numeric_value", "unitOriginal", 
         "valueCanonical", "unitCanonical", "referenceLow", "referenceHigh", 
         "flag" (LOW|NORMAL|HIGH|CRITICAL|null), "page", "rawText", "confidence" (0-1)
       }],

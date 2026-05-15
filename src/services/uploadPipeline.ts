@@ -30,10 +30,14 @@ export const executeFullUploadPipeline = async (
   const extraction = await extractLabData(rawFiles);
   
   // 3. Write to Firestore
+  const collectionDate = extraction.collection_date || extraction.reportMetadata?.collectionDate || new Date().toISOString();
+  
   const docId = await saveDocument(userId, {
     fileName: "Uploaded Document",
     type: classification.documentType || "Unknown",
     date: new Date().toISOString(),
+    extractedDate: collectionDate,
+    uploadedAt: new Date().toISOString(),
     extractedData: extraction,
     profileId,
   });
@@ -44,6 +48,8 @@ export const executeFullUploadPipeline = async (
         await saveLabResult(userId, {
           docId: docId || "unknown",
           date: new Date().toISOString(),
+          extractedDate: collectionDate,
+          uploadedAt: new Date().toISOString(),
           markerName: obs.testName || "Unknown",
           value: obs.valueCanonical,
           unit: obs.unitCanonical || "",
