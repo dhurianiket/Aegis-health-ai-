@@ -103,6 +103,7 @@ ${OUTPUT_FORMAT_JSON}
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
+        maxOutputTokens: 8192,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -297,8 +298,8 @@ Generate the summary strictly following the plain text format above.
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
+        maxOutputTokens: 8192,
         temperature: 0,
-        maxOutputTokens: 2048,
       },
     });
 

@@ -288,7 +288,7 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
     contents: [
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
-    config: { temperature: 0, responseMimeType: "application/json" }
+    config: { maxOutputTokens: 8192, temperature: 0, responseMimeType: "application/json" }
   }), 3, "pdf_extraction");
   return safeJsonParse<any>(response.text, {});
 }
@@ -343,7 +343,7 @@ ${JSON.stringify(symptoms)}
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: promptText }] }],
-    config: { temperature: 0 }
+    config: { maxOutputTokens: 8192, temperature: 0 }
   }), 3, "sbar");
   
   return response.text || "Failed to generate summary.";
@@ -355,7 +355,7 @@ export async function explainInteraction(medicationContext: any) {
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
-    config: { temperature: 0 }
+    config: { maxOutputTokens: 8192, temperature: 0 }
   }), 3, "med_interaction");
   return response.text;
 }

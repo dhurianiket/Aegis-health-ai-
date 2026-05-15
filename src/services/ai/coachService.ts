@@ -96,6 +96,7 @@ export const getCoachResponse = async (
       contents,
       config: {
         systemInstruction: COACH_SYSTEM_INSTRUCTION,
+        maxOutputTokens: 8192,
         temperature: 0.1,
       },
     });

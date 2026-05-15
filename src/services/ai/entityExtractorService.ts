@@ -50,6 +50,7 @@ export const extractClinicalEntities = async (
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: `${EXTRACTION_PROMPT}\n\n<input>\n${text}\n</input>` }] }],
       config: {
+        maxOutputTokens: 8192,
         responseMimeType: "application/json",
       },
     });

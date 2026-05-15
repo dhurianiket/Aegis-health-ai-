@@ -68,8 +68,8 @@ ${formatContextForPrompt(patientData)}
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
+        maxOutputTokens: 8192,
         temperature: 0,
-        maxOutputTokens: 2048,
       },
     });
 
