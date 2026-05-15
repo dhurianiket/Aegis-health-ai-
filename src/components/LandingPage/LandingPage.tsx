@@ -66,8 +66,8 @@ export default function LandingPage() {
   const shieldY = useTransform(stickyProgress, [0.45, 0.6], ["0%", "-35%"]);
 
   // Phase 4: Dashboard Cards / Insights (The Reveal)
-  const insightOpacity = useTransform(stickyProgress, [0.45, 0.6], [0, 1]);
-  const insightY = useTransform(stickyProgress, [0.45, 0.6], [50, 0]);
+  const insightOpacity = useTransform(stickyProgress, [0.45, 0.6, 1], [0, 1, 1]);
+  const insightY = useTransform(stickyProgress, [0.45, 0.6, 1], [50, 0, 0]);
 
   const handleSignIn = async () => {
     try {
@@ -275,7 +275,7 @@ export default function LandingPage() {
         </div>
 
         {/* 3. LAB SUMMARY BENTO GRID */}
-        <div className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 py-32">
+        <div className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 pt-16 pb-32">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
