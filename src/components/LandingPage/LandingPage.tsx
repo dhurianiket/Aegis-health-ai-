@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -20,6 +20,19 @@ const CHAOS_TEXT = [
   "ALT 85 H", "AST 65 H", "ALP 120", "BILIRUBIN 1.2", "ALBUMIN 4.5",
   "GLUCOSE 110 H", "BUN 15", "CREATININE 0.9", "SODIUM 140", "POTASSIUM 4.2",
   "CHLORIDE 100", "CO2 25", "CALCIUM 9.5", "PROTEIN 7.0", "GLOBULIN 2.5",
+];
+
+const SPECIALISTS_SHOWCASE = [
+  { title: "AI Cardiologist", icon: Heart, guidelines: "ACC/AHA 2024" },
+  { title: "AI Endocrinologist", icon: Zap, guidelines: "ADA 2025" },
+  { title: "AI Neurologist", icon: Brain, guidelines: "AAN 2024" },
+  { title: "AI Gastroenterologist", icon: Droplets, guidelines: "ACG/AGA" },
+  { title: "AI Pulmonologist", icon: Activity, guidelines: "ATS/ERS" },
+  { title: "AI Nephrologist", icon: Droplets, guidelines: "KDIGO" },
+  { title: "AI Psychiatrist", icon: Sparkles, guidelines: "APA" },
+  { title: "AI Dermatologist", icon: ShieldCheck, guidelines: "AAD" },
+  { title: "AI Orthopedist", icon: Stethoscope, guidelines: "AAOS" },
+  { title: "AI Oncologist", icon: Activity, guidelines: "NCCN" },
 ];
 
 // ----------------------------------------------------------------------
@@ -370,6 +383,37 @@ export default function LandingPage() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* 4. VIRTUAL POLYCLINIC SECTION */}
+            <div className="mt-32 mb-16 border-t border-white/5 pt-24">
+              <div className="text-center mb-16 max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
+                  Consult the Specialists.
+                </h2>
+                <p className="text-lg text-slate-400 font-light leading-relaxed">
+                  Don't just read your labs. Discuss them with a virtual polyclinic of AI specialists, each trained on global clinical guidelines.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {SPECIALISTS_SHOWCASE.map((spec, idx) => {
+                  const Icon = spec.icon;
+                  return (
+                    <div key={idx} className="p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors flex flex-col items-center text-center group">
+                      <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+                        <Icon className="w-6 h-6 text-emerald-400" />
+                      </div>
+                      <h4 className="text-sm font-bold text-white tracking-wide mb-2">{spec.title}</h4>
+                      <div className="mt-auto pt-2">
+                        <span className="text-[10px] font-mono tracking-widest text-emerald-400 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 whitespace-nowrap">
+                          {spec.guidelines}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="mt-24 text-center">
