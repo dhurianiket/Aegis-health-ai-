@@ -54,20 +54,20 @@ export default function LandingPage() {
   });
   const stickyProgress = useSpring(stickyRaw, { stiffness: 60, damping: 20 });
 
-  // Phase 1: Chaos Texts (Leaves early)
-  const chaosOpacity = useTransform(stickyProgress, [0, 0.3], [1, 0]);
+  // 1. Chaos: Fades out from 0% to 25%
+  const chaosOpacity = useTransform(stickyProgress, [0, 0.25], [1, 0]);
   
-  // Phase 2: BRIDGE (Fills the dead zone)
-  const bridgeOpacity = useTransform(stickyProgress, [0.15, 0.25, 0.4, 0.5], [0, 1, 1, 0]);
-  const bridgeScale = useTransform(stickyProgress, [0.15, 0.25], [0.8, 1]);
+  // 2. Bridge: Fades in at 10%, peaks at 35%-50%, fades out by 65%
+  const bridgeOpacity = useTransform(stickyProgress, [0.1, 0.35, 0.5, 0.65], [0, 1, 1, 0]);
+  const bridgeScale = useTransform(stickyProgress, [0.1, 0.35], [0.8, 1]);
 
-  // Phase 3: Shield (Health Core)
-  const shieldOpacity = useTransform(stickyProgress, [0.35, 0.45], [0, 1]);
-  const shieldY = useTransform(stickyProgress, [0.45, 0.6], ["0%", "-35%"]);
+  // 3. Shield: Fades in at 45% (while bridge is still visible). Moves up starting at 65%.
+  const shieldOpacity = useTransform(stickyProgress, [0.45, 0.65], [0, 1]);
+  const shieldY = useTransform(stickyProgress, [0.65, 0.85], ["0%", "-35%"]);
 
-  // Phase 4: Dashboard Cards / Insights (The Reveal)
-  const insightOpacity = useTransform(stickyProgress, [0.45, 0.6, 1], [0, 1, 1]);
-  const insightY = useTransform(stickyProgress, [0.45, 0.6, 1], [50, 0, 0]);
+  // 4. Cards: Fades in and slides up starting at 65% (matching the shield's movement). Stays at 1.0 to the end.
+  const insightOpacity = useTransform(stickyProgress, [0.65, 0.9, 1], [0, 1, 1]);
+  const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], [50, 0, 0]);
 
   const handleSignIn = async () => {
     try {
@@ -196,7 +196,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div ref={stickyRef} className="relative w-full h-[300vh]">
+        <div ref={stickyRef} className="relative w-full h-[200vh]">
           <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden">
             
             <div className="absolute inset-0 bg-[#0A192F] pointer-events-none -z-20" />
@@ -243,7 +243,7 @@ export default function LandingPage() {
 
             {/* LAYER 4: The Dashboard Cards / Insights */}
             <motion.div 
-              className="absolute inset-0 flex flex-col items-center justify-center z-40 mt-32 md:mt-40 pointer-events-none px-4 w-full max-w-md mx-auto"
+              className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none px-4 w-full max-w-md mx-auto"
               style={{ 
                 opacity: insightOpacity, 
                 y: insightY,
