@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2 } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -27,6 +27,14 @@ const CHAOS_TEXT = [
 // ----------------------------------------------------------------------
 export default function LandingPage() {
   const { signIn, isSigningIn } = useAuth();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Hero Scroll
   const heroRef = useRef<HTMLDivElement>(null);
@@ -47,16 +55,22 @@ export default function LandingPage() {
   const stickyProgress = useSpring(stickyRaw, { stiffness: 60, damping: 20 });
 
   // Phase 1: Chaos Texts
-  const chaosOpacity = useTransform(stickyProgress, [0, 0.2, 0.3], [0, 1, 0]);
-  const chaosScale = useTransform(stickyProgress, [0, 0.3], [0.8, 1.2]);
+  const chaosOpacity = useTransform(stickyProgress, [0, 0.15, 0.25], [0, 1, 0]);
+  const chaosScale = useTransform(stickyProgress, [0, 0.25], [0.8, 1.1]);
   
+  // Phase 2: Shield (Health Core) movement in Sticky Section
+  // On desktop: moves left. On mobile: moves UP.
+  const shieldY = useTransform(stickyProgress, [0.3, 0.5], [0, isMobile ? -140 : 0]);
+  const shieldScale = useTransform(stickyProgress, [0.3, 0.5], [1, isMobile ? 0.65 : 1]);
+  const shieldOpacity = useTransform(stickyProgress, [0.2, 0.3], [0, 1]);
+
   // Phase 2: Highlighted Values (Faux Lab Report format)
-  const reportOpacity = useTransform(stickyProgress, [0.25, 0.4, 0.6], [0, 1, 0]);
-  const reportY = useTransform(stickyProgress, [0.25, 0.6], [50, -50]);
+  const reportOpacity = useTransform(stickyProgress, [0.35, 0.45, 0.65], [0, 1, 0]);
+  const reportY = useTransform(stickyProgress, [0.35, 0.65], [isMobile ? 100 : 50, isMobile ? 0 : -50]);
 
   // Phase 3: Clear Insight
-  const insightOpacity = useTransform(stickyProgress, [0.55, 0.7, 1], [0, 1, 1]);
-  const insightY = useTransform(stickyProgress, [0.55, 0.7], [30, 0]);
+  const insightOpacity = useTransform(stickyProgress, [0.6, 0.75, 1], [0, 1, 1]);
+  const insightY = useTransform(stickyProgress, [0.6, 0.75], [isMobile ? 100 : 30, 0]);
 
   const handleSignIn = async () => {
     try {
@@ -70,30 +84,33 @@ export default function LandingPage() {
     <ErrorBoundary>
       <div className="bg-[#0A192F] text-white min-h-screen font-sans overflow-x-hidden selection:bg-emerald-500/30">
         
-        {/* Absolute Navbar */}
-        <nav className="fixed w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-50 left-1/2 -translate-x-1/2">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
-            <span className="font-bold border-l border-white/20 pl-3 text-sm md:text-lg tracking-[0.2em] text-emerald-400">
-              AEGIS
-            </span>
-          </div>
-          <div className="flex gap-4">
-            <button
-              onClick={handleSignIn}
-              disabled={isSigningIn}
-              className="px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <Activity className="w-4 h-4" />
-              UPLOAD REPORT
-            </button>
-            <button
-              onClick={handleSignIn}
-              disabled={isSigningIn}
-              className="px-6 py-2.5 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full text-xs font-bold tracking-wide transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-w-[100px]"
-            >
-              {isSigningIn ? <Loader2 className="w-4 h-4 animate-spin" /> : "LOGIN"}
-            </button>
+        {/* Persistent Sticky Navbar */}
+        <nav className="fixed w-full z-50 top-0 left-0">
+          <div className="absolute inset-0 bg-[#0A192F]/80 backdrop-blur-xl border-b border-white/5" />
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between relative z-10 transition-all duration-300">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
+              <span className="font-bold border-l border-white/20 pl-3 text-sm md:text-lg tracking-[0.2em] text-emerald-400">
+                AEGIS
+              </span>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={handleSignIn}
+                disabled={isSigningIn}
+                className="px-4 md:px-5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <Activity className="w-3 md:w-4 h-3 md:h-4" />
+                <span className="hidden xs:inline">UPLOAD</span>
+              </button>
+              <button
+                onClick={handleSignIn}
+                disabled={isSigningIn}
+                className="px-5 md:px-6 py-2 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full text-[10px] md:text-xs font-bold tracking-wide transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-w-[80px]"
+              >
+                {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "LOGIN"}
+              </button>
+            </div>
           </div>
         </nav>
 
@@ -183,13 +200,27 @@ export default function LandingPage() {
         </div>
 
         {/* 2. STICKY SCROLL STORY */}
-        <div ref={stickyRef} className="relative w-full h-[300vh]">
-          <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+        <div ref={stickyRef} className="relative w-full h-[400vh]">
+          <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-hidden">
             
             <div className="absolute inset-0 bg-[#0A192F] pointer-events-none -z-20" />
 
             {/* Cinematic Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#0A192F] via-transparent to-[#0A192F] z-10 pointer-events-none" />
+
+            {/* SHARED ASSET: The Shield/Health Core (Responsive Animation) */}
+            <motion.div 
+              className="absolute z-30 flex items-center justify-center will-change-[transform,opacity,filter]"
+              style={{ 
+                opacity: shieldOpacity,
+                scale: shieldScale,
+                y: shieldY,
+              }}
+            >
+              <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center backdrop-blur-sm">
+                <ShieldCheck className="w-20 h-20 md:w-24 md:h-24 text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]" />
+              </div>
+            </motion.div>
 
             {/* PHASE 1: Raw Report Blur (Chaos) */}
             <motion.div 
@@ -323,20 +354,46 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-24 text-center">
-              <h3 className="text-2xl font-bold mb-6 text-white tracking-tight">Ready to understand your health?</h3>
+              <p className="text-emerald-400 font-medium mb-4 tracking-widest text-xs uppercase">Your health, decoded.</p>
+              <h3 className="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight max-w-2xl mx-auto leading-tight">
+                Stop guessing. Start knowing.
+              </h3>
+              <p className="text-lg text-slate-400 mb-10 max-w-lg mx-auto font-light leading-relaxed">
+                Drop your first lab report into Aegis and see your health clearly. Premium health intelligence for everyone.
+              </p>
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn}
                 className="px-10 py-5 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full font-bold tracking-wide transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-flex items-center gap-2"
               >
-                {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "CREATE SECURE ACCOUNT"}
+                {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Sparkles className="w-5 h-5 text-emerald-500" /> START YOUR JOURNEY</>}
               </button>
             </div>
           </div>
           
           {/* Footer */}
-          <footer className="mt-32 pt-8 border-t border-white/5 text-center text-xs tracking-widest text-slate-600 uppercase">
-            &copy; {new Date().getFullYear()} Aegis Health AI.
+          <footer className="mt-32 pb-12 border-t border-white/5 pt-12">
+            <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="text-center md:text-left">
+                <p className="text-xs text-slate-500 tracking-wide uppercase mb-1">
+                  &copy; {new Date().getFullYear()} Aegis Health AI. All rights reserved.
+                </p>
+                <p className="text-[10px] text-slate-600 tracking-[0.2em] font-mono">
+                  VERSION 2.4 / SECURE ENCRYPTION ACTIVE
+                </p>
+              </div>
+
+              <div className="text-center md:text-right">
+                <p className="text-xs text-slate-400 tracking-wide mb-2 flex items-center justify-center md:justify-end gap-2">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                  Designed & Developed by <span className="text-white font-medium">Aniket Dhuri</span>
+                </p>
+                <p className="text-[10px] text-slate-500 flex items-center justify-center md:justify-end gap-1 font-medium italic">
+                  Powered by <span className="text-slate-300">Gemini AI Studio</span>
+                  <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                </p>
+              </div>
+            </div>
           </footer>
         </div>
 
