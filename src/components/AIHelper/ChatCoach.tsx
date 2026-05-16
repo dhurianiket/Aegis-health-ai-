@@ -161,8 +161,11 @@ STRICT RULES:
 Clinical Context:
 ${context}`;
 
-      const chat = ai.chats.create({
-        model: "gemini-2.5-flash",
+      const isComplex = text.length > 150 || /analyze|summarize|explain in detail|sbaar|diagnosis|clinical/i.test(text);
+      let targetModel = isComplex ? "gemini-2.5-pro" : "gemini-2.5-flash";
+
+      let chat = ai.chats.create({
+        model: targetModel,
         history: historyItems,
         config: {
           systemInstruction: sysInstruction,
@@ -170,7 +173,26 @@ ${context}`;
         }
       });
 
-      const stream = await chat.sendMessageStream({ message: text });
+      let stream;
+      try {
+        stream = await chat.sendMessageStream({ message: text });
+      } catch (proError: any) {
+        if (targetModel === "gemini-2.5-pro") {
+          console.warn("Gemini Pro chat failed, falling back to Flash:", proError);
+          chat = ai.chats.create({
+            model: "gemini-2.5-flash",
+            history: historyItems,
+            config: {
+              systemInstruction: sysInstruction,
+              temperature: 0.2,
+            }
+          });
+          stream = await chat.sendMessageStream({ message: text });
+        } else {
+          throw proError;
+        }
+      }
+
       let finalText = "";
       let finalUsage: any = null;
       

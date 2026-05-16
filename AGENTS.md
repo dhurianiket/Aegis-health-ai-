@@ -26,9 +26,9 @@ Stored in GitHub Actions Secrets (never hardcoded). Declared in `vite-env.d.ts` 
 - Firebase config variables.
 
 ## Strict AI System Guardrails & v1.6.0 Protections
-**1. Model Standardization:** Must always use `gemini-2.5-flash` verified against the active project account.
+**1. Model Standardization:** Aegis uses a hybrid Gemini strategy. Uses `gemini-2.5-flash` for extraction, chat routing, and structured tasks. Uses `gemini-2.5-pro` for SBAAR, doctor summary, specialist summary, and final clinical reasoning.
 **2. Storage Integrity:** Do not alter Firebase Storage upload paths or Security Rules. Per-user file isolation is absolute.
-**3. API Rate Limiting:** All Gemini API calls must go through `safeGeminiCall()` in `promptFramework.ts` (handles 3-attempt exponential backoff). PDFs process sequentially with a 5-second delay.
+**3. API Rate Limiting:** All Gemini API calls must go through `safeGeminiCall()` in `promptFramework.ts` (handles 3-attempt exponential backoff). PDFs process sequentially with a 5-second delay. Pro tasks must include a fallback to Flash.
 **4. Data Visualization (Recharts):** - **DO NOT** modify the safe `getTime()` date parsing fallback in `LabTrendChart.tsx` (fixes Safari/iOS `Invalid Date` bugs).
    - **DO NOT** change the numerical parser `parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''))`.
    - Charts use `ResizeObserver` with `debounce={50}`. Never render with width/height of -1.
@@ -36,6 +36,7 @@ Stored in GitHub Actions Secrets (never hardcoded). Declared in `vite-env.d.ts` 
    - The PDF template must always target the hidden `#health-report-printable` node to enforce light-mode and render the AI SBAAR summary.
 **6. Clinical Safety:** **DO NOT** remove the `runSafetyCheck` interceptor or the `<clinical_safety_rules>` from the `COACH_SYSTEM_INSTRUCTION`. The AI must refuse diagnosis and append disclaimers.
 **7. UX Performance:** **DO NOT** remove `localStorage` checks for `ConsentScreen.tsx` or the Theme Toggle. `SpecialistLounge.tsx` must maintain its horizontal scrolling UI (`overflow-x-auto`) on mobile devices.
+**8. Schema Merge Logic:** Do not remove the schema merge logic that supports both `lab_values` and `observations`.
 
 ## Data Structure (Firestore)
 `users/{uid}/` -> `documents/{docId}/`, `profile/`, `medications/`, `usage/` (Analytics)

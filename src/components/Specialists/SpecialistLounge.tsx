@@ -1,3 +1,4 @@
+import { generateSourceHash, getCachedReport, saveCachedReport } from "../../services/cacheService";
 import React, { useState, useRef, useEffect } from "react";
 import { SpecialistId } from "../../types/ai";
 import { getSpecialist, SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
@@ -8,6 +9,8 @@ import getAI from "../../lib/geminiClient";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp } from "lucide-react";
+
+const PROMPT_VERSION = "v1.0";
 
 export default function SpecialistLounge() {
   const [activeSpecialist, setActiveSpecialist] = useState<SpecialistId>('cardiologist');
@@ -105,8 +108,24 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         parts: [{ text: m.content }],
       }));
 
-      const chat = ai.chats.create({
-        model: "gemini-2.5-flash",
+      // Check Cache for Specialist Summaries
+      let sourceHashForCache = "";
+      if (isSummaryRequest && historyItems.length === 0) {
+        sourceHashForCache = await generateSourceHash(systemPrompt + text);
+        const cached = await getCachedReport(user.uid, activeProfile.id || "Myself", `SpecialistSummary_${activeSpecialist}`, sourceHashForCache, PROMPT_VERSION, false);
+        if (cached) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: cached, timestamp: new Date() }
+          ]);
+          setIsTyping(false);
+          setStreamedText("");
+          return;
+        }
+      }
+
+      let chat = ai.chats.create({
+        model: isSummaryRequest ? "gemini-2.5-pro" : "gemini-2.5-flash",
         history: historyItems,
         config: {
           systemInstruction: systemPrompt,
@@ -114,7 +133,26 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         }
       });
 
-      const stream = await chat.sendMessageStream({ message: text });
+      let stream;
+      try {
+        stream = await chat.sendMessageStream({ message: text });
+      } catch (proError: any) {
+        if (isSummaryRequest) {
+          console.warn("Gemini Pro stream failed, falling back to Flash:", proError);
+          chat = ai.chats.create({
+            model: "gemini-2.5-flash",
+            history: historyItems,
+            config: {
+              systemInstruction: systemPrompt,
+              temperature: 0.1,
+            }
+          });
+          stream = await chat.sendMessageStream({ message: text });
+        } else {
+          throw proError;
+        }
+      }
+
       let finalText = "";
       for await (const chunk of stream) {
         if (controller.signal.aborted) break;
@@ -129,6 +167,18 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           { role: "assistant", content: finalText.trim(), timestamp: new Date() }
         ]);
         setStreamedText("");
+        
+        if (isSummaryRequest && historyItems.length === 0 && sourceHashForCache) {
+          await saveCachedReport(user.uid, {
+            patientId: activeProfile.id || "Myself",
+            reportType: `SpecialistSummary_${activeSpecialist}`,
+            sourceHash: sourceHashForCache,
+            content: finalText.trim(),
+            modelUsed: "gemini-2.5-pro",
+            promptVersion: PROMPT_VERSION,
+            status: "success"
+          });
+        }
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {

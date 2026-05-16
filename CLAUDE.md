@@ -31,7 +31,10 @@ All secrets are stored in GitHub Actions Secrets and never hardcoded:
 - Firebase config variables (API key, project ID, app ID, etc.)
 
 ## Active AI Model
-The approved AI model for this project must always be a currently supported Gemini Flash model verified against the active project account. Currently using `gemini-2.5-flash`.
+Aegis uses a hybrid Gemini strategy:
+- Gemini Flash (`gemini-2.5-flash`) is the default model for high-volume, structured, and cost-sensitive tasks like extraction, formatting, and chat routing.
+- Gemini Pro (`gemini-2.5-pro`) is reserved for clinician-facing, long-context, trust-critical synthesis like SBAAR and Specialist/Doctor summaries.
+- Pro tasks degrade gracefully to Flash if Pro fails or is unavailable.
 
 ## Architecture Rules (Always Follow)
 1. Never hardcode API keys, tokens, URLs, or account IDs in any file

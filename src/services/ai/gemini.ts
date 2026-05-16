@@ -98,9 +98,7 @@ ${OUTPUT_FORMAT_JSON}
 
   try {
     const ai = getAI();
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+    const geminiConfig = {
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         maxOutputTokens: 8192,
@@ -147,7 +145,23 @@ ${OUTPUT_FORMAT_JSON}
           required: ["summary", "urgency_level", "confidence_score"],
         },
       },
-    });
+    };
+    
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        ...geminiConfig,
+        model: "gemini-2.5-pro",
+        contents: geminiConfig.contents as any
+      });
+    } catch (proError: any) {
+      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
+      response = await ai.models.generateContent({
+        ...geminiConfig,
+        model: "gemini-2.5-flash",
+        contents: geminiConfig.contents as any
+      });
+    }
 
     try {
       if (response?.usageMetadata) {
@@ -294,14 +308,27 @@ Generate the summary strictly following the plain text format above.
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
-        maxOutputTokens: 8192,
-        temperature: 0,
-      },
-    });
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          maxOutputTokens: 8192,
+          temperature: 0,
+        },
+      });
+    } catch (proError: any) {
+      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
+      response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          maxOutputTokens: 8192,
+          temperature: 0,
+        },
+      });
+    }
 
     try {
       if (response?.usageMetadata) {

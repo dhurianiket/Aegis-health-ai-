@@ -42,13 +42,27 @@ export const analyzeSharedRisks = async (
 ): Promise<GeneticRiskAnalysis[]> => {
   const ai = getAI();
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+    const aiConfig = {
       contents: [{ role: "user", parts: [{ text: `${GENETIC_PROMPT}\n\n<input>\n${JSON.stringify(profilesData)}\n</input>` }] }],
       config: {
         responseMimeType: "application/json",
       },
-    });
+    };
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        ...aiConfig,
+        model: "gemini-2.5-pro",
+        contents: aiConfig.contents as any
+      });
+    } catch (proErr) {
+      console.warn("Genetic analysis failed with Pro, falling back to Flash", proErr);
+      response = await ai.models.generateContent({
+        ...aiConfig,
+        model: "gemini-2.5-flash",
+        contents: aiConfig.contents as any
+      });
+    }
 
     return safeJsonParse<GeneticRiskAnalysis[]>(response.text, []);
   } catch (error) {

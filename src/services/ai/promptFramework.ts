@@ -3,6 +3,7 @@ import { getAI } from "../../lib/geminiClient";
 import { safeJsonParse } from "../../utils/aiUtils";
 import { auth } from "../../lib/firebase/config";
 import { trackUsage } from "../usageService";
+import { generateSourceHash, getCachedReport, saveCachedReport } from "../cacheService";
 
 export const CORE_SYSTEM_PROMPT = `
 <role>
@@ -300,8 +301,9 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
   return safeJsonParse<any>(response.text, {});
 }
 
-export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[]) {
+export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[], forceRefresh: boolean = false) {
   const ai = getAI();
+  const PROMPT_VERSION = "v1.0";
   
   const promptText = `${CORE_SYSTEM_PROMPT}
 
@@ -347,13 +349,58 @@ Symptoms:
 ${JSON.stringify(symptoms)}
 `;
 
-  const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [{ role: "user", parts: [{ text: promptText }] }],
-    config: { maxOutputTokens: 8192, temperature: 0 }
-  }), 3, "sbar");
+  // Parse patient context JSON to find profile ID
+  let profileId = "Myself";
+  try {
+    const pc = JSON.parse(patientContextJSON);
+    if (pc && pc.profileId) {
+      profileId = pc.profileId;
+    }
+  } catch (e) {}
+
+  const sourceHash = await generateSourceHash(promptText);
+  const userId = auth?.currentUser?.uid || "unknown";
+
+  if (userId !== "unknown") {
+    const cachedContent = await getCachedReport(userId, profileId, "SBAAR_Prompt", sourceHash, PROMPT_VERSION, forceRefresh);
+    if (cachedContent) {
+       console.log("Returning cached SBAAR Prompt report.");
+       return cachedContent;
+    }
+  }
+
+  let response;
+  let modelUsed = "gemini-2.5-pro";
+  try {
+    response = await safeGeminiCall(() => ai.models.generateContent({
+      model: "gemini-2.5-pro",
+      contents: [{ role: "user", parts: [{ text: promptText }] }],
+      config: { maxOutputTokens: 8192, temperature: 0 }
+    }), 2, "sbar"); // try Pro up to 2 times
+  } catch (err: any) {
+    console.warn("Gemini Pro SBAR failed, falling back to Flash:", err.message);
+    modelUsed = "gemini-2.5-flash";
+    response = await safeGeminiCall(() => ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: promptText }] }],
+      config: { maxOutputTokens: 8192, temperature: 0 }
+    }), 2, "sbar_fallback");
+  }
   
-  return response.text || "Failed to generate summary.";
+  const content = response.text || "Failed to generate summary.";
+  if (content && content !== "Failed to generate summary." && userId !== "unknown") {
+      await saveCachedReport(userId, {
+        patientId: profileId,
+        reportType: "SBAAR_Prompt",
+        sourceHash,
+        content,
+        modelUsed,
+        promptVersion: PROMPT_VERSION,
+        status: "success"
+      });
+  }
+
+  return content;
 }
 
 export async function explainInteraction(medicationContext: any) {

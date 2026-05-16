@@ -3,15 +3,28 @@ import {
 } from "../types/medical";
 import { getAI } from "../lib/geminiClient";
 import { getPatientContext, formatContextForPrompt } from "./ai/contextService";
+import { generateSourceHash, getCachedReport, saveCachedReport } from "./cacheService";
+import { auth } from "../lib/firebase/config";
+
+const PROMPT_VERSION = "v1.0";
 
 export const generateSBAR = async (
   userId: string,
   profile: UserProfile,
+  forceRefresh: boolean = false
 ): Promise<string> => {
+  const patientData = await getPatientContext(userId, profile);
+  const formattedContext = formatContextForPrompt(patientData);
+  const sourceHash = await generateSourceHash(formattedContext);
+  
+  const cachedContent = await getCachedReport(userId, profile.id || "Myself", "SBAAR", sourceHash, PROMPT_VERSION, forceRefresh);
+  if (cachedContent) {
+    console.log("Returning cached SBAAR report.");
+    return cachedContent;
+  }
+
   const ai = getAI();
   if (!ai) throw new Error("Aura AI is currently offline.");
-  
-  const patientData = await getPatientContext(userId, profile);
 
   const age = profile.dob
     ? Math.floor((new Date().getTime() - new Date(profile.dob).getTime()) / 3.15576e10)
@@ -60,22 +73,52 @@ PART 2: AI DR SUMMARY (For the Patient)
 [Write a detailed, user-friendly doctor-style summary for the patient. Explain the report in clear language. Start with the most important findings. Explain what each abnormal result means in context. Include how this report fits into the patient's history. Explain trends, improvement, worsening, or stability. Detailed enough for the patient to understand. Avoid jargon where possible. Explain normal findings briefly.]
 
 CLINICAL CONTEXT:
-${formatContextForPrompt(patientData)}
+${formattedContext}
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
-        maxOutputTokens: 8192,
-        temperature: 0,
-      },
-    });
+    let response;
+    let modelUsed = "gemini-2.5-pro";
+    try {
+      response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          maxOutputTokens: 8192,
+          temperature: 0,
+        },
+      });
+    } catch (proError: any) {
+      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
+      modelUsed = "gemini-2.5-flash";
+      response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          maxOutputTokens: 8192,
+          temperature: 0,
+        },
+      });
+    }
 
-    return response.text || "Failed to generate summary.";
+    const content = response.text || "Failed to generate summary.";
+    
+    if (content && content !== "Failed to generate summary.") {
+      await saveCachedReport(userId, {
+        patientId: profile.id || "Myself",
+        reportType: "SBAAR",
+        sourceHash,
+        content,
+        modelUsed,
+        promptVersion: PROMPT_VERSION,
+        status: "success"
+      });
+    }
+
+    return content;
   } catch (error) {
     console.error("Gemini SBAR Generation failed:", error);
     throw new Error("Unable to generate summary. Please try again.");
   }
 };
+

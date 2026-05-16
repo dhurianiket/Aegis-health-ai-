@@ -12,18 +12,22 @@
 ### 1. Ingestion & Extraction
 - **Flow:** PDF/Image -> Firebase Storage -> `promptFramework.ts` -> Zod Schema Validation -> Firestore.
 - Extracts `display_value` (e.g., "< 0.1") for UI accuracy and stripped `numeric_value` for deterministic chart math.
+- **Model:** `gemini-2.5-flash` handles throughput and structured validation.
 
 ### 2. Context Aggregation (`contextService.ts`)
 - Acts as the RAG engine. Groups historical lab results chronologically.
 - Consolidates manual medications (handling schema fallbacks like `name` vs `medicationName`) and injects a master `PatientContext` into AI prompts.
+- **Model:** `gemini-2.5-flash`.
 
 ### 3. Virtual Polyclinic (`specialistFactory.ts`)
 - Utilizes a Factory Pattern to route user chats to 10 specific AI personas.
 - Grounded in real-world clinical guidelines (e.g., ACC/AHA, ADA).
+- **Model:** `gemini-2.5-pro` for deep synthesis, falling back to `gemini-2.5-flash`.
 
 ### 4. AI Chat & SBAAR Generation
 - **Streaming:** Handled via `useCoach.ts` using `AbortController` and `try/catch` fallbacks.
 - **Proactive Summaries:** Intent detection triggers structured SBAAR outputs and plain-language summaries.
+- **Routing:** Low-complexity chats use `gemini-2.5-flash`. High-complexity, clinical, or summary requests auto-escalate to `gemini-2.5-pro` (with Flash fallbacks).
 
 ### 5. PDF Handoff (`pdfExportService.ts`)
 - Captures SVG Recharts accurately using `html-to-image` on a hidden DOM node, bridges to a multi-page A4 document via `jspdf`.
