@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -40,10 +41,17 @@ const SPECIALISTS_SHOWCASE = [
 // MAIN COMPONENT
 // ----------------------------------------------------------------------
 export default function LandingPage() {
-  const { signIn, isSigningIn } = useAuth();
+  const { user, signIn, isSigningIn } = useAuth();
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
   const [legalModalOpen, setLegalModalOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const openLegalModal = (type: 'privacy' | 'terms') => {
     setLegalModalType(type);
