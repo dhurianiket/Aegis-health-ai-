@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import LegalModal from './LegalModal';
@@ -93,12 +94,10 @@ export default function LandingPage() {
   const insightOpacity = useTransform(stickyProgress, [0.65, 0.9, 1], [0, 1, 1]);
   const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], ["20vh", "5vh", "5vh"]);
 
-  const handleSignIn = async () => {
-    try {
-      await signIn();
-    } catch (error) {
-      console.error(error);
-    }
+  const navigate = useNavigate();
+
+  const handleSignIn = () => {
+    navigate('/login');
   };
 
   return (
@@ -162,7 +161,7 @@ export default function LandingPage() {
                 Understand what is normal, what needs attention, and what changed over time. Your personal clinical AI assistant.
               </motion.p>
 
-              <motion.p
+              <motion.div
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
@@ -174,7 +173,7 @@ export default function LandingPage() {
                 <span>
                   Powered by <strong>Google Gemini 2.5</strong> for advanced clinical reasoning and instant lab report extraction.
                 </span>
-              </motion.p>
+              </motion.div>
 
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -462,7 +461,7 @@ export default function LandingPage() {
                 <img 
                   src="https://lh3.googleusercontent.com/d/11-MtBvMJRl6OpfL60wypuMn-LCw2jC50" 
                   alt="Aniket Dhuri - Founder & Lead Developer of Aegis Health AI" 
-                  className="w-48 h-48 md:w-64 md:h-64 shrink-0 object-cover rounded-2xl border border-slate-100 shadow-sm relative z-10 bg-slate-800"
+                  className="w-48 h-48 md:w-64 md:h-64 shrink-0 object-cover object-top rounded-2xl border border-slate-100 shadow-sm relative z-10 bg-slate-800"
                 />
 
                 <div className="text-center md:text-left flex-1 relative z-10">
