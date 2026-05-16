@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import LegalModal from './LegalModal';
@@ -94,10 +93,12 @@ export default function LandingPage() {
   const insightOpacity = useTransform(stickyProgress, [0.65, 0.9, 1], [0, 1, 1]);
   const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], ["20vh", "5vh", "5vh"]);
 
-  const navigate = useNavigate();
-
-  const handleSignIn = () => {
-    navigate('/login');
+  const handleSignIn = async () => {
+    try {
+      await signIn();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

@@ -716,8 +716,6 @@ function MainApp() {
   );
 }
 
-const Login = lazy(() => import("./components/Auth/Login"));
-
 export default function App() {
   const { user, loading: authLoading } = useAuth();
   const [splashTimeout, setSplashTimeout] = useState(true);
@@ -736,7 +734,6 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={!user ? <LandingPage /> : <Navigate to="/dashboard" replace />} />
-      <Route path="/login" element={!user ? <Suspense fallback={<SplashScreen />}><Login /></Suspense> : <Navigate to="/dashboard" replace />} />
       <Route path="/dashboard" element={user ? <MainApp /> : <Navigate to="/" replace />} />
       {/* 
         Route all other existing frontend hashes to MainApp for backwards compatibility 

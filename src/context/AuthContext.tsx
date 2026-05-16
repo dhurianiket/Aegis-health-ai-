@@ -111,9 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.log("Sign-in successful.");
       } catch (popupError: any) {
         if (popupError?.code === "auth/popup-blocked") {
-          console.warn("Popup blocked. Falling back to redirect...");
-          alert("The sign-in popup was blocked. Redirecting you to sign in...");
-          await signInWithRedirect(auth, googleProvider);
+          console.warn("Popup blocked.");
+          alert("The sign-in popup was blocked. Please allow popups for this site and try again.");
+        } else if (popupError?.code === "auth/cancelled-popup-request" || popupError?.code === "auth/popup-closed-by-user") {
+          console.log("Sign-in popup closed by user or cancelled.");
         } else {
           throw popupError;
         }
@@ -144,9 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         alert(
           "Firebase API key is missing or invalid. Please check your .env.local file or Secrets panel.",
         );
-      } else if (errorCode === "auth/cancelled-popup-request" || errorCode === "auth/popup-closed-by-user") {
-        // User closed the popup, no need for major alert
-        console.log("Sign-in popup closed by user or cancelled.");
       } else {
         alert(
           `Failed to sign in (${errorCode || "Unknown Error"}). \n\nIf you are in the AI Studio preview, please open the app in a new tab to sign in with Google.`
