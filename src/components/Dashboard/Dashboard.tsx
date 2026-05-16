@@ -116,23 +116,28 @@ export default function Dashboard({
         // Aggregate all lab_values across documents by marker name
         const labMap = new Map<string, any[]>();
         docs.forEach(doc => {
-          if (doc.extractedData?.lab_values) {
-             doc.extractedData.lab_values.forEach((lab: any) => {
-                if (!lab.marker) return;
-                const name = lab.marker;
-                const entry = {
-                   ...lab,
-                   date: lab.date || doc.date || (typeof doc.createdAt === 'string' ? doc.createdAt : (doc.createdAt as any)?.toDate?.()?.toISOString()) || new Date().toISOString(),
-                   docId: doc.id
-                };
-                if (!labMap.has(name)) labMap.set(name, []);
-                labMap.get(name)!.push(entry);
-             });
-          }
+          const labValues = doc.extractedData?.lab_values || [];
+          const observations = doc.extractedData?.observations || [];
+          const allExtractedLabs = [...(Array.isArray(labValues) ? labValues : []), ...(Array.isArray(observations) ? observations : [])];
+
+          allExtractedLabs.forEach((lab: any) => {
+             const rawName = lab.marker || lab.name || lab.label || lab.markerName;
+             if (!rawName) return;
+             const normalizedName = rawName.toLowerCase().trim();
+             
+             const entry = {
+                ...lab,
+                marker: rawName,
+                date: lab.date || lab.collection_date || doc.date || (typeof doc.createdAt === 'string' ? doc.createdAt : (doc.createdAt as any)?.toDate?.()?.toISOString()) || new Date().toISOString(),
+                docId: doc.id
+             };
+             if (!labMap.has(normalizedName)) labMap.set(normalizedName, []);
+             labMap.get(normalizedName)!.push(entry);
+          });
         });
         
         const aggregatedLabs: any[] = [];
-        labMap.forEach((vals, marker) => {
+        labMap.forEach((vals, normalizedMarker) => {
            vals.sort((a, b) => {
              const timeA = new Date(a.date).getTime() || 0;
              const timeB = new Date(b.date).getTime() || 0;
@@ -141,17 +146,19 @@ export default function Dashboard({
            const latest = vals[0];
            const previous = vals.length > 1 ? vals[1] : null;
            let trend = 'stable';
-           if (previous && !isNaN(parseFloat(latest.value)) && !isNaN(parseFloat(previous.value))) {
-              const diff = parseFloat(latest.value) - parseFloat(previous.value);
+           if (previous && !isNaN(parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''))) && !isNaN(parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, '')))) {
+              const latestNum = parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''));
+              const previousNum = parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, ''));
+              const diff = latestNum - previousNum;
               if (diff > 0) trend = 'up';
               else if (diff < 0) trend = 'down';
            }
            aggregatedLabs.push({
-              markerName: marker,
-              value: latest.value,
+              markerName: latest.marker || latest.name || latest.label || latest.markerName || normalizedMarker,
+              value: latest.value || latest.display_value,
               unit: latest.unit,
               status: latest.status?.toLowerCase() || 'normal',
-              referenceRange: latest.reference_range,
+              referenceRange: latest.reference_range || latest.referenceRange,
               date: latest.date,
               trend,
               docId: latest.docId,

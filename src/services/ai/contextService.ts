@@ -47,7 +47,13 @@ export const getPatientContext = async (
         if (Array.isArray(doc.extractedData.medications)) {
           doc.extractedData.medications.forEach((m: any) => {
             const medObj = typeof m === 'string' ? { name: m } : m;
-            parsedMeds.push({ ...medObj, source: 'report', priority: 3, date: doc.date });
+            parsedMeds.push({ 
+              ...medObj, 
+              name: medObj.name || medObj.medicationName || medObj.drugName || "Unknown Medication",
+              source: 'report', 
+              priority: 3, 
+              date: doc.date 
+            });
           });
         }
         if (doc.extractedData.sbar) {

@@ -70,19 +70,20 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
               extractedValues.push(...l.history.map((h: any) => ({
                  ...h,
                  markerName: h.marker || h.testName || l.markerName,
-                 actualDate: h.extractedDate || h.collection_date || null
+                 actualDate: h.date || h.extractedDate || h.collection_date || null
               })));
            });
         } else if (reports && reports.length > 0) {
            // Passed from Reports
            reports.forEach(doc => {
               const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
-              const docDate = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || null;
+              const docDateFallback = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || doc.date || doc.createdAt || new Date().toISOString();
+              const safeDocDate = typeof docDateFallback === 'string' ? docDateFallback : docDateFallback?.toDate?.()?.toISOString() || new Date().toISOString();
               obs.forEach((o: any) => {
                  extractedValues.push({
                     ...o,
-                    markerName: o.marker || o.testName,
-                    actualDate: o.extractedDate || docDate
+                    markerName: o.marker || o.testName || o.name || o.label,
+                    actualDate: o.extractedDate || o.collection_date || o.date || safeDocDate
                  });
               });
            });
@@ -91,12 +92,13 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
            const docs = await getDocuments(user.uid, activeProfile?.id);
            (docs || []).forEach((doc: any) => {
               const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
-              const docDate = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || null;
+              const docDateFallback = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || doc.date || doc.createdAt || new Date().toISOString();
+              const safeDocDate = typeof docDateFallback === 'string' ? docDateFallback : docDateFallback?.toDate?.()?.toISOString() || new Date().toISOString();
               obs.forEach((o: any) => {
                  extractedValues.push({
                     ...o,
-                    markerName: o.marker || o.testName,
-                    actualDate: o.extractedDate || docDate
+                    markerName: o.marker || o.testName || o.name || o.label,
+                    actualDate: o.extractedDate || o.collection_date || o.date || safeDocDate
                  });
               });
            });

@@ -84,9 +84,11 @@ export interface Medication {
   userId: string;
   profileId?: string;
   name: string;
+  medicationName?: string;
+  drugName?: string;
   dosage: string;
   frequency: string;
-  status: MedicationStatus;
+  status?: MedicationStatus | string;
   startDate: string;
   endDate?: string;
   purpose?: string;

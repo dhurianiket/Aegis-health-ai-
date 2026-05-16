@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { getSpecialist, SpecialistId, SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
+import { SpecialistId } from "../../types/ai";
+import { getSpecialist, SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
 import { getPatientContext, formatContextForPrompt } from "../../services/ai/contextService";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";

@@ -46,6 +46,7 @@ export interface SpecialistProfile {
   systemPrompt: string;
 }
 
+export interface PatientContext {
   profile: UserProfile;
   labHistory: LabResult[];
   medications: Medication[];
