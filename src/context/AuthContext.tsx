@@ -104,12 +104,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       
       console.log("Current Origin:", window.location.origin);
       
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        await signInWithRedirect(auth, googleProvider);
-      } else {
+      // Cloudflare caching often breaks signInWithRedirect because of /__/auth/handler
+      // Therefore, we must enforce popup auth exclusively.
+      try {
         await signInWithPopup(auth, googleProvider);
         console.log("Sign-in successful.");
+      } catch (popupError: any) {
+        if (popupError?.code === "auth/popup-blocked") {
+          console.warn("Popup blocked. Falling back to redirect...");
+          alert("The sign-in popup was blocked. Redirecting you to sign in...");
+          await signInWithRedirect(auth, googleProvider);
+        } else {
+          throw popupError;
+        }
       }
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
@@ -137,16 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         alert(
           "Firebase API key is missing or invalid. Please check your .env.local file or Secrets panel.",
         );
-      } else if (errorCode === "auth/popup-blocked") {
-        console.warn("Popup blocked. Falling back to redirect...");
-        alert("The sign-in popup was blocked. Redirecting you to sign in...");
-        try {
-          // Import conditionally or just call if imported
-          const { signInWithRedirect } = await import("firebase/auth");
-          await signInWithRedirect(auth, googleProvider);
-        } catch (redirectError) {
-          console.error("Redirect fallback failed:", redirectError);
-        }
       } else if (errorCode === "auth/cancelled-popup-request" || errorCode === "auth/popup-closed-by-user") {
         // User closed the popup, no need for major alert
         console.log("Sign-in popup closed by user or cancelled.");
