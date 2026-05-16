@@ -356,49 +356,54 @@ function HealthReportPrintable({
             </tr>
           </thead>
           <tbody>
-            {context?.recentTrends?.length > 0 ? (
-              [...context.recentTrends].sort((a, b) => {
-                 const dA = a.date ? new Date(a.date).getTime() : 0;
-                 const dB = b.date ? new Date(b.date).getTime() : 0;
-                 return dA - dB;
-              }).map((trend: any, i: number) => {
-                const isOutOfRange = trend?.direction === "up" || trend?.direction === "down";
-                const statusColor = isOutOfRange ? "text-red-600 bg-red-50" : "text-emerald-600 bg-emerald-50";
-                const statusText = isOutOfRange ? "Out of Range" : "Normal";
-                
-                return (
-                  <tr key={i} className="border-b border-slate-100 last:border-0">
-                    <td className="py-4 font-bold text-slate-700">
-                      {trend?.marker || "N/A"}
-                      {trend?.date && <div className="text-xs text-slate-400 font-normal">{new Date(trend.date).toLocaleDateString()}</div>}
-                    </td>
-                    <td className="py-4 text-slate-600 font-medium">
-                      {trend?.value ?? "N/A"} <span className="text-xs text-slate-400">{trend?.unit || ""}</span>
-                    </td>
-                    <td className="py-4">
-                      {trend?.direction === "up" ? (
-                        <span className="text-red-500 font-bold flex items-center gap-1">↑ High</span>
-                      ) : trend?.direction === "down" ? (
-                        <span className="text-red-500 font-bold flex items-center gap-1">↓ Low</span>
-                      ) : (
-                        <span className="text-slate-500 font-medium flex items-center gap-1">- Stable</span>
-                      )}
-                    </td>
-                    <td className="py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${statusColor}`}>
-                        {statusText}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={4} className="py-4 text-slate-500">
-                  Not recorded.
-                </td>
-              </tr>
-            )}
+            {(() => {
+              const safeGetTime = (d: any) => {
+                if (!d) return 0;
+                const ts = new Date(d).getTime();
+                return isNaN(ts) ? (new Date(String(d).replace(/-/g, '/')).getTime() || 0) : ts;
+              };
+
+              return context?.recentTrends?.length > 0 ? (
+                [...context.recentTrends].sort((a, b) => safeGetTime(a.date) - safeGetTime(b.date)).map((trend: any, i: number) => {
+                  const isOutOfRange = trend?.direction === "up" || trend?.direction === "down";
+                  const statusColor = isOutOfRange ? "text-red-600 bg-red-50" : "text-emerald-600 bg-emerald-50";
+                  const statusText = isOutOfRange ? "Out of Range" : "Normal";
+                  const validTs = safeGetTime(trend?.date);
+                  
+                  return (
+                    <tr key={i} className="border-b border-slate-100 last:border-0">
+                      <td className="py-4 font-bold text-slate-700">
+                        {trend?.marker || "N/A"}
+                        {validTs > 0 && <div className="text-xs text-slate-400 font-normal">{new Date(validTs).toLocaleDateString()}</div>}
+                      </td>
+                      <td className="py-4 text-slate-600 font-medium">
+                        {trend?.value ?? "N/A"} <span className="text-xs text-slate-400">{trend?.unit || ""}</span>
+                      </td>
+                      <td className="py-4">
+                        {trend?.direction === "up" ? (
+                          <span className="text-red-500 font-bold flex items-center gap-1">↑ High</span>
+                        ) : trend?.direction === "down" ? (
+                          <span className="text-red-500 font-bold flex items-center gap-1">↓ Low</span>
+                        ) : (
+                          <span className="text-slate-500 font-medium flex items-center gap-1">- Stable</span>
+                        )}
+                      </td>
+                      <td className="py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${statusColor}`}>
+                          {statusText}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-4 text-slate-500">
+                    Not recorded.
+                  </td>
+                </tr>
+              );
+            })()}
           </tbody>
         </table>
       </div>

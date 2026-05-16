@@ -657,12 +657,13 @@ function MainApp() {
                   topFlags: ["Elevated HbA1c", "High LDL"], // Stub
                   medications: activeProfile.medications || [],
                   recentTrends: [
-                    { marker: "HbA1c", value: 6.2, unit: "%", direction: "up" },
+                    { marker: "HbA1c", value: 6.2, unit: "%", direction: "up", date: new Date().toISOString() },
                     {
                       marker: "LDL",
                       value: 142,
                       unit: "mg/dL",
                       direction: "down",
+                      date: new Date().toISOString()
                     },
                   ],
                   doctorNotes: activeProfile.doctorNotes || [],
