@@ -459,9 +459,11 @@ export default function LandingPage() {
               <div className="bg-[#0f2a4a] border border-white/10 rounded-[2rem] p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 relative overflow-hidden">
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
                 
-                <div className="w-32 h-32 md:w-36 md:h-36 shrink-0 bg-gradient-to-tr from-slate-700 to-slate-800 rounded-full border-4 border-[#0A192F] shadow-xl overflow-hidden flex items-center justify-center relative z-10">
-                  <span className="text-4xl font-bold tracking-widest text-slate-400">AD</span>
-                </div>
+                <img 
+                  src="https://lh3.googleusercontent.com/d/11-MtBvMJRl6OpfL60wypuMn-LCw2jC50" 
+                  alt="Aniket Dhuri - Founder & Lead Developer of Aegis Health AI" 
+                  className="w-48 h-48 md:w-64 md:h-64 shrink-0 object-cover rounded-2xl border border-slate-100 shadow-sm relative z-10 bg-slate-800"
+                />
 
                 <div className="text-center md:text-left flex-1 relative z-10">
                   <h3 className="text-sm text-emerald-400 font-bold uppercase tracking-widest mb-1">Meet the Founder</h3>
