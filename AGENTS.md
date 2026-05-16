@@ -1,6 +1,28 @@
 # Aegis Health AI — Agent Context & Guardrails
 **Target Version:** 1.6.0+
 
+# CRITICAL SYSTEM DIRECTIVES FOR AI AGENT
+
+## Rule 1: NO IMPERATIVE AUTH ROUTING
+**NEVER** put `Maps('/dashboard')` or any router pushes inside an `onClick` handler for login buttons. 
+* **Why:** It causes race conditions where the router evaluates state before Firebase finishes initializing.
+* **Requirement:** Auth routing MUST be handled passively via `useEffect` hooks that watch the `user` and `loading` state from `AuthContext`. Buttons should ONLY execute `await signIn()`.
+
+## Rule 2: STRICTLY POPUP AUTHENTICATION
+**NEVER** implement `signInWithRedirect` or `getRedirectResult`. 
+* **Why:** It breaks behind Cloudflare proxies and triggers cross-site tracking blocks on iOS/Safari.
+* **Requirement:** ONLY use `signInWithPopup`.
+
+## Rule 3: DO NOT TOUCH FIREBASE CONFIG
+**NEVER** alter `src/lib/firebase/config.ts` to use default `.firebaseapp.com` domains.
+* **Requirement:** The `authDomain` must remain strictly locked to `aegishealthai.co.in` to ensure cookie domain alignment.
+
+## Rule 4: NO REDUNDANT AUTH VIEWS
+**NEVER** create a `Login.tsx` or `Auth.tsx` page view. 
+* **Requirement:** Authentication is handled directly on the `LandingPage.tsx` via the Google SSO popup overlay. Keep the router clean.
+
+**IF YOU ARE ASSIGNED A FRONTEND BUG:** Do not touch backend security, Firestore logic, or Auth configurations to fix a CSS or Router issue. Keep your blast radius small.
+
 ## Project Overview
 Aegis is a personal health management Progressive Web App (PWA) that allows users to upload medical reports, extract lab values using AI, track health trends over time, and consult AI-powered specialists.
 

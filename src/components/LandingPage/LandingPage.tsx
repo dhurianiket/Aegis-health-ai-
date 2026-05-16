@@ -41,17 +41,17 @@ const SPECIALISTS_SHOWCASE = [
 // MAIN COMPONENT
 // ----------------------------------------------------------------------
 export default function LandingPage() {
-  const { user, signIn, isSigningIn } = useAuth();
+  const { user, loading, signIn, isSigningIn } = useAuth();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
   const [legalModalOpen, setLegalModalOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       navigate('/dashboard', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const openLegalModal = (type: 'privacy' | 'terms') => {
     setLegalModalType(type);
@@ -463,36 +463,36 @@ export default function LandingPage() {
               </div>
 
             {/* 5. ABOUT THE FOUNDER SECTION */}
-            <div className="mt-32 mb-16 max-w-4xl mx-auto">
-              <div className="bg-[#0f2a4a] border border-white/10 rounded-[2rem] p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 relative overflow-hidden">
+            <div className="mt-32 mb-16 max-w-2xl mx-auto">
+              <div className="bg-[#0f2a4a] border border-white/10 rounded-[2rem] p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col items-center gap-6 relative overflow-hidden">
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
                 
                 <img 
                   src="https://lh3.googleusercontent.com/d/11-MtBvMJRl6OpfL60wypuMn-LCw2jC50" 
                   alt="Aniket Dhuri - Founder & Lead Developer of Aegis Health AI" 
-                  className="w-48 h-48 md:w-64 md:h-64 shrink-0 object-cover object-top rounded-2xl border border-slate-100 shadow-sm relative z-10 bg-slate-800"
+                  className="w-48 h-48 md:w-56 md:h-56 shrink-0 object-cover object-[center_35%] rounded-full border border-slate-100 shadow-sm relative z-10 bg-slate-800"
                 />
 
-                <div className="text-center md:text-left flex-1 relative z-10">
-                  <h3 className="text-sm text-emerald-400 font-bold uppercase tracking-widest mb-1">Meet the Founder</h3>
+                <div className="text-center relative z-10 w-full flex flex-col items-center">
+                  <h3 className="text-sm text-emerald-400 font-bold uppercase tracking-widest mb-1 mt-2">Meet the Founder</h3>
                   <h2 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Aniket Dhuri</h2>
                   <p className="text-lg text-slate-400 font-medium mb-4">Founder & Lead Developer</p>
                   
-                  <p className="text-base text-slate-300 font-light leading-relaxed mb-6 italic">
+                  <p className="text-base text-slate-300 font-light leading-relaxed mb-8 italic max-w-md">
                     "Building the future of accessible, AI-driven healthcare in India."
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 sm:gap-6">
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
+                  <div className="flex flex-col items-center gap-5 w-full">
+                    <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                      <MapPin className="w-5 h-5 text-emerald-400" />
                       Maharashtra, India
                     </div>
-                    <div className="flex items-center gap-3">
-                      <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
-                        <Github className="w-4 h-4" />
+                    <div className="flex items-center justify-center gap-4">
+                      <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                        <Github className="w-5 h-5" />
                       </a>
-                      <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
-                        <Linkedin className="w-4 h-4" />
+                      <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                        <Linkedin className="w-5 h-5" />
                       </a>
                     </div>
                   </div>

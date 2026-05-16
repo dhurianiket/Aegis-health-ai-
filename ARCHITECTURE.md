@@ -7,6 +7,14 @@
 - **Authentication**: Firebase Auth (Google Sign-In)
 - **AI Integration**: Gemini API (`@google/genai`) via Cloudflare Gateway
 
+## Authentication Architecture (v1.6.0+)
+Aegis Health AI uses Firebase Authentication with strict cross-origin tracking protections enabled for modern browsers.
+
+* **Auth Domain:** The Firebase `authDomain` is strictly locked to `aegishealthai.co.in`. We do not use default `firebaseapp.com` domains in production to prevent Safari/Chrome from blocking session cookies.
+* **Sign-In Method:** Google SSO is handled exclusively via `signInWithPopup`. 
+* **Routing Strategy (State-Driven):** We do not use imperative routing for authentication. The Landing Page (`/`) unauthenticated view passively watches the global Auth Context. When `!loading && user` resolves to true, a `useEffect` hook handles the programmatic push to `/dashboard`.
+* **UI Flow:** There is no dedicated `/login` route. Unauthenticated users remain on `/` and trigger the Auth popup via overlay.
+
 ## Core Pipelines (v1.6.0)
 
 ### 1. Ingestion & Extraction
