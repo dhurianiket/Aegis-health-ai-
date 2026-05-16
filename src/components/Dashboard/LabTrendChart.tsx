@@ -45,11 +45,20 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   
   useEffect(() => {
     if (!containerRef.current) return;
+    let timeoutId: any;
     const observer = new ResizeObserver((entries) => {
-      setContainerWidth(entries[0].contentRect.width);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (entries[0]) {
+          setContainerWidth(entries[0].contentRect.width);
+        }
+      }, 50); // Recharts guardrail: 50ms debounce
     });
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
   }, []);
 
   const isMobile = width < 768;
@@ -70,7 +79,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
               extractedValues.push(...l.history.map((h: any) => ({
                  ...h,
                  markerName: h.marker || h.testName || l.markerName,
-                 actualDate: h.date || h.extractedDate || h.collection_date || null
+                 actualDate: h.date || h.extractedDate || h.collection_date || null,
+                 fallbackDate: h.docDate || new Date().toISOString()
               })));
            });
         } else if (reports && reports.length > 0) {
@@ -83,7 +93,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                  extractedValues.push({
                     ...o,
                     markerName: o.marker || o.testName || o.name || o.label,
-                    actualDate: o.extractedDate || o.collection_date || o.date || safeDocDate
+                    actualDate: o.extractedDate || o.collection_date || o.date || null,
+                    fallbackDate: safeDocDate
                  });
               });
            });
@@ -98,7 +109,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                  extractedValues.push({
                     ...o,
                     markerName: o.marker || o.testName || o.name || o.label,
-                    actualDate: o.extractedDate || o.collection_date || o.date || safeDocDate
+                    actualDate: o.extractedDate || o.collection_date || o.date || null,
+                    fallbackDate: safeDocDate
                  });
               });
            });
@@ -168,9 +180,14 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         return isNaN(ts) ? new Date(String(dateStr).replace(/-/g, '/')).getTime() || 0 : ts;
       };
 
+      const getValidTime = (r: any) => {
+        const parsed = safeGetTime(r.actualDate);
+        return parsed > 0 ? parsed : (safeGetTime(r.fallbackDate) || new Date().getTime());
+      };
+
       const filtered = labResults
-        .filter((r) => r.markerName === selectedMarker && r.actualDate)
-        .sort((a, b) => safeGetTime(a.actualDate) - safeGetTime(b.actualDate));
+        .filter((r) => r.markerName === selectedMarker)
+        .sort((a, b) => getValidTime(a) - getValidTime(b));
 
       const now = new Date().getTime();
       let cutoff = 0;
@@ -179,8 +196,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
       const ranged = filtered.filter((r) => {
-        const t = safeGetTime(r.actualDate);
-        return t === 0 || t >= cutoff;
+        const t = getValidTime(r);
+        return t >= cutoff;
       });
 
       return ranged.map((r) => {
@@ -215,10 +232,10 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
         else if (st === 'low') flagCol = 'orange';
 
-        const safeTime = safeGetTime(r.actualDate);
+        const safeTime = getValidTime(r);
         return {
           timestamp: safeTime,
-          date: safeTime ? new Date(safeTime).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : String(r.actualDate),
+          date: safeTime ? new Date(safeTime).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : String(r.actualDate || r.fallbackDate),
           value: !isNaN(numericValue) ? numericValue : undefined,
           unit: r.unitCanonical || r.unit,
           refMin: !isNaN(refMin as number) ? refMin : undefined,

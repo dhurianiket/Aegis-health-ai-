@@ -255,7 +255,7 @@ function HealthReportPrintable({
             </h1>
           </div>
           <p className="text-slate-500 font-medium text-lg">
-            Patient: {context.userName}
+            Patient: {context?.userName || "Not recorded"}
           </p>
         </div>
         <div className="text-right">
@@ -278,21 +278,21 @@ function HealthReportPrintable({
                 Health Score
               </p>
               <p className="font-bold text-xl text-indigo-600">
-                {context.healthScore}% - Optimal
+                {context?.healthScore ?? "N/A"}% - Optimal
               </p>
           </div>
           <div className="bg-red-50 p-6 rounded-2xl space-y-2">
               <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">
                 Top Flags
               </p>
-            {context.topFlags.length > 0 ? (
+            {context?.topFlags?.length > 0 ? (
               context.topFlags.map((flag: string, i: number) => (
                 <div
                   key={i}
                   className="flex items-center gap-2 text-sm font-bold text-red-700"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  {flag}
+                  {flag || "Unknown flag"}
                 </div>
               ))
             ) : (
@@ -304,15 +304,32 @@ function HealthReportPrintable({
         </div>
       </div>
 
-      {context.aiClinicalSummary && (
+      {context?.aiClinicalSummary && (
         <div className="mb-12">
           <h2 className="text-2xl font-bold border-b-2 border-slate-200 pb-3 mb-6 uppercase tracking-widest text-indigo-700">
             Clinical AI Summary (SBAAR)
           </h2>
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-            <div className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">
-              {context.aiClinicalSummary}
+          <div id="sbar-content" className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+            <div className="whitespace-pre-wrap break-words text-slate-700 text-sm leading-relaxed">
+              {context.aiClinicalSummary || "Not recorded"}
             </div>
+          </div>
+        </div>
+      )}
+
+      {context?.doctorNotes?.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold border-b-2 border-slate-200 pb-3 mb-6 uppercase tracking-widest text-indigo-700">
+            AI Specialist Connect / Doctor Notes
+          </h2>
+          <div className="space-y-4">
+            {context.doctorNotes.map((note: any, i: number) => (
+              <div key={i} className="bg-blue-50 p-6 py-4 rounded-xl border border-blue-100">
+                <div className="whitespace-pre-wrap break-words text-slate-700 text-sm leading-relaxed">
+                  {typeof note === "string" ? note : note?.text || "Not recorded"}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -339,22 +356,29 @@ function HealthReportPrintable({
             </tr>
           </thead>
           <tbody>
-            {context.recentTrends.length > 0 ? (
-              context.recentTrends.map((trend: any, i: number) => {
-                const isOutOfRange = trend.direction === "up" || trend.direction === "down";
+            {context?.recentTrends?.length > 0 ? (
+              [...context.recentTrends].sort((a, b) => {
+                 const dA = a.date ? new Date(a.date).getTime() : 0;
+                 const dB = b.date ? new Date(b.date).getTime() : 0;
+                 return dA - dB;
+              }).map((trend: any, i: number) => {
+                const isOutOfRange = trend?.direction === "up" || trend?.direction === "down";
                 const statusColor = isOutOfRange ? "text-red-600 bg-red-50" : "text-emerald-600 bg-emerald-50";
                 const statusText = isOutOfRange ? "Out of Range" : "Normal";
                 
                 return (
                   <tr key={i} className="border-b border-slate-100 last:border-0">
-                    <td className="py-4 font-bold text-slate-700">{trend.marker}</td>
+                    <td className="py-4 font-bold text-slate-700">
+                      {trend?.marker || "N/A"}
+                      {trend?.date && <div className="text-xs text-slate-400 font-normal">{new Date(trend.date).toLocaleDateString()}</div>}
+                    </td>
                     <td className="py-4 text-slate-600 font-medium">
-                      {trend.value} <span className="text-xs text-slate-400">{trend.unit}</span>
+                      {trend?.value ?? "N/A"} <span className="text-xs text-slate-400">{trend?.unit || ""}</span>
                     </td>
                     <td className="py-4">
-                      {trend.direction === "up" ? (
+                      {trend?.direction === "up" ? (
                         <span className="text-red-500 font-bold flex items-center gap-1">↑ High</span>
-                      ) : trend.direction === "down" ? (
+                      ) : trend?.direction === "down" ? (
                         <span className="text-red-500 font-bold flex items-center gap-1">↓ Low</span>
                       ) : (
                         <span className="text-slate-500 font-medium flex items-center gap-1">- Stable</span>
@@ -371,7 +395,7 @@ function HealthReportPrintable({
             ) : (
               <tr>
                 <td colSpan={4} className="py-4 text-slate-500">
-                  No recent lab values found.
+                  Not recorded.
                 </td>
               </tr>
             )}
@@ -398,12 +422,12 @@ function HealthReportPrintable({
             </tr>
           </thead>
           <tbody>
-            {context.medications.length > 0 ? (
+            {context?.medications?.length > 0 ? (
               context.medications.map((med: any, i: number) => (
                 <tr key={i} className="border-b border-slate-100 last:border-0">
-                  <td className="py-4 font-bold text-slate-700">{med.name}</td>
-                  <td className="py-4 text-slate-600">{med.dosage || "-"}</td>
-                  <td className="py-4 text-slate-600">{med.frequency || "-"}</td>
+                  <td className="py-4 font-bold text-slate-700">{med?.name || "Not recorded"}</td>
+                  <td className="py-4 text-slate-600">{med?.dosage || "-"}</td>
+                  <td className="py-4 text-slate-600">{med?.frequency || "-"}</td>
                 </tr>
               ))
             ) : (
