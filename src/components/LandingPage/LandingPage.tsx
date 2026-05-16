@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
+import LegalModal from './LegalModal';
 
 // ----------------------------------------------------------------------
 // MOCK DATA
@@ -41,6 +42,13 @@ const SPECIALISTS_SHOWCASE = [
 export default function LandingPage() {
   const { signIn, isSigningIn } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
+  const [legalModalOpen, setLegalModalOpen] = useState(false);
+  const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
+
+  const openLegalModal = (type: 'privacy' | 'terms') => {
+    setLegalModalType(type);
+    setLegalModalOpen(true);
+  };
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -149,9 +157,23 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="text-lg md:text-xl text-slate-400 mb-8 font-light max-w-lg leading-relaxed"
+                className="text-lg md:text-xl text-slate-400 mb-6 font-light max-w-lg leading-relaxed"
               >
                 Understand what is normal, what needs attention, and what changed over time. Your personal clinical AI assistant.
+              </motion.p>
+
+              <motion.p
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
+               className="text-emerald-300 text-xs md:text-sm font-bold tracking-wide mb-8 bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 rounded-xl inline-flex items-start gap-3 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+              >
+                <div className="shrink-0 mt-0.5">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                </div>
+                <span>
+                  Powered by <strong>Google Gemini 2.5</strong> for advanced clinical reasoning and instant lab report extraction.
+                </span>
               </motion.p>
 
               <motion.div 
@@ -432,7 +454,43 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <p className="text-emerald-400 font-medium mb-4 tracking-widest text-xs uppercase">Your health, decoded.</p>
+            {/* 5. ABOUT THE FOUNDER SECTION */}
+            <div className="mt-32 mb-16 max-w-4xl mx-auto">
+              <div className="bg-[#0f2a4a] border border-white/10 rounded-[2rem] p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 relative overflow-hidden">
+                <div className="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
+                
+                <div className="w-32 h-32 md:w-36 md:h-36 shrink-0 bg-gradient-to-tr from-slate-700 to-slate-800 rounded-full border-4 border-[#0A192F] shadow-xl overflow-hidden flex items-center justify-center relative z-10">
+                  <span className="text-4xl font-bold tracking-widest text-slate-400">AD</span>
+                </div>
+
+                <div className="text-center md:text-left flex-1 relative z-10">
+                  <h3 className="text-sm text-emerald-400 font-bold uppercase tracking-widest mb-1">Meet the Founder</h3>
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Aniket Dhuri</h2>
+                  <p className="text-lg text-slate-400 font-medium mb-4">Founder & Lead Developer</p>
+                  
+                  <p className="text-base text-slate-300 font-light leading-relaxed mb-6 italic">
+                    "Building the future of accessible, AI-driven healthcare in India."
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 sm:gap-6">
+                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                      <MapPin className="w-4 h-4 text-emerald-400" />
+                      Maharashtra, India
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                        <Github className="w-4 h-4" />
+                      </a>
+                      <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                        <Linkedin className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-emerald-400 font-medium mb-4 tracking-widest text-xs uppercase">Your health, decoded.</p>
               <h3 className="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight max-w-2xl mx-auto leading-tight">
                 Stop guessing. Start knowing.
               </h3>
@@ -450,8 +508,57 @@ export default function LandingPage() {
           </div>
           
           {/* Footer */}
-          <footer className="mt-32 pb-12 border-t border-white/5 pt-12">
-            <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+          <footer className="mt-32 pb-12 border-t border-white/5 pt-16 bg-[#0A192F]">
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+              <div className="text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
+                  <ShieldCheck className="w-6 h-6 text-emerald-400" strokeWidth={2} />
+                  <span className="font-bold tracking-[0.2em] text-emerald-400 text-lg">
+                    AEGIS
+                  </span>
+                </div>
+                <p className="text-sm text-slate-400 font-light leading-relaxed max-w-xs mx-auto md:mx-0">
+                  Premium health intelligence for everyone. Powered by enterprise-grade AI infrastructure.
+                </p>
+              </div>
+
+              <div className="text-center md:text-left">
+                <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Contact & Support</h4>
+                <ul className="space-y-4">
+                  <li>
+                    <a href="mailto:founder@aegishealthai.co.in" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm flex items-center justify-center md:justify-start gap-3">
+                      <Mail className="w-4 h-4 shrink-0" /> founder@aegishealthai.co.in
+                    </a>
+                  </li>
+                  <li>
+                    <a href="mailto:support@aegishealthai.co.in" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm flex items-center justify-center md:justify-start gap-3">
+                      <Mail className="w-4 h-4 shrink-0" /> support@aegishealthai.co.in
+                    </a>
+                  </li>
+                  <li className="text-slate-400 text-sm flex items-center justify-center md:justify-start gap-3">
+                    <MapPin className="w-4 h-4 shrink-0" /> Kalyan/Dombivli, Maharashtra, India
+                  </li>
+                </ul>
+              </div>
+
+              <div className="text-center md:text-right">
+                <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Legal</h4>
+                <ul className="space-y-4">
+                  <li>
+                    <button onClick={() => openLegalModal('privacy')} className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
+                      Privacy Policy
+                    </button>
+                  </li>
+                  <li>
+                    <button onClick={() => openLegalModal('terms')} className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
+                      Terms & Medical Disclaimer
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="text-center md:text-left">
                 <p className="text-xs text-slate-500 tracking-wide uppercase mb-1">
                   &copy; {new Date().getFullYear()} Aegis Health AI. All rights reserved.
@@ -462,19 +569,21 @@ export default function LandingPage() {
               </div>
 
               <div className="text-center md:text-right">
-                <p className="text-xs text-slate-400 tracking-wide mb-2 flex items-center justify-center md:justify-end gap-2">
-                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                  Developed by <span className="text-white font-medium">Aniket Dhuri</span>
-                </p>
-                <p className="text-[10px] text-slate-500 flex items-center justify-center md:justify-end gap-1 font-medium italic">
-                  Powered by <span className="text-slate-300">Gemini AI Studio</span>
-                  <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                <p className="text-[10px] text-slate-500 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
+                  Powered by <span className="text-slate-300">Google Gemini & Firebase</span>
+                  <Sparkles className="w-3 h-3 text-emerald-400" />
                 </p>
               </div>
             </div>
           </footer>
         </div>
 
+        {/* Legal Modal */}
+        <LegalModal 
+          isOpen={legalModalOpen} 
+          onClose={() => setLegalModalOpen(false)} 
+          type={legalModalType} 
+        />
       </div>
     </ErrorBoundary>
   );
