@@ -132,7 +132,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
   if (!ai) throw new Error("Aura AI is currently offline. Please check your configuration.");
   
   try {
-    const targetModel = isSummaryRequest ? "gemini-2.5-pro" : "gemini-2.5-flash";
+    const targetModel = isSummaryRequest ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
     const reqConfig = {
       contents,
       config: {
@@ -153,7 +153,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         console.warn("Gemini Pro stream failed, falling back to Flash:", modelError);
         stream = await ai.models.generateContentStream({
           ...reqConfig,
-          model: "gemini-2.5-flash",
+          model: "gemini-3-flash-preview",
         });
       } else {
         throw modelError;

@@ -52,6 +52,10 @@ Do not use outside assumptions.
 - If the app data appears incomplete, stale, or conflicting, say "data may be incomplete."
 - If the task requires medical judgment beyond summarization, escalate to clinician review.
 </app_specific_rules>
+
+<sbaar_framework>
+- When asked to provide a summary or report, mandatory use of the SBAAR (Situation, Background, Assessment, Recommendation) framework.
+</sbaar_framework>
 `;
 
 export const OUTPUT_FORMAT_JSON = `
@@ -292,11 +296,11 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
   const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-flash-preview",
     contents: [
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
-    config: { maxOutputTokens: 8192, temperature: 0, responseMimeType: "application/json" }
+    config: { maxOutputTokens: 8192, temperature: 0.1, responseMimeType: "application/json" }
   }), 3, "pdf_extraction");
   return safeJsonParse<any>(response.text, {});
 }
@@ -370,20 +374,20 @@ ${JSON.stringify(symptoms)}
   }
 
   let response;
-  let modelUsed = "gemini-2.5-pro";
+  let modelUsed = "gemini-3.1-pro-preview";
   try {
     response = await safeGeminiCall(() => ai.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: "gemini-3.1-pro-preview",
       contents: [{ role: "user", parts: [{ text: promptText }] }],
-      config: { maxOutputTokens: 8192, temperature: 0 }
+      config: { maxOutputTokens: 8192, temperature: 0.1 }
     }), 2, "sbar"); // try Pro up to 2 times
   } catch (err: any) {
     console.warn("Gemini Pro SBAR failed, falling back to Flash:", err.message);
-    modelUsed = "gemini-2.5-flash";
+    modelUsed = "gemini-3-flash-preview";
     response = await safeGeminiCall(() => ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: [{ role: "user", parts: [{ text: promptText }] }],
-      config: { maxOutputTokens: 8192, temperature: 0 }
+      config: { maxOutputTokens: 8192, temperature: 0.1 }
     }), 2, "sbar_fallback");
   }
   
@@ -407,9 +411,9 @@ export async function explainInteraction(medicationContext: any) {
   const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-flash-preview",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
-    config: { maxOutputTokens: 8192, temperature: 0 }
+    config: { maxOutputTokens: 8192, temperature: 0.1 }
   }), 3, "med_interaction");
   return response.text;
 }
@@ -457,10 +461,10 @@ export async function extractLabData(
 
     try {
       const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: CORE_SYSTEM_PROMPT,
-          temperature: 0,
+          temperature: 0.1,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
         },

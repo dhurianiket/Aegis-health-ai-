@@ -141,12 +141,12 @@ export default function ChatCoach({
       const patientData = await getPatientContext(user.uid, activeProfile);
       const context = formatContextForPrompt(patientData);
       
-      const historyItems = messages
+      const historyItems = JSON.parse(JSON.stringify(messages
         .filter((m) => m.role !== "system" && (m.role as string) !== "context_note")
         .map((m) => ({
           role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
-          parts: [{ text: m.content }],
-        }));
+          parts: [{ text: String(m.content || "") }],
+        }))));
 
       const sysInstruction = `You are Aegis Health AI. Today's date is ${new Date().toISOString().split("T")[0]}. 
 Clinical Context is provided below. 
@@ -162,7 +162,7 @@ Clinical Context:
 ${context}`;
 
       const isComplex = text.length > 150 || /analyze|summarize|explain in detail|sbaar|diagnosis|clinical/i.test(text);
-      let targetModel = isComplex ? "gemini-2.5-pro" : "gemini-2.5-flash";
+      let targetModel = isComplex ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
 
       let chat = ai.chats.create({
         model: targetModel,
@@ -177,10 +177,10 @@ ${context}`;
       try {
         stream = await chat.sendMessageStream({ message: text });
       } catch (proError: any) {
-        if (targetModel === "gemini-2.5-pro") {
+        if (targetModel === "gemini-3.1-pro-preview") {
           console.warn("Gemini Pro chat failed, falling back to Flash:", proError);
           chat = ai.chats.create({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             history: historyItems,
             config: {
               systemInstruction: sysInstruction,
@@ -231,10 +231,10 @@ ${context}`;
           const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
           if (apiKey) {
             const filterRes = await ai.models.generateContent({
-              model: "gemini-2.5-flash",
+              model: "gemini-3-flash-preview",
               contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
               config: { 
-                temperature: 0, 
+                temperature: 0.1, 
                 responseMimeType: "application/json"
               }
             });

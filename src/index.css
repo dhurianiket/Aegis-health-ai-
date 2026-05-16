@@ -18,8 +18,7 @@
 }
 
 @layer base {
-  :root,
-  [data-theme="light"] {
+  :root {
     --color-bg: #ffffff;
     --color-surface: #f5f5f7;
     --color-border: rgba(0, 0, 0, 0.08);
@@ -34,8 +33,7 @@
     --color-text-faint: #aeaeb2;
   }
 
-  :root,
-  [data-theme="dark"] {
+  .dark {
     --color-bg: #000000;
     --color-surface: rgba(255, 255, 255, 0.05);
     --color-border: rgba(255, 255, 255, 0.08);

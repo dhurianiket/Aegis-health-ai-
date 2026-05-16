@@ -151,14 +151,14 @@ ${OUTPUT_FORMAT_JSON}
     try {
       response = await ai.models.generateContent({
         ...geminiConfig,
-        model: "gemini-2.5-pro",
+        model: "gemini-3.1-pro-preview",
         contents: geminiConfig.contents as any
       });
     } catch (proError: any) {
       console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
       response = await ai.models.generateContent({
         ...geminiConfig,
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: geminiConfig.contents as any
       });
     }
@@ -311,21 +311,21 @@ Generate the summary strictly following the plain text format above.
     let response;
     try {
       response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
+        model: "gemini-3.1-pro-preview",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
-          temperature: 0,
+          temperature: 0.1,
         },
       });
     } catch (proError: any) {
       console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
       response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
-          temperature: 0,
+          temperature: 0.1,
         },
       });
     }
@@ -414,7 +414,7 @@ export async function extractMedicalReports(
       if (import.meta.env.DEV) console.log("[Extraction] Starting report extraction for", filesData.length, "files");
 
       const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
             role: "user",

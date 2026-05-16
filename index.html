@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <title>Aegis Health AI</title>
@@ -15,6 +15,18 @@
     />
   </head>
   <body style="background-color: #0d0d0d; margin: 0; color: white;">
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem('theme') || 'dark';
+          if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root">
       <div style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: sans-serif;">
         <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: #3b82f6; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>

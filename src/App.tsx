@@ -168,22 +168,27 @@ function MainApp() {
   const shareUid = searchParams.get("uid");
 
   useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    const validTabs = [
-      "home",
-      "upload",
-      "reports",
-      "trends",
-      "sbar",
-      "specialist",
-      "medications",
-      "settings",
-      "profile",
-      "admin",
-    ];
-    if (validTabs.includes(hash)) {
-      setActiveTab(hash);
-    }
+    const syncTabFromHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      const validTabs = [
+        "home",
+        "upload",
+        "reports",
+        "trends",
+        "sbar",
+        "specialist",
+        "medications",
+        "settings",
+        "profile",
+        "admin",
+      ];
+      if (validTabs.includes(hash)) {
+        setActiveTab(hash);
+      }
+    };
+    syncTabFromHash();
+    window.addEventListener("hashchange", syncTabFromHash);
+    return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
 
   useEffect(() => {
@@ -637,7 +642,14 @@ function MainApp() {
                 dismissedIds={dismissedIds}
                 onDismiss={dismissAlert}
                 onAction={(id: string) => {
-                  console.log("Action on", id);
+                  const alert = alerts.find(a => a.id === id);
+                  if (alert) {
+                    if (alert.type === "medication") setActiveTab("medications");
+                    else if (alert.type === "lab_value" || alert.type === "goal") setActiveTab("reports");
+                    else if (alert.type === "appointment") setActiveTab("specialist"); 
+                    else setActiveTab("home");
+                  }
+                  dismissAlert(id);
                   setIsNotificationCenterOpen(false);
                 }}
                 onClose={() => setIsNotificationCenterOpen(false)}

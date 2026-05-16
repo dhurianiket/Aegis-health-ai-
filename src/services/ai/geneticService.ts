@@ -52,14 +52,14 @@ export const analyzeSharedRisks = async (
     try {
       response = await ai.models.generateContent({
         ...aiConfig,
-        model: "gemini-2.5-pro",
+        model: "gemini-3.1-pro-preview",
         contents: aiConfig.contents as any
       });
     } catch (proErr) {
       console.warn("Genetic analysis failed with Pro, falling back to Flash", proErr);
       response = await ai.models.generateContent({
         ...aiConfig,
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: aiConfig.contents as any
       });
     }

@@ -78,25 +78,25 @@ ${formattedContext}
 
   try {
     let response;
-    let modelUsed = "gemini-2.5-pro";
+    let modelUsed = "gemini-3.1-pro-preview";
     try {
       response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
+        model: "gemini-3.1-pro-preview",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
-          temperature: 0,
+          temperature: 0.1,
         },
       });
     } catch (proError: any) {
       console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
-      modelUsed = "gemini-2.5-flash";
+      modelUsed = "gemini-3-flash-preview";
       response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
-          temperature: 0,
+          temperature: 0.1,
         },
       });
     }

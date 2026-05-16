@@ -285,19 +285,27 @@ export default function UploadCenter({
           // Status 2: Extracting with AI...
           setProcessingStep(1);
 
-          // Step 3: Read file as base64 for Gemini inline data
-          const fileData = await readFileAsSafeBase64(item.file);
+          let fileData;
+          let extraction: any;
 
-          // Step 4: Call extractMedicalReports (which uses safeGeminiCall under the hood)
-          // The instruction says "Call safeGeminiCall() with base64 content + prompt".
-          // We can use the existing `extractMedicalReports` which does exactly this.
-          const extraction: any = await extractMedicalReports([fileData]);
+          try {
+            // Step 3: Read file as base64 for Gemini inline data
+            fileData = await readFileAsSafeBase64(item.file);
 
-          if (!extraction || Object.keys(extraction).length === 0) {
-            throw new Error(
-              "Could not extract data from this document. " +
-              "Please ensure it is a clear medical report and try again."
-            );
+            // Step 4: Call extractMedicalReports (which uses safeGeminiCall under the hood)
+            extraction = await extractMedicalReports([fileData]);
+
+            if (!extraction || Object.keys(extraction).length === 0) {
+              throw new Error(
+                "Could not extract data from this document. " +
+                "Please ensure it is a clear medical report and try again."
+              );
+            }
+          } catch (extractErr) {
+            console.error("Extraction failed:", extractErr);
+            showToast("Failed to extract document", "error");
+            setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
+            continue;
           }
           
           if (extraction && typeof extraction === 'object') {

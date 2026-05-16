@@ -103,10 +103,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 `;
       }
 
-      const historyItems = messages.map((m) => ({
+      const historyItems = JSON.parse(JSON.stringify(messages.map((m) => ({
         role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
-        parts: [{ text: m.content }],
-      }));
+        parts: [{ text: String(m.content || "") }],
+      }))));
 
       // Check Cache for Specialist Summaries
       let sourceHashForCache = "";
@@ -125,7 +125,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       }
 
       let chat = ai.chats.create({
-        model: isSummaryRequest ? "gemini-2.5-pro" : "gemini-2.5-flash",
+        model: isSummaryRequest ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview",
         history: historyItems,
         config: {
           systemInstruction: systemPrompt,
@@ -140,7 +140,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         if (isSummaryRequest) {
           console.warn("Gemini Pro stream failed, falling back to Flash:", proError);
           chat = ai.chats.create({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             history: historyItems,
             config: {
               systemInstruction: systemPrompt,
@@ -174,7 +174,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             reportType: `SpecialistSummary_${activeSpecialist}`,
             sourceHash: sourceHashForCache,
             content: finalText.trim(),
-            modelUsed: "gemini-2.5-pro",
+            modelUsed: "gemini-3.1-pro-preview",
             promptVersion: PROMPT_VERSION,
             status: "success"
           });
