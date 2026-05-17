@@ -3,6 +3,7 @@ import { ResponsiveContainer, LineChart, Line, YAxis } from "recharts";
 import { motion } from "motion/react";
 import { Activity, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { LabResult } from "../../types/medical";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 
 interface TrendSparklinesProps {
   labs: LabResult[];
@@ -33,17 +34,23 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
 
     const processed = Object.entries(byMarker)
       .map(([name, results]) => {
+        // Sanitize and filter out invalid values first
+        const validResults = results.map(r => ({
+          ...r,
+          numericValue: parseFloat(String(r.value).replace(/[^0-9.-]/g, '')),
+          timestamp: parseSafeTimestamp(r.date)
+        })).filter(r => !isNaN(r.numericValue) && r.numericValue !== null && r.timestamp !== null);
+
         // Sort chronologically
-        const sorted = results.sort((a, b) => {
-          const timeA = new Date(a.date).getTime() || 0;
-          const timeB = new Date(b.date).getTime() || 0;
-          return timeA - timeB;
+        const sorted = validResults.sort((a, b) => {
+          return a.timestamp!.getTime() - b.timestamp!.getTime();
         });
+        
         return {
           name,
-          data: sorted.map((s) => ({ value: s.value, date: s.date })),
-          latest: sorted[sorted.length - 1],
-          previous: sorted.length > 1 ? sorted[sorted.length - 2] : null,
+          data: sorted.map((s) => ({ value: s.numericValue, date: s.timestamp!.toLocaleDateString() })),
+          latest: sorted.length > 0 ? { ...sorted[sorted.length - 1], value: sorted[sorted.length - 1].numericValue } : null as any,
+          previous: sorted.length > 1 ? { ...sorted[sorted.length - 2], value: sorted[sorted.length - 2].numericValue } : null,
           count: sorted.length,
         };
       })

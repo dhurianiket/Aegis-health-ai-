@@ -199,6 +199,8 @@ ${OUTPUT_FORMAT_JSON}
   }
 }
 
+import { parseSafeTimestamp } from "../../utils/dateUtils";
+
 export async function generateClinicalSummary(
   patientData: UserProfile,
   labHistory: LabResult[],
@@ -210,11 +212,11 @@ export async function generateClinicalSummary(
   
   // Sort labs by date (newest first)
   const sortedLabs = [...labHistory].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
+    (parseSafeTimestamp(b.date)?.getTime() || 0) - (parseSafeTimestamp(a.date)?.getTime() || 0)
   );
 
   const age = patientData.dob
-    ? Math.floor((new Date().getTime() - new Date(patientData.dob).getTime()) / 3.15576e10)
+    ? Math.floor((new Date().getTime() - (parseSafeTimestamp(patientData.dob)?.getTime() || new Date().getTime())) / 3.15576e10)
     : "Unknown";
     
   const today = new Date().toLocaleDateString('en-US', { 

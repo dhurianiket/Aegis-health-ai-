@@ -7,6 +7,7 @@ import {
 import { getConsolidatedAlerts } from "../alertService";
 import { PatientContext } from "../../types/ai";
 import { UserProfile, MedicalDocument } from "../../types/medical";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 
 /**
  * ContextService - Consolidates patient telemetry into a standardized format
@@ -42,7 +43,10 @@ export const getPatientContext = async (
 
   if (documents) {
     documents.forEach((doc: MedicalDocument) => {
-      if (doc.date) docDates.push(new Date(doc.date).toLocaleDateString());
+      if (doc.date) {
+        const d = parseSafeTimestamp(doc.date);
+        if (d) docDates.push(d.toLocaleDateString());
+      }
       if (doc.extractedData) {
         if (Array.isArray(doc.extractedData.medications)) {
           doc.extractedData.medications.forEach((m: any) => {
@@ -86,7 +90,7 @@ export const getPatientContext = async (
     reportedSymptoms: [], // Populate from chat history if possible
     knownConditions: profile?.chronicConditions || [],
     demographics: {
-      age: profile?.dob && !isNaN(new Date(profile.dob).getTime()) ? `${new Date().getFullYear() - new Date(profile.dob).getFullYear()} years` : "Not provided",
+      age: profile?.dob && parseSafeTimestamp(profile.dob) ? `${new Date().getFullYear() - parseSafeTimestamp(profile.dob)!.getFullYear()} years` : "Not provided",
       gender: profile?.gender || "Not provided"
     }
   } as PatientContext;
@@ -124,7 +128,10 @@ export const formatContextForPrompt = (context: any): string => {
 
   let lastReportDate = "None";
   if (labHistory.length > 0) {
-    const dates = labHistory.map((l: any) => new Date(l.date).getTime()).filter((n: any) => !isNaN(n));
+    const dates = labHistory.map((l: any) => {
+       const d = parseSafeTimestamp(l.date);
+       return d ? d.getTime() : NaN;
+    }).filter((n: any) => !isNaN(n));
     if (dates.length > 0) {
       lastReportDate = new Date(Math.max(...dates)).toISOString().split("T")[0];
     }
@@ -151,19 +158,22 @@ export const formatContextForPrompt = (context: any): string => {
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
       const labsA = labsByMarker.get(a);
       const labsB = labsByMarker.get(b);
-      const latestA = labsA.sort((x: any, y: any) => new Date(y.extractedDate || y.date).getTime() - new Date(x.extractedDate || x.date).getTime())[0];
-      const latestB = labsB.sort((x: any, y: any) => new Date(y.extractedDate || y.date).getTime() - new Date(x.extractedDate || x.date).getTime())[0];
+      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
+      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
+      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
       return severityScore(latestB.status) - severityScore(latestA.status);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {
       prompt += `- ${markerName}:\n`;
+      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
       const labs = labsByMarker.get(markerName)
-        .sort((a: any, b: any) => new Date(a.extractedDate || a.date).getTime() - new Date(b.extractedDate || b.date).getTime())
+        .sort((a: any, b: any) => getT(a) - getT(b))
         .slice(-5); // Get up to 5 most recent
       labs.forEach((lab: any) => {
         const dateStr = lab.extractedDate || lab.date;
-        const formattedDate = new Date(dateStr).toISOString().split("T")[0];
+        const _parsed = parseSafeTimestamp(dateStr);
+        const formattedDate = _parsed ? _parsed.toISOString().split("T")[0] : "Recent";
         const valStr = lab.display_value || lab.numeric_value || lab.value;
         prompt += `  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})\n`;
       });

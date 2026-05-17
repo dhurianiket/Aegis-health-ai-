@@ -5,6 +5,7 @@ import { getAI } from "../lib/geminiClient";
 import { getPatientContext, formatContextForPrompt } from "./ai/contextService";
 import { generateSourceHash, getCachedReport, saveCachedReport } from "./cacheService";
 import { auth } from "../lib/firebase/config";
+import { parseSafeTimestamp } from "../utils/dateUtils";
 
 const PROMPT_VERSION = "v1.0";
 
@@ -27,7 +28,7 @@ export const generateSBAR = async (
   if (!ai) throw new Error("Aura AI is currently offline.");
 
   const age = profile.dob
-    ? Math.floor((new Date().getTime() - new Date(profile.dob).getTime()) / 3.15576e10)
+    ? Math.floor((new Date().getTime() - (parseSafeTimestamp(profile.dob)?.getTime() || new Date().getTime())) / 3.15576e10)
     : "Unknown";
     
   const today = new Date().toLocaleDateString('en-US', { 

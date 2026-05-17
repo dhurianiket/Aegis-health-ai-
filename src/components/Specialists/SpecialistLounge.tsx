@@ -9,6 +9,7 @@ import getAI from "../../lib/geminiClient";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp } from "lucide-react";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 
 const PROMPT_VERSION = "v1.0";
 
@@ -207,10 +208,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           <Brain className="w-6 h-6 md:w-9 md:h-9" />
         </div>
         <div>
-          <h2 className="text-xl md:text-3xl font-bold tracking-tight text-white mb-1 uppercase tracking-widest">
+          <h2 className="text-xl md:text-3xl font-bold tracking-tight text-[var(--color-text)] mb-1 uppercase tracking-widest">
             Specialist Consultations
           </h2>
-          <p className="text-slate-400 text-xs md:text-sm font-light">
+          <p className="text-[var(--color-text-muted)] text-xs md:text-sm font-light">
             Chat directly with specialized AI physicians acting on your longitudinal record.
           </p>
         </div>
@@ -218,8 +219,8 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[800px] max-h-[85vh]">
         {/* Sidebar */}
-        <div className="lg:col-span-4 bg-white/5 border border-white/10 rounded-3xl p-4 overflow-x-auto lg:overflow-y-auto hidden-scrollbar">
-          <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 px-2">Select Specialist</h3>
+        <div className="lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-4 overflow-x-auto lg:overflow-y-auto hidden-scrollbar">
+          <h3 className="text-sm font-bold text-[var(--color-text)] uppercase tracking-wider mb-4 px-2">Select Specialist</h3>
           <div className="flex flex-row lg:flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
               <button
@@ -227,12 +228,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 onClick={() => setActiveSpecialist(s.id)}
                 className={`flex-shrink-0 w-48 lg:w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
                   activeSpecialist === s.id 
-                  ? 'bg-indigo-600 text-white shadow-lg' 
-                  : 'hover:bg-white/10 text-slate-400'
+                  ? 'bg-[var(--color-primary)] text-white shadow-lg' 
+                  : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'
                 }`}
               >
                 <div className="font-bold text-sm tracking-wide">{s.displayName}</div>
-                <div className={`text-xs ${activeSpecialist === s.id ? 'text-indigo-200' : 'text-slate-500'}`}>
+                <div className={`text-xs ${activeSpecialist === s.id ? 'text-indigo-200' : 'text-slate-400 dark:text-slate-500'}`}>
                   {s.expertise.slice(0, 2).join(', ')}...
                 </div>
               </button>
@@ -241,39 +242,42 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </div>
 
         {/* Chat Area */}
-        <div className="lg:col-span-8 bg-white/5 border border-white/10 rounded-3xl flex flex-col relative overflow-hidden shadow-2xl">
-          <div className="p-4 border-b border-white/10 bg-black/20 flex items-center gap-4">
+        <div className="lg:col-span-8 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl flex flex-col relative overflow-hidden shadow-2xl">
+          <div className="p-4 border-b border-[var(--color-border)] bg-slate-50 dark:bg-black/20 flex items-center gap-4">
             <div>
-              <div className="font-bold text-white text-lg">{activeSpecProfile.displayName}</div>
-              <div className="text-xs text-indigo-300">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
+              <div className="font-bold text-[var(--color-text)] text-lg">{activeSpecProfile.displayName}</div>
+              <div className="text-xs text-indigo-500 dark:text-indigo-300">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
             </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-4">
-                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
-                    <Brain className="text-slate-400 w-8 h-8"/>
+                 <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+                    <Brain className="text-[var(--color-text-muted)] w-8 h-8"/>
                  </div>
-                 <p className="text-sm text-slate-300 text-center uppercase tracking-widest max-w-sm">
+                 <p className="text-sm text-[var(--color-text-muted)] text-center uppercase tracking-widest max-w-sm">
                    Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
                  </p>
                  <div className="flex gap-2">
-                    <button onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} className="bg-white/10 hover:bg-white/20 text-xs px-3 py-1.5 rounded-full text-slate-300 transition-colors">"Summarize my labs"</button>
+                    <button onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} className="bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-xs px-3 py-1.5 rounded-full text-[var(--color-text-muted)] transition-colors">"Summarize my labs"</button>
                  </div>
               </div>
             )}
             
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed ${
-                  msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white/10 text-slate-200'
+                <div className={`max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed shadow-sm ${
+                  msg.role === 'user' ? 'bg-[var(--color-primary)] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200'
                 }`}>
-                  <div className="prose prose-sm prose-invert max-w-none">
+                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' || document.documentElement.classList.contains('dark') ? 'prose-invert' : ''}`}>
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                   <div className={`text-[10px] opacity-60 mt-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {(() => {
+                      const d = parseSafeTimestamp(msg.timestamp);
+                      return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+                    })()}
                   </div>
                 </div>
               </div>
@@ -281,8 +285,8 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             
             {streamedText && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed bg-white/10 text-slate-200 relative pb-8">
-                  <div className="prose prose-sm prose-invert max-w-none">
+                <div className="max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 relative pb-8 shadow-sm">
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
                     <ReactMarkdown>{streamedText}</ReactMarkdown>
                   </div>
                   <span className="absolute bottom-4 left-5 w-2 h-4 bg-indigo-500 animate-pulse" />
@@ -292,7 +296,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             
             {isTyping && !streamedText && (
               <div className="flex justify-start">
-                 <div className="bg-white/5 rounded-2xl px-5 py-4 flex items-center gap-3">
+                 <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl px-5 py-4 flex items-center gap-3 shadow-sm">
                     <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
                     <span className="text-sm text-slate-400 animate-pulse">Analyzing longitudinal record...</span>
                  </div>
@@ -300,12 +304,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             )}
           </div>
           
-          <div className="p-4 border-t border-white/10 bg-black/20">
+          <div className="p-4 border-t border-[var(--color-border)] bg-slate-50 dark:bg-black/20">
             {isTyping && (
               <div className="flex justify-center mb-3">
                 <button
                   onClick={handleAbort}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-medium uppercase text-slate-300 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-xs font-medium uppercase text-slate-600 dark:text-slate-300 transition-colors"
                 >
                   <Square size={12} className="fill-current" /> Stop Generation
                 </button>
@@ -317,12 +321,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder={`Message ${activeSpecProfile.displayName}...`}
                 disabled={isTyping}
-                className="w-full bg-white/5 border border-white/10 rounded-full py-4 pl-6 pr-14 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
+                className="w-full bg-white dark:bg-white/5 border border-[var(--color-border)] rounded-full py-4 pl-6 pr-14 text-sm text-[var(--color-text)] focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isTyping}
-                className="absolute right-2 top-2 bottom-2 aspect-square bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-500 disabled:opacity-50 disabled:bg-slate-700 transition-colors"
+                className="absolute right-2 top-2 bottom-2 aspect-square bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:bg-indigo-500 disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-slate-700 transition-colors"
               >
                 <ArrowUp size={20} strokeWidth={2.5} />
               </button>

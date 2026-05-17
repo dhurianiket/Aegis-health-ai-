@@ -3,6 +3,8 @@ import { motion } from "motion/react";
 import { BarChart2, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { LabResult, LabStatus } from "../../types/medical";
 
+import { parseSafeTimestamp } from "../../utils/dateUtils";
+
 interface ComparativeAnalysisProps {
   labs: LabResult[];
 }
@@ -14,8 +16,8 @@ export default function ComparativeAnalysis({
     // Get the most recent lab for each marker
     const latest: Record<string, LabResult> = {};
     const sorted = [...labs].sort((a, b) => {
-      const timeA = new Date(a.date).getTime() || 0;
-      const timeB = new Date(b.date).getTime() || 0;
+      const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
+      const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
       return timeA - timeB;
     });
 

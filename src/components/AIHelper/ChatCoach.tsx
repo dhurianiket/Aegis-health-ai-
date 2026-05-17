@@ -12,6 +12,7 @@ import {
 } from "../../services/ai/contextService";
 import { COACH_SYSTEM_INSTRUCTION } from "../../services/ai/coachService";
 import { ChatMessage } from "../../types/ai";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 import getAI from "../../lib/geminiClient";
 import { safeJsonParse } from "../../utils/aiUtils";
 import { trackUsage } from "../../services/usageService";
@@ -321,7 +322,7 @@ ${context}`;
               animate={{ x: 0 }}
               exit={{ x: "100%", pointerEvents: "none" }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-0 right-0 z-[9999] w-full sm:w-[420px] max-w-full h-[100dvh] flex flex-col bg-white dark:bg-[var(--color-bg)] shadow-md border-l border-[var(--color-border)] sm:rounded-l-3xl pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0 pointer-events-auto"
+              className="fixed top-0 right-0 z-[9999] w-full sm:w-[420px] max-w-full h-[100dvh] flex flex-col bg-[var(--color-bg)] border-l border-[var(--color-border)] sm:rounded-l-3xl pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0 pointer-events-auto"
               role="dialog"
               aria-modal="true"
               aria-labelledby="chat-title"
@@ -403,14 +404,17 @@ ${context}`;
                       }`}
                     >
                       {msg.role === "assistant" ? (
-                        <div className="prose prose-sm prose-invert max-w-none">
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
                           <ReactMarkdown>{msg.content}</ReactMarkdown>
                         </div>
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                       )}
                       <div className={`text-[10px] opacity-60 mt-1.5 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {(() => {
+                          const d = parseSafeTimestamp(msg.timestamp);
+                          return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -420,7 +424,7 @@ ${context}`;
                 {streamedText && (
                   <div className="flex justify-start">
                     <div className="max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed bg-surface/50 text-theme pb-8 relative">
-                      <div className="prose prose-sm prose-invert max-w-none">
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
                         <ReactMarkdown>{streamedText}</ReactMarkdown>
                       </div>
                       <span className="absolute bottom-4 left-4 w-2 h-4 bg-[var(--color-primary)] animate-pulse" />

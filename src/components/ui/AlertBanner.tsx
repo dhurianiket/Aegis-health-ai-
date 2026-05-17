@@ -100,10 +100,10 @@ export default function AlertBanner({
             </span>
           )}
         </div>
-        <h4 className={`text-base font-bold tracking-tight text-white mb-1`}>
+        <h4 className={`text-base font-bold tracking-tight text-slate-900 dark:text-white mb-1`}>
           {alert.title}
         </h4>
-        <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
+        <p className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed max-w-3xl">
           {alert.description}
         </p>
       </div>

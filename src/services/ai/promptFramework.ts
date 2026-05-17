@@ -383,13 +383,23 @@ ${JSON.stringify(symptoms)}
       config: { maxOutputTokens: 8192, temperature: 0.1 }
     }), 2, "sbar"); // try Pro up to 2 times
   } catch (err: any) {
-    console.warn("Gemini Pro SBAR failed, falling back to Flash:", err.message);
-    modelUsed = "gemini-3-flash-preview";
-    response = await safeGeminiCall(() => ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: [{ role: "user", parts: [{ text: promptText }] }],
-      config: { maxOutputTokens: 8192, temperature: 0.1 }
-    }), 2, "sbar_fallback");
+    console.error("[GEMINI API FATAL ERROR] (3.1-pro failed):", err.message);
+    try {
+      modelUsed = "gemini-1.5-pro";
+      response = await safeGeminiCall(() => ai.models.generateContent({
+        model: "gemini-1.5-pro",
+        contents: [{ role: "user", parts: [{ text: promptText }] }],
+        config: { maxOutputTokens: 8192, temperature: 0.1 }
+      }), 2, "sbar_fallback_1.5_pro");
+    } catch (fallbackErr: any) {
+      console.error("[GEMINI API FATAL ERROR] (1.5-pro failed):", fallbackErr.message);
+      modelUsed = "gemini-3-flash-preview";
+      response = await safeGeminiCall(() => ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [{ role: "user", parts: [{ text: promptText }] }],
+        config: { maxOutputTokens: 8192, temperature: 0.1 }
+      }), 2, "sbar_fallback_flash");
+    }
   }
   
   const content = response.text || "Failed to generate summary.";

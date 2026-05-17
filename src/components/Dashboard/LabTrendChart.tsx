@@ -24,6 +24,8 @@ interface LabTrendChartProps {
   reports?: any[];
 }
 
+import { parseSafeTimestamp } from "../../utils/dateUtils";
+
 export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -174,15 +176,12 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     try {
       if (!selectedMarker) return [];
 
-      const safeGetTime = (dateStr: any) => {
-        if (!dateStr) return 0;
-        const ts = new Date(dateStr).getTime();
-        return isNaN(ts) ? new Date(String(dateStr).replace(/-/g, '/')).getTime() || 0 : ts;
-      };
-
       const getValidTime = (r: any) => {
-        const parsed = safeGetTime(r.actualDate);
-        return parsed > 0 ? parsed : (safeGetTime(r.fallbackDate) || new Date().getTime());
+        const d1 = parseSafeTimestamp(r.actualDate);
+        if (d1) return d1.getTime();
+        const d2 = parseSafeTimestamp(r.fallbackDate);
+        if (d2) return d2.getTime();
+        return new Date().getTime(); // Safe fallback just for sorting if missing
       };
 
       const filtered = labResults
@@ -235,8 +234,11 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         const safeTime = getValidTime(r);
         return {
           timestamp: safeTime,
-          date: safeTime ? new Date(safeTime).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : String(r.actualDate || r.fallbackDate),
-          value: !isNaN(numericValue) ? numericValue : undefined,
+          date: (() => {
+             const d = parseSafeTimestamp(r.actualDate || r.fallbackDate);
+             return d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recent";
+          })(),
+          value: !isNaN(numericValue) && numericValue !== null ? numericValue : undefined,
           unit: r.unitCanonical || r.unit,
           refMin: !isNaN(refMin as number) ? refMin : undefined,
           refMax: !isNaN(refMax as number) ? refMax : undefined,
@@ -245,7 +247,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
           status: r.status || r.flag,
           flagCol
         };
-      }).filter(r => r.value !== undefined);
+      }).filter(r => r.value !== undefined && !isNaN(r.value) && r.date !== "Recent");
     } catch (error) {
       return [];
     }

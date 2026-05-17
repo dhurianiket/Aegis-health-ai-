@@ -1,20 +1,20 @@
-export function safeDate(dateInput: string | Date | null | undefined): string {
-  if (!dateInput) return "Recent";
-  
-  if (dateInput instanceof Date) {
-    if (isNaN(dateInput.getTime())) return "Recent";
-    return dateInput.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+export const parseSafeTimestamp = (timestamp: any): Date | null => {
+  if (!timestamp) return null;
+
+  // Firestore Timestamp object
+  if (typeof timestamp.toDate === "function") return timestamp.toDate();
+  if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+
+  // Standard JS Date from string or number
+  const parsed = new Date(timestamp);
+  if (!isNaN(parsed.getTime())) return parsed;
+
+  // Safari YYYY-MM-DD bug workaround
+  if (typeof timestamp === "string") {
+    const normalized = timestamp.replace(/-/g, "/").split("T")[0];
+    const safeParsed = new Date(normalized);
+    if (!isNaN(safeParsed.getTime())) return safeParsed;
   }
 
-  let dateString = String(dateInput);
-  
-  // Safely replace dashes for Safari compatibility
-  if (dateString.includes('-') && !dateString.includes('T')) {
-    dateString = dateString.replace(/-/g, '/');
-  }
-
-  const parsed = new Date(dateString);
-  if (isNaN(parsed.getTime())) return "Recent";
-
-  return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
+  return null; // Never throw — always return null on failure
+};

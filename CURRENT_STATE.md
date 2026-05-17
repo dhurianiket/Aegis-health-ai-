@@ -19,14 +19,15 @@
 4. UI Guardrails: Keep all chart, PDF, dashboard, and crash-fix guardrails intact.
 
 ## Changelog
-**Date:** 2026-05-16
-**Reason:** Master Hotfix & Architecture Lockdown (v1.6.0 Launch)
+**Date:** 2026-05-17
+**Reason:** Runtime Master Hotfix (Dates & UI Contrast)
 **What changed:**
-- Upgraded models to Gemini 3.1 Pro Preview and Gemini 3 Flash Preview.
-- Implemented `useEffect` state-driven routing for authentication to fix race conditions.
-- Fixed chart rendering crashes via defensive empty-state handling.
-- Sanitized AI chat history payloads to prevent native Google SDK time-formatting crashes.
+- Implemented global `parseSafeTimestamp` to safely parse Firestore Timestamp objects across Safari and generic browsers, preventing `RangeError: Invalid Date`.
+- Replaced raw `new Date()` calls throughout data models, context service, and dashboard components.
+- Added strict `NaN` and `null` filtering before injecting data into Recharts lines/sparklines.
+- Hardened the AI query model execution by implementing an explicit and robust fallback chain (`3.1-pro` -> `1.5-pro` -> `3-flash`) and tracking fatal errors via `[GEMINI API FATAL ERROR]`.
+- Addressed multiple light mode UI text contrast issues inside `ChatCoach`, `AlertBanner`, and `SpecialistLounge`.
 **What remains unchanged:**
 - The hybrid architecture routing logic.
-- Core UI functionality and Firestore security rules.
-**Verification status:** Verified via build plus runtime testing.
+- Core UI functionality, auth flow, and Firestore security rules.
+**Verification status:** Verified via build. No regressions detected in chart rendering.

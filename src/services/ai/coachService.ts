@@ -166,7 +166,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         console.error("[GEMINI API FATAL ERROR] (1.5-pro fallback failed):", fallbackError?.message || fallbackError);
         stream = await ai.models.generateContentStream({
           ...reqConfig,
-          model: "gemini-1.5-flash",
+          model: "gemini-3-flash-preview",
         });
       }
     }
