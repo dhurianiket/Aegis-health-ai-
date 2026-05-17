@@ -56,7 +56,7 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
 
   if (sparklinesData.length === 0) {
     return (
-      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl h-[200px] flex items-center justify-center text-muted text-sm flex-col gap-2">
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl h-[200px] flex items-center justify-center text-muted text-sm flex-col gap-2">
          <Activity className="w-6 h-6 opacity-30 text-slate-400" />
          <span>No trend data available yet. Need at least 2 readings.</span>
       </div>
@@ -64,16 +64,16 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
   }
 
   return (
-    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">
+    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-blue-500/20 rounded-xl">
           <Activity className="w-5 h-5 text-blue-400" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white tracking-tight">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100 tracking-tight">
             Key Biomarkers
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Recent trajectory overview
           </p>
         </div>
@@ -97,14 +97,14 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-slate-900/50 rounded-2xl p-4 border border-white/5"
+              className="bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5"
             >
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+              <h4 className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest truncate">
                 {item.name}
               </h4>
               <div className="flex items-end justify-between mt-2">
                 <span
-                  className={`text-xl font-light tracking-tight ${isCritical ? "text-amber-400" : "text-white"}`}
+                  className={`text-xl font-light tracking-tight ${isCritical ? "text-amber-500 dark:text-amber-400" : "text-slate-900 dark:text-white"}`}
                 >
                   {item.latest.value}
                 </span>

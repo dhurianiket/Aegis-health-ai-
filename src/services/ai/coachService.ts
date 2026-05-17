@@ -133,8 +133,15 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
   
   try {
     const targetModel = isSummaryRequest ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
+    // History Sanitation
+    contents.forEach((c) => {
+      c.parts = c.parts.filter(p => typeof p.text === 'string' && p.text.trim() !== "");
+    });
+    // Remove any messages that ended up with no parts
+    const sanitizedContents = contents.filter(c => c.parts.length > 0);
+
     const reqConfig = {
-      contents,
+      contents: sanitizedContents,
       config: {
         systemInstruction,
         maxOutputTokens: 8192,
@@ -149,14 +156,18 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         model: targetModel,
       });
     } catch (modelError: any) {
-      if (isSummaryRequest) {
-        console.warn("Gemini Pro stream failed, falling back to Flash:", modelError);
+      console.error("[GEMINI API FATAL ERROR]:", modelError?.message || modelError, modelError?.status);
+      try {
         stream = await ai.models.generateContentStream({
           ...reqConfig,
-          model: "gemini-3-flash-preview",
+          model: "gemini-1.5-pro",
         });
-      } else {
-        throw modelError;
+      } catch (fallbackError: any) {
+        console.error("[GEMINI API FATAL ERROR] (1.5-pro fallback failed):", fallbackError?.message || fallbackError);
+        stream = await ai.models.generateContentStream({
+          ...reqConfig,
+          model: "gemini-1.5-flash",
+        });
       }
     }
 

@@ -321,7 +321,7 @@ ${context}`;
               animate={{ x: 0 }}
               exit={{ x: "100%", pointerEvents: "none" }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-0 right-0 z-[9999] w-full sm:w-[420px] max-w-full h-[100dvh] flex flex-col bg-[var(--color-bg)] border-l border-[var(--color-border)] sm:rounded-l-3xl pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0 pointer-events-auto"
+              className="fixed top-0 right-0 z-[9999] w-full sm:w-[420px] max-w-full h-[100dvh] flex flex-col bg-white dark:bg-[var(--color-bg)] shadow-md border-l border-[var(--color-border)] sm:rounded-l-3xl pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0 pointer-events-auto"
               role="dialog"
               aria-modal="true"
               aria-labelledby="chat-title"

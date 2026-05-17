@@ -31,7 +31,7 @@ export default function ComparativeAnalysis({
 
   if (latestLabs.length === 0) {
     return (
-      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl h-[200px] flex flex-col items-center justify-center text-muted text-sm gap-2">
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl h-[200px] flex flex-col items-center justify-center text-muted text-sm gap-2">
          <BarChart2 className="w-6 h-6 opacity-30 text-slate-400" />
          <span>No comparatives available yet.</span>
       </div>
@@ -39,13 +39,13 @@ export default function ComparativeAnalysis({
   }
 
   return (
-    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">
+    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-emerald-500/20 rounded-xl">
           <BarChart2 className="w-5 h-5 text-emerald-400" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white tracking-tight">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100 tracking-tight">
             Percentile Ranking
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -78,7 +78,7 @@ export default function ComparativeAnalysis({
           return (
             <div key={lab.id} className="relative">
               <div className="flex justify-between items-end mb-2">
-                <span className="text-sm font-bold text-slate-200">
+                <span className="text-sm font-bold text-slate-900 dark:text-gray-100">
                   {lab.markerName}
                 </span>
                 <span className="text-xs font-medium text-slate-400">
@@ -86,7 +86,7 @@ export default function ComparativeAnalysis({
                 </span>
               </div>
 
-              <div className="h-2.5 w-full bg-slate-900/60 rounded-full overflow-hidden border border-white/5 relative">
+              <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-900/60 rounded-full overflow-hidden border border-black/5 dark:border-white/5 relative">
                 {/* Population curve background hint */}
                 <div className="absolute inset-y-0 left-1/4 right-1/4 bg-white/5"></div>
 

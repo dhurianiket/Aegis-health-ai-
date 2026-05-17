@@ -307,7 +307,7 @@ export default function Dashboard({
       >
         <motion.div
           whileHover={{ y: -4, backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-2xl flex items-center gap-6"
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-md dark:shadow-2xl flex items-center gap-6"
         >
           <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
             <ShieldCheck className="w-8 h-8" />
@@ -330,7 +330,7 @@ export default function Dashboard({
 
         <motion.div
           whileHover={{ y: -4, backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-2xl flex items-center gap-6"
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-md dark:shadow-2xl flex items-center gap-6"
         >
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
             <Zap className="w-8 h-8" />
@@ -356,7 +356,7 @@ export default function Dashboard({
 
         <motion.div
           whileHover={{ y: -4, backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-2xl flex items-center gap-6"
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-md dark:shadow-2xl flex items-center gap-6"
         >
           <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400">
             <Droplets className="w-8 h-8" />
@@ -389,7 +389,7 @@ export default function Dashboard({
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
         {/* Radar Chart Section */}
-        <div className="lg:col-span-1 bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">
+        <div className="lg:col-span-1 bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl">
           <div className="flex items-center justify-between mb-8">
             <h3 className="font-bold text-[var(--color-text)] tracking-tight">
               System Performance
@@ -455,7 +455,7 @@ export default function Dashboard({
             className="grid grid-cols-1 md:grid-cols-2 gap-8"
           >
             {/* Needs Attention */}
-            <div className="bg-[var(--color-surface)] backdrop-blur-xl p-8 rounded-[40px] border border-[var(--color-border)] shadow-2xl border-l-4 border-l-[var(--color-warning)]">
+            <div className="bg-[var(--color-surface)] backdrop-blur-xl p-8 rounded-[40px] border border-[var(--color-border)] shadow-md dark:shadow-2xl border-l-4 border-l-[var(--color-warning)]">
               <div className="flex items-center gap-3 mb-6 text-[var(--color-warning)]">
                 <AlertTriangle className="w-5 h-5" />
                 <h3 className="font-bold tracking-tight uppercase text-sm">
@@ -489,7 +489,7 @@ export default function Dashboard({
             </div>
 
             {/* Key Markers */}
-            <div className="bg-[var(--color-surface)] backdrop-blur-xl p-8 rounded-[40px] border border-[var(--color-border)] shadow-2xl">
+            <div className="bg-[var(--color-surface)] backdrop-blur-xl p-8 rounded-[40px] border border-[var(--color-border)] shadow-md dark:shadow-2xl">
                <div className="flex items-center gap-3 mb-6 text-[var(--color-primary)]">
                   <Activity className="w-5 h-5" />
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>

@@ -270,6 +270,7 @@ export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3, f
             
             return response;
         } catch (error: any) {
+            console.error("[GEMINI API FATAL ERROR]:", error?.message || error, error?.status);
             attempt++;
             const isQuotaError =
                 error?.status === 429 ||

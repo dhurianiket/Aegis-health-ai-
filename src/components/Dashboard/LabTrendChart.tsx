@@ -335,7 +335,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   };
 
   return (
-    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl flex flex-col gap-6">
+    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h3 className="section-title mb-1">Trends</h3>

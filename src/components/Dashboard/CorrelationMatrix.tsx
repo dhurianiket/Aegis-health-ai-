@@ -89,7 +89,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
 
   if (markers.length < 2) {
     return (
-      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl h-[200px] flex flex-col items-center justify-center text-muted text-sm gap-2">
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl h-[200px] flex flex-col items-center justify-center text-muted text-sm gap-2">
          <Network className="w-6 h-6 opacity-30 text-slate-400" />
          <span>Not enough distinct markers for correlation.</span>
       </div>
@@ -99,19 +99,19 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
   const getColor = (val: number) => {
     if (val > 0.7) return "bg-indigo-500 text-white";
     if (val > 0.3) return "bg-indigo-500/60 text-white";
-    if (val > -0.3) return "bg-slate-700 text-slate-300";
+    if (val > -0.3) return "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-300";
     if (val > -0.7) return "bg-amber-500/60 text-white";
     return "bg-amber-500 text-white";
   };
 
   return (
-    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-2xl">
+    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-indigo-500/20 rounded-xl">
           <Network className="w-5 h-5 text-indigo-400" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white tracking-tight">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100 tracking-tight">
             Biomarker Correlation
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -127,7 +127,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
             {markers.map((m) => (
               <div
                 key={m}
-                className="w-16 text-center text-[10px] font-bold text-slate-400 uppercase truncate px-1"
+                className="w-16 text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase truncate px-1"
               >
                 {m}
               </div>
@@ -136,7 +136,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
 
           {markers.map((m1, i) => (
             <div key={m1} className="flex mb-2 items-center">
-              <div className="w-20 text-[10px] font-bold text-slate-300 uppercase truncate pr-2 text-right">
+              <div className="w-20 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase truncate pr-2 text-right">
                 {m1}
               </div>
               {markers.map((m2, j) => (
@@ -160,7 +160,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-start gap-2 bg-slate-900/40 p-3 rounded-xl border border-white/5">
+      <div className="mt-4 flex items-start gap-2 bg-slate-100 dark:bg-slate-900/40 p-3 rounded-xl border border-black/5 dark:border-white/5">
         <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
         <p className="text-xs text-slate-400 leading-relaxed">
           Values near <span className="text-indigo-400 font-bold">1.0</span>{" "}

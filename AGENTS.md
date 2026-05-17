@@ -1,64 +1,24 @@
 # Aegis Health AI — Agent Context & Guardrails
 **Target Version:** 1.6.0+
 
-# CRITICAL SYSTEM DIRECTIVES FOR AI AGENT
+## CONFLICT RESOLUTION (CRITICAL)
+If a future user request conflicts with any invariant in these files:
+1. FLAG the conflict immediately.
+2. EXPLAIN exactly which invariant is being violated.
+3. REFUSE the change until explicit user approval and override are provided.
 
-## Rule 1: NO IMPERATIVE AUTH ROUTING
-**NEVER** put `Maps('/dashboard')` or any router pushes inside an `onClick` handler for login buttons. 
-* **Why:** It causes race conditions where the router evaluates state before Firebase finishes initializing.
-* **Requirement:** Auth routing MUST be handled passively via `useEffect` hooks that watch the `user` and `loading` state from `AuthContext`. Buttons should ONLY execute `await signIn()`.
+## DO NOT CHANGE WITHOUT APPROVAL (INVARIANTS)
+- AI Routing: Gemini Flash (`gemini-3-flash-preview`) remains the default for extraction, parsing, normalization, and high-volume helper tasks.
+- AI Reasoning: Gemini Pro (`gemini-3.1-pro-preview`) remains reserved for SBAAR, doctor summary, specialist summary, and final clinical synthesis. `temperature` must remain at `0.1` or `0.2` for medical-grade determinism.
+- Caching: Cached reports must be reused when source data has not changed. Recompute reports only when source hash, prompt version, template version, or model version changes.
+- UI/UX Guardrails: Keep all existing chart, PDF, and dashboard defensive rendering intact.
+- Auth Guardrails: Authentication strictly uses `signInWithPopup` via the `aegishealthai.co.in` custom domain. Imperative auth routing is forbidden; all auth routing must be state-driven via `useEffect` watching the Auth Context.
 
-## Rule 2: STRICTLY POPUP AUTHENTICATION
-**NEVER** implement `signInWithRedirect` or `getRedirectResult`. 
-* **Why:** It breaks behind Cloudflare proxies and triggers cross-site tracking blocks on iOS/Safari.
-* **Requirement:** ONLY use `signInWithPopup`.
+## STRICT SYSTEM DIRECTIVES FOR CODE EDITS
+- No Imperative Auth Routing: NEVER put a router push inside an `onClick` handler for login buttons. Auth routing MUST be handled passively via `useEffect`.
+- Strictly Popup Auth: NEVER implement `signInWithRedirect` or `getRedirectResult`. ONLY use `signInWithPopup`.
+- Domain Lock: NEVER alter `src/lib/firebase/config.ts` to use default `.firebaseapp.com` domains. The `authDomain` must remain strictly locked to `aegishealthai.co.in`.
+- No Redundant Views: NEVER create a `Login.tsx` or `Auth.tsx` page view. Keep the router clean (`/` for unauthenticated, `/dashboard` for authenticated).
 
-## Rule 3: DO NOT TOUCH FIREBASE CONFIG
-**NEVER** alter `src/lib/firebase/config.ts` to use default `.firebaseapp.com` domains.
-* **Requirement:** The `authDomain` must remain strictly locked to `aegishealthai.co.in` to ensure cookie domain alignment.
-
-## Rule 4: NO REDUNDANT AUTH VIEWS
-**NEVER** create a `Login.tsx` or `Auth.tsx` page view. 
-* **Requirement:** Authentication is handled directly on the `LandingPage.tsx` via the Google SSO popup overlay. Keep the router clean.
-
-**IF YOU ARE ASSIGNED A FRONTEND BUG:** Do not touch backend security, Firestore logic, or Auth configurations to fix a CSS or Router issue. Keep your blast radius small.
-
-## Project Overview
-Aegis is a personal health management Progressive Web App (PWA) that allows users to upload medical reports, extract lab values using AI, track health trends over time, and consult AI-powered specialists.
-
-## Tech Stack
-- **Frontend:** React + TypeScript + Vite + TailwindCSS
-- **Hosting:** Firebase Hosting → aegishealthai.co.in (proxied via Cloudflare)
-- **Database:** Firebase Firestore
-- **Auth:** Firebase Google Sign-In
-- **AI:** Google Gemini API (@google/genai) routed via Cloudflare AI Gateway
-- **CI/CD:** GitHub Actions → auto-deploys on push to main branch
-
-## Operational Guidance for Agents (CRITICAL)
-- **Deployment Truth Rule:** Local code changes are NOT production fixes until GitHub Actions or a manual Firebase deploy has completed successfully.
-- **Verification Rule:** Do not mark issues as fixed based on build/lint passes alone; require live runtime verification and fresh console output.
-- **Admin Access Rule:** `collectionGroup` usage reads must be strictly role-gated and fail gracefully for non-admin users without causing UI crashes.
-- **React Hooks Rule:** Hooks (`useState`, `useEffect`, etc.) must never be declared conditionally or after an early return. 
-- **Firebase Hosting Rule:** Auth popup issues and COOP header changes in `firebase.json` require a full hosting redeploy before taking effect.
-- **Debugging Rule:** Record the exact root cause, specific files changed, and precise post-deploy validation steps.
-
-## Environment Variables
-Stored in GitHub Actions Secrets (never hardcoded). Declared in `vite-env.d.ts` and `.env.example`:
-- `VITE_GEMINI_API_KEY`, `VITE_CLOUDFLARE_AI_GATEWAY_URL`, `VITE_CF_AIG_TOKEN`
-- Firebase config variables.
-
-## Strict AI System Guardrails & v1.6.0 Protections
-**1. Model Standardization:** Aegis uses a hybrid Gemini strategy. Uses `gemini-2.5-flash` for extraction, chat routing, and structured tasks. Uses `gemini-2.5-pro` for SBAAR, doctor summary, specialist summary, and final clinical reasoning.
-**2. Storage Integrity:** Do not alter Firebase Storage upload paths or Security Rules. Per-user file isolation is absolute.
-**3. API Rate Limiting:** All Gemini API calls must go through `safeGeminiCall()` in `promptFramework.ts` (handles 3-attempt exponential backoff). PDFs process sequentially with a 5-second delay. Pro tasks must include a fallback to Flash.
-**4. Data Visualization (Recharts):** - **DO NOT** modify the safe `getTime()` date parsing fallback in `LabTrendChart.tsx` (fixes Safari/iOS `Invalid Date` bugs).
-   - **DO NOT** change the numerical parser `parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''))`.
-   - Charts use `ResizeObserver` with `debounce={50}`. Never render with width/height of -1.
-**5. PDF Export Pipeline:** - **DO NOT** modify the `html-to-image` configs in `pdfExportService.ts`. The `pixelRatio` is strictly locked at `2` with `skipAutoScale: true` to prevent mobile GPU memory blowouts.
-   - The PDF template must always target the hidden `#health-report-printable` node to enforce light-mode and render the AI SBAAR summary.
-**6. Clinical Safety:** **DO NOT** remove the `runSafetyCheck` interceptor or the `<clinical_safety_rules>` from the `COACH_SYSTEM_INSTRUCTION`. The AI must refuse diagnosis and append disclaimers.
-**7. UX Performance:** **DO NOT** remove `localStorage` checks for `ConsentScreen.tsx` or the Theme Toggle. `SpecialistLounge.tsx` must maintain its horizontal scrolling UI (`overflow-x-auto`) on mobile devices.
-**8. Schema Merge Logic:** Do not remove the schema merge logic that supports both `lab_values` and `observations`.
-
-## Data Structure (Firestore)
-`users/{uid}/` -> `documents/{docId}/`, `profile/`, `medications/`, `usage/` (Analytics)
+IF YOU ARE ASSIGNED A FRONTEND BUG:
+Do not touch backend security, Firestore logic, or Auth configurations to fix a CSS or Router issue. Keep your blast radius small.

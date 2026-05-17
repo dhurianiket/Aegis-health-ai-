@@ -17,7 +17,7 @@ export default function EmptyDashboard({
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-8 md:p-10 rounded-[32px] shadow-2xl relative overflow-hidden"
+        className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-8 md:p-10 rounded-[32px] shadow-md dark:shadow-2xl relative overflow-hidden"
       >
         <div className="relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-bold uppercase tracking-widest">

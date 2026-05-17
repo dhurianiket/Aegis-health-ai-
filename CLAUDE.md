@@ -1,63 +1,24 @@
 # Aegis Health AI — Agent Context
 
 ## Project Overview
-Aegis is a personal health management Progressive Web App (PWA) that allows users to upload medical reports, extract lab values using AI, track health trends over time, and get AI-powered health insights.
+Aegis is a personal health management Progressive Web App (PWA) allowing users to upload medical reports, extract lab values using AI, track health trends, and consult AI-powered specialists.
 
 ## Tech Stack
-- **Frontend:** React + TypeScript + Vite + TailwindCSS
-- **Hosting:** Firebase Hosting → aegishealthai.co.in (proxied via Cloudflare)
-- **Database:** Firebase Firestore
-- **Auth:** Firebase Google Sign-In
-- **AI:** Google Gemini API (@google/genai) routed via Cloudflare AI Gateway
-- **CI/CD:** GitHub Actions → auto-deploys on push to main branch
+- Frontend: React 18 + TypeScript + Vite + TailwindCSS
+- Hosting: Firebase Hosting → aegishealthai.co.in (proxied via Cloudflare)
+- Database: Firebase Firestore
+- Auth: Firebase Google Sign-In
+- AI: Google Gemini API (@google/genai) via Cloudflare AI Gateway
 
-## Key Files
-- `src/lib/geminiClient.ts` — Gemini API client initialization with Cloudflare gateway baseUrl
-- `src/services/ai/gemini.ts` — AI service functions (SBAR generation, lab extraction)
-- `src/services/ai/promptFramework.ts` — all Gemini prompts + safeGeminiCall() with exponential backoff
-- `src/components/Upload/UploadCenter.tsx` — PDF upload, extraction, vault sync with hasSynced lock
-- `src/components/AIHelper/ChatCoach.tsx` — Aura AI health coach chat
-- `src/components/Dashboard/LabTrendChart.tsx` — Recharts lab trend charts
-- `src/components/Dashboard/TrendSparklines.tsx` — Recharts sparkline charts
-- `src/services/pdfExportService.ts` — PDF export service
-- `src/vite-env.d.ts` — TypeScript environment variable declarations
-- `.env.example` — environment variable documentation
+## AI Strategy & Major Invariants
+Aegis uses a strictly enforced hybrid Gemini strategy:
+- Gemini 3 Flash Preview: default model for high-volume, structured tasks.
+- Gemini 3.1 Pro Preview: reserved for clinician-facing, long-context, trust-critical synthesis.
+- Medical-Grade Parameters: `temperature` for all AI queries must remain at `0.1` or `0.2`.
 
-## Environment Variables
-All secrets are stored in GitHub Actions Secrets and never hardcoded:
-- `VITE_GEMINI_API_KEY` — Google Gemini API key
-- `VITE_CLOUDFLARE_AI_GATEWAY_URL` — Cloudflare AI Gateway URL for Gemini
-- `VITE_CF_AIG_TOKEN` — Cloudflare AI Gateway authentication token
-- Firebase config variables (API key, project ID, app ID, etc.)
-
-## Active AI Model
-Aegis uses a hybrid Gemini strategy:
-- Gemini Flash (`gemini-2.5-flash`) is the default model for high-volume, structured, and cost-sensitive tasks like extraction, formatting, and chat routing.
-- Gemini Pro (`gemini-2.5-pro`) is reserved for clinician-facing, long-context, trust-critical synthesis like SBAAR and Specialist/Doctor summaries.
-- Pro tasks degrade gracefully to Flash if Pro fails or is unavailable.
-
-## Architecture Rules (Always Follow)
-1. Never hardcode API keys, tokens, URLs, or account IDs in any file
-2. All new environment variables must be declared in `vite-env.d.ts` and documented in `.env.example`
-3. Build must pass before considering any task complete
-4. All Gemini API calls must go through `safeGeminiCall()` in `promptFramework.ts` which handles 3-attempt exponential backoff on 429 errors
-5. PDF files are processed sequentially with a 5-second delay between each Gemini call — never in parallel
-6. `hasSynced` lock in `UploadCenter.tsx` prevents duplicate Firestore writes — do not remove it
-7. Chart components use ResizeObserver with debounce={50} — never render with width/height of -1
-8. Maximum file size for upload is 4MB — rejected at drop with toast notification
-
-## Data Structure (Firestore)
-```
-users/
-  {uid}/
-    documents/
-      {docId}/    ← lab report documents
-    profile/      ← user profile data
-    medications/  ← medication records
-```
-
-## When Making Changes
-- Read the relevant file before editing
-- Make minimal focused changes — do not refactor unrelated code
-- Confirm build passes after every change
-- Summarize exactly which files were changed and why
+## Operational Rules
+1. Conflict Resolution: If a request violates core architecture or model routing invariants, flag the violation and refuse execution without explicit user override.
+2. State-Driven Auth: Authentication routing must be state-driven via React Context. No imperative router push in auth handlers is allowed.
+3. Caching Integrity: Cached reports must be reused unless source hash or relevant versions change.
+4. UI Safety: Chart components must use defensive rendering and return an empty state if data is undefined.
+5. Secrets: Never hardcode API keys. Rely on `VITE_GEMINI_API_KEY` and Cloudflare variables.
