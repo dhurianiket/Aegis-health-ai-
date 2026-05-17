@@ -52,10 +52,7 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
 
   if (reminders.length === 0) {
     return (
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center min-h-[160px]">
-        <CalendarClock className="w-8 h-8 text-[var(--color-text-muted)] mb-3 opacity-50" />
-        <p className="text-[var(--color-text-muted)] text-sm font-medium">No upcoming lab reminders</p>
-      </div>
+      <div className="p-4 rounded-2xl bg-surface border border-border text-center text-sm text-muted">No upcoming lab reminders. Upload a new lab report to generate follow-ups.</div>
     );
   }
 

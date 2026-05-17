@@ -11,10 +11,11 @@ export async function lookupRxCUI(drugName: string): Promise<string | null> {
     if (data.idGroup && data.idGroup.rxnormId && data.idGroup.rxnormId.length > 0) {
       return data.idGroup.rxnormId[0];
     }
+    return null;
   } catch (err) {
     console.error("Failed to lookup RxCUI:", err);
+    return null;
   }
-  return null;
 }
 
 export async function checkInteractions(rxcuis: string[]): Promise<DrugInteraction[]> {
@@ -66,11 +67,11 @@ export async function checkInteractions(rxcuis: string[]): Promise<DrugInteracti
         }
       }
     }
+    return interactions;
   } catch (err) {
     console.error("Failed to check drug interactions:", err);
+    return [];
   }
-  
-  return interactions;
 }
 
 export async function getActiveMedications(userId: string): Promise<Medication[]> {

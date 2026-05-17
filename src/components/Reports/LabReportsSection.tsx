@@ -318,19 +318,6 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                  ))
               ) : filteredReports.length > 0 ? (
                   <div className="flex flex-col gap-4">
-                    {reports.length >= 2 && selectedReports.length === 2 && (
-                      <div className="flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 p-4 rounded-2xl">
-                        <span className="text-sm text-indigo-700 dark:text-indigo-400 font-medium">
-                          2 reports selected for comparison
-                        </span>
-                        <button 
-                          onClick={() => setShowComparison(true)}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors"
-                        >
-                          Compare Selected
-                        </button>
-                      </div>
-                    )}
                     {filteredReports.map((report) => (
                       <ReportCard 
                         key={report.id} 
@@ -370,6 +357,27 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
           Built by <span className="text-[var(--color-text-muted)]">Aniket Dhuri</span> · Powered by Gemini AI
         </p>
       </div>
+
+      <AnimatePresence>
+        {selectedReports.length === 2 && !showComparison && (
+          <motion.div 
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="fixed bottom-0 left-0 right-0 p-4 bg-surface border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-40"
+          >
+            <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-sm font-semibold text-text">2 reports selected for comparison</span>
+              <button 
+                onClick={() => setShowComparison(true)}
+                className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold uppercase tracking-widest shadow-xl transition-colors text-center"
+              >
+                Compare Selected
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showComparison && selectedReports.length === 2 && (() => {
         const reportA = reports.find(r => r.id === selectedReports[0]);

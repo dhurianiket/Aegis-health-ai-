@@ -291,7 +291,11 @@ export default function Dashboard({
       )}
 
       {!loading && !error && (keyLabs.length > 0 || healthScores.length > 0 || latestInsights.length > 0) && (
-        <>
+        <div className="flex flex-col lg:flex-none">
+          <motion.div variants={tileVariants} className="order-first lg:order-none w-full mb-8">
+            {user && <RemindersWidget userId={user.uid} />}
+          </motion.div>
+
           <motion.div variants={tileVariants}>
             <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
               <SmartAlerts labs={keyLabs} />
@@ -422,13 +426,9 @@ export default function Dashboard({
             </Suspense>
           </motion.div>
 
-          <motion.div variants={tileVariants}>
-            {user && <RemindersWidget userId={user.uid} />}
-          </motion.div>
-
           <motion.div
             variants={tileVariants}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8"
           >
         <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
           <CorrelationMatrix labs={keyLabs} />
@@ -545,7 +545,7 @@ export default function Dashboard({
           Built by <span className="text-[var(--color-text-muted)]">Aniket Dhuri</span> · Powered by Gemini AI
         </p>
       </div>
-    </>
+    </div>
     )}
     </motion.div>
   );
