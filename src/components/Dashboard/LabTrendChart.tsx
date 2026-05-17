@@ -411,20 +411,20 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                    vertical={false}
                    stroke="rgba(150,150,150,0.1)"
                  />
-                 <XAxis
-                   dataKey="date"
-                   axisLine={false}
-                   tickLine={false}
-                   tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
-                   dy={10}
-                   minTickGap={20}
+                 <XAxis 
+                   dataKey="date" 
+                   stroke="currentColor" 
+                   fontSize={12} 
+                   tickLine={false} 
+                   axisLine={false} 
                  />
-                 <YAxis
-                   axisLine={false}
-                   tickLine={false}
-                   tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
-                   domain={["auto", "auto"]}
-                   width={50}
+                 <YAxis 
+                   stroke="currentColor" 
+                   fontSize={12} 
+                   tickLine={false} 
+                   axisLine={false} 
+                   width={40}
+                   domain={['auto', 'auto']} 
                  />
                  <Tooltip
                    content={<CustomTooltip />}
