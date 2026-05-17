@@ -36,32 +36,11 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const [timeRange, setTimeRange] = useState<"3M" | "6M" | "1Y" | "ALL">("ALL");
   const [width, setWidth] = useState(window.innerWidth);
   const [chartKey, setChartKey] = useState(0);
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  
-  useEffect(() => {
-    if (!containerRef.current) return;
-    let timeoutId: any;
-    const observer = new ResizeObserver((entries) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        if (entries[0]) {
-          setContainerWidth(entries[0].contentRect.width);
-        }
-      }, 50); // Recharts guardrail: 50ms debounce
-    });
-    observer.observe(containerRef.current);
-    return () => {
-      clearTimeout(timeoutId);
-      observer.disconnect();
-    };
   }, []);
 
   const isMobile = width < 768;
@@ -400,57 +379,43 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              onReset={() => setChartKey((k) => k + 1)}
              fallbackMessage="Chart rendering failed."
            >
-             {containerWidth > 0 && (
-                 <div style={{ width: "100%", height: "300px", minHeight: "300px", touchAction: "pan-y" }} className="w-full relative mt-4">
-                   <ResponsiveContainer width="100%" height="100%">
-                     <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
-                       
-                       <XAxis 
-                         dataKey="date" 
-                         tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
-                         tickLine={false} 
-                         axisLine={false} 
-                         dy={10}
-                       />
-                       
-                       <YAxis 
-                         tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
-                         tickLine={false} 
-                         axisLine={false} 
-                         dx={-10}
-                         /* Safely letting Recharts calculate the domain to prevent crashes */
-                       />
-                       
-                       <Tooltip 
-                         contentStyle={{ borderRadius: '12px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
-                         itemStyle={{ fontWeight: 'bold' }}
-                       />
+            <div style={{ display: 'block', width: '100%', minHeight: '350px', height: '350px', position: 'relative', marginTop: '16px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                  
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                    tickLine={false} 
+                    axisLine={false} 
+                    dy={10}
+                  />
+                  
+                  <YAxis 
+                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                    tickLine={false} 
+                    axisLine={false} 
+                    dx={-10}
+                  />
+                  
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
+                    itemStyle={{ fontWeight: 'bold' }}
+                  />
 
-                       {/* Optional: Reference Range Background (if data supports it) */}
-                       <Area 
-                         type="monotone" 
-                         dataKey="refRangeArray" 
-                         fill="var(--color-success, #2dd4bf)" 
-                         fillOpacity={0.1}
-                         stroke="none" 
-                         isAnimationActive={false}
-                       />
-
-                       {/* The Main Trend Line */}
-                       <Line 
-                         type="monotone" 
-                         dataKey="numericValue" 
-                         stroke="var(--color-primary, #2dd4bf)" 
-                         strokeWidth={3} 
-                         dot={{ r: 4, strokeWidth: 2, fill: "var(--color-surface, #ffffff)" }}
-                         activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-primary, #2dd4bf)" }}
-                         isAnimationActive={true} // Animations restored safely
-                       />
-                     </ComposedChart>
-                   </ResponsiveContainer>
-                 </div>
-             )}
+                  <Line 
+                    type="monotone" 
+                    dataKey="numericValue" 
+                    stroke="var(--color-primary, #2dd4bf)" 
+                    strokeWidth={3} 
+                    dot={{ r: 4, strokeWidth: 2, fill: "var(--color-surface, #ffffff)" }}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-primary, #2dd4bf)" }}
+                    isAnimationActive={true} 
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
            </AIErrorBoundary>
          </div>
       )}
