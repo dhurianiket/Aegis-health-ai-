@@ -1,5 +1,5 @@
 # Architecture Reference
-**Current Version:** 1.6.0+
+**Current Version:** 1.6.0+ (Multimodal)
 
 ## Technical Stack
 - Frontend: React 18, Vite, Tailwind CSS, Framer Motion
@@ -10,7 +10,7 @@
 ## Authentication Architecture
 - Auth Domain: Firebase `authDomain` is locked to `aegishealthai.co.in`.
 - Sign-In Method: Exclusively `signInWithPopup`.
-- Routing Strategy: State-driven. Unauthenticated users remain on `/` and passively watch the global Auth Context. When `!loading && user` resolves to true, a `useEffect` hook programmatically pushes to `/dashboard`. There is no dedicated `/login` route.
+- Routing Strategy: State-driven. Unauthenticated users remain on `/` and passively watch the global Auth Context. When `!loading && user` resolves to true, a `useEffect` hook programmatically pushes to `/dashboard`.
 
 ## Core Pipelines
 
@@ -21,16 +21,16 @@
 ### 2. Context Aggregation & RAG
 - Groups historical lab results chronologically and maps manual medications.
 - Injects a master `PatientContext` into AI prompts.
-- Model: `gemini-3-flash-preview`.
 
-### 3. Virtual Polyclinic & Chat
+### 3. Virtual Polyclinic, Chat & Multimodal Inputs
 - Factory Pattern routes user chats to 10 clinical AI personas.
-- Routing: Low-complexity uses `gemini-3-flash-preview`. Clinical requests auto-escalate to `gemini-3.1-pro-preview`.
-- History arrays are serialized safely to prevent SDK string formatting crashes.
+- **Streaming:** Chat responses utilize `generateContentStream` for low-latency, word-by-word token delivery to the UI.
+- **Voice:** Implements native browser `MediaRecorder` API for Speech-to-Text input.
+- **Grounding:** Injects Google Search tool definitions into payloads to fetch live medical data when required.
 
-### 4. Caching System
-- Cached reports are reused when source data is unchanged.
-- Reports are recomputed only when source hash, prompt version, template version, or model version changes.
+### 4. Performance & Accessibility
+- Components utilize `React.lazy` and `<Suspense>` to drastically reduce initial bundle size (specifically Recharts and PDF generators).
+- Fully WCAG compliant with strict H1-H3 hierarchies, ARIA labels on all icon/filter buttons, and semantic `<main>` landmarks.
 
 ### 5. PDF Export Pipeline
 - Hardware-safe (`pixelRatio: 2`) capturing of SVG Recharts via `html-to-image` on a hidden DOM node, bridged to `jspdf`.
