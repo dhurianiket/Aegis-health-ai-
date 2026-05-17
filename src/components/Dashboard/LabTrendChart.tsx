@@ -243,39 +243,6 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     );
   }
 
-  console.log("📊 CHART DEBUG - Raw Labs Prop:", labs);
-  console.log("📊 CHART DEBUG - Sanitized Data:", chartData);
-  if (!chartData || chartData.length < 2) {
-    return (
-      <div className="bg-surface border border-border rounded-3xl p-6 md:p-8 relative overflow-hidden flex flex-col">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-           <div>
-              <h3 className="font-bold text-xl lg:text-2xl mb-1 text-text">Select Marker</h3>
-           </div>
-           
-           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-             {uniqueMarkers.map((marker) => (
-                <button
-                  key={marker}
-                  onClick={() => setSelectedMarker(marker)}
-                  className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm ${
-                    selectedMarker === marker
-                      ? "bg-primary text-black transform scale-105"
-                      : "bg-surface hover:bg-black/10 border border-border text-muted"
-                  }`}
-                >
-                  {marker}
-                </button>
-              ))}
-           </div>
-        </div>
-        <div className="flex flex-col items-center justify-center h-[300px] text-slate-500 dark:text-gray-400 border border-dashed border-border rounded-2xl">
-          <p>No trend data available yet. Need at least 2 readings to show a trend.</p>
-        </div>
-      </div>
-    );
-  }
-
   const latestDataPoint = chartData[chartData.length - 1];
   const firstDataPoint = chartData[0];
 
