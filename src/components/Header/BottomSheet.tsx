@@ -44,6 +44,7 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
             </div>
             <button
               onClick={onClose}
+              aria-label="Close menu"
               className="absolute top-4 right-4 p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-muted)]"
             >
               <X className="w-5 h-5" />

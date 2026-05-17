@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
-} from "recharts";
-import {
   TrendingUp,
   TrendingDown,
   AlertTriangle,
@@ -52,6 +45,7 @@ const ComparativeAnalysis = lazy(() => import("./ComparativeAnalysis"));
 const TrendSparklines = lazy(() => import("./TrendSparklines"));
 const EmptyDashboard = lazy(() => import("./EmptyDashboard"));
 const ShareReport = lazy(() => import("../Export/ShareReport"));
+const HealthRadarChart = lazy(() => import("./HealthRadarChart"));
 
 /**
  * Dashboard - The primary clinical analytics view.
@@ -398,22 +392,9 @@ export default function Dashboard({
             <Microscope className="text-slate-500 w-5 h-5" />
           </div>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height={300}>
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  tick={{ fill: "#94A3B8", fontSize: 10, fontWeight: 600 }}
-                />
-                <Radar
-                  name="Health"
-                  dataKey="A"
-                  stroke="#6366F1"
-                  fill="#6366F1"
-                  fillOpacity={0.4}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<SkeletonLoader className="h-[300px]" />}>
+              <HealthRadarChart radarData={radarData} />
+            </Suspense>
           </div>
           <div className="mt-4 p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-start gap-4">
             <ShieldCheck className="text-indigo-400 w-5 h-5 shrink-0" />

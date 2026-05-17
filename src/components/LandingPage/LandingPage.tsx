@@ -144,6 +144,7 @@ export default function LandingPage() {
         </nav>
 
         {/* 1. HERO SECTION */}
+        <main id="main-content">
         <div ref={heroRef} className="relative min-h-screen flex items-center pt-24 pb-12">
           {/* Background subtle glow */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
@@ -401,7 +402,7 @@ export default function LandingPage() {
                     <div>
                       <p className="text-slate-400 font-medium mb-1">{lab.label}</p>
                       <div className="flex items-baseline gap-2 mb-3">
-                        <h4 className={`text-3xl font-bold tracking-tight ${lab.color}`}>{lab.value}</h4>
+                        <h3 className={`text-3xl font-bold tracking-tight ${lab.color}`}>{lab.value}</h3>
                       </div>
                       <p className="text-sm text-slate-400 leading-relaxed font-light">
                         {lab.desc}
@@ -434,7 +435,7 @@ export default function LandingPage() {
                       <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.15)]">
                         <Icon className="w-6 h-6 text-emerald-400" />
                       </div>
-                      <h4 className="text-sm font-bold text-white tracking-wide mb-2">{spec.title}</h4>
+                      <h3 className="text-sm font-bold text-white tracking-wide mb-2">{spec.title}</h3>
                       <div className="mt-auto pt-2">
                         <span className="text-[10px] font-mono tracking-widest text-emerald-400 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 whitespace-nowrap">
                           {spec.guidelines}
@@ -449,16 +450,16 @@ export default function LandingPage() {
             <div className="mt-24 text-center">
               <div className="mb-16 inline-grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto border-t border-b border-white/5 py-12">
                 <div className="px-4">
-                  <h4 className="text-white font-bold mb-2">HIPAA Ready</h4>
-                  <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-tighter">Your data is stored with enterprise-grade encryption and privacy controls.</p>
+                  <h3 className="text-white font-bold mb-2">HIPAA Ready</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">Your data is stored with enterprise-grade encryption and privacy controls.</p>
                 </div>
                 <div className="px-4 border-y md:border-y-0 md:border-x border-white/5">
-                  <h4 className="text-white font-bold mb-2">Clinical Precision</h4>
-                  <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-tighter">Powered by high-context clinical models with 99.8% extraction accuracy.</p>
+                  <h3 className="text-white font-bold mb-2">Clinical Precision</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">Powered by high-context clinical models with 99.8% extraction accuracy.</p>
                 </div>
                 <div className="px-4">
-                  <h4 className="text-white font-bold mb-2">Zero Data Sale</h4>
-                  <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-tighter">We never sell your health information to insurers or third parties. Period.</p>
+                  <h3 className="text-white font-bold mb-2">Zero Data Sale</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">We never sell your health information to insurers or third parties. Period.</p>
                 </div>
               </div>
 
@@ -488,10 +489,10 @@ export default function LandingPage() {
                       Maharashtra, India
                     </div>
                     <div className="flex items-center justify-center gap-4">
-                      <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                      <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" aria-label="Visit our GitHub page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
                         <Github className="w-5 h-5" />
                       </a>
-                      <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                      <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" aria-label="Visit our LinkedIn page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
                         <Linkedin className="w-5 h-5" />
                       </a>
                     </div>
@@ -570,23 +571,24 @@ export default function LandingPage() {
 
             <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="text-center md:text-left">
-                <p className="text-xs text-slate-500 tracking-wide uppercase mb-1">
+                <p className="text-xs text-slate-400 tracking-wide uppercase mb-1">
                   &copy; {new Date().getFullYear()} Aegis Health AI. All rights reserved.
                 </p>
-                <p className="text-[10px] text-slate-600 tracking-[0.2em] font-mono">
+                <p className="text-[10px] text-slate-400 tracking-[0.2em] font-mono">
                   VERSION 1.6.0 / SECURE ENCRYPTION ACTIVE
                 </p>
               </div>
 
               <div className="text-center md:text-right">
-                <p className="text-[10px] text-slate-500 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
-                  Powered by <span className="text-slate-300">Google Gemini & Firebase</span>
+                <p className="text-[10px] text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
+                  Powered by <span className="text-slate-200">Google Gemini & Firebase</span>
                   <Sparkles className="w-3 h-3 text-emerald-400" />
                 </p>
               </div>
             </div>
           </footer>
         </div>
+        </main>
 
         {/* Legal Modal */}
         <LegalModal 

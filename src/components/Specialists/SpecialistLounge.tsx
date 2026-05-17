@@ -217,26 +217,29 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[800px] max-h-[85vh]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
         {/* Sidebar */}
         <div className="lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-4 overflow-x-auto lg:overflow-y-auto hidden-scrollbar">
           <h3 className="text-sm font-bold text-[var(--color-text)] uppercase tracking-wider mb-4 px-2">Select Specialist</h3>
           <div className="flex flex-row lg:flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
-              <button
+              <div
                 key={s.id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpecialist(s.id); } }}
                 onClick={() => setActiveSpecialist(s.id)}
-                className={`flex-shrink-0 w-48 lg:w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
+                className={`cursor-pointer flex-shrink-0 w-48 lg:w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
                   activeSpecialist === s.id 
                   ? 'bg-[var(--color-primary)] text-white shadow-lg' 
                   : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'
                 }`}
               >
                 <div className="font-bold text-sm tracking-wide">{s.displayName}</div>
-                <div className={`text-xs ${activeSpecialist === s.id ? 'text-indigo-200' : 'text-slate-400 dark:text-slate-500'}`}>
+                <div className={`text-xs ${activeSpecialist === s.id ? 'text-indigo-200' : 'text-slate-600 dark:text-slate-300'}`}>
                   {s.expertise.slice(0, 2).join(', ')}...
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
@@ -250,7 +253,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+          <div className="flex-1 p-4 space-y-4" ref={scrollRef}>
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-4">
                  <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
@@ -325,6 +328,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
               />
               <button
                 type="submit"
+                aria-label="Send Message"
                 disabled={!inputValue.trim() || isTyping}
                 className="absolute right-2 top-2 bottom-2 aspect-square bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:bg-indigo-500 disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-slate-700 transition-colors"
               >

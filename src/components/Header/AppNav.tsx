@@ -148,6 +148,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
+                  aria-label="Upload Document"
                 className="flex flex-col items-center justify-center -mt-6 focus:outline-none relative z-10 pointer-events-auto"
                 >
                   <div

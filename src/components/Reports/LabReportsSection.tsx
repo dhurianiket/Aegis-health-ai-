@@ -78,9 +78,9 @@ function ReportCard({ report }: { report: LabReport }) {
                </span>
                <span className="text-xs text-muted font-medium">{dateText}</span>
             </div>
-            <h4 className="font-semibold text-lg text-[var(--color-text)] truncate max-w-[200px] sm:max-w-xs leading-tight">
+            <h3 className="font-semibold text-lg text-[var(--color-text)] truncate max-w-[200px] sm:max-w-xs leading-tight">
               {labName}
-            </h4>
+            </h3>
             <div className="text-sm text-[var(--color-text-muted)] mt-1">
               {doctor && <p className="mb-0.5">Dr. {doctor}</p>}
               <p>{observationCount} lab values found</p>
@@ -256,7 +256,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex gap-2">
                  {['All', 'Lab Reports', 'Consultations', 'Other'].map(f => (
-                    <button key={f} onClick={() => setFilterType(f)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filterType === f ? 'bg-primary text-white' : 'bg-surface text-muted hover:bg-border/50 border border-border'}`}>
+                    <button key={f} onClick={() => setFilterType(f)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filterType === f ? 'bg-primary text-slate-900 font-bold' : 'bg-surface text-muted hover:bg-border/50 border border-border'}`}>
                        {f}
                     </button>
                  ))}
@@ -265,6 +265,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                  <input 
                     type="text" 
+                    aria-label="Search lab reports"
                     placeholder="Search markers, doctors..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}

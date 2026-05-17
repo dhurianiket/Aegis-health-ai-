@@ -35,7 +35,7 @@ export default function SmartAlerts({ labs }: { labs?: any[] }) {
   if (visibleAlerts.length === 0) return null;
 
   return (
-    <div className="w-full mb-8">
+    <div className="w-full mb-8 min-h-[250px]">
       <div className="flex items-center gap-2 mb-4 px-2">
         <BellRing className="w-5 h-5 text-indigo-400" />
         <h3 className="text-lg font-bold text-[var(--color-text)] tracking-tight">

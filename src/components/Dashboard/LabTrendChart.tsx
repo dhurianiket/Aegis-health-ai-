@@ -358,6 +358,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              <div className="relative">
                <select
                  value={selectedMarker}
+                 aria-label="Select Lab Result to filter chart"
                  onChange={(e) => setSelectedMarker(e.target.value)}
                  className="appearance-none bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-medium tracking-widest rounded-xl px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
                >

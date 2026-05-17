@@ -1,0 +1,29 @@
+import React from "react";
+import {
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  Radar,
+} from "recharts";
+
+export default function HealthRadarChart({ radarData }: { radarData: any[] }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+        <PolarGrid stroke="rgba(255,255,255,0.1)" />
+        <PolarAngleAxis
+          dataKey="subject"
+          tick={{ fill: "#94A3B8", fontSize: 10, fontWeight: 600 }}
+        />
+        <Radar
+          name="Health"
+          dataKey="A"
+          stroke="#6366F1"
+          fill="#6366F1"
+          fillOpacity={0.4}
+        />
+      </RadarChart>
+    </ResponsiveContainer>
+  );
+}

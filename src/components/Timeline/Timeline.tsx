@@ -168,6 +168,7 @@ export default function Timeline() {
             <button
               key={cat.id}
               onClick={() => setFilterType(cat.id)}
+              aria-label={cat.label}
               className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all snap-start ${
                 filterType === cat.id
                   ? "bg-indigo-600 text-white shadow-lg"

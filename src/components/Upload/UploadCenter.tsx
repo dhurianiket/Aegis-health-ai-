@@ -456,7 +456,7 @@ export default function UploadCenter({
             onClick={() => setActiveTab("files")}
             className={`px-6 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-colors ${
               activeTab === "files"
-                ? "bg-[var(--color-primary)] text-white shadow-sm"
+                ? "bg-[var(--color-primary)] text-slate-900 font-bold shadow-sm"
                 : "text-muted hover:text-theme"
             }`}
           >
@@ -466,7 +466,7 @@ export default function UploadCenter({
             onClick={() => setActiveTab("notes")}
             className={`px-6 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-colors ${
               activeTab === "notes"
-                ? "bg-[var(--color-primary)] text-white shadow-sm"
+                ? "bg-[var(--color-primary)] text-slate-900 font-bold shadow-sm"
                 : "text-muted hover:text-theme"
             }`}
           >
@@ -489,7 +489,7 @@ export default function UploadCenter({
                     : "border-surface bg-surface/30 hover:bg-surface/50"
                 }`}
               >
-                <input {...getInputProps()} />
+                <input {...getInputProps()} aria-label="Upload medical records or patient data" />
                 <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mb-6">
                   {isDragActive ? (
                     <Clock className="w-8 h-8 text-[var(--color-primary)] animate-pulse" />

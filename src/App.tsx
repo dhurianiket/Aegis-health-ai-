@@ -324,7 +324,7 @@ function MainApp() {
         className="flex-1 flex flex-col min-w-0 h-full relative pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 pointer-events-auto touch-auto"
       >
         {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-theme/80 backdrop-blur-3xl border-b border-surface px-6 md:px-10 py-5 flex items-center justify-between shrink-0">
+        <header className="sticky top-0 z-50 bg-theme/80 backdrop-blur-3xl border-b border-surface px-6 md:px-10 py-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight capitalize text-theme">
               {activeTab === "profile"
@@ -369,7 +369,7 @@ function MainApp() {
                 className="pl-10 pr-4 py-2.5 bg-surface border-transparent rounded-[12px] text-sm md:w-56 focus:ring-1 focus:ring-[var(--color-primary)] transition-all placeholder-muted text-theme outline-none"
               />
             </div>
-            <button className="md:hidden p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors relative">
+            <button aria-label="Search" className="md:hidden p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors relative">
               <Search className="w-5 h-5" />
             </button>
             <div className="relative">

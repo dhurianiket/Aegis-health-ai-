@@ -72,6 +72,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
               </div>
               <button
                 onClick={onClose}
+                aria-label="Close"
                 className="p-2 -mr-2 text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] rounded-full transition-colors focus:outline-none"
               >
                 <X size={20} />

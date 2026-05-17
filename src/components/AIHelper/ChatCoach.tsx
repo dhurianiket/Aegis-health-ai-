@@ -481,6 +481,7 @@ ${context}`;
                   />
                   <button
                     type="submit"
+                    aria-label="Send message"
                     disabled={!inputValue.trim() || isTyping || !isAlAvailable}
                     className="absolute right-1.5 top-1.5 bottom-1.5 aspect-square bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
                   >
