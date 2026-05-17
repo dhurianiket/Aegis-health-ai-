@@ -152,14 +152,19 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 lg:gap-12 items-center w-full relative z-10 transform-gpu">
             {/* Left Content */}
             <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 mb-6">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                Early Beta – Free for Feedback
+              </span>
+
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]"
               >
-                Turn lab reports <br className="hidden md:block" />
-                <span className="text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">into clarity.</span>
+                Understand your medical reports instantly. <br className="hidden md:block" />
+                <span className="text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.3)]">In plain language.</span>
               </motion.h1>
               
               <motion.p 
@@ -168,8 +173,9 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                 className="text-lg md:text-xl text-slate-400 mb-6 font-light max-w-lg leading-relaxed"
               >
-                Understand what is normal, what needs attention, and what changed over time. Your personal clinical AI assistant.
+                Upload lab reports or prescriptions. Get a clear, AI-powered summary and ask questions. Built to help Indian families prepare for doctor visits.
               </motion.p>
+
 
               <motion.div
                initial={{ opacity: 0, y: 20 }}
@@ -455,7 +461,9 @@ export default function LandingPage() {
                 </div>
                 <div className="px-4 border-y md:border-y-0 md:border-x border-white/5">
                   <h3 className="text-white font-bold mb-2">Clinical Precision</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">Powered by high-context clinical models with 99.8% extraction accuracy.</p>
+                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">
+                    Aegis Health AI uses advanced language models to structure data. It is an educational companion meant for tracking and preparation, not a clinical authority.
+                  </p>
                 </div>
                 <div className="px-4">
                   <h3 className="text-white font-bold mb-2">Zero Data Sale</h3>
@@ -474,27 +482,40 @@ export default function LandingPage() {
                   className="w-48 h-48 md:w-56 md:h-56 shrink-0 object-cover object-[center_35%] rounded-full border border-slate-100 shadow-sm relative z-10 bg-slate-800"
                 />
 
-                <div className="text-center relative z-10 w-full flex flex-col items-center">
-                  <h3 className="text-sm text-emerald-400 font-bold uppercase tracking-widest mb-1 mt-2">Meet the Founder</h3>
-                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Aniket Dhuri</h2>
-                  <p className="text-lg text-slate-400 font-medium mb-4">Founder & Lead Developer</p>
-                  
-                  <p className="text-base text-slate-300 font-light leading-relaxed mb-8 italic max-w-md">
-                    "Building the future of accessible, AI-driven healthcare in India."
-                  </p>
-                  
-                  <div className="flex flex-col items-center gap-5 w-full">
-                    <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
-                      <MapPin className="w-5 h-5 text-emerald-400" />
-                      Maharashtra, India
-                    </div>
-                    <div className="flex items-center justify-center gap-4">
-                      <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" aria-label="Visit our GitHub page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
-                        <Github className="w-5 h-5" />
-                      </a>
-                      <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" aria-label="Visit our LinkedIn page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
-                        <Linkedin className="w-5 h-5" />
-                      </a>
+                <div className="text-center md:text-left relative z-10 w-full flex flex-col md:flex-row items-center md:items-start gap-8 mt-8">
+                  <div className="flex flex-col text-left">
+                    <h3 className="text-2xl font-bold text-white mb-4">Our Story</h3>
+                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
+                      Hi, I’m Aniket Dhuri, the founder of Aegis Health AI. I’m based in Dombivli, Maharashtra.
+                    </p>
+                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
+                      This project started from a simple, frustrating observation: medical lab reports are written for doctors, not for the patients paying for them. When a family member gets a blood test or a scan, the days spent waiting for a doctor's appointment are often filled with anxiety, frantic Googling, and confusing medical jargon. 
+                    </p>
+                    <p className="text-slate-300 font-light leading-relaxed mb-8 text-sm md:text-base">
+                      I built Aegis Health AI to bridge that gap.
+                    </p>
+
+                    <h3 className="text-2xl font-bold text-white mb-4">Our Stage & Vision</h3>
+                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
+                      We are currently in an early beta stage. This means the platform is live, completely free to use for feedback, and evolving every single day. Our mission isn’t to replace your doctor—nothing ever should. Our goal is to make health information clear, structured, and actionable for every Indian family, giving you the clarity you need to ask your doctor the right questions.
+                    </p>
+                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
+                      We’re just getting started, and your feedback directly shapes the AI tools we build.
+                    </p>
+                    
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-5 w-full mt-4">
+                      <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                        <MapPin className="w-5 h-5 text-emerald-400" />
+                        Maharashtra, India
+                      </div>
+                      <div className="flex items-center justify-center gap-4">
+                        <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" aria-label="Visit our GitHub page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                          <Github className="w-5 h-5" />
+                        </a>
+                        <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" aria-label="Visit our LinkedIn page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
+                          <Linkedin className="w-5 h-5" />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -574,8 +595,11 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-400 tracking-wide uppercase mb-1">
                   &copy; {new Date().getFullYear()} Aegis Health AI. All rights reserved.
                 </p>
-                <p className="text-[10px] text-slate-400 tracking-[0.2em] font-mono">
+                <p className="text-[10px] text-slate-400 tracking-[0.2em] font-mono mb-2">
                   VERSION 1.6.0 / SECURE ENCRYPTION ACTIVE
+                </p>
+                <p className="text-[10px] text-slate-500 max-w-md">
+                  This site uses only essential session cookies to keep you signed in. We do not use tracking or advertising cookies.
                 </p>
               </div>
 

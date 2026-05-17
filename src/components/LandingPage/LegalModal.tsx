@@ -46,9 +46,30 @@ export default function LegalModal({ isOpen, onClose, type }: LegalModalProps) {
 
           <div className="text-slate-300 leading-relaxed font-light space-y-4">
             {type === 'privacy' ? (
-              <p>
-                We process health documents using secure enterprise AI APIs. Data is encrypted via Firebase. You retain full ownership and can delete your uploaded reports and account at any time. We do not sell your health data.
-              </p>
+              <div className="space-y-4 text-sm md:text-base">
+                <h4 className="text-white font-bold text-lg">Privacy & Data Summary</h4>
+                <p className="text-xs text-slate-400">Last Updated: May 2026</p>
+                <p>
+                  We believe medical data requires absolute transparency. In compliance with India’s Digital Personal Data Protection (DPDP) Act 2023, here is exactly how we handle your information:
+                </p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>
+                    <strong className="text-white">What We Collect:</strong> We collect the medical report files (PDFs or images) you upload and the text-based questions you type into our AI companion. We also collect basic, anonymous analytics to see how users interact with the site.
+                  </li>
+                  <li>
+                    <strong className="text-white">How It's Processed:</strong> Your uploaded reports are processed securely via Google’s Gemini AI models to extract text and highlight key health biomarkers. (Tip: If you prefer absolute anonymity, feel free to cross out or cover your name on the document before uploading).
+                  </li>
+                  <li>
+                    <strong className="text-white">Storage & Safety:</strong> We do not, and will never, sell your health data. Your files are stored securely using encrypted Firebase infrastructure.
+                  </li>
+                  <li>
+                    <strong className="text-white">Your Rights:</strong> Because we operate under the DPDP Act, you have the absolute right to access, correct, or request the complete deletion of your data at any time.
+                  </li>
+                </ul>
+                <p>
+                  Have questions or want your data erased? Reach out directly to us at support@aegishealthai.co.in.
+                </p>
+              </div>
             ) : (
               <p>
                 Aegis Health AI is a technology platform, not a healthcare provider. The AI-generated summaries (including SBAAR reports and AI Specialist interactions) are for informational purposes only and do not replace professional medical advice.
