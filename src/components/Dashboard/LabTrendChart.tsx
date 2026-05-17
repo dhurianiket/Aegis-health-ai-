@@ -400,74 +400,24 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              fallbackMessage="Chart rendering failed."
            >
              {containerWidth > 0 && (
-                 <div style={{ width: "100%", height: "350px", minHeight: "350px", touchAction: "pan-y" }} className="w-full relative">
-                 <ResponsiveContainer width="100%" height="100%" debounce={50}>
-                   <ChartComponent
-                     data={chartData}
-                     margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                   >
-                 <CartesianGrid
-                   strokeDasharray="0"
-                   vertical={false}
-                   stroke="rgba(150,150,150,0.1)"
-                 />
-                 <XAxis 
-                   dataKey="date" 
-                   stroke="currentColor" 
-                   fontSize={12} 
-                   tickLine={false} 
-                   axisLine={false} 
-                 />
-                 <YAxis 
-                   stroke="currentColor" 
-                   fontSize={12} 
-                   tickLine={false} 
-                   axisLine={false} 
-                   width={40}
-                   domain={['auto', 'auto']} 
-                 />
-                 <Tooltip
-                   content={<CustomTooltip />}
-                   cursor={{ fill: "var(--color-surface)", opacity: 0.5 }}
-                 />
-
-                 {/* Reference Band */}
-                 <Area
-                   type="step"
-                   dataKey="refRangeArray"
-                   stroke="none"
-                   fill="var(--color-primary)"
-                   fillOpacity={0.05}
-                   isAnimationActive={!isMobile}
-                 />
-
-                 {isMobile ? (
-                   <Bar
-                     dataKey="numericValue"
-                     fill="var(--color-primary)"
-                     radius={[4, 4, 0, 0]}
-                     isAnimationActive={!isMobile}
-                   />
-                 ) : (
-                   <Line
-                     type="monotone"
-                     dataKey="numericValue"
-                     stroke="var(--color-primary)"
-                     strokeWidth={2}
-                     dot={renderCustomDot}
-                     isAnimationActive={!isMobile}
-                     activeDot={{
-                       r: 8,
-                       fill: "var(--color-primary)",
-                       stroke: "var(--color-bg)",
-                       strokeWidth: 2,
-                     }}
-                     animationDuration={1000}
-                   />
-                 )}
-               </ChartComponent>
-             </ResponsiveContainer>
-             </div>
+                 <div style={{ width: "100%", height: "300px", minHeight: "300px" }}>
+                   <ResponsiveContainer width="100%" height="100%">
+                     <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                       <CartesianGrid strokeDasharray="3 3" />
+                       <XAxis dataKey="date" />
+                       <YAxis />
+                       <Tooltip />
+                       <Line 
+                         type="monotone" 
+                         dataKey="numericValue" 
+                         stroke="var(--color-primary, #2dd4bf)" 
+                         strokeWidth={3} 
+                         isAnimationActive={false} 
+                         dot={{ r: 4 }} 
+                       />
+                     </LineChart>
+                   </ResponsiveContainer>
+                 </div>
              )}
            </AIErrorBoundary>
          </div>
