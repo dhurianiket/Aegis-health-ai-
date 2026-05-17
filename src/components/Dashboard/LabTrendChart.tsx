@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   ResponsiveContainer,
+  ComposedChart,
   LineChart,
   BarChart,
   Bar,
@@ -400,22 +401,53 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              fallbackMessage="Chart rendering failed."
            >
              {containerWidth > 0 && (
-                 <div style={{ width: "100%", height: "300px", minHeight: "300px" }}>
+                 <div style={{ width: "100%", height: "300px", minHeight: "300px", touchAction: "pan-y" }} className="w-full relative mt-4">
                    <ResponsiveContainer width="100%" height="100%">
-                     <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                       <CartesianGrid strokeDasharray="3 3" />
-                       <XAxis dataKey="date" />
-                       <YAxis />
-                       <Tooltip />
+                     <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                       
+                       <XAxis 
+                         dataKey="date" 
+                         tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                         tickLine={false} 
+                         axisLine={false} 
+                         dy={10}
+                       />
+                       
+                       <YAxis 
+                         tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                         tickLine={false} 
+                         axisLine={false} 
+                         dx={-10}
+                         /* Safely letting Recharts calculate the domain to prevent crashes */
+                       />
+                       
+                       <Tooltip 
+                         contentStyle={{ borderRadius: '12px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
+                         itemStyle={{ fontWeight: 'bold' }}
+                       />
+
+                       {/* Optional: Reference Range Background (if data supports it) */}
+                       <Area 
+                         type="monotone" 
+                         dataKey="refRangeArray" 
+                         fill="var(--color-success, #2dd4bf)" 
+                         fillOpacity={0.1}
+                         stroke="none" 
+                         isAnimationActive={false}
+                       />
+
+                       {/* The Main Trend Line */}
                        <Line 
                          type="monotone" 
                          dataKey="numericValue" 
                          stroke="var(--color-primary, #2dd4bf)" 
                          strokeWidth={3} 
-                         isAnimationActive={false} 
-                         dot={{ r: 4 }} 
+                         dot={{ r: 4, strokeWidth: 2, fill: "var(--color-surface, #ffffff)" }}
+                         activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-primary, #2dd4bf)" }}
+                         isAnimationActive={true} // Animations restored safely
                        />
-                     </LineChart>
+                     </ComposedChart>
                    </ResponsiveContainer>
                  </div>
              )}
