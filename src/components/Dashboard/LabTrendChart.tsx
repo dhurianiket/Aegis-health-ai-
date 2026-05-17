@@ -373,7 +373,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       </div>
 
       {uniqueMarkers.length > 0 && (
-         <div id="lab-trend-chart-container" ref={containerRef} className="h-[300px] w-full relative">
+         <div id="lab-trend-chart-container" className="h-[300px] w-full relative">
            <AIErrorBoundary
              key={chartKey}
              onReset={() => setChartKey((k) => k + 1)}
