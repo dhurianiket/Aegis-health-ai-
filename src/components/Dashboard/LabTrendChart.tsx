@@ -249,7 +249,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
           status: r.status || r.flag,
           flagCol
         };
-      }).filter(r => r.numericValue !== undefined && r.numericValue !== null && r.date !== "Recent");
+      }).filter(r => r.numericValue !== undefined && r.numericValue !== null && !isNaN(r.numericValue));
     } catch (error) {
       return [];
     }
@@ -263,6 +263,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     );
   }
 
+  console.log("📊 CHART DEBUG - Raw Labs Prop:", labs);
+  console.log("📊 CHART DEBUG - Sanitized Data:", chartData);
   if (!chartData || chartData.length < 2) {
     return (
       <div className="bg-surface border border-border rounded-3xl p-6 md:p-8 relative overflow-hidden flex flex-col">
@@ -398,7 +400,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              fallbackMessage="Chart rendering failed."
            >
              {containerWidth > 0 && (
-                 <div style={{ width: "100%", height: "300px", touchAction: "pan-y" }}>
+                 <div style={{ width: "100%", height: "350px", minHeight: "350px", touchAction: "pan-y" }} className="w-full relative">
                  <ResponsiveContainer width="100%" height="100%" debounce={50}>
                    <ChartComponent
                      data={chartData}
