@@ -37,7 +37,7 @@ interface LabReport {
   profileId?: string;
 }
 
-function ReportCard({ report }: { report: LabReport }) {
+function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { report: LabReport, showCheckbox?: boolean, isSelected?: boolean, onToggleSelection?: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const labName = report.hospitalName && report.hospitalName !== "Unknown" ? report.hospitalName : report.fileName || "Lab Report";
   const docType = report.type || "Document";
@@ -65,9 +65,19 @@ function ReportCard({ report }: { report: LabReport }) {
   };
 
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-4 hover:shadow-md transition-all">
+    <div className={`bg-[var(--color-surface)] border ${isSelected ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/50' : 'border-[var(--color-border)]'} rounded-2xl p-4 hover:shadow-md transition-all`}>
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex items-start gap-4">
+          {showCheckbox && (
+            <div className="pt-2">
+              <input 
+                type="checkbox" 
+                checked={!!isSelected} 
+                onChange={() => onToggleSelection && onToggleSelection(report.id)}
+                className="w-4 h-4 cursor-pointer accent-[var(--color-primary)]"
+              />
+            </div>
+          )}
           <div className="w-12 h-12 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-xl flex items-center justify-center shrink-0">
             {docType.toLowerCase().includes('consult') ? <Stethoscope className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
           </div>
@@ -176,6 +186,8 @@ function ReportCard({ report }: { report: LabReport }) {
   );
 }
 
+import ReportComparison from "../Dashboard/ReportComparison";
+
 export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { onOpenChat?: () => void; onNavigateToUpload?: () => void; }) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -185,6 +197,23 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
   const [activeTab, setActiveTab] = useState<'list'|'trends'>('list');
   const [filterType, setFilterType] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [selectedReports, setSelectedReports] = useState<string[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
+
+  const toggleSelection = (id: string) => {
+    setSelectedReports(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(r => r !== id);
+      } else {
+        if (prev.length >= 2) {
+          // Deselect oldest item in selection (first item added) and add new one
+          return [prev[1], id];
+        }
+        return [...prev, id];
+      }
+    });
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -288,7 +317,30 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                  </div>
                  ))
               ) : filteredReports.length > 0 ? (
-                 filteredReports.map((report) => <ReportCard key={report.id} report={report} />)
+                  <div className="flex flex-col gap-4">
+                    {reports.length >= 2 && selectedReports.length === 2 && (
+                      <div className="flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 p-4 rounded-2xl">
+                        <span className="text-sm text-indigo-700 dark:text-indigo-400 font-medium">
+                          2 reports selected for comparison
+                        </span>
+                        <button 
+                          onClick={() => setShowComparison(true)}
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors"
+                        >
+                          Compare Selected
+                        </button>
+                      </div>
+                    )}
+                    {filteredReports.map((report) => (
+                      <ReportCard 
+                        key={report.id} 
+                        report={report} 
+                        showCheckbox={reports.length >= 2} 
+                        isSelected={selectedReports.includes(report.id)}
+                        onToggleSelection={toggleSelection}
+                      />
+                    ))}
+                  </div>
               ) : (
                  <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-12 text-center flex flex-col items-center">
                  <div className="w-20 h-20 bg-[var(--color-bg)] rounded-full flex items-center justify-center mb-6">
@@ -318,6 +370,27 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
           Built by <span className="text-[var(--color-text-muted)]">Aniket Dhuri</span> · Powered by Gemini AI
         </p>
       </div>
+
+      {showComparison && selectedReports.length === 2 && (() => {
+        const reportA = reports.find(r => r.id === selectedReports[0]);
+        const reportB = reports.find(r => r.id === selectedReports[1]);
+        
+        let dateA = reportA?.date || reportA?.uploadedAt || "Unknown date";
+        let dateB = reportB?.date || reportB?.uploadedAt || "Unknown date";
+        
+        try { if (reportA?.date) dateA = format(new Date(reportA.date), "MMM d, yyyy"); } catch(e) {}
+        try { if (reportB?.date) dateB = format(new Date(reportB.date), "MMM d, yyyy"); } catch(e) {}
+
+        return (
+          <ReportComparison 
+            reportAId={selectedReports[0]}
+            reportBId={selectedReports[1]}
+            reportADate={dateA}
+            reportBDate={dateB}
+            onClose={() => setShowComparison(false)}
+          />
+        );
+      })()}
     </div>
   );
 }

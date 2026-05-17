@@ -4,6 +4,7 @@ import { computeAllTrends, formatTrendForPrompt } from "../utils/trendAnalysis";
 import { getConsolidatedAlerts } from "./alertService";
 import { LabStatus } from "../types/medical";
 import { LabObservation } from "../types/health";
+import { getUpcomingReminders, generateRemindersFromAlerts, createReminder } from "./reminderService";
 
 const logAuditEvent = async (userId: string, action: string, data: any) => {
   if (import.meta.env.DEV) console.log("Audit log:", userId, action, data);
@@ -88,6 +89,26 @@ export const executeFullUploadPipeline = async (
   // 7. Write alerts/FCM
   // (Placeholder for Firebase Cloud Messaging alert notification)
   console.log("FCM Alerts triggered:", alerts.length);
+
+  // Step 7b: Auto-generate reminders from new alerts
+  const existingReminders = await getUpcomingReminders(userId, 365);
+  const suggestedReminders = generateRemindersFromAlerts(alerts, existingReminders);
+  await Promise.all(
+    suggestedReminders.map(r => createReminder(userId, r))
+  );
+
+  // Step 7c: Re-check drug interactions with updated lab context
+  const { getActiveMedications, checkInteractions } = await import("./medicationService");
+  const activeMeds = await getActiveMedications(userId);
+  if (activeMeds.length >= 2) {
+    const rxcuis = activeMeds.filter(m => m.rxcui != null).map(m => m.rxcui as string);
+    if (rxcuis.length >= 2) {
+      const interactions = await checkInteractions(rxcuis);
+      if (interactions.length > 0) {
+        await logAuditEvent(userId, 'DDI_CHECK_COMPLETED', `${interactions.length} interactions evaluated`);
+      }
+    }
+  }
 
   // 8. generateSBAR
   const trendsJson = formatTrendForPrompt(trends);

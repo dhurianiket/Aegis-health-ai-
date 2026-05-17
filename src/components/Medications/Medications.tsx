@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useProfile } from "../../context/ProfileContext";
-import { Pill, Clock, Plus, Trash2, ShieldAlert, Sparkles } from "lucide-react";
+import { Pill, Clock, Plus, Trash2, ShieldAlert, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { db } from "../../lib/firebase/config";
-import { doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { logAuditEvent } from "../../lib/auditLogger";
+import { getActiveMedications, getInteractions, saveMedication, lookupRxCUI } from "../../services/medicationService";
+import { Medication, DrugInteraction } from "../../types/health";
 
 export default function Medications({
   onOpenChat,
@@ -13,70 +14,102 @@ export default function Medications({
   onOpenChat?: () => void;
 }) {
   const { user } = useAuth();
-  const { activeProfile, setActiveProfile } = useProfile();
 
   const [isAdding, setIsAdding] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [dose, setDose] = useState("");
   const [frequency, setFrequency] = useState("Once daily");
   const [startDate, setStartDate] = useState("");
 
-  const meds = activeProfile?.medications || [];
+  const [meds, setMeds] = useState<Medication[]>([]);
+  const [interactions, setInteractions] = useState<DrugInteraction[]>([]);
+
+  const fetchData = async () => {
+    if (!user?.uid) return;
+    try {
+      const active = await getActiveMedications(user.uid);
+      setMeds(active);
+      const warns = await getInteractions(user.uid);
+      setInteractions(warns);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [user?.uid]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.uid || !activeProfile?.id || !name.trim()) return;
+    if (!user?.uid || !name.trim()) return;
 
-    const newMed = {
-      name: name.trim(),
-      dose: dose.trim(),
-      frequency,
-      startDate: startDate || new Date().toISOString().split("T")[0],
-      status: "active",
-    };
-
+    setIsLoading(true);
     try {
-      const docRef = doc(db, "users", user.uid, "profiles", activeProfile.id);
-      await updateDoc(docRef, {
-        medications: arrayUnion(newMed),
-      });
+      const genericName = name.trim();
+      const rxcui = await lookupRxCUI(genericName);
 
-      const updatedProfile = {
-        ...activeProfile,
-        medications: [...(activeProfile.medications || []), newMed],
+      const newMed: Omit<Medication, 'id' | 'addedAt'> = {
+        userId: user.uid,
+        genericName,
+        brandName: null,
+        rxcui,
+        dosage: dose.trim() || null,
+        frequency: frequency || null,
+        startDate: startDate || new Date().toISOString().split("T")[0],
+        endDate: null,
+        prescribedFor: null
       };
-      setActiveProfile(updatedProfile as any);
 
-      await logAuditEvent(user.uid, "ADD_MEDICATION", newMed.name);
+      await saveMedication(user.uid, newMed);
+      await logAuditEvent(user.uid, "ADD_MEDICATION", genericName);
 
       setIsAdding(false);
       setName("");
       setDose("");
       setFrequency("Once daily");
       setStartDate("");
+      
+      await fetchData();
     } catch (err) {
       console.error(err);
       alert("Failed to add medication.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleRemove = async (med: any) => {
-    if (!user?.uid || !activeProfile?.id) return;
+  const handleRemove = async (med: Medication) => {
+    if (!user?.uid) return;
     try {
-      const docRef = doc(db, "users", user.uid, "profiles", activeProfile.id);
+      const docRef = doc(db, "users", user.uid, "medications", med.id);
       await updateDoc(docRef, {
-        medications: arrayRemove(med),
+        endDate: new Date().toISOString()
       });
 
-      const updatedProfile = {
-        ...activeProfile,
-        medications: (activeProfile?.medications || []).filter(
-          (m: any) => m.name !== med.name,
-        ),
-      };
-      setActiveProfile(updatedProfile as any);
+      // Simple refresh to recalculate
+      const remainingMeds = await getActiveMedications(user.uid);
+      const rxcuis = remainingMeds.map(m => m.rxcui).filter(Boolean) as string[];
+      
+      const { checkInteractions } = await import("../../services/medicationService");
+      if (rxcuis.length >= 2) {
+        const newInteractions = await checkInteractions(rxcuis);
+        const { getDocs, collection, deleteDoc, addDoc } = await import('firebase/firestore');
+        const oldInteractionsSnap = await getDocs(collection(db, 'users', user.uid, 'drugInteractions'));
+        await Promise.all(oldInteractionsSnap.docs.map(d => deleteDoc(d.ref)));
+        await Promise.all(newInteractions.map(interaction => {
+          const { id, ...data } = interaction;
+          return addDoc(collection(db, 'users', user.uid, 'drugInteractions'), data);
+        }));
+      } else {
+        const { getDocs, collection, deleteDoc } = await import('firebase/firestore');
+        const oldInteractionsSnap = await getDocs(collection(db, 'users', user.uid, 'drugInteractions'));
+        await Promise.all(oldInteractionsSnap.docs.map(d => deleteDoc(d.ref)));
+      }
 
-      await logAuditEvent(user.uid, "REMOVE_MEDICATION", med.name);
+      await logAuditEvent(user.uid, "REMOVE_MEDICATION", med.genericName);
+      await fetchData();
     } catch (err) {
       console.error(err);
       alert("Failed to remove medication.");
@@ -170,15 +203,17 @@ export default function Medications({
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="px-5 py-2 text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
+                disabled={isLoading}
+                className="px-5 py-2 text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-colors"
+                disabled={isLoading}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center min-w-[80px] disabled:opacity-50"
               >
-                Save
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
               </button>
             </div>
           </motion.form>
@@ -194,7 +229,7 @@ export default function Medications({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                key={`${med.name}-${idx}`}
+                key={`${med.genericName}-${idx}`}
                 className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-[32px] shadow-2xl hover:bg-white/10 transition-all flex flex-col justify-between"
               >
                 <div>
@@ -211,15 +246,17 @@ export default function Medications({
                     </button>
                   </div>
                   <h3 className="text-xl font-bold text-white tracking-tight mb-1">
-                    {med.name}
+                    {med.genericName}
                   </h3>
                   <div className="flex gap-4 mb-4">
                     <div className="text-sm font-semibold text-slate-300">
-                      {med.dose || med.dosage}
+                      {med.dosage}
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                      <Clock className="w-3.5 h-3.5" /> {med.frequency}
-                    </div>
+                    {med.frequency && (
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                        <Clock className="w-3.5 h-3.5" /> {med.frequency}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -264,6 +301,51 @@ export default function Medications({
           )}
         </AnimatePresence>
       </div>
+
+      {interactions.length > 0 && (
+        <div className="mt-12 space-y-4">
+          <div className="flex items-center gap-3 mb-6">
+            <AlertCircle className="w-6 h-6 text-white" />
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white">
+              Interaction Alerts
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {interactions.map((interaction) => {
+              let badgeColor = "bg-slate-500/20 text-slate-400 border-slate-500/30";
+              let badgeText = "Low concern";
+              
+              if (interaction.severity === 'severe') {
+                badgeColor = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+                badgeText = "Discuss with doctor";
+              } else if (interaction.severity === 'moderate') {
+                badgeColor = "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+                badgeText = "Be aware";
+              }
+
+              return (
+                <div key={interaction.id} className="bg-white/5 border border-white/10 rounded-[24px] p-5 shadow-lg">
+                  <div className="flex items-start justify-between mb-3">
+                    <h4 className="font-bold text-white text-base">
+                      {interaction.drugA} + {interaction.drugB}
+                    </h4>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${badgeColor}`}>
+                      {badgeText}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-300 leading-relaxed mb-4">
+                    {interaction.plainSummary || interaction.description}
+                  </p>
+                  <div className="mt-auto pt-3 border-t border-white/5 text-[10px] text-slate-500 uppercase tracking-widest space-y-1">
+                    <p>Source: RxNorm Drug Interaction API (NLM)</p>
+                    <p>This information is for educational purposes only. Do not change medications without consulting your doctor.</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="pt-8 mt-12 border-t border-white/10 opacity-40 text-center">
         <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.15em]">

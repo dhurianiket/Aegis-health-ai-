@@ -60,6 +60,8 @@ const HealthRadarChart = lazy(() => import("./HealthRadarChart"));
  *   <Dashboard onOpenChat={() => {}} />
  * )
  */
+import RemindersWidget from "./RemindersWidget";
+
 export default function Dashboard({
   onOpenChat,
   onUploadClick,
@@ -414,16 +416,20 @@ export default function Dashboard({
         </div>
       </motion.div>
 
-      <motion.div variants={tileVariants}>
-        <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
-          <TrendSparklines labs={keyLabs} />
-        </Suspense>
-      </motion.div>
+          <motion.div variants={tileVariants}>
+            <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
+              <TrendSparklines labs={keyLabs} />
+            </Suspense>
+          </motion.div>
 
-      <motion.div
-        variants={tileVariants}
-        className="grid grid-cols-1 md:grid-cols-2 gap-8"
-      >
+          <motion.div variants={tileVariants}>
+            {user && <RemindersWidget userId={user.uid} />}
+          </motion.div>
+
+          <motion.div
+            variants={tileVariants}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          >
         <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
           <CorrelationMatrix labs={keyLabs} />
         </Suspense>

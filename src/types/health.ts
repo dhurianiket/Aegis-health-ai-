@@ -12,16 +12,29 @@ export interface LabValue {
 
 export interface Medication {
   id: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  status: "active" | "discontinued" | "on-hold";
-  startDate: string;
-  endDate?: string;
-  indications: string[];
-  sideEffects?: string[];
-  warnings?: string[];
-  instructions?: string;
+  userId: string;
+  genericName: string;
+  brandName: string | null;
+  rxcui: string | null;       // RxNorm concept identifier
+  dosage: string | null;      // e.g., "500mg"
+  frequency: string | null;   // e.g., "Twice daily"
+  startDate: string | null;
+  endDate: string | null;     // null means currently active
+  prescribedFor: string | null;
+  addedAt: string;
+}
+
+export interface DrugInteraction {
+  id: string;
+  drugA: string;
+  drugB: string;
+  rxcuiA: string;
+  rxcuiB: string;
+  severity: 'mild' | 'moderate' | 'severe';
+  description: string;
+  plainSummary: string;       // Generated from explainInteraction()
+  source: 'rxnorm';           // Always 'rxnorm'
+  checkedAt: string;
 }
 
 export interface HealthProfile {
@@ -65,4 +78,16 @@ export interface LabObservation {
   flag: "LOW" | "NORMAL" | "HIGH" | "CRITICAL" | null;
   collectedAt: string; // ISO date string
   reportId: string;
+}
+
+export interface LabReminder {
+  id: string;
+  userId: string;
+  testName: string;
+  dueDate: string; // ISO date string (YYYY-MM-DD)
+  reason: string;  // e.g., "HbA1c was HIGH - recheck in 90 days"
+  status: 'pending' | 'snoozed' | 'completed' | 'dismissed';
+  createdAt: string;
+  sourceReportId: string | null;
+  snoozedUntil: string | null;
 }

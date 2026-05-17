@@ -8,7 +8,7 @@ import { LabObservation } from "../types/health";
  * CLINICAL_STABILITY_THRESHOLDS - Per-biomarker thresholds for determining stability.
  * v1.5: Using relative change thresholds.
  */
-const CLINICAL_STABILITY_THRESHOLDS: Record<string, number> = {
+export const CLINICAL_STABILITY_THRESHOLDS: Record<string, number> = {
   hba1c: 5,
   glucose: 8,
   "serum creatinine": 10,
