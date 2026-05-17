@@ -58,7 +58,7 @@ export class SectionErrorBoundary extends Component<Props, State> {
             <AlertTriangle className="w-8 h-8" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold">{isChunkError ? "App Updated" : "Something went wrong"}</h3>
+            <h2 className="text-xl font-bold">{isChunkError ? "App Updated" : "Something went wrong"}</h2>
             <p className="text-sm text-muted max-w-xs mx-auto">
               {isChunkError 
                 ? "A new version of the app is available. Please refresh to continue."
@@ -67,7 +67,7 @@ export class SectionErrorBoundary extends Component<Props, State> {
           </div>
           <button
             onClick={this.handleRetry}
-            className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-full font-semibold text-sm hover:opacity-90 transition-all shadow-lg shadow-[var(--color-primary)]/20"
+            className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-slate-900 font-bold rounded-full text-sm hover:opacity-90 transition-all shadow-lg shadow-[var(--color-primary)]/20"
           >
             <RefreshCcw className="w-4 h-4" /> {isChunkError ? "Refresh Application" : "Retry Loading"}
           </button>

@@ -393,7 +393,7 @@ export default function Dashboard({
             <Microscope className="text-slate-500 w-5 h-5" />
           </div>
           <div className="h-[300px] w-full">
-            <Suspense fallback={<SkeletonLoader className="h-[300px]" />}>
+            <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
               <HealthRadarChart radarData={radarData} />
             </Suspense>
           </div>
@@ -408,14 +408,14 @@ export default function Dashboard({
 
         {/* Trends Section */}
         <div className="lg:col-span-2 w-full h-[350px] min-h-[300px] relative">
-          <Suspense fallback={<SkeletonLoader className="h-[300px] w-full" />}>
+          <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
             <LabTrendChart labs={keyLabs} />
           </Suspense>
         </div>
       </motion.div>
 
       <motion.div variants={tileVariants}>
-        <Suspense fallback={<SkeletonLoader className="h-64" />}>
+        <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
           <TrendSparklines labs={keyLabs} />
         </Suspense>
       </motion.div>
@@ -424,10 +424,10 @@ export default function Dashboard({
         variants={tileVariants}
         className="grid grid-cols-1 md:grid-cols-2 gap-8"
       >
-        <Suspense fallback={<SkeletonLoader className="h-[400px]" />}>
+        <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
           <CorrelationMatrix labs={keyLabs} />
         </Suspense>
-        <Suspense fallback={<SkeletonLoader className="h-[400px]" />}>
+        <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
           <ComparativeAnalysis labs={keyLabs} />
         </Suspense>
       </motion.div>
