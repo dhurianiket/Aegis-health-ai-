@@ -33,6 +33,7 @@ import {
   HealthScore,
   SpecialistInsight,
 } from "../../types/medical";
+import { HeroMetric } from "./HeroMetric";
 import SkeletonLoader, { DashboardSkeleton } from "../ui/SkeletonLoader";
 import { Sparkles, MessageSquare } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
@@ -406,8 +407,8 @@ export default function Dashboard({
         </div>
 
         {/* Trends Section */}
-        <div className="lg:col-span-2">
-          <Suspense fallback={<SkeletonLoader className="h-[400px]" />}>
+        <div className="lg:col-span-2 w-full h-[350px] min-h-[300px] relative">
+          <Suspense fallback={<SkeletonLoader className="h-[300px] w-full" />}>
             <LabTrendChart labs={keyLabs} />
           </Suspense>
         </div>
@@ -477,24 +478,55 @@ export default function Dashboard({
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => (
-                     <div key={i} className="p-4 rounded-2xl border border-surface bg-surface/50">
-                        <div className="flex justify-between items-start mb-2">
-                           <p className="text-[10px] font-bold uppercase truncate max-w-[100px]">{lab.markerName}</p>
-                           <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${(lab.status as any) === 'normal' ? 'bg-emerald-500/10 text-emerald-500' : (lab.status as any) === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
-                              {lab.status}
-                           </span>
-                        </div>
-                        <div className="flex items-end gap-1.5">
-                           <span className="text-lg font-black">{lab.value}</span>
-                           <span className="text-[10px] text-muted font-medium mb-1">{lab.unit}</span>
-                        </div>
-                        <div className="flex items-center gap-1 mt-2">
-                           {(lab as any).trend === 'up' ? <TrendingUp size={12} className="text-red-500" /> : (lab as any).trend === 'down' ? <TrendingDown size={12} className="text-emerald-500" /> : <ArrowRight size={12} className="text-slate-400" />}
-                           <span className="text-[8px] text-muted">{safeFormatDate(lab.date)}</span>
-                        </div>
+                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => {
+                     const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
+                     const numericValue = isNaN(valRaw) ? 0 : valRaw;
+                     
+                     let prevValNum = numericValue;
+                     let prevDateStr = "N/A";
+                     if ((lab as any).history && (lab as any).history.length > 1) {
+                         const prev = (lab as any).history[1];
+                         const prevValRaw = parseFloat(String(prev.value || prev.display_value).replace(/[^0-9.-]/g, ''));
+                         prevValNum = isNaN(prevValRaw) ? numericValue : prevValRaw;
+                         const d = parseSafeTimestamp(prev.date);
+                         if (d && !isNaN(d.getTime())) {
+                             prevDateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                         }
+                     }
+
+                     let refLow: number | undefined = undefined;
+                     let refHigh: number | undefined = undefined;
+                     if (lab.referenceRange) {
+                         const rangeMatch = String(lab.referenceRange).match(/([0-9.]+)\s*-\s*([0-9.]+)/);
+                         if (rangeMatch) {
+                             refLow = parseFloat(rangeMatch[1]);
+                             refHigh = parseFloat(rangeMatch[2]);
+                         } else {
+                             const lessMatch = String(lab.referenceRange).match(/<\s*([0-9.]+)/);
+                             if (lessMatch) {
+                                 refHigh = parseFloat(lessMatch[1]);
+                             }
+                             const greaterMatch = String(lab.referenceRange).match(/>\s*([0-9.]+)/);
+                             if (greaterMatch) {
+                                 refLow = parseFloat(greaterMatch[1]);
+                             }
+                         }
+                     }
+
+                     return (
+                     <div key={i} className="rounded-2xl border border-surface bg-surface/50 overflow-hidden [&_>_div]:p-4">
+                        <HeroMetric
+                           label={lab.markerName}
+                           value={numericValue}
+                           unit={lab.unit}
+                           status={lab.status as string}
+                           refLow={refLow}
+                           refHigh={refHigh}
+                           previousValue={prevValNum}
+                           previousDate={prevDateStr}
+                        />
                      </div>
-                  ))}
+                  )})}
                </div>
                <div className="mt-6 border-t border-surface pt-4 text-center">
                   <button onClick={() => window.location.hash = "reports"} className="text-xs font-semibold text-theme hover:underline">View All Trends →</button>

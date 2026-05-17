@@ -203,7 +203,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         let refMin = undefined;
         let refMax = undefined;
         const refRange = r.referenceRange || r.reference_range;
-        const numericValue = parseFloat(String(r.numeric_value || r.display_value || r.value).replace(/[^0-9.-]/g, ''));
+        const parsedVal = parseFloat(String(r.numeric_value || r.display_value || r.value).replace(/[^0-9.-]/g, ''));
+        const numericValue = isNaN(parsedVal) ? 0 : parsedVal;
 
         if (refRange) {
           const rangeMatch = refRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
@@ -238,7 +239,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              const d = parseSafeTimestamp(r.actualDate || r.fallbackDate);
              return d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recent";
           })(),
-          value: !isNaN(numericValue) && numericValue !== null ? numericValue : undefined,
+          numericValue: numericValue,
+          value: numericValue,
           unit: r.unitCanonical || r.unit,
           refMin: !isNaN(refMin as number) ? refMin : undefined,
           refMax: !isNaN(refMax as number) ? refMax : undefined,
@@ -247,7 +249,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
           status: r.status || r.flag,
           flagCol
         };
-      }).filter(r => r.value !== undefined && !isNaN(r.value) && r.date !== "Recent");
+      }).filter(r => r.numericValue !== undefined && r.numericValue !== null && r.date !== "Recent");
     } catch (error) {
       return [];
     }
@@ -261,7 +263,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     );
   }
 
-  if (!chartData || chartData.length === 0) {
+  if (!chartData || chartData.length < 2) {
     return (
       <div className="bg-surface border border-border rounded-3xl p-6 md:p-8 relative overflow-hidden flex flex-col">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -285,8 +287,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
               ))}
            </div>
         </div>
-        <div className="flex-1 flex items-center justify-center text-muted text-sm border border-dashed border-border rounded-2xl h-[300px]">
-          No data available for {selectedMarker} within this time frame.
+        <div className="flex flex-col items-center justify-center h-[300px] text-slate-500 dark:text-gray-400 border border-dashed border-border rounded-2xl">
+          <p>No trend data available yet. Need at least 2 readings to show a trend.</p>
         </div>
       </div>
     );
@@ -396,8 +398,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              fallbackMessage="Chart rendering failed."
            >
              {containerWidth > 0 && (
-               <div style={{ width: "100%", height: "300px" }}>
-                 <ResponsiveContainer width="100%" height={300} debounce={50}>
+                 <div style={{ width: "100%", height: "300px", touchAction: "pan-y" }}>
+                 <ResponsiveContainer width="100%" height="100%" debounce={50}>
                    <ChartComponent
                      data={chartData}
                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -439,7 +441,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
 
                  {isMobile ? (
                    <Bar
-                     dataKey="value"
+                     dataKey="numericValue"
                      fill="var(--color-primary)"
                      radius={[4, 4, 0, 0]}
                      isAnimationActive={!isMobile}
@@ -447,7 +449,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                  ) : (
                    <Line
                      type="monotone"
-                     dataKey="value"
+                     dataKey="numericValue"
                      stroke="var(--color-primary)"
                      strokeWidth={2}
                      dot={renderCustomDot}

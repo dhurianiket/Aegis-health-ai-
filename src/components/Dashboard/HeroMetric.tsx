@@ -6,8 +6,9 @@ export interface HeroMetricProps {
   label: string;
   value: number;
   unit: string;
-  refLow: number;
-  refHigh: number;
+  refLow?: number;
+  refHigh?: number;
+  status?: string;
   previousValue: number;
   previousDate: string;
 }
@@ -18,10 +19,13 @@ export const HeroMetric: React.FC<HeroMetricProps> = ({
   unit,
   refLow,
   refHigh,
+  status,
   previousValue,
   previousDate,
 }) => {
-  const isCritical = value < refLow || value > refHigh;
+  const isCriticalByRef = (refLow !== undefined && value < refLow) || (refHigh !== undefined && value > refHigh);
+  const isCriticalByStatus = status === 'high' || status === 'low' || status === 'critical' || status === 'abnormal';
+  const isCritical = isCriticalByRef || isCriticalByStatus;
   const delta = value - previousValue;
   const isHigher = delta > 0;
 
@@ -56,9 +60,11 @@ export const HeroMetric: React.FC<HeroMetricProps> = ({
         <span className="text-muted">{unit}</span>
       </div>
 
-      <div className="text-xs text-faint mb-2">
-        Ref: {refLow}–{refHigh}
-      </div>
+      {(refLow !== undefined || refHigh !== undefined) && (
+        <div className="text-xs text-faint mb-2">
+          Ref: {refLow !== undefined ? refLow : ''}–{refHigh !== undefined ? refHigh : ''}
+        </div>
+      )}
 
       {delta !== 0 && (
         <div className="flex items-center gap-1 mt-1 text-sm">
