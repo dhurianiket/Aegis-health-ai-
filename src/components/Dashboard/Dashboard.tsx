@@ -42,6 +42,7 @@ import {
 } from "../../types/medical";
 import SkeletonLoader, { DashboardSkeleton } from "../ui/SkeletonLoader";
 import { Sparkles, MessageSquare } from "lucide-react";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 
 // Lazy-loaded components for faster initial dashboard render
 const LabTrendChart = lazy(() => import("./LabTrendChart"));
@@ -84,8 +85,8 @@ export default function Dashboard({
 
   const safeFormatDate = (d: any) => {
     if (!d) return "N/A";
-    const dateObj = new Date(d);
-    return isNaN(dateObj.getTime()) ? "N/A" : dateObj.toLocaleDateString();
+    const dateObj = parseSafeTimestamp(d);
+    return !dateObj || isNaN(dateObj.getTime()) ? "N/A" : dateObj.toLocaleDateString();
   };
 
   useEffect(() => {
@@ -139,8 +140,8 @@ export default function Dashboard({
         const aggregatedLabs: any[] = [];
         labMap.forEach((vals, normalizedMarker) => {
            vals.sort((a, b) => {
-             const timeA = new Date(a.date).getTime() || 0;
-             const timeB = new Date(b.date).getTime() || 0;
+             const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
+             const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
              return timeB - timeA;
            });
            const latest = vals[0];

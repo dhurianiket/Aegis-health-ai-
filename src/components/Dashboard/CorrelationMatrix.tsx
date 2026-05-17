@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import { Network, Info } from "lucide-react";
 import { LabResult } from "../../types/medical";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 
 interface CorrelationMatrixProps {
   labs: LabResult[];
@@ -39,8 +40,8 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
       markerSet.add(name);
       if (!byMarkerAndDate[name]) byMarkerAndDate[name] = {};
       // Group by day safely
-      const dateObj = new Date(lab.date);
-      if (!isNaN(dateObj.getTime())) {
+      const dateObj = parseSafeTimestamp(lab.date);
+      if (dateObj && !isNaN(dateObj.getTime())) {
         const dateStr = dateObj.toISOString().split("T")[0];
         byMarkerAndDate[name][dateStr] = lab.value;
       }

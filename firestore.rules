@@ -1,69 +1,59 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
-    }
 
-    // Admin access check
     function isAdmin() {
-      return request.auth != null && (request.auth.token.email == 'dhurianiket@gmail.com' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      return request.auth != null && request.auth.token.admin == true;
     }
 
-    match /analytics/{docId} {
-      allow read, write: if request.auth != null;
-    }
-    match /globalStats/{docId} {
-      allow read, write: if request.auth != null;
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
 
-    match /sharedReports/{reportId} {
-      allow create: if request.auth != null;
-      allow read: if true;
-    }
-
-    // User data protection
-    match /users/{userId}/{document=**} {
-      // Owner has full access to their own root and all sub-collections
-      // Admin has full read access to everything
-      allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Additional Admin queries for collection groups
-    match /{path=**}/usage/{docId} {
-      allow read: if isAdmin();
-    }
-    match /{path=**}/documents/{docId} {
-      allow read: if isAdmin();
-      // Write logic would still be handled by the user rule, but we add read for admin
-    }
-    
-    // User data protection (root properties only)
+    // User root document
     match /users/{userId} {
-      allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId) || isAdmin();
 
-      // Public access for SHARING documents
-      match /shares/{shareId} {
-        // Anyone can read a share document if they have the ID
-        allow read: if true;
-        // Only owner can create/edit/delete their shares
-        allow create, update, delete: if request.auth != null && request.auth.uid == userId;
+      // Lab reports and uploaded documents
+      match /documents/{docId} {
+        allow read, write: if isOwner(userId) || isAdmin();
       }
 
-      // Shared access for PROFILES
-      match /profiles/{profileId} {
-        // Owner access
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-        
-        // Public read (Scenario C): 
-        // We allow single-document GET access for the shared view.
-        // LIST is strictly owner-only to prevent scraping.
-        allow get: if true;
+      // User profile
+      match /profile/{profileId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // Medications
+      match /medications/{medId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // AI-generated insights and cached reports
+      match /insights/{insightId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // Cached AI reports
+      match /cachedReports/{reportId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // Usage analytics
+      match /usage/{usageId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // Catch-all for any other subcollections under a user
+      match /{subcollection}/{docId} {
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
+
+    // Admin-only global stats
+    match /globalStats/{statId} {
+      allow read, write: if isAdmin();
+    }
+
   }
 }
