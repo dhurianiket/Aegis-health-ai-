@@ -595,6 +595,9 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-400 tracking-wide uppercase mb-1">
                   &copy; {new Date().getFullYear()} Aegis Health AI. All rights reserved.
                 </p>
+                <p className="text-sm text-slate-400 transition-colors mb-2">
+                  Proudly developed in Mumbai, Maharashtra, India.
+                </p>
                 <p className="text-[10px] text-slate-400 tracking-[0.2em] font-mono mb-2">
                   VERSION 1.6.0 / SECURE ENCRYPTION ACTIVE
                 </p>

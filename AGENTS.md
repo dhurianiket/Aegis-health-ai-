@@ -1,24 +1,35 @@
-# Aegis Health AI — Agent Context & Guardrails
-**Target Version:** 1.6.0+ (Multimodal Edition)
+# AGENTS.md — Developer Agent Operating Rulebook & Invariants
 
-## CONFLICT RESOLUTION (CRITICAL)
-If a future user request conflicts with any invariant in these files:
-1. FLAG the conflict immediately.
-2. EXPLAIN exactly which invariant is being violated.
-3. REFUSE the change until explicit user approval and override are provided.
+This file outlines the non-negotiable architectural and behavior rules for all AI agents, code editors, and developers modifying the Aegis Health AI repository.
 
-## DO NOT CHANGE WITHOUT APPROVAL (INVARIANTS)
-- **AI Routing & Modalities:** Gemini Flash remains the default for standard extraction. Gemini Pro remains reserved for deep clinical synthesis. The AI pipeline now utilizes **Streaming (`generateContentStream`)**, **Voice (`MediaRecorder` API)**, and **Google Search Grounding**. Do not remove or downgrade these capabilities.
-- **Microphone API:** Voice features must handle browser permission gracefully. Never crash the UI if microphone access is denied.
-- **Caching:** Cached reports must be reused when source data has not changed. Recompute reports only when source hash, prompt version, template version, or model version changes.
-- **UI/UX & A11y Guardrails:** Keep all chart, PDF, dashboard, and WCAG A11y (ARIA labels, semantic `<main>` tags, H1-H3 hierarchy) fixes intact. Do not remove `React.lazy` or `<Suspense>` boundaries.
-- **Auth Guardrails:** Authentication strictly uses `signInWithPopup` via the `aegishealthai.co.in` custom domain. Imperative auth routing is forbidden; all auth routing must be state-driven via `useEffect` watching the Auth Context.
+## 🚨 CONFLICT RESOLUTION RULE
+If any feature request, optimization, or refactoring task violates a documented invariant in this file or `ARCHITECTURE.md`, you MUST stop immediately, flag the conflict to the developer, and refuse to write code until explicitly approved.
 
-## STRICT SYSTEM DIRECTIVES FOR CODE EDITS
-- **No Imperative Auth Routing:** NEVER put a router push inside an `onClick` handler for login buttons. 
-- **Strictly Popup Auth:** NEVER implement `signInWithRedirect`. ONLY use `signInWithPopup`.
-- **Domain Lock:** NEVER alter `src/lib/firebase/config.ts` to use default `.firebaseapp.com` domains.
-- **No Redundant Views:** NEVER create a `Login.tsx` or `Auth.tsx` page view. Keep the router clean (`/` for unauthenticated, `/dashboard` for authenticated).
+---
 
-IF YOU ARE ASSIGNED A FRONTEND BUG:
-Do not touch backend security, Firestore logic, or Auth configurations to fix a CSS or Router issue. Keep your blast radius small.
+## 1. Architectural Guardrails & Invariants
+
+### A. Authentication & Routing Isolation
+- **Rule:** Never modify the standard path routing wrappers around the Dashboard or onboarding state hooks. 
+- **Constraint:** Main layout transitions between the user's root viewport and protected paths must remain tied strictly to Firebase `onAuthStateChanged` lifecycles.
+
+### B. Gemini API Hybrid Processing Pipeline
+- **Rule:** Do not change the logic splitting operations between Gemini models without explicit approval.
+- **Constraint:** High-speed document extractions and structured telemetry parsing are routed exclusively to **Gemini Flash**. Conversational depth, virtual multi-specialty polyclinic threads, and complex medical symptom processing are mapped to **Gemini Pro**.
+
+### C. Data Visualization (Recharts Rendering Safe-Zone)
+- **Rule:** Every single `<ResponsiveContainer>` component inside the codebase MUST possess an explicit numerical layout height parameters baseline.
+- **Constraint:** Never utilize bare `<div className="w-full h-full">` wrapper definitions without strict CSS pixel boundaries. All chart parents must enforce an explicit minimum container height class (`h-[300px] min-h-[300px]`) and pass `minWidth={0}` to the container element. This prevents `-1px` layout collapsing loop failures during React Suspense hydration.
+
+### D. Multi-Report Component Portal Isolation
+- **Rule:** The `ReportComparison` layer must live entirely decoupled from standard layout rendering streams.
+- **Constraint:** To prevent mobile grid mashing or view overlaps, ensure the component is explicitly bound inside an absolute fixed layout portal wrapper using the exact utility classes:
+  `className="fixed inset-0 z-[100] bg-surface/95 backdrop-blur-sm overflow-y-auto w-full h-screen"`
+
+### E. Medication Log (CORS Fault Isolation Contract)
+- **Rule:** The RxNorm API network requests (`lookupRxCUI`, `checkInteractions`) MUST remain isolated within defensive asynchronous `try/catch` shells.
+- **Constraint:** If a fetch operation to the National Library of Medicine encounters a browser CORS block or a remote server downtime cascade, the function MUST catch the error silently, return a fallback value (`null` or `[]`), and allow the medication entry to write successfully to Firestore anyway. An API failure must never throw an unhandled exception or crash the user's UI.
+
+### F. Firestore Isolation & Hierarchy
+- **Rule:** All writes and collections must reside inside isolated, user-specific Firestore paths. 
+- **Constraint:** Never introduce global root-level collections for shared states. All data must target subcollections underneath individual user paths: `users/{userId}/{subcollection}`.

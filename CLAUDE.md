@@ -18,6 +18,7 @@ Aegis uses a strictly enforced hybrid Gemini strategy:
 - Medical-Grade Parameters: `temperature` for all AI queries must remain at `0.1` or `0.2`.
 
 ## Operational Rules
+0. MANDATORY CONTEXT: Before executing any codebase edits, you MUST read and obey the rules and architectural invariants defined in `AGENTS.md`, `ARCHITECTURE.md`, and `CURRENT_STATE.md`.
 1. Conflict Resolution: If a request violates core architecture or model routing invariants, flag the violation and refuse execution without explicit user override.
 2. State-Driven Auth: Authentication routing must be state-driven via React Context. No imperative router push in auth handlers is allowed.
 3. Performance & A11y: Preserve all React.lazy Suspense boundaries, `<main>` semantic landmarks, and ARIA labels.

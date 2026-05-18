@@ -1,36 +1,41 @@
-# Architecture Reference
-**Current Version:** 1.6.0+ (Multimodal)
+# ARCHITECTURE.md — System Reference & Verified Design Specifications
 
-## Technical Stack
-- Frontend: React 18, Vite, Tailwind CSS, Framer Motion
-- Backend/Database: Firebase (Firestore, Storage, Hosting)
-- Authentication: Firebase Auth (Google Sign-In)
-- AI Integration: Gemini API (`@google/genai`) via Cloudflare Gateway
+This document serves as the single source of truth for the technical architecture of Aegis Health AI (Production Release v1.6).
 
-## Authentication Architecture
-- Auth Domain: Firebase `authDomain` is locked to `aegishealthai.co.in`.
-- Sign-In Method: Exclusively `signInWithPopup`.
-- Routing Strategy: State-driven. Unauthenticated users remain on `/` and passively watch the global Auth Context. When `!loading && user` resolves to true, a `useEffect` hook programmatically pushes to `/dashboard`.
+## 1. Technical Stack Blueprint
+- **Frontend Core:** React 18, TypeScript, Vite, Tailwind CSS.
+- **Infrastructure Core:** Firebase (Authentication, Cloud Firestore, Hosting).
+- **AI Analytics Engine:** Google Gemini Developer Enterprise API Gateway.
+  - *Routing:* **Gemini Flash** is utilized exclusively for high-speed data extraction and structured telemetry parsing. **Gemini Pro** handles conversational depth and virtual multi-specialty polyclinic threads.
+- **Medical Intelligence Hub:** U.S. National Library of Medicine (NLM) RxNorm Datasets.
 
-## Core Pipelines
+## 2. Component Hierarchy & Data Flow
 
-### 1. Ingestion & Extraction
-- Flow: PDF/Image -> Firebase Storage -> `promptFramework.ts` -> Validation -> Firestore.
-- Model: `gemini-3-flash-preview` handles throughput and structured extraction.
+```
+[User Document Upload] ➔ [UploadPipeline.ts] ➔ [Gemini Flash Extraction API]
+│
+┌────────────────────────┴────────────────────────┐
+▼                                                 ▼
+[Firestore Observations]                         [Firestore Smart Alerts]
+│                                                 │
+▼                                                 ▼
+[LabTrendChart.tsx]                              [ReminderService.ts]
+(Enforced 300px Sizing)                           (Auto-Schedules +90 Days)
+```
 
-### 2. Context Aggregation & RAG
-- Groups historical lab results chronologically and maps manual medications.
-- Injects a master `PatientContext` into AI prompts.
+## 3. Core Subsystem Definitions
 
-### 3. Virtual Polyclinic, Chat & Multimodal Inputs
-- Factory Pattern routes user chats to 10 clinical AI personas.
-- **Streaming:** Chat responses utilize `generateContentStream` for low-latency, word-by-word token delivery to the UI.
-- **Voice:** Implements native browser `MediaRecorder` API for Speech-to-Text input.
-- **Grounding:** Injects Google Search tool definitions into payloads to fetch live medical data when required.
+### A. Multi-Report Side-by-Side Comparison Engine
+- **Calculations:** Takes exactly 2 checked collections of lab records, matches biomarkers via case-insensitive `testName` filters, references threshold metrics inside `CLINICAL_STABILITY_THRESHOLDS`, and presents delta shifts utilizing directional indicators (↑ / ↓) without throwing layout runtime loop exceptions.
 
-### 4. Performance & Accessibility
-- Components utilize `React.lazy` and `<Suspense>` to drastically reduce initial bundle size (specifically Recharts and PDF generators).
-- Fully WCAG compliant with strict H1-H3 hierarchies, ARIA labels on all icon/filter buttons, and semantic `<main>` landmarks.
+### B. Print Synthesis Generator (`generateDoctorReport`)
+- **Pipeline:** Leverages local client-side PDF compilers to package SBAR (Situation, Background, Assessment, Recommendation) framework elements, chronological trends, and flagged abnormal laboratory results into a print-ready document.
+- **Legal Invariant:** Every document generated must render the following literal string value across the header:
+  *"This document was prepared by the patient using Aegis Health AI. It is a patient-generated informational summary and does NOT constitute a medical record, diagnosis, or clinical assessment. Always verify values against original laboratory reports."*
 
-### 5. PDF Export Pipeline
-- Hardware-safe (`pixelRatio: 2`) capturing of SVG Recharts via `html-to-image` on a hidden DOM node, bridged to `jspdf`.
+### C. Follow-up Chronology Monitor (`reminderService.ts`)
+- **Automated Scheduling:** Hooks into `uploadPipeline.ts` at step **7b**. If incoming laboratory alerts contain out-of-bounds metrics (`HIGH`/`CRITICAL`), the system runs deduplication logic against existing entries and automatically initializes a follow-up checklist target dated exactly at `Today + 90 Days` written to Firestore path `users/{userId}/reminders`.
+
+### D. Keyless Drug-to-Drug Interaction Matrix
+- **Data Ingestion Engine:** Operates entirely over open-source public endpoints (`https://rxnav.nlm.nih.gov/REST/...`), translating unstructured medication strings into standardized RxCUI values. 
+- **Severity Mapping:** Maps NLM string variables directly into structured internal schemas (`High` ➔ `severe`, `Moderate` ➔ `moderate`, alternate values ➔ `mild`) to display non-alarmist UI warning badges on the client dashboard.

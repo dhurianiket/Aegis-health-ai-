@@ -728,7 +728,7 @@ function MainApp() {
   );
 }
 
-export default function App() {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const [splashTimeout, setSplashTimeout] = useState(true);
 
@@ -743,15 +743,29 @@ export default function App() {
     return <SplashScreen />;
   }
 
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const PublicLandingPageRoute = () => {
+  const { user, loading: authLoading } = useAuth();
+
+  if (!authLoading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <LandingPage />;
+};
+
+export default function App() {
   return (
     <Routes>
-      <Route path="/" element={!user ? <LandingPage /> : <Navigate to="/dashboard" replace />} />
-      <Route path="/dashboard" element={user ? <MainApp /> : <Navigate to="/" replace />} />
-      {/* 
-        Route all other existing frontend hashes to MainApp for backwards compatibility 
-        By redirecting them to /dashboard#their-path or just serving MainApp and letting the hash router logic work.
-      */}
-      <Route path="*" element={user ? <MainApp /> : <Navigate to="/" replace />} />
+      <Route path="/" element={<PublicLandingPageRoute />} />
+      <Route path="/dashboard" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
+      <Route path="*" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
     </Routes>
   );
 }

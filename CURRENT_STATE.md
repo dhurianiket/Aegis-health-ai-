@@ -1,28 +1,40 @@
-# Aegis Health Intelligence - Development Tracker
-**Status:** v1.6.0+ Production Build (Multimodal Edition)
+# CURRENT_STATE.md — Verified Production Snapshot
 
-## Stable State
-- **Multimodal AI Upgrades:** AI engine successfully upgraded to support Low-Latency Streaming (`generateContentStream`), Voice Input (`MediaRecorder`), and Live Google Search Grounding.
-- **Performance & A11y:** Achieved 90+ Lighthouse scores. Implemented `React.lazy` code-splitting for heavy charts/PDFs. Fixed CLS layout shifts on priority alerts. Added comprehensive ARIA labels and semantic DOM landmarks (`<main>`, H1-H3).
-- **Core AI Engine:** Running `gemini-3.1-pro-preview` and `gemini-3-flash-preview` with medical-grade temperatures (`0.1`/`0.2`). History SDK crashes resolved via strict object serialization.
-- **Authentication Stabilized:** Enforced state-driven UI routing relying strictly on `signInWithPopup` via custom domain `aegishealthai.co.in`.
-- **UI/UX Resilience:** Defensive rendering added to Recharts. Light Mode text contrast elevated to WCAG standards.
+- **Current Version:** v1.6 (Stable Production Build)
+- **Deployment Status:** Fully live at `https://aegishealthai.co.in`
+- **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
-## Experimental / Pending
-- None currently active.
+---
 
-## Do Not Change Without Approval (INVARIANTS)
-1. AI Routing & Modalities: Gemini Flash is default for extraction/parsing. Gemini Pro is strictly reserved for SBAAR. Streaming, Voice, and Grounding must remain active.
-2. Auth Pattern: Authentication strictly uses `signInWithPopup`. State-driven routing only. Imperative router push in auth handlers is banned.
-3. Performance & UI: Keep all code-splitting (Lazy loading), chart guardrails, and A11y tags intact.
+## 1. Stable State (Confirmed Live & Verified)
+- **User Onboarding Lift:** Verified operational "Try with a Sample Report" button triggering a high-trust mock dashboard payload without requiring file input friction.
+- **Founder Brand Copy:** Landing interface updated with a personal narrative tracking Aniket Dhuri's background out of Dombivli, Maharashtra, to reinforce site legitimacy.
+- **DPDP Act Compliance:** Privacy policy and Terms layouts completely updated to align with India's Digital Personal Data Protection Act 2023. Universal footer cookie consent replaced with a non-intrusive plain text essential cookie disclosure notice.
+- **Lighthouse Performance Metrics:** Visual interface components polished (`<h3>` updated to `<h2>`, contrast layers hardened) to achieve maximum Lighthouse audit scores.
+- **Advanced Features Matrix (Sprint v1.5 Complete):**
+  - **Multi-Report Comparison:** Selected side-by-side matrices rendering beautifully via an isolated portal modal wrapper.
+  - **Doctor PDF Generation:** Synthesis engine functional, printing the unedited literal medical disclaimer across document margins.
+  - **Lab Follow-ups Reminders:** Pipeline live. Widgets render safely at the top of the mobile hierarchy, fallback states configured for empty states.
+  - **RxNorm DDI Checking:** Core engine active. Async error boundaries fully protect medication form saving states from browser CORS rejections.
 
-## Changelog
-**Date:** 2026-05-17
-**Reason:** Multimodal Feature Injection & Lighthouse Polish
-**What changed:**
-- Added Voice Input, Streaming, and Google Grounding to Gemini API calls.
-- Implemented `React.lazy` / `<Suspense>` for performance optimization.
-- Resolved all remaining Lighthouse A11y omissions (ARIA labels, headings).
-**What remains unchanged:**
-- The hybrid architecture routing logic and secure Firebase Auth loops.
-**Verification status:** Verified via build plus runtime testing.
+---
+
+## 2. Experimental / Pending
+- *None currently.* All planned features for the v1.5/v1.6 lifecycle have been fully stabilized, compiled, and merged into main production asset paths.
+
+---
+
+## 3. Do Not Change Without Approval
+- **Composite Index Targets:** Do not mutate the Firestore collection query fields matching `endDate` and `addedAt` arrays under the `medications` subcollection layout. This index is configured live on project node `aegis-health-app-90697`—changing file code sorting keys will trigger database query dropouts.
+- **Responsive Sizing Thresholds:** Do not touch the numerical layout heights passed into dashboard chart parent `div` containers or `<ResponsiveContainer height={300}>` assets.
+
+---
+
+## 4. Changelog
+### [May 17, 2026] — Version 1.6 Stabilization
+- **Reason:** Layout collapse fixes and cross-origin error defense implementations.
+- **What Changed:** - Enforced numerical parent pixel heights to stop Recharts `width="-1"` collapsing loop errors on mobile layouts.
+  - Isolated the report comparison component within a fixed, high-index full-viewport window (`z-[100]`) to separate it from active charts.
+  - Placed RxNorm API fetches into local `try/catch` shells to defend medication form writes from browser CORS rejections.
+- **What Remains Unchanged:** Underlying Firebase Authentication hooks, Firestore data architecture layout models, and core Gemini streaming models.
+- **Verification Status:** Verified production-ready via compilation test suites.
