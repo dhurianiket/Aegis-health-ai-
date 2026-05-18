@@ -3,7 +3,7 @@
 This document serves as the single source of truth for the technical architecture of Aegis Health AI (Production Release v1.6).
 
 ## 1. Technical Stack Blueprint
-- **Frontend Core:** React 18, TypeScript, Vite, Tailwind CSS.
+- **Frontend Core:** React 18, TypeScript, Vite, Tailwind CSS (Strict Semantic CSS Variable Theming).
 - **Infrastructure Core:** Firebase (Authentication, Cloud Firestore, Hosting).
 - **AI Analytics Engine:** Google Gemini Developer Enterprise API Gateway.
   - *Routing:* **Gemini Flash** is utilized exclusively for high-speed data extraction and structured telemetry parsing. **Gemini Pro** handles conversational depth and virtual multi-specialty polyclinic threads.

@@ -52,7 +52,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
 
   if (!data && loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true">
+      <div className="fixed inset-0 z-[100] bg-surface/95 backdrop-blur-sm overflow-y-auto w-full h-screen" role="dialog" aria-modal="true">
         <div className="bg-[var(--color-surface)] p-8 rounded-2xl flex flex-col items-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
           <p className="text-muted text-sm">Analyzing clinical divergence...</p>
@@ -62,7 +62,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[100] bg-surface/95 backdrop-blur-sm overflow-y-auto w-full h-screen" role="dialog" aria-modal="true">
       <div className="bg-[var(--color-bg)] w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-[var(--color-border)] overflow-hidden">
         
         {/* Header Element */}

@@ -62,6 +62,61 @@ const HealthRadarChart = lazy(() => import("./HealthRadarChart"));
  */
 import RemindersWidget from "./RemindersWidget";
 
+const aggregateLabs = (docs: MedicalDocument[]): any[] => {
+  const labMap = new Map<string, any[]>();
+  docs.forEach(doc => {
+    const labValues = doc.extractedData?.lab_values || [];
+    const observations = doc.extractedData?.observations || [];
+    const allExtractedLabs = [...(Array.isArray(labValues) ? labValues : []), ...(Array.isArray(observations) ? observations : [])];
+
+    allExtractedLabs.forEach((lab: any) => {
+       const rawName = lab.marker || lab.name || lab.label || lab.markerName;
+       if (!rawName) return;
+       const normalizedName = rawName.toLowerCase().trim();
+       
+       const entry = {
+          ...lab,
+          marker: rawName,
+          date: lab.date || lab.collection_date || doc.date || (typeof doc.createdAt === 'string' ? doc.createdAt : (doc.createdAt as any)?.toDate?.()?.toISOString()) || new Date().toISOString(),
+          docId: doc.id
+       };
+       if (!labMap.has(normalizedName)) labMap.set(normalizedName, []);
+       labMap.get(normalizedName)!.push(entry);
+    });
+  });
+  
+  const aggregatedLabs: any[] = [];
+  labMap.forEach((vals, normalizedMarker) => {
+     vals.sort((a, b) => {
+       const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
+       const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
+       return timeB - timeA;
+     });
+     const latest = vals[0];
+     const previous = vals.length > 1 ? vals[1] : null;
+     let trend = 'stable';
+     if (previous && !isNaN(parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''))) && !isNaN(parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, '')))) {
+        const latestNum = parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''));
+        const previousNum = parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, ''));
+        const diff = latestNum - previousNum;
+        if (diff > 0) trend = 'up';
+        else if (diff < 0) trend = 'down';
+     }
+     aggregatedLabs.push({
+        markerName: latest.marker || latest.name || latest.label || latest.markerName || normalizedMarker,
+        value: latest.value || latest.display_value,
+        unit: latest.unit,
+        status: latest.status?.toLowerCase() || 'normal',
+        referenceRange: latest.reference_range || latest.referenceRange,
+        date: latest.date,
+        trend,
+        docId: latest.docId,
+        history: vals
+     });
+  });
+  return aggregatedLabs;
+};
+
 export default function Dashboard({
   onOpenChat,
   onUploadClick,
@@ -111,58 +166,7 @@ export default function Dashboard({
         const documents = documentsResult.status === 'fulfilled' ? documentsResult.value : [];
         
         const docs = (documents || []) as MedicalDocument[];
-        // Aggregate all lab_values across documents by marker name
-        const labMap = new Map<string, any[]>();
-        docs.forEach(doc => {
-          const labValues = doc.extractedData?.lab_values || [];
-          const observations = doc.extractedData?.observations || [];
-          const allExtractedLabs = [...(Array.isArray(labValues) ? labValues : []), ...(Array.isArray(observations) ? observations : [])];
-
-          allExtractedLabs.forEach((lab: any) => {
-             const rawName = lab.marker || lab.name || lab.label || lab.markerName;
-             if (!rawName) return;
-             const normalizedName = rawName.toLowerCase().trim();
-             
-             const entry = {
-                ...lab,
-                marker: rawName,
-                date: lab.date || lab.collection_date || doc.date || (typeof doc.createdAt === 'string' ? doc.createdAt : (doc.createdAt as any)?.toDate?.()?.toISOString()) || new Date().toISOString(),
-                docId: doc.id
-             };
-             if (!labMap.has(normalizedName)) labMap.set(normalizedName, []);
-             labMap.get(normalizedName)!.push(entry);
-          });
-        });
-        
-        const aggregatedLabs: any[] = [];
-        labMap.forEach((vals, normalizedMarker) => {
-           vals.sort((a, b) => {
-             const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
-             const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
-             return timeB - timeA;
-           });
-           const latest = vals[0];
-           const previous = vals.length > 1 ? vals[1] : null;
-           let trend = 'stable';
-           if (previous && !isNaN(parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''))) && !isNaN(parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, '')))) {
-              const latestNum = parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''));
-              const previousNum = parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, ''));
-              const diff = latestNum - previousNum;
-              if (diff > 0) trend = 'up';
-              else if (diff < 0) trend = 'down';
-           }
-           aggregatedLabs.push({
-              markerName: latest.marker || latest.name || latest.label || latest.markerName || normalizedMarker,
-              value: latest.value || latest.display_value,
-              unit: latest.unit,
-              status: latest.status?.toLowerCase() || 'normal',
-              referenceRange: latest.reference_range || latest.referenceRange,
-              date: latest.date,
-              trend,
-              docId: latest.docId,
-              history: vals
-           });
-        });
+        const aggregatedLabs = aggregateLabs(docs);
         
         if (isMounted) {
           setHealthScores((scores as HealthScore[]) || []);

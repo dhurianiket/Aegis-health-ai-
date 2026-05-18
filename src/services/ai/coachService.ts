@@ -132,7 +132,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
   if (!ai) throw new Error("Aura AI is currently offline. Please check your configuration.");
   
   try {
-    const targetModel = isSummaryRequest ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
+    const targetModel = isSummaryRequest ? "gemini-3-flash-preview" : "gemini-1.5-pro";
     // History Sanitation
     contents.forEach((c) => {
       c.parts = c.parts.filter(p => typeof p.text === 'string' && p.text.trim() !== "");

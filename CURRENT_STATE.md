@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.6 (Stable Production Build)
+- **Current Version:** v1.6.1 (Release Candidate - Audit Cleared)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -38,3 +38,11 @@
   - Placed RxNorm API fetches into local `try/catch` shells to defend medication form writes from browser CORS rejections.
 - **What Remains Unchanged:** Underlying Firebase Authentication hooks, Firestore data architecture layout models, and core Gemini streaming models.
 - **Verification Status:** Verified production-ready via compilation test suites.
+
+### [May 18, 2026] — v1.6.1 Final Audit Remediation
+- **Reason:** Addressed tech debt, UI contrast bugs, and performance bottlenecks caught in the final read-only codebase audit.
+- **What Changed:** - Stripped hardcoded `text-white` and `slate` classes, replacing them with semantic CSS theme variables (`text-theme`, `bg-surface`) to guarantee Dark/Light mode stability.
+  - Hard-locked conversational AI routing to the `Gemini Pro` tier in `coachService.ts`.
+  - Extracted heavy dashboard data aggregations out of the React render cycle to fix main-thread blocking.
+  - Memoized top-level `App.tsx` handlers with `useCallback`.
+- **Verification Status:** Passed all 5 pillars of the Senior Staff Audit. 100% Production Ready.

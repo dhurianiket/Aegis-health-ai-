@@ -229,7 +229,7 @@ function MainApp() {
     );
   }
 
-  const handleCreateProfile = async (e: React.FormEvent) => {
+  const handleCreateProfile = React.useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileError("");
 
@@ -247,7 +247,7 @@ function MainApp() {
       logger.error(e as Error);
       setProfileError("Failed to create profile. Please try again.");
     }
-  };
+  }, [newProfileName, createProfile]);
 
   const activeAlertsCount = unreadCount;
 

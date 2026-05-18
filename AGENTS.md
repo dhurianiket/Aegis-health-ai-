@@ -33,3 +33,11 @@ If any feature request, optimization, or refactoring task violates a documented 
 ### F. Firestore Isolation & Hierarchy
 - **Rule:** All writes and collections must reside inside isolated, user-specific Firestore paths. 
 - **Constraint:** Never introduce global root-level collections for shared states. All data must target subcollections underneath individual user paths: `users/{userId}/{subcollection}`.
+
+### G. UI Theme Consistency (Semantic Variables)
+- **Rule:** Never use hardcoded Tailwind structural colors (e.g., `text-white`, `bg-white`, `text-black`, `bg-slate-900`) for primary component backgrounds or text.
+- **Constraint:** You MUST use the semantic CSS variables defined in the global stylesheet (e.g., `text-theme`, `text-muted`, `bg-surface`, `border-surface`) to ensure Light/Dark mode toggles function without contrast failures.
+
+### H. React Performance & Main-Thread Safety
+- **Rule:** Do not place heavy data aggregation loops (like mapping/reducing large lab datasets) directly inside `useEffect` or render cycles.
+- **Constraint:** Abstract data parsing/sorting into standalone utility functions outside the component. You must use `useCallback` for UI handlers passed down as props to prevent render cascades.
