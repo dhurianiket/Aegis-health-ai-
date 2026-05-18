@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aegishealthai.co.in/sitemap.xml
