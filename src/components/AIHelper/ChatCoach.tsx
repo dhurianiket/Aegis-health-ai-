@@ -269,6 +269,15 @@ ${remindersContext}`;
         .replace(/Async Error[\s\S]*?\}/gi, "")
         .trim();
 
+      const EMERGENCY_TRIGGERS = [
+        'emergency', 'urgent', 'immediate medical', 'call 911', 'go to the hospital', 'critical'
+      ];
+      if (EMERGENCY_TRIGGERS.some(t => cleaned.toLowerCase().includes(t))) {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([200, 100, 200]); // Vibrate, pause, vibrate
+        }
+      }
+
       if (cleaned.length > 0) {
         setMessages((prev) => [
           ...prev,
@@ -369,6 +378,10 @@ ${remindersContext}`;
                 >
                   <X className="w-5 h-5 text-[var(--color-text-muted)]" />
                 </button>
+              </div>
+
+              <div className="shrink-0 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-xs p-2 text-center border-b border-amber-200 dark:border-amber-800/50">
+                Aura AI is an educational assistant, not a clinical authority. Always consult a doctor for medical advice.
               </div>
 
               {/* Messages */}

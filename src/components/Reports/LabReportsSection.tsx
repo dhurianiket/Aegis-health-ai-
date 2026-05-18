@@ -333,9 +333,9 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                  <div className="w-20 h-20 bg-[var(--color-bg)] rounded-full flex items-center justify-center mb-6">
                     <Filter className="w-10 h-10 text-[var(--color-text-muted)]" strokeWidth={1} />
                  </div>
-                 <h3 className="section-title mb-2 text-[var(--color-text)]">No matches found</h3>
+                 <h3 className="section-title mb-2 text-[var(--color-text)]">{reports.length === 0 ? "Your health vault is empty." : "No matches found"}</h3>
                  <p className="text-[var(--color-text-muted)] text-sm mb-8 max-w-sm">
-                    {reports.length === 0 ? "Upload your first medical report to unleash Aura AI's insights and start tracking your health trends." : "Try adjusting your filters or search terms."}
+                    {reports.length === 0 ? "Upload your first lab report to generate insights and track your trends." : "Try adjusting your filters or search terms."}
                  </p>
                  {reports.length === 0 && (
                     <button onClick={() => onNavigateToUpload && onNavigateToUpload()} className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">

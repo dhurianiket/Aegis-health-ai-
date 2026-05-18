@@ -333,11 +333,14 @@ export default function Timeline() {
                 layout
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10"
+                className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10 flex flex-col items-center justify-center p-6"
               >
-                <FileText className="w-12 h-12 text-slate-700 mx-auto mb-4" />
-                <p className="text-slate-500 font-medium text-sm">
-                  No records found for this category.
+                <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4">
+                  <FileText className="w-8 h-8 text-slate-500" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Your health vault is empty.</h3>
+                <p className="text-slate-500 text-sm max-w-sm mx-auto">
+                  Upload your first lab report to generate insights and track your trends.
                 </p>
               </motion.div>
             )}

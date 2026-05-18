@@ -312,31 +312,37 @@ export default function Medications({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {interactions.map((interaction) => {
-              let badgeColor = "bg-slate-500/20 text-slate-400 border-slate-500/30";
+              let containerColor = "bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-900/50";
+              let textColor = "text-blue-700 dark:text-blue-400";
+              let badgeColor = "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30";
               let badgeText = "Low concern";
               
-              if (interaction.severity === 'severe') {
-                badgeColor = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+              if (interaction.severity === 'severe' || interaction.severity === 'high') {
+                containerColor = "bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-900/50";
+                textColor = "text-red-700 dark:text-red-400";
+                badgeColor = "bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30";
                 badgeText = "Discuss with doctor";
               } else if (interaction.severity === 'moderate') {
-                badgeColor = "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+                containerColor = "bg-amber-100 dark:bg-amber-900/30 border-amber-200 dark:border-amber-900/50";
+                textColor = "text-amber-700 dark:text-amber-400";
+                badgeColor = "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30";
                 badgeText = "Be aware";
               }
 
               return (
-                <div key={interaction.id} className="bg-white/5 border border-white/10 rounded-[24px] p-5 shadow-lg">
+                <div key={interaction.id} className={`${containerColor} border rounded-[24px] p-5 shadow-lg`}>
                   <div className="flex items-start justify-between mb-3">
-                    <h4 className="font-bold text-white text-base">
+                    <h4 className={`font-bold text-base ${textColor}`}>
                       {interaction.drugA} + {interaction.drugB}
                     </h4>
                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${badgeColor}`}>
                       {badgeText}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-300 leading-relaxed mb-4">
+                  <p className={`text-sm leading-relaxed mb-4 ${textColor} opacity-90`}>
                     {interaction.plainSummary || interaction.description}
                   </p>
-                  <div className="mt-auto pt-3 border-t border-white/5 text-[10px] text-slate-500 uppercase tracking-widest space-y-1">
+                  <div className={`mt-auto pt-3 border-t border-current text-[10px] uppercase tracking-widest space-y-1 ${textColor} opacity-70`}>
                     <p>Source: RxNorm Drug Interaction API (NLM)</p>
                     <p>This information is for educational purposes only. Do not change medications without consulting your doctor.</p>
                   </div>
