@@ -16,6 +16,8 @@ import { parseSafeTimestamp } from "../../utils/dateUtils";
 import getAI from "../../lib/geminiClient";
 import { safeJsonParse } from "../../utils/aiUtils";
 import { trackUsage } from "../../services/usageService";
+import { getActiveMedications } from "../../services/medicationService";
+import { getUpcomingReminders } from "../../services/reminderService";
 
 interface ChatCoachProps {
   externalOpen?: boolean;
@@ -142,6 +144,17 @@ export default function ChatCoach({
       const patientData = await getPatientContext(user.uid, activeProfile);
       const context = formatContextForPrompt(patientData);
       
+      const activeMeds = await getActiveMedications(user.uid);
+      const reminders = await getUpcomingReminders(user.uid, 30);
+      
+      const medsContext = activeMeds.length > 0 
+        ? `\nPatient's Active Medications: ${activeMeds.map(m => `${m.genericName} ${m.dosage || ''}`).join(', ')}` 
+        : '\nPatient has no active medications logged.';
+        
+      const remindersContext = reminders.length > 0
+        ? `\nPending Lab Reminders: ${reminders.map(r => `${r.testName} (Due: ${r.dueDate})`).join(', ')}`
+        : '';
+
       const historyItems = JSON.parse(JSON.stringify(messages
         .filter((m) => m.role !== "system" && (m.role as string) !== "context_note")
         .map((m) => ({
@@ -160,7 +173,9 @@ STRICT RULES:
 5. Be concise, empathetic, and always add a disclaimer to consult a doctor.
 
 Clinical Context:
-${context}`;
+${context}
+${medsContext}
+${remindersContext}`;
 
       const isComplex = text.length > 150 || /analyze|summarize|explain in detail|sbaar|diagnosis|clinical/i.test(text);
       let targetModel = isComplex ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
