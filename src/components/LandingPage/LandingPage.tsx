@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -197,7 +197,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                 className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 text-xs md:text-sm font-medium text-emerald-400/80"
               >
-                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> HIPAA Compliant</div>
+                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> DPDP Act 2023 Aligned</div>
                 <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Instant Analysis</div>
                 <div className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> AI-Powered</div>
               </motion.div>
@@ -456,7 +456,7 @@ export default function LandingPage() {
             <div className="mt-24 text-center">
               <div className="mb-16 inline-grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto border-t border-b border-white/5 py-12">
                 <div className="px-4">
-                  <h3 className="text-white font-bold mb-2">HIPAA Ready</h3>
+                  <h3 className="text-white font-bold mb-2">AES-256 Database Encryption</h3>
                   <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">Your data is stored with enterprise-grade encryption and privacy controls.</p>
                 </div>
                 <div className="px-4 border-y md:border-y-0 md:border-x border-white/5">
@@ -577,14 +577,14 @@ export default function LandingPage() {
                 <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Legal</h4>
                 <ul className="space-y-4">
                   <li>
-                    <button onClick={() => openLegalModal('privacy')} className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
+                    <Link to="/privacy-policy" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
                       Privacy Policy
-                    </button>
+                    </Link>
                   </li>
                   <li>
-                    <button onClick={() => openLegalModal('terms')} className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
+                    <Link to="/terms-of-service" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
                       Terms & Medical Disclaimer
-                    </button>
+                    </Link>
                   </li>
                 </ul>
               </div>

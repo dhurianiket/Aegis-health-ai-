@@ -760,10 +760,15 @@ const PublicLandingPageRoute = () => {
   return <LandingPage />;
 };
 
+import PrivacyPolicy from "./components/Legal/PrivacyPolicy";
+import TermsOfService from "./components/Legal/TermsOfService";
+
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<PublicLandingPageRoute />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="/dashboard" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
       <Route path="*" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
     </Routes>
