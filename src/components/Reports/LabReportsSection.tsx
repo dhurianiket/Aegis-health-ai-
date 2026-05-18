@@ -390,13 +390,15 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
         try { if (reportB?.date) dateB = format(new Date(reportB.date), "MMM d, yyyy"); } catch(e) {}
 
         return (
-          <ReportComparison 
-            reportAId={selectedReports[0]}
-            reportBId={selectedReports[1]}
-            reportADate={dateA}
-            reportBDate={dateB}
-            onClose={() => setShowComparison(false)}
-          />
+          <div className="fixed inset-0 z-[100] bg-surface/95 backdrop-blur-sm overflow-y-auto w-full h-screen">
+            <ReportComparison 
+              reportAId={selectedReports[0]}
+              reportBId={selectedReports[1]}
+              reportADate={dateA}
+              reportBDate={dateB}
+              onClose={() => setShowComparison(false)}
+            />
+          </div>
         );
       })()}
     </div>

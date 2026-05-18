@@ -125,9 +125,9 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
                   </div>
                 )}
               </div>
-              <div className="h-[40px] w-full mt-3" ref={containerRef}>
+              <div className="w-full h-[40px] min-h-[40px] mt-3" ref={containerRef}>
                 {containerWidth > 0 && (
-                  <ResponsiveContainer width="100%" height={40} debounce={50}>
+                  <ResponsiveContainer width="100%" height={40} minWidth={0} debounce={50}>
                     <LineChart data={item.data}>
                       <YAxis domain={["dataMin", "dataMax"]} hide />
                       <Line

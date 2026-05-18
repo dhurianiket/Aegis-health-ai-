@@ -238,15 +238,17 @@ export default function AdminDashboard() {
         <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Top 10 Users by Tokens</h3>
           {topUsersByTokens.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={topUsersByTokens} layout="vertical" margin={{ left: 50 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" />
-                <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
-                <Tooltip cursor={{ fill: "transparent" }} />
-                <Bar dataKey="totalTokensUsed" fill="#0088FE" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full h-[250px] min-h-[250px]">
+              <ResponsiveContainer width="100%" height={250} minWidth={0}>
+                <BarChart data={topUsersByTokens} layout="vertical" margin={{ left: 50 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" />
+                  <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
+                  <Tooltip cursor={{ fill: "transparent" }} />
+                  <Bar dataKey="totalTokensUsed" fill="#0088FE" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           ) : (
             <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No token usage data</div>
           )}
@@ -254,15 +256,17 @@ export default function AdminDashboard() {
         <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Top 10 Users by Storage (MB)</h3>
           {topUsersByStorage.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={topUsersByStorage.map(u => ({ ...u, mb: (u.totalStorageBytes || 0) / 1024 / 1024 }))} layout="vertical" margin={{ left: 50 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" />
-                <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
-                <Tooltip cursor={{ fill: "transparent" }} />
-                <Bar dataKey="mb" fill="#00C49F" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full h-[250px] min-h-[250px]">
+              <ResponsiveContainer width="100%" height={250} minWidth={0}>
+                <BarChart data={topUsersByStorage.map(u => ({ ...u, mb: (u.totalStorageBytes || 0) / 1024 / 1024 }))} layout="vertical" margin={{ left: 50 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" />
+                  <YAxis dataKey="email" type="category" width={100} tick={{ fontSize: 10 }} />
+                  <Tooltip cursor={{ fill: "transparent" }} />
+                  <Bar dataKey="mb" fill="#00C49F" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           ) : (
             <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No storage data</div>
           )}
@@ -270,15 +274,17 @@ export default function AdminDashboard() {
         <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Daily Uploads (Last 30 Days)</h3>
           {dailyUploads.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={dailyUploads} margin={{ left: -20, bottom: -10 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="#FFBB28" strokeWidth={3} dot={{ r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="w-full h-[250px] min-h-[250px]">
+              <ResponsiveContainer width="100%" height={250} minWidth={0}>
+                <LineChart data={dailyUploads} margin={{ left: -20, bottom: -10 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="count" stroke="#FFBB28" strokeWidth={3} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           ) : (
              <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No uploads data</div>
           )}
@@ -286,16 +292,18 @@ export default function AdminDashboard() {
         <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-[var(--color-border)]">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted mb-4">Token Usage by Feature</h3>
           {featureTokensArray.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie data={featureTokensArray} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {featureTokensArray.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="w-full h-[250px] min-h-[250px]">
+              <ResponsiveContainer width="100%" height={250} minWidth={0}>
+                <PieChart>
+                  <Pie data={featureTokensArray} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                    {featureTokensArray.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           ) : (
             <div className="h-[250px] flex items-center justify-center text-muted text-sm border-t border-[var(--color-border)]">No feature usage data</div>
           )}

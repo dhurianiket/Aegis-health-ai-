@@ -9,7 +9,8 @@ import {
 
 export default function HealthRadarChart({ radarData }: { radarData: any[] }) {
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <div className="w-full h-[300px] min-h-[300px]">
+      <ResponsiveContainer width="100%" height={300} minWidth={0}>
       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
         <PolarGrid stroke="rgba(255,255,255,0.1)" />
         <PolarAngleAxis
@@ -25,5 +26,6 @@ export default function HealthRadarChart({ radarData }: { radarData: any[] }) {
         />
       </RadarChart>
     </ResponsiveContainer>
+    </div>
   );
 }

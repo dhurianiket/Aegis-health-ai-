@@ -340,14 +340,14 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       </div>
 
       {uniqueMarkers.length > 0 && (
-         <div id="lab-trend-chart-container" className="h-[300px] w-full relative">
+         <div id="lab-trend-chart-container" className="w-full h-[300px] min-h-[300px] relative">
            <AIErrorBoundary
              key={chartKey}
              onReset={() => setChartKey((k) => k + 1)}
              fallbackMessage="Chart rendering failed."
            >
-            <div style={{ display: 'block', width: '100%', minHeight: '350px', height: '350px', position: 'relative', marginTop: '16px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full h-[300px] min-h-[300px] relative mt-4">
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
                   
