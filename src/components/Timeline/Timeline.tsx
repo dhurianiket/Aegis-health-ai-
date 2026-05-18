@@ -163,7 +163,7 @@ export default function Timeline() {
           </p>
         </div>
 
-        <div className="flex bg-slate-800/50 p-1.5 rounded-2xl border border-white/5 overflow-x-auto w-full md:w-auto scrollbar-none snap-x">
+        <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-white/5 overflow-x-auto w-full md:w-auto scrollbar-none snap-x">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -172,7 +172,7 @@ export default function Timeline() {
               className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all snap-start ${
                 filterType === cat.id
                   ? "bg-indigo-600 text-white shadow-lg"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:hover:bg-white/5"
               }`}
             >
               {cat.label}

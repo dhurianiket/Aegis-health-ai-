@@ -245,7 +245,7 @@ export default function Medications({
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-1">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mb-1">
                     {med.genericName}
                   </h3>
                   <div className="flex gap-4 mb-4">

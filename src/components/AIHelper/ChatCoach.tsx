@@ -420,7 +420,9 @@ ${remindersContext}`;
                     >
                       {msg.role === "assistant" ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                          <ReactMarkdown components={{
+                            strong: ({node, ...props}) => <strong className="text-indigo-600 dark:text-indigo-400 font-semibold" {...props} />
+                          }}>{msg.content}</ReactMarkdown>
                         </div>
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -440,7 +442,9 @@ ${remindersContext}`;
                   <div className="flex justify-start">
                     <div className="max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed bg-surface/50 text-theme pb-8 relative">
                       <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <ReactMarkdown>{streamedText}</ReactMarkdown>
+                        <ReactMarkdown components={{
+                            strong: ({node, ...props}) => <strong className="text-indigo-600 dark:text-indigo-400 font-semibold" {...props} />
+                          }}>{streamedText}</ReactMarkdown>
                       </div>
                       <span className="absolute bottom-4 left-4 w-2 h-4 bg-[var(--color-primary)] animate-pulse" />
                     </div>
