@@ -17,10 +17,18 @@ export const verifyRecaptchaToken = async (token: string, secretKey: string | un
       success: boolean;
       score: number;
       action: string;
+      "error-codes"?: string[];
     };
 
+    console.log("reCAPTCHA raw response:", JSON.stringify(result));
+
     // Require an anti-bot risk score threshold >= 0.5
-    return !!(result.success && result.score >= 0.5);
+    if (result.success && result.score >= 0.5) {
+      return true;
+    } else {
+      console.log(`reCAPTCHA validation failed. Success: ${result.success}, Score: ${result.score}, Token: ${token}`);
+      return false;
+    }
   } catch (error) {
     console.error("reCAPTCHA Verification Exception Error:", error);
     return false;
