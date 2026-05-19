@@ -47,10 +47,26 @@ export default function ProfileManagement() {
   const [editDob, setEditDob] = useState("");
   const [editGender, setEditGender] = useState<Gender | "">("");
   const [editBloodType, setEditBloodType] = useState("");
+  const [editHeight, setEditHeight] = useState<number | "">("");
+  const [editWeight, setEditWeight] = useState<number | "">("");
   const [editDoctorNotes, setEditDoctorNotes] = useState("");
   const [editError, setEditError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+
+  // BMI Calculation Helper
+  const calculateBMI = (weight: number | "", height: number | "") => {
+    if (!weight || !height) return null;
+    const heightInMeters = height / 100;
+    return (weight / (heightInMeters * heightInMeters)).toFixed(1);
+  };
+
+  const getBMICategory = (bmi: number) => {
+    if (bmi < 18.5) return "Underweight";
+    if (bmi < 25) return "Healthy range";
+    if (bmi < 30) return "Overweight";
+    return "Obese";
+  };
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -80,7 +96,9 @@ export default function ProfileManagement() {
     setEditDob(p.dob || "");
     setEditGender((p.gender as Gender) || "");
     setEditBloodType(p.bloodType || "");
-    setEditDoctorNotes(p.doctorNotes?.join("\n") || "");
+    setEditHeight(p.height || "");
+    setEditWeight(p.weight || "");
+    setEditDoctorNotes(p.clinicalNotes || p.doctorNotes?.join("\n") || "");
     setEditError("");
   };
 
@@ -93,6 +111,9 @@ export default function ProfileManagement() {
         dob: editDob,
         gender: editGender as Gender,
         bloodType: editBloodType,
+        height: editHeight ? Number(editHeight) : undefined,
+        weight: editWeight ? Number(editWeight) : undefined,
+        clinicalNotes: editDoctorNotes,
         doctorNotes: editDoctorNotes.split("\n").filter(Boolean),
       };
       await updateProfile(id, updates);
@@ -267,24 +288,46 @@ export default function ProfileManagement() {
                       </select>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Blood Type</label>
-                    <select
-                      value={editBloodType}
-                      onChange={(e) => setEditBloodType(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
-                    >
-                      <option value="">Select</option>
-                      {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bt => <option key={bt} value={bt}>{bt}</option>)}
-                    </select>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">Blood Type</label>
+                      <select
+                        value={editBloodType}
+                        onChange={(e) => setEditBloodType(e.target.value)}
+                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                      >
+                        <option value="">Select</option>
+                        {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bt => <option key={bt} value={bt}>{bt}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">Height (cm)</label>
+                      <input
+                        type="number"
+                        value={editHeight}
+                        onChange={(e) => setEditHeight(e.target.value ? Number(e.target.value) : "")}
+                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                        placeholder="cm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">Weight (kg)</label>
+                      <input
+                        type="number"
+                        value={editWeight}
+                        onChange={(e) => setEditWeight(e.target.value ? Number(e.target.value) : "")}
+                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                        placeholder="kg"
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Notes</label>
+                    <label className="block text-xs text-slate-400 mb-1">Clinical Notes</label>
                     <textarea
                       value={editDoctorNotes}
                       onChange={(e) => setEditDoctorNotes(e.target.value)}
                       className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm h-20"
-                      placeholder="One note per line"
+                      placeholder="Medical history, allergies, or notes..."
                     />
                   </div>
                   {editError && (
@@ -310,12 +353,35 @@ export default function ProfileManagement() {
                   </div>
                 </div>
               ) : (
-                <h3
-                  className="text-xl font-semibold text-white truncate pr-6"
-                  title={p.fullName || p.name}
-                >
-                  {p.fullName || p.name}
-                </h3>
+                <div>
+                  <h3
+                    className="text-xl font-semibold text-white truncate pr-6 mb-2"
+                    title={p.fullName || p.name}
+                  >
+                    {p.fullName || p.name}
+                  </h3>
+                  
+                  <div className="flex flex-col gap-2 mt-3">
+                     <div className="flex items-center gap-4 text-xs text-slate-300">
+                        {p.dob && <div><span className="text-slate-500">DOB:</span> {p.dob}</div>}
+                        {p.bloodType && <div><span className="text-slate-500">Type:</span> <span className="font-bold text-red-400">{p.bloodType}</span></div>}
+                     </div>
+                     
+                     <div className="bg-white/5 rounded-lg p-3 border border-white/10 flex items-center justify-between">
+                        <div>
+                           <div className="text-xs text-slate-400 mb-0.5">BMI</div>
+                           {p.weight && p.height ? (
+                              <div className="flex items-center gap-2">
+                                 <span className="text-sm font-bold text-white">{calculateBMI(p.weight, p.height)}</span>
+                                 <span className="text-[10px] uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">{getBMICategory(Number(calculateBMI(p.weight, p.height)))}</span>
+                              </div>
+                           ) : (
+                              <div className="text-[10px] text-slate-500">Add height and weight to calculate BMI</div>
+                           )}
+                        </div>
+                     </div>
+                  </div>
+                </div>
               )}
             </div>
 

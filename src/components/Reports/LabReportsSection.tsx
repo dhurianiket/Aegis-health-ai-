@@ -94,7 +94,11 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
               {labName}
             </h3>
             <div className="text-sm mt-1">
-              {doctor && <p className="mb-0.5 font-medium text-[var(--color-text)] whitespace-normal break-words">Dr. {doctor}</p>}
+              {doctor && (
+                <p className="mb-0.5 font-medium text-[var(--color-text)] whitespace-normal break-words">
+                  {doctor.toLowerCase().startsWith('dr.') || doctor.toLowerCase().startsWith('dr ') ? doctor : `Dr. ${doctor}`}
+                </p>
+              )}
               <p className="text-[var(--color-text-muted)]">{observationCount} lab values found</p>
             </div>
           </div>

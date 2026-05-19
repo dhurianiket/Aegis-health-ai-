@@ -37,6 +37,8 @@ export default function SpecialistLounge() {
 
   const [initialLoading, setInitialLoading] = useState(false);
 
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+
   // When specialist changes, clear chat and load from firestore
   useEffect(() => {
     setMessages([]);
@@ -274,26 +276,26 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px] h-[calc(100vh-200px)] lg:h-auto">
         {/* Sidebar */}
-        <div className="lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-4 overflow-x-auto lg:overflow-y-auto hidden-scrollbar">
+        <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-4 overflow-y-auto hidden-scrollbar ${isMobileChatOpen ? 'hidden lg:block' : 'block'}`}>
           <h3 className="text-sm font-bold text-[var(--color-text)] uppercase tracking-wider mb-4 px-2">Select Specialist</h3>
-          <div className="flex flex-row lg:flex-col gap-2">
+          <div className="flex flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
               <div
                 key={s.id}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpecialist(s.id); } }}
-                onClick={() => setActiveSpecialist(s.id)}
-                className={`cursor-pointer flex-shrink-0 w-48 lg:w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpecialist(s.id); setIsMobileChatOpen(true); } }}
+                onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
+                className={`cursor-pointer w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
                   activeSpecialist === s.id 
-                  ? 'bg-[var(--color-primary)] text-teal-950 shadow-lg' 
+                  ? 'bg-[var(--color-primary)] text-white shadow-lg' 
                   : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'
                 }`}
               >
-                <div className="font-bold text-sm tracking-wide">{s.displayName}</div>
-                <div className={`text-xs ${activeSpecialist === s.id ? 'text-teal-900' : 'text-slate-600 dark:text-slate-300'}`}>
+                <div className={`font-bold text-sm tracking-wide ${activeSpecialist === s.id ? 'text-white' : ''}`}>{s.displayName}</div>
+                <div className={`text-xs ${activeSpecialist === s.id ? 'text-white/80' : 'text-slate-600 dark:text-slate-300'}`}>
                   {s.expertise.slice(0, 2).join(', ')}...
                 </div>
               </div>
@@ -302,11 +304,19 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </div>
 
         {/* Chat Area */}
-        <div className="lg:col-span-8 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl flex flex-col relative overflow-hidden shadow-2xl">
+        <div className={`lg:col-span-8 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl flex-col relative overflow-hidden shadow-2xl ${
+          isMobileChatOpen ? 'flex h-full lg:h-auto' : 'hidden lg:flex'
+        }`}>
           <div className="p-4 border-b border-[var(--color-border)] bg-slate-50 dark:bg-black/20 flex items-center gap-4">
+            <button 
+              className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-[var(--color-text-muted)] transition-colors"
+              onClick={() => setIsMobileChatOpen(false)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
             <div>
               <div className="font-bold text-[var(--color-text)] text-lg">{activeSpecProfile.displayName}</div>
-              <div className="text-xs text-indigo-500 dark:text-indigo-300">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
+              <div className="text-xs text-indigo-500 dark:text-indigo-300 line-clamp-1">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
             </div>
           </div>
           
@@ -332,10 +342,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
               <>
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed shadow-sm ${
-                      msg.role === 'user' ? 'bg-[var(--color-primary)] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200'
+                    <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed shadow-sm ${
+                      msg.role === 'user' ? 'bg-[var(--color-primary)] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
                     }`}>
-                      <div className={`prose prose-sm max-w-none ${msg.role === 'user' || document.documentElement.classList.contains('dark') ? 'prose-invert' : ''}`}>
+                      <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert prose-p:text-white prose-headings:text-white prose-strong:text-white' : 'dark:prose-invert prose-p:leading-relaxed prose-li:my-1'}`}>
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
                       <div className={`text-[10px] opacity-60 mt-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
@@ -352,8 +362,8 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             
             {streamedText && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 relative pb-8 shadow-sm">
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="max-w-[90%] md:max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 relative pb-8 shadow-sm">
+                  <div className="prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-li:my-1 max-w-none">
                     <ReactMarkdown>{streamedText}</ReactMarkdown>
                   </div>
                   <span className="absolute bottom-4 left-5 w-2 h-4 bg-indigo-500 animate-pulse" />
