@@ -5,7 +5,10 @@ import { getSpecialist, SPECIALISTS } from "../../services/ai/specialists/specia
 import { getPatientContext, formatContextForPrompt } from "../../services/ai/contextService";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
+import { useClinicalContext } from "../../hooks/useClinicalContext";
 import getAI from "../../lib/geminiClient";
+import { db } from "../../lib/firebase/config";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp } from "lucide-react";
@@ -17,6 +20,7 @@ export default function SpecialistLounge() {
   const [activeSpecialist, setActiveSpecialist] = useState<SpecialistId>('cardiologist');
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const { contextString: globalClinicalContext } = useClinicalContext();
   
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; timestamp: Date }[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -31,7 +35,9 @@ export default function SpecialistLounge() {
     }
   }, [messages, streamedText]);
 
-  // When specialist changes, clear chat
+  const [initialLoading, setInitialLoading] = useState(false);
+
+  // When specialist changes, clear chat and load from firestore
   useEffect(() => {
     setMessages([]);
     setStreamedText("");
@@ -39,7 +45,31 @@ export default function SpecialistLounge() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-  }, [activeSpecialist]);
+    
+    async function fetchChat() {
+      if (!user?.uid || !activeProfile?.id) return;
+      setInitialLoading(true);
+      try {
+        const chatDoc = await getDoc(doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist));
+        if (chatDoc.exists()) {
+          const data = chatDoc.data();
+          if (data.messages && Array.isArray(data.messages)) {
+            const parsed = data.messages.map((m: any) => ({
+              role: m.role,
+              content: m.content,
+              timestamp: new Date(m.createdAt)
+            }));
+            setMessages(parsed);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load chat history", err);
+      } finally {
+        setInitialLoading(false);
+      }
+    }
+    fetchChat();
+  }, [activeSpecialist, user?.uid, activeProfile?.id]);
 
   const handleAbort = () => {
     if (abortControllerRef.current) {
@@ -51,11 +81,35 @@ export default function SpecialistLounge() {
 
   const SPECIALIST_TABS = Object.values(SPECIALISTS);
 
+  const saveChatHistory = async (newMessages: { role: string, content: string, timestamp: Date }[]) => {
+    if (!user?.uid || !activeProfile?.id) return;
+    try {
+      const chatRef = doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist);
+      const serializableMessages = newMessages.map(m => ({
+        role: m.role,
+        content: m.content,
+        createdAt: m.timestamp.toISOString()
+      }));
+      
+      await setDoc(chatRef, {
+        specialistId: activeSpecialist,
+        profileId: activeProfile.id,
+        userId: user.uid,
+        messages: serializableMessages,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (err) {
+      console.error("Failed to save chat history", err);
+    }
+  };
+
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || !user || !activeProfile || isTyping) return;
 
     const userMsg = { role: "user" as const, content: text, timestamp: new Date() };
-    setMessages((prev) => [...prev, userMsg]);
+    const newMsgs = [...messages, userMsg];
+    setMessages(newMsgs);
+    saveChatHistory(newMsgs);
     setInputValue("");
     setIsTyping(true);
     setStreamedText("");
@@ -79,6 +133,9 @@ export default function SpecialistLounge() {
       const specialist = getSpecialist(activeSpecialist);
       let systemPrompt = specialist.systemPrompt;
       
+      if (globalClinicalContext) {
+        systemPrompt += `\n\n### GLOBAL CLINICAL CONTEXT\n${globalClinicalContext}`;
+      }
       systemPrompt += `\n\n### PATIENT CONTEXT\n${context}`;
 
       if (isSummaryRequest) {
@@ -163,10 +220,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       }
 
       if (!controller.signal.aborted && finalText.length > 0) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: finalText.trim(), timestamp: new Date() }
-        ]);
+        const assistantMsg = { role: "assistant" as const, content: finalText.trim(), timestamp: new Date() };
+        const finalMsgs = [...newMsgs, assistantMsg];
+        setMessages(finalMsgs);
+        saveChatHistory(finalMsgs);
         setStreamedText("");
         
         if (isSummaryRequest && historyItems.length === 0 && sourceHashForCache) {
@@ -254,7 +311,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           </div>
           
           <div className="flex-1 p-4 space-y-4" ref={scrollRef}>
-            {messages.length === 0 && (
+            {initialLoading ? (
+              <div className="h-full flex flex-col items-center justify-center space-y-4">
+                 <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
+                 <p className="text-sm text-[var(--color-text-muted)] tracking-widest">LOADING CONVERSATION...</p>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-4">
                  <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
                     <Brain className="text-[var(--color-text-muted)] w-8 h-8"/>
@@ -266,25 +328,27 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                     <button onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} className="bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-xs px-3 py-1.5 rounded-full text-[var(--color-text-muted)] transition-colors">"Summarize my labs"</button>
                  </div>
               </div>
+            ) : (
+              <>
+                {messages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed shadow-sm ${
+                      msg.role === 'user' ? 'bg-[var(--color-primary)] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200'
+                    }`}>
+                      <div className={`prose prose-sm max-w-none ${msg.role === 'user' || document.documentElement.classList.contains('dark') ? 'prose-invert' : ''}`}>
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                      <div className={`text-[10px] opacity-60 mt-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
+                        {(() => {
+                          const d = parseSafeTimestamp(msg.timestamp);
+                          return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </>
             )}
-            
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed shadow-sm ${
-                  msg.role === 'user' ? 'bg-[var(--color-primary)] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200'
-                }`}>
-                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' || document.documentElement.classList.contains('dark') ? 'prose-invert' : ''}`}>
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                  <div className={`text-[10px] opacity-60 mt-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                    {(() => {
-                      const d = parseSafeTimestamp(msg.timestamp);
-                      return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-                    })()}
-                  </div>
-                </div>
-              </div>
-            ))}
             
             {streamedText && (
               <div className="flex justify-start">

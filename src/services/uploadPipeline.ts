@@ -114,5 +114,11 @@ export const executeFullUploadPipeline = async (
   const trendsJson = formatTrendForPrompt(trends);
   const sbar = await generateSBAR(JSON.stringify({ profileId, alerts }), trendsJson, [], []);
   
+  if (docId) {
+    const { doc, updateDoc } = await import("firebase/firestore");
+    const docRef = doc((await import("../lib/firebase/config")).db, "users", userId, "documents", docId);
+    await updateDoc(docRef, { aiSummary: sbar });
+  }
+  
   return { extraction, sbar, trends, alerts };
 };

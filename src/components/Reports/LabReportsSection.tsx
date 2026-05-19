@@ -33,6 +33,7 @@ interface LabReport {
     lab_values?: any[];
     summary?: string;
   };
+  aiSummary?: string;
   status?: "complete" | "processing" | "error";
   profileId?: string;
 }
@@ -175,9 +176,9 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                 </tbody>
               </table>
             </div>
-            {report.extractedData?.summary && (
-               <div className="mt-4 p-4 rounded-xl bg-surface/50 border border-border text-sm leading-relaxed text-muted">
-                  <strong>Findings:</strong> {report.extractedData.summary}
+            {(report.aiSummary || report.extractedData?.summary) && (
+               <div className="mt-4 p-4 rounded-xl bg-surface/50 border border-[var(--color-border)] text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  <strong>Findings:</strong> {report.aiSummary || report.extractedData?.summary}
                </div>
             )}
           </motion.div>

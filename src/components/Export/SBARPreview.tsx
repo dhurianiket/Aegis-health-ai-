@@ -185,7 +185,7 @@ export default function SBARPreview({
             <>
               {sbarText}
               <div className="mt-8 pt-4 border-t border-white/5">
-                <p className="text-[10px] text-slate-500 italic leading-relaxed">
+                <p className="text-[10px] text-gray-400 italic leading-relaxed">
                   DISCLAIMER: This SBAR summary is AI-generated for
                   informational purposes only. It is not a medical diagnosis or
                   professional clinical assessment. Always verify findings with

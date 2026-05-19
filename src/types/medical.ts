@@ -36,6 +36,9 @@ export interface UserProfile {
   dob?: string;
   gender?: Gender;
   bloodType?: string;
+  height?: number; // cm
+  weight?: number; // kg
+  clinicalNotes?: string;
   chronicConditions: string[];
   allergies: string[];
   medications?: Medication[];

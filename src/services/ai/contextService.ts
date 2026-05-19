@@ -91,8 +91,11 @@ export const getPatientContext = async (
     knownConditions: profile?.chronicConditions || [],
     demographics: {
       age: profile?.dob && parseSafeTimestamp(profile.dob) ? `${new Date().getFullYear() - parseSafeTimestamp(profile.dob)!.getFullYear()} years` : "Not provided",
-      gender: profile?.gender || "Not provided"
-    }
+      gender: profile?.gender || "Not provided",
+      height: profile?.height,
+      weight: profile?.weight,
+    },
+    clinicalNotes: profile?.clinicalNotes
   } as PatientContext;
 };
 
@@ -100,13 +103,27 @@ export const getPatientContext = async (
  * Formats the patient context into a clean, prompt-friendly string.
  */
 export const formatContextForPrompt = (context: any): string => {
-  const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics } = context;
+  const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics, clinicalNotes } = context;
 
   let prompt = `PATIENT PROFILE:\n`;
   prompt += `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`;
   prompt += `- Demographics: Age: ${demographics?.age || "Not provided"}, Gender: ${demographics?.gender || "Not provided"}\n`;
+  if (demographics?.height || demographics?.weight) {
+    prompt += `- Metrics: `;
+    if (demographics?.height) prompt += `Height: ${demographics.height} cm. `;
+    if (demographics?.weight) prompt += `Weight: ${demographics.weight} kg. `;
+    if (demographics?.height && demographics?.weight) {
+      const h = demographics.height / 100;
+      const bmi = Math.round((demographics.weight / (h * h)) * 10) / 10;
+      prompt += `BMI: ${bmi}`;
+    }
+    prompt += `\n`;
+  }
   prompt += `- Chronic Conditions: ${knownConditions?.join(", ") || profile?.chronicConditions?.join(", ") || "None reported"}\n`;
   prompt += `- Allergies: ${profile?.allergies?.join(", ") || "None reported"}\n`;
+  if (clinicalNotes) {
+    prompt += `- Clinical Notes: ${clinicalNotes}\n`;
+  }
   prompt += `- Reported Symptoms: ${reportedSymptoms?.join(", ") || "None reported"}\n\n`;
 
   prompt += `ACTIVE MEDICATIONS:\n`;

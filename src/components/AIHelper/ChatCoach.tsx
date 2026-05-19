@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { X, ArrowUp, Square, Sparkles, Loader2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
+import { useClinicalContext } from "../../hooks/useClinicalContext";
 import { VoiceService } from "../../services/ai/voiceService";
 import { streamGenerate } from "../../lib/geminiUtils";
 import {
@@ -44,6 +45,8 @@ export default function ChatCoach({
   const [inputValue, setInputValue] = useState("");
   const [isAlAvailable, setIsAlAvailable] = useState(true);
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
+  const { contextString: globalClinicalContext } = useClinicalContext();
 
   useEffect(() => {
     try {
@@ -53,7 +56,6 @@ export default function ChatCoach({
       setIsAlAvailable(false);
     }
   }, []);
-  const { activeProfile } = useProfile();
   const [contextStats, setContextStats] = useState({ meds: 0, reports: 0 });
   useEffect(() => {
     if (isOpen && user && activeProfile) {
@@ -171,6 +173,9 @@ STRICT RULES:
 3. Prefer manually entered medications over extracted ones.
 4. If the user says a medication or result is "wrong", acknowledge it, do not repeat the incorrect data, and say: "I may be using outdated or incorrectly extracted data. Please update your records in the Medications/Profile section, or tell me the correct information and I will use that for our conversation."
 5. Be concise, empathetic, and always add a disclaimer to consult a doctor.
+
+GLOBAL CLINICAL CONTEXT:
+${globalClinicalContext}
 
 Clinical Context:
 ${context}
