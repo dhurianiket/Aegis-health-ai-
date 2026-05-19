@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { generateSourceHash, getCachedReport, saveCachedReport } from "../../services/cacheService";
 import React, { useState, useRef, useEffect } from "react";
 import { SpecialistId } from "../../types/ai";
@@ -11,7 +12,7 @@ import { db } from "../../lib/firebase/config";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp } from "lucide-react";
+import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 
 const PROMPT_VERSION = "v1.0";
@@ -260,6 +261,132 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 
   const activeSpecProfile = getSpecialist(activeSpecialist);
 
+  const chatAreaContent = (
+    <>
+      <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl flex items-center gap-4 shrink-0 transition-colors z-10">
+        <button 
+          className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-[var(--color-text)] transition-colors active:scale-95"
+          onClick={() => setIsMobileChatOpen(false)}
+        >
+          <ChevronLeft className="w-6 h-6 shrink-0" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-[var(--color-text)] text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
+          <div className="text-[13px] text-[var(--color-text-muted)] truncate font-medium">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
+        </div>
+        <div className="shrink-0">
+           <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center">
+             <Brain className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+           </div>
+        </div>
+      </div>
+      
+      <div 
+        className="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto min-h-0 bg-white dark:bg-[#0A0A0A]" 
+        ref={scrollRef}
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        {initialLoading ? (
+          <div className="h-full flex flex-col items-center justify-center space-y-4">
+             <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-500 animate-spin" />
+             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase">Loading Conversation</p>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center opacity-70 space-y-6 px-6">
+             <div className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-100/50 dark:border-white/5">
+                <Stethoscope className="text-slate-400 dark:text-slate-500 w-10 h-10"/>
+             </div>
+             <p className="text-[15px] text-slate-500 dark:text-slate-400 text-center font-medium leading-relaxed max-w-sm">
+               Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
+             </p>
+             <div className="flex gap-2 w-full max-w-[280px]">
+                <button 
+                  onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} 
+                  className="w-full bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] text-white  hover:opacity-90 text-[15px] font-semibold px-4 py-3.5 rounded-[20px] transition-all active:scale-[0.98] shadow-sm"
+                >
+                  Summarize my labs
+                </button>
+             </div>
+          </div>
+        ) : (
+          <div className="space-y-6 pb-2">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end pl-12' : 'justify-start pr-12'}`}>
+                <div className={`max-w-[100%] rounded-[24px] px-5 py-4 text-[16px] leading-[1.6] shadow-sm ${
+                  msg.role === 'user' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-[8px]' : 'bg-slate-50 dark:bg-[#1C1C1E] text-slate-800 dark:text-slate-200 rounded-bl-[8px] border border-slate-100/50 dark:border-[#2C2C2E]'
+                }`}>
+                  <div className={`prose prose-sm md:prose-base max-w-none ${msg.role === 'user' ? 'prose-invert dark:prose-p:text-slate-900 dark:prose-headings:text-slate-900 dark:prose-strong:text-slate-900 prose-p:text-white prose-headings:text-white prose-strong:text-white' : 'dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-400 dark:marker:text-slate-500'}`}>
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                  <div className={`text-[11px] opacity-40 mt-3 font-semibold tracking-wide ${msg.role === "user" ? "text-right" : "text-left"}`}>
+                    {(() => {
+                      const d = parseSafeTimestamp(msg.timestamp);
+                      return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+                    })()}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {streamedText && (
+          <div className="flex justify-start pr-12 pb-2">
+            <div className="max-w-[100%] rounded-[24px] rounded-bl-[8px] px-5 py-4 text-[16px] leading-[1.6] bg-slate-50 dark:bg-[#1C1C1E] text-slate-800 dark:text-slate-200 relative pb-8 shadow-sm border border-slate-100/50 dark:border-[#2C2C2E]">
+              <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-400 dark:marker:text-slate-500 max-w-none">
+                <ReactMarkdown>{streamedText}</ReactMarkdown>
+              </div>
+              <span className="absolute bottom-5 left-6 w-2 h-2 bg-slate-400 dark:bg-slate-500 animate-pulse rounded-full" />
+            </div>
+          </div>
+        )}
+        
+        {isTyping && !streamedText && (
+          <div className="flex justify-start pr-12 pb-2">
+             <div className="bg-slate-50 dark:bg-[#1C1C1E] rounded-[24px] rounded-bl-[8px] px-5 py-4 flex items-center gap-3 shadow-sm border border-slate-100/50 dark:border-[#2C2C2E]">
+                <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+                <span className="text-[14px] font-medium text-slate-500 animate-pulse">Analyzing record...</span>
+             </div>
+          </div>
+        )}
+      </div>
+      
+      <div className="p-4 md:p-6 lg:p-6 pb-[max(env(safe-area-inset-bottom),16px)] lg:pb-6 border-t border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl shrink-0 transition-colors z-10 w-full">
+        {isTyping && (
+          <div className="flex justify-center mb-3">
+            <button
+              onClick={handleAbort}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 dark:bg-[#1C1C1E] hover:bg-slate-200 dark:hover:bg-[#2C2C2E] text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 transition-colors active:scale-95"
+            >
+              <Square size={10} className="fill-current" /> Stop
+            </button>
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="relative w-full">
+          <input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder={`Message ${activeSpecProfile.displayName}...`}
+            disabled={isTyping}
+            className="w-full bg-slate-50 dark:bg-[#1C1C1E] border border-slate-200/60 dark:border-[#2C2C2E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 transition-all disabled:opacity-50 shadow-sm"
+          />
+          <button
+            type="submit"
+            aria-label="Send Message"
+            disabled={!inputValue.trim() || isTyping}
+            className="absolute right-2.5 top-2.5 bottom-2.5 aspect-square bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-[#2C2C2E] transition-colors active:scale-95"
+          >
+            <ArrowUp size={20} className="stroke-[3px]" />
+          </button>
+        </form>
+        <div className="mt-3 md:mt-4 text-center text-[11px] font-medium text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1.5 w-full">
+          <Info className="w-3.5 h-3.5 shrink-0" />
+          Not a substitute for professional medical advice.
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 mb-4">
@@ -276,10 +403,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px] h-[calc(100vh-200px)] lg:h-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:min-h-[600px] lg:h-[max(calc(100vh-200px),600px)]">
         {/* Sidebar */}
-        <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-4 overflow-y-auto hidden-scrollbar ${isMobileChatOpen ? 'hidden lg:block' : 'block'}`}>
-          <h3 className="text-sm font-bold text-[var(--color-text)] uppercase tracking-wider mb-4 px-2">Select Specialist</h3>
+        <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block`}>
+          <h3 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest px-3 mb-5">Select Specialist</h3>
           <div className="flex flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
               <div
@@ -288,134 +415,59 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpecialist(s.id); setIsMobileChatOpen(true); } }}
                 onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
-                className={`cursor-pointer w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
+                className={`cursor-pointer w-full p-4 md:p-5 rounded-[24px] flex flex-col items-start gap-1 transition-all duration-300 relative overflow-hidden ${
                   activeSpecialist === s.id 
-                  ? 'bg-[var(--color-primary)] text-white shadow-lg' 
-                  : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'
+                  ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none' 
+                  : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50'
                 }`}
               >
-                <div className={`font-bold text-sm tracking-wide ${activeSpecialist === s.id ? 'text-white' : ''}`}>{s.displayName}</div>
-                <div className={`text-xs ${activeSpecialist === s.id ? 'text-white/80' : 'text-slate-600 dark:text-slate-300'}`}>
-                  {s.expertise.slice(0, 2).join(', ')}...
+                {activeSpecialist === s.id && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                )}
+                <div className="flex items-center gap-3 w-full">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-100 dark:bg-[#2C2C2E]'}`}>
+                    <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}>{s.displayName}</div>
+                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-white/70' : 'text-slate-500 dark:text-slate-500'}`}>
+                      {s.expertise.slice(0, 2).join(' • ')}...
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className={`lg:col-span-8 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl flex-col relative overflow-hidden shadow-2xl ${
-          isMobileChatOpen ? 'flex h-full lg:h-auto' : 'hidden lg:flex'
-        }`}>
-          <div className="p-4 border-b border-[var(--color-border)] bg-slate-50 dark:bg-black/20 flex items-center gap-4">
-            <button 
-              className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-[var(--color-text-muted)] transition-colors"
-              onClick={() => setIsMobileChatOpen(false)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <div>
-              <div className="font-bold text-[var(--color-text)] text-lg">{activeSpecProfile.displayName}</div>
-              <div className="text-xs text-indigo-500 dark:text-indigo-300 line-clamp-1">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
-            </div>
-          </div>
-          
-          <div className="flex-1 p-4 space-y-4" ref={scrollRef}>
-            {initialLoading ? (
-              <div className="h-full flex flex-col items-center justify-center space-y-4">
-                 <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
-                 <p className="text-sm text-[var(--color-text-muted)] tracking-widest">LOADING CONVERSATION...</p>
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-4">
-                 <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
-                    <Brain className="text-[var(--color-text-muted)] w-8 h-8"/>
-                 </div>
-                 <p className="text-sm text-[var(--color-text-muted)] text-center uppercase tracking-widest max-w-sm">
-                   Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
-                 </p>
-                 <div className="flex gap-2">
-                    <button onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} className="bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-xs px-3 py-1.5 rounded-full text-[var(--color-text-muted)] transition-colors">"Summarize my labs"</button>
-                 </div>
-              </div>
-            ) : (
-              <>
-                {messages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed shadow-sm ${
-                      msg.role === 'user' ? 'bg-[var(--color-primary)] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
-                    }`}>
-                      <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert prose-p:text-white prose-headings:text-white prose-strong:text-white' : 'dark:prose-invert prose-p:leading-relaxed prose-li:my-1'}`}>
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                      </div>
-                      <div className={`text-[10px] opacity-60 mt-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                        {(() => {
-                          const d = parseSafeTimestamp(msg.timestamp);
-                          return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-            
-            {streamedText && (
-              <div className="flex justify-start">
-                <div className="max-w-[90%] md:max-w-[85%] rounded-2xl px-5 py-4 text-sm leading-relaxed bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 relative pb-8 shadow-sm">
-                  <div className="prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-li:my-1 max-w-none">
-                    <ReactMarkdown>{streamedText}</ReactMarkdown>
-                  </div>
-                  <span className="absolute bottom-4 left-5 w-2 h-4 bg-indigo-500 animate-pulse" />
-                </div>
-              </div>
-            )}
-            
-            {isTyping && !streamedText && (
-              <div className="flex justify-start">
-                 <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl px-5 py-4 flex items-center gap-3 shadow-sm">
-                    <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
-                    <span className="text-sm text-slate-400 animate-pulse">Analyzing longitudinal record...</span>
-                 </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="p-4 border-t border-[var(--color-border)] bg-slate-50 dark:bg-black/20">
-            {isTyping && (
-              <div className="flex justify-center mb-3">
-                <button
-                  onClick={handleAbort}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-xs font-medium uppercase text-slate-600 dark:text-slate-300 transition-colors"
-                >
-                  <Square size={12} className="fill-current" /> Stop Generation
-                </button>
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="relative">
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder={`Message ${activeSpecProfile.displayName}...`}
-                disabled={isTyping}
-                className="w-full bg-white dark:bg-white/5 border border-[var(--color-border)] rounded-full py-4 pl-6 pr-14 text-sm text-[var(--color-text)] focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
-              />
-              <button
-                type="submit"
-                aria-label="Send Message"
-                disabled={!inputValue.trim() || isTyping}
-                className="absolute right-2 top-2 bottom-2 aspect-square bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:bg-indigo-500 disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-slate-700 transition-colors"
-              >
-                <ArrowUp size={20} strokeWidth={2.5} />
-              </button>
-            </form>
-            <div className="mt-3 text-center text-[10px] text-gray-800 dark:text-slate-300 flex items-center justify-center gap-2">
-              <Info className="w-3 h-3 text-amber-500" />
-              <strong>MEDICAL DISCLAIMER:</strong> Not a substitute for professional medical advice, diagnosis, or treatment.
-            </div>
-          </div>
+        {/* Desktop Chat Area */}
+        <div className={`hidden lg:flex lg:col-span-8 lg:rounded-[32px] lg:flex-col lg:relative lg:overflow-hidden lg:shadow-2xl lg:border lg:border-[var(--color-border)] lg:bg-[var(--color-surface)] lg:h-auto`}>
+          {chatAreaContent}
         </div>
       </div>
+
+      {/* Mobile Chat Portal */}
+      <AnimatePresence>
+        {isMobileChatOpen && (
+          <React.Fragment>
+            {/* Create portal manually to attach it to document.body, outside app shell */}
+            {typeof window !== 'undefined' && document.body && 
+              createPortal(
+                <motion.div 
+                  initial={{ opacity: 0, y: 50, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="fixed inset-0 z-[200] flex flex-col h-[100dvh] w-full bg-white dark:bg-[#0A0A0A] m-0 rounded-none border-none pointer-events-auto lg:hidden"
+                >
+                  {chatAreaContent}
+                </motion.div>,
+                document.body
+              )
+            }
+          </React.Fragment>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
