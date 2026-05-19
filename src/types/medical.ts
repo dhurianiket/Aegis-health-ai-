@@ -38,6 +38,7 @@ export interface UserProfile {
   bloodType?: string;
   height?: number; // cm
   weight?: number; // kg
+  bmi?: number;
   clinicalNotes?: string;
   chronicConditions: string[];
   allergies: string[];

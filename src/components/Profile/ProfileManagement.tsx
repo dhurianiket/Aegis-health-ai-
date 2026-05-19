@@ -113,6 +113,7 @@ export default function ProfileManagement() {
         bloodType: editBloodType,
         height: editHeight ? Number(editHeight) : undefined,
         weight: editWeight ? Number(editWeight) : undefined,
+        bmi: (editHeight && editWeight) ? Number(calculateBMI(Number(editWeight), Number(editHeight))) : undefined,
         clinicalNotes: editDoctorNotes,
         doctorNotes: editDoctorNotes.split("\n").filter(Boolean),
       };
