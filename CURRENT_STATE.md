@@ -8,6 +8,7 @@
 
 ## 1. Stable State (Confirmed Live & Verified)
 - **User Onboarding Lift:** Verified operational "Try with a Sample Report" button triggering a high-trust mock dashboard payload without requiring file input friction.
+- **Security & Bot Protection:** All upload pipelines and LLM executions are safely isolated and guarded by Google reCAPTCHA v3 verification boundaries (`verifyRecaptcha` Cloud Function).
 - **Founder Brand Copy:** Landing interface updated with a personal narrative tracking Aniket Dhuri's background out of Dombivli, Maharashtra, to reinforce site legitimacy.
 - **DPDP Act Compliance:** Privacy policy and Terms layouts completely updated to align with India's Digital Personal Data Protection Act 2023. Universal footer cookie consent replaced with a non-intrusive plain text essential cookie disclosure notice.
 - **Lighthouse Performance Metrics:** Visual interface components polished (`<h3>` updated to `<h2>`, contrast layers hardened) to achieve maximum Lighthouse audit scores.

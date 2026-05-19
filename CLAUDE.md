@@ -8,6 +8,7 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - Hosting: Firebase Hosting → aegishealthai.co.in (proxied via Cloudflare)
 - Database: Firebase Firestore
 - Auth: Firebase Google Sign-In
+- Anti-Bot: reCAPTCHA v3 (`VITE_RECAPTCHA_SITE_KEY`)
 - AI: Google Gemini API (@google/genai) via Cloudflare AI Gateway
 - Multimodal: MediaRecorder API (Voice), Google Grounding (Search), Streaming API.
 

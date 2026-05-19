@@ -41,3 +41,9 @@ If any feature request, optimization, or refactoring task violates a documented 
 ### H. React Performance & Main-Thread Safety
 - **Rule:** Do not place heavy data aggregation loops (like mapping/reducing large lab datasets) directly inside `useEffect` or render cycles.
 - **Constraint:** Abstract data parsing/sorting into standalone utility functions outside the component. You must use `useCallback` for UI handlers passed down as props to prevent render cascades.
+
+## 2. Environment Variables Constraints
+All environment variables configured for Aegis Health AI:
+- `VITE_FIREBASE_API_KEY`: Firebase connection bindings.
+- `GEMINI_API_KEY`: Server-side model key.
+- `VITE_RECAPTCHA_SITE_KEY`: Frontend Anti-bot tracker config.

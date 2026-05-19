@@ -31,6 +31,7 @@ import { MedicationStatus, LabStatus } from "../../types/medical";
 import { useToast } from "../../context/ToastContext";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../lib/firebase/config";
+import { getRecaptchaToken } from "../../utils/recaptcha";
 
 const EXTRACTION_STEPS = [
   { id: 1, label: 'Uploading...', duration: 1000 },
@@ -253,6 +254,14 @@ export default function UploadCenter({
     }
     
     setIsProcessing(true);
+
+    const token = await getRecaptchaToken("upload");
+    if (!token) {
+      showToast("Security verification failed. Please try again.", "error");
+      setIsProcessing(false);
+      return;
+    }
+
     showToast("Processing your reports...", "info");
     const allExtractions: any[] = [];
     
