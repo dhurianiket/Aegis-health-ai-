@@ -613,6 +613,12 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
+
+            <p className="text-xs text-gray-500 mt-8 mb-4 text-center">
+              This site is protected by reCAPTCHA and the Google{' '}
+              <a className="text-blue-500 hover:underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
+              <a className="text-blue-500 hover:underline" href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms of Service</a> apply.
+            </p>
           </footer>
         </div>
         </main>
