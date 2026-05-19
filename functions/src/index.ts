@@ -29,10 +29,7 @@ export const verifyRecaptchaToken = async (token: string, secretKey: string | un
 
 // Cloud Function Entrypoint
 export const verifyRecaptcha = onCall(
-  { 
-    secrets: ["RECAPTCHA_SECRET_KEY"],
-    serviceAccount: "aegis-backend@gen-lang-client-0727086634.iam.gserviceaccount.com"
-  },
+  { secrets: ["RECAPTCHA_SECRET_KEY"] },
   async (request) => {
     const token = request.data?.token;
 
