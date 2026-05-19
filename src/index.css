@@ -151,3 +151,7 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+.grecaptcha-badge {
+  visibility: hidden !important;
+}

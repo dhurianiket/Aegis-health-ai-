@@ -530,6 +530,11 @@ export default function UploadCenter({
                 >
                   🔎 Try with a Sample Report
                 </button>
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  This site is protected by reCAPTCHA and the Google{' '}
+                  <a className="text-blue-500 hover:underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
+                  <a className="text-blue-500 hover:underline" href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms of Service</a> apply.
+                </p>
               </div>
 
               {fileQueue.length > 0 && (

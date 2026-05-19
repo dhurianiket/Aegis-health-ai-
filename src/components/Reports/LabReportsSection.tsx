@@ -75,6 +75,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                 checked={!!isSelected} 
                 onChange={() => onToggleSelection && onToggleSelection(report.id)}
                 className="w-4 h-4 cursor-pointer accent-[var(--color-primary)]"
+                aria-label={`Select report ${report.fileName || report.id}`}
               />
             </div>
           )}
