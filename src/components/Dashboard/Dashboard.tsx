@@ -161,6 +161,14 @@ export default function Dashboard({
           getDocuments(user.uid, activeProfile?.id),
         ]);
         
+        let docsError = false;
+        if (scoresResult.status === 'rejected') console.error("Failed to fetch scores:", scoresResult.reason);
+        if (insightsResult.status === 'rejected') console.error("Failed to fetch insights:", insightsResult.reason);
+        if (documentsResult.status === 'rejected') {
+           console.error("Failed to load this report:", documentsResult.reason);
+           docsError = true;
+        }
+        
         const scores = scoresResult.status === 'fulfilled' ? scoresResult.value : [];
         const insights = insightsResult.status === 'fulfilled' ? insightsResult.value : [];
         const documents = documentsResult.status === 'fulfilled' ? documentsResult.value : [];
@@ -172,7 +180,7 @@ export default function Dashboard({
           setHealthScores((scores as HealthScore[]) || []);
           setLatestInsights((insights as SpecialistInsight[]) || []);
           setKeyLabs(aggregatedLabs);
-          setError(null);
+          setError(docsError ? "Failed to load this report. Tap to retry." : null);
         }
       } catch (err) {
         console.error("Dashboard fetch failed:", err);
@@ -408,8 +416,8 @@ export default function Dashboard({
             </Suspense>
           </div>
           <div className="mt-4 p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-start gap-4">
-            <ShieldCheck className="text-indigo-400 w-5 h-5 shrink-0" />
-            <p className="text-xs text-indigo-100/80 leading-relaxed font-normal">
+            <ShieldCheck className="text-indigo-600 dark:text-indigo-400 w-5 h-5 shrink-0" />
+            <p className="text-xs text-indigo-900 dark:text-indigo-100/80 leading-relaxed font-medium">
               {latestInsights[0]?.content ||
                 "No intelligence data synthesized for this profile yet. Run a specialist analysis to see AI insights here."}
             </p>

@@ -718,7 +718,7 @@ export default function UploadCenter({
 
                     {result.lab_values && result.lab_values.length > 0 && (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm whitespace-nowrap">
+                        <table className="w-full text-left text-sm whitespace-normal break-words">
                           <thead className="bg-[var(--color-bg)] text-muted text-[11px] uppercase tracking-widest font-semibold border-b border-surface">
                             <tr>
                               <th className="px-4 py-3 rounded-tl-xl">Marker</th>

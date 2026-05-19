@@ -26,14 +26,33 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
+  const [errorA, setErrorA] = useState(false);
+  const [errorB, setErrorB] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
+      setErrorA(false);
+      setErrorB(false);
+      setLoading(true);
       try {
-        const docA = await getDoc(doc(db, 'users', user.uid, 'documents', reportAId));
-        const docB = await getDoc(doc(db, 'users', user.uid, 'documents', reportBId));
+        let docA, docB;
+        try {
+          docA = await getDoc(doc(db, 'users', user.uid, 'documents', reportAId));
+        } catch (err) {
+          console.error("Failed to load report A for comparison:", err);
+          setErrorA(true);
+        }
+        
+        try {
+          docB = await getDoc(doc(db, 'users', user.uid, 'documents', reportBId));
+        } catch (err) {
+          console.error("Failed to load report B for comparison:", err);
+          setErrorB(true);
+        }
 
-        if (docA.exists() && docB.exists()) {
+        if (docA?.exists() && docB?.exists()) {
           const obsA = docA.data().extractedData?.observations || docA.data().extractedData?.lab_values || [];
           const obsB = docB.data().extractedData?.observations || docB.data().extractedData?.lab_values || [];
 
@@ -48,7 +67,24 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
       }
     }
     fetchData();
-  }, [user, reportAId, reportBId, reportADate, reportBDate]);
+  }, [user, reportAId, reportBId, reportADate, reportBDate, retryCount]);
+
+  if (errorA || errorB) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-surface/95 backdrop-blur-sm overflow-y-auto w-full h-screen flex flex-col justify-center items-center" role="dialog" aria-modal="true">
+        <div className="bg-[var(--color-surface)] p-8 rounded-2xl flex flex-col items-center">
+            <p className="text-red-400 mb-4 text-center">Failed to load this report.</p>
+            <button 
+              onClick={() => { setRetryCount(old => old + 1); }}
+              className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold uppercase"
+            >
+              Tap to retry
+            </button>
+            <button onClick={onClose} className="mt-4 text-sm text-[var(--color-text-muted)] underline">Cancel</button>
+        </div>
+      </div>
+    );
+  }
 
   if (!data && loading) {
     return (
@@ -95,7 +131,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
 
         {/* Data Grid Table */}
         <div className="flex-1 overflow-auto bg-[var(--color-bg)]">
-          <table className="w-full text-left text-sm whitespace-nowrap">
+          <table className="w-full text-left text-sm whitespace-normal break-words">
             <thead className="sticky top-0 bg-[var(--color-surface)] text-[var(--color-text-muted)] text-[11px] uppercase tracking-widest font-semibold z-10 border-b border-[var(--color-border)] shadow-sm">
               <tr>
                 <th className="px-6 py-3">Test</th>

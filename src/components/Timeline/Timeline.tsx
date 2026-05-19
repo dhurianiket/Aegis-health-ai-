@@ -304,7 +304,7 @@ export default function Timeline() {
                               {doc.hospitalName || "Independent Provider"}
                             </span>
                           </div>
-                          <p className="text-slate-400 text-xs md:text-sm leading-relaxed font-light mt-2 md:mt-3 truncate max-w-xl">
+                          <p className="text-[var(--color-text)] text-xs md:text-sm leading-relaxed font-medium mt-2 md:mt-3 truncate max-w-xl">
                             Record for {doc.fileName} —{" "}
                             {doc.doctorName
                               ? `Physician: ${doc.doctorName}`

@@ -92,9 +92,9 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
             <h3 className="font-semibold text-lg text-[var(--color-text)] truncate max-w-[200px] sm:max-w-xs leading-tight">
               {labName}
             </h3>
-            <div className="text-sm text-[var(--color-text-muted)] mt-1">
-              {doctor && <p className="mb-0.5">Dr. {doctor}</p>}
-              <p>{observationCount} lab values found</p>
+            <div className="text-sm mt-1">
+              {doctor && <p className="mb-0.5 font-medium text-[var(--color-text)]">Dr. {doctor}</p>}
+              <p className="text-[var(--color-text-muted)]">{observationCount} lab values found</p>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
             className="overflow-hidden mt-4 pt-4 border-t border-[var(--color-border)]"
           >
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
+              <table className="w-full text-left text-sm whitespace-normal break-words">
                 <thead className="bg-[var(--color-bg)] text-[var(--color-text-muted)] text-[11px] uppercase tracking-widest font-semibold">
                   <tr>
                     <th className="px-4 py-3 rounded-l-lg">Marker</th>
