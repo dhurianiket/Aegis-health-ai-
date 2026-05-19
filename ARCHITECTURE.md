@@ -1,6 +1,6 @@
 # ARCHITECTURE.md — System Reference & Verified Design Specifications
 
-This document serves as the single source of truth for the technical architecture of Aegis Health AI (Production Release v1.6).
+This document serves as the single source of truth for the technical architecture of Aegis Health AI (Production Release v1.7.0).
 
 ## 1. Technical Stack Blueprint
 - **Frontend Core:** React 18, TypeScript, Vite, Tailwind CSS (Strict Semantic CSS Variable Theming).
@@ -39,3 +39,19 @@ This document serves as the single source of truth for the technical architectur
 ### D. Keyless Drug-to-Drug Interaction Matrix
 - **Data Ingestion Engine:** Operates entirely over open-source public endpoints (`https://rxnav.nlm.nih.gov/REST/...`), translating unstructured medication strings into standardized RxCUI values. 
 - **Severity Mapping:** Maps NLM string variables directly into structured internal schemas (`High` ➔ `severe`, `Moderate` ➔ `moderate`, alternate values ➔ `mild`) to display non-alarmist UI warning badges on the client dashboard.
+
+## 4. Database Schema
+### Firestore Collections
+- `users/{userId}/profiles/{profileId}`: Primary patient context.
+  - `specialistChats/{specialistId}`: Persists historical chat arrays or chat payloads for individual AI specialists.
+
+## 5. Data Models
+### Profile Schema
+- The Profile model extends standard demographics to include:
+  - `height`
+  - `weight`
+  - `bmi`
+  - `clinicalNotes`
+
+## 6. Core Services & Hooks
+- `useClinicalContext.ts`: Acts as the centralized patient-context source for Gemini AI prompts across Aura, Specialists, and SBAR.

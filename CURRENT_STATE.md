@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.6.1 (Release Candidate - Audit Cleared)
+- **Current Version:** v1.7.0 (Persistent Context & Mobile UX)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -47,3 +47,13 @@
   - Extracted heavy dashboard data aggregations out of the React render cycle to fix main-thread blocking.
   - Memoized top-level `App.tsx` handlers with `useCallback`.
 - **Verification Status:** Passed all 5 pillars of the Senior Staff Audit. 100% Production Ready.
+
+### [May 20, 2026] — v1.7.0 Persistent Memory & Global Context Overhaul
+- **Reason:** Addressed token burn on page refreshes, fragmented AI context, white-screen hydration crashes, and poor mobile table readability.
+- **What Changed:**
+  - Upgraded Profile schema to include `height`, `weight`, and `clinicalNotes` with an auto-calculating BMI utility.
+  - Engineered `useClinicalContext.ts` hook to inject global patient context into all AI agents.
+  - Implemented Firestore persistence for Specialist Lounge chats (`specialistChats` collection/path) and SBAR AI summaries.
+  - Converted the Specialist Lounge into a native-feeling master-detail layout (full-screen chat on mobile).
+  - Fixed mobile UX for Lab Reports by replacing squashed multi-column tables with vertically stacked result cards using `md:hidden` and `hidden md:block`.
+  - Added root-level Auth/Profile loading gates to prevent white-screen crashes on hard resets.

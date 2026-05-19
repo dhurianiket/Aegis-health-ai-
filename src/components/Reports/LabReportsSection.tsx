@@ -83,18 +83,18 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
           <div className="w-12 h-12 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-xl flex items-center justify-center shrink-0">
             {docType.toLowerCase().includes('consult') ? <Stethoscope className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface text-muted border border-border">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface text-muted border border-border mt-0.5">
                   {docType}
                </span>
-               <span className="text-xs text-muted font-medium">{dateText}</span>
+               <span className="text-xs text-muted font-medium mt-0.5">{dateText}</span>
             </div>
-            <h3 className="font-semibold text-lg text-[var(--color-text)] truncate max-w-[200px] sm:max-w-xs leading-tight">
+            <h3 className="font-semibold text-lg text-[var(--color-text)] leading-tight whitespace-normal break-words sm:max-w-md">
               {labName}
             </h3>
             <div className="text-sm mt-1">
-              {doctor && <p className="mb-0.5 font-medium text-[var(--color-text)]">Dr. {doctor}</p>}
+              {doctor && <p className="mb-0.5 font-medium text-[var(--color-text)] whitespace-normal break-words">Dr. {doctor}</p>}
               <p className="text-[var(--color-text-muted)]">{observationCount} lab values found</p>
             </div>
           </div>
@@ -130,14 +130,14 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden mt-4 pt-4 border-t border-[var(--color-border)]"
           >
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-normal break-words">
                 <thead className="bg-[var(--color-bg)] text-[var(--color-text-muted)] text-[11px] uppercase tracking-widest font-semibold">
                   <tr>
-                    <th className="px-4 py-3 rounded-l-lg">Marker</th>
-                    <th className="px-4 py-3 text-right">Value</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 rounded-r-lg">Ref Range</th>
+                    <th className="px-4 py-3 rounded-l-lg w-1/3">Marker</th>
+                    <th className="px-4 py-3 text-right w-1/4">Value</th>
+                    <th className="px-4 py-3 w-1/4 text-center">Status</th>
+                    <th className="px-4 py-3 rounded-r-lg w-1/4">Ref Range</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-border)] text-[var(--color-text)]">
@@ -151,21 +151,21 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
 
                     return (
                       <tr key={i} className="hover:bg-[var(--color-bg)]/50 transition-colors">
-                        <td className="px-4 py-3 font-medium flex items-center gap-2 w-1/3">
-                          <span className="truncate">{m.testName || m.marker}</span>
+                        <td className="px-4 py-3 font-medium flex items-center gap-2">
+                          <span className="whitespace-normal break-words">{m.testName || m.marker}</span>
                         </td>
-                        <td className="px-4 py-3 text-right font-medium w-1/4">
+                        <td className="px-4 py-3 text-right font-medium">
                           {m.valueCanonical ?? m.valueOriginal ?? m.value}{" "}
                           <span className="text-[var(--color-text-muted)] text-[10px] font-normal ml-0.5">
                             {m.unitCanonical || m.unit}
                           </span>
                         </td>
-                        <td className="px-4 py-3 w-1/4">
+                        <td className="px-4 py-3 text-center">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${flagColor}`}>
                             {flagText}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-[var(--color-text-muted)] text-xs w-1/4">
+                        <td className="px-4 py-3 text-[var(--color-text-muted)] text-[11px]">
                           {m.referenceLow !== null && m.referenceLow !== undefined && m.referenceHigh !== null && m.referenceHigh !== undefined
                             ? `${m.referenceLow}–${m.referenceHigh}`
                             : m.reference_range || "-"}
@@ -175,6 +175,53 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* MOBILE LAYOUT */}
+            <div className="md:hidden flex flex-col gap-3">
+              {observations.map((m: any, i: number) => {
+                const flag = m.flag || m.status;
+                const isHigh = flag?.toLowerCase() === "high" || flag?.toLowerCase() === "abnormal";
+                const isLow = flag?.toLowerCase() === "low";
+                const isCritical = flag?.toLowerCase() === "critical";
+                const flagColor = isCritical ? "text-[var(--color-critical)] border-[var(--color-critical)] bg-[var(--color-critical)]/10" : isHigh ? "text-[var(--color-warning)] border-[var(--color-warning)] bg-[var(--color-warning)]/10" : isLow ? "text-orange-500 border-orange-500 bg-orange-500/10" : "text-[var(--color-success)] border-[var(--color-success)] bg-[var(--color-success)]/10";
+                const flagText = flag || "NORMAL";
+
+                return (
+                  <div key={i} className="bg-white/[0.02] dark:bg-white/[0.03] border border-[var(--color-border)] rounded-2xl p-4 flex flex-col gap-2">
+                    <div className="flex justify-between items-start gap-4">
+                      <h4 className="font-semibold text-[var(--color-text)] text-sm leading-5 whitespace-normal break-words">
+                        {m.testName || m.marker}
+                      </h4>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border shrink-0 ${flagColor}`}>
+                        {flagText}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1 mt-1">
+                      <div className="font-bold text-[var(--color-text)] text-lg leading-tight">
+                        {m.valueCanonical ?? m.valueOriginal ?? m.value}
+                        { (m.unitCanonical || m.unit) && (
+                          <span className="text-[var(--color-text-muted)] text-xs font-normal ml-1">
+                            {m.unitCanonical || m.unit}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="text-[var(--color-text-muted)] text-[11px]">
+                        Reference: {m.referenceLow !== null && m.referenceLow !== undefined && m.referenceHigh !== null && m.referenceHigh !== undefined
+                          ? `${m.referenceLow}–${m.referenceHigh}`
+                          : m.reference_range || "-"}
+                      </div>
+                    </div>
+                    {m.interpretation && (
+                      <div className="text-[var(--color-text-faint)] text-[10px] mt-1 italic">
+                        {m.interpretation}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             {(report.aiSummary || report.extractedData?.summary) && (
                <div className="mt-4 p-4 rounded-xl bg-surface/50 border border-[var(--color-border)] text-sm leading-relaxed text-[var(--color-text-muted)]">
@@ -285,7 +332,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
       {activeTab === 'list' ? (
         <>
            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                  {['All', 'Lab Reports', 'Consultations', 'Other'].map(f => (
                     <button key={f} onClick={() => setFilterType(f)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filterType === f ? 'bg-primary text-slate-900 font-bold' : 'bg-surface text-muted hover:bg-border/50 border border-border'}`}>
                        {f}

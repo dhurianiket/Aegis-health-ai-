@@ -213,7 +213,7 @@ export default function SettingsPage() {
             <div className="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
               <span className="text-[var(--color-text)]">Version</span>
               <span className="text-[var(--color-text-faint)] text-sm">
-                v2.1.0 (Apple-grade build)
+                v1.7.0 (Apple-grade build)
               </span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
@@ -239,7 +239,7 @@ export default function SettingsPage() {
         <div className="pt-12 mt-8 border-t border-[var(--color-border)] opacity-60">
           <div className="flex flex-col items-center text-center space-y-1">
             <h4 className="text-sm font-semibold text-[var(--color-text)] tracking-tight">Aegis Health AI</h4>
-            <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.2em] mb-2">Version 1.5.0</p>
+            <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.2em] mb-2">Version 1.7.0</p>
             <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5">
               Developed by <span className="font-medium text-[var(--color-text)]">Aniket Dhuri</span> ✨
             </p>

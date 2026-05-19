@@ -599,7 +599,7 @@ export default function LandingPage() {
                   Proudly developed in Mumbai, Maharashtra, India.
                 </p>
                 <p className="text-[10px] text-slate-400 tracking-[0.2em] font-mono mb-2">
-                  VERSION 1.6.0 / SECURE ENCRYPTION ACTIVE
+                  VERSION 1.7.0 / SECURE ENCRYPTION ACTIVE
                 </p>
                 <p className="text-[10px] text-slate-500 max-w-md">
                   This site uses only essential session cookies to keep you signed in. We do not use tracking or advertising cookies.

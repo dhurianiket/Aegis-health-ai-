@@ -42,6 +42,14 @@ If any feature request, optimization, or refactoring task violates a documented 
 - **Rule:** Do not place heavy data aggregation loops (like mapping/reducing large lab datasets) directly inside `useEffect` or render cycles.
 - **Constraint:** Abstract data parsing/sorting into standalone utility functions outside the component. You must use `useCallback` for UI handlers passed down as props to prevent render cascades.
 
+### I. Mobile Responsive Data Displays
+- **Rule:** Never force dense, multi-column data tables (like lab results) to squeeze horizontally on mobile viewports.
+- **Constraint:** You MUST use a Table-to-Card responsive pattern. Use `hidden md:block` for the desktop `<table />` and `block md:hidden` for vertically stacked cards, allowing text to wrap naturally (`whitespace-normal break-words`) without truncation.
+
+### J. AI Token Optimization & State Persistence
+- **Rule:** AI summaries and deep conversational histories must not be kept purely in volatile state.
+- **Constraint:** High-value AI generations (like SBAR summaries or Specialist chats) must be saved to Firestore. Always check for an existing Firestore record before triggering a fresh Gemini API call on component mount.
+
 ## 2. Environment Variables Constraints
 All environment variables configured for Aegis Health AI:
 - `VITE_FIREBASE_API_KEY`: Firebase connection bindings.

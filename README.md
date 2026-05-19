@@ -1,4 +1,4 @@
-# Aegis Health AI [![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/dhurianiket/aegis-health-app-90697)
+# Aegis Health AI [![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](https://github.com/dhurianiket/aegis-health-app-90697)
 
 A modern, clinical-grade health management system. Aegis Health AI enables users to centralize medical records, extract intelligence from lab reports using Gemini 1.5 Flash, and monitor long-term clinical narratives.
 

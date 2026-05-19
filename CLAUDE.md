@@ -24,3 +24,4 @@ Aegis uses a strictly enforced hybrid Gemini strategy:
 2. State-Driven Auth: Authentication routing must be state-driven via React Context. No imperative router push in auth handlers is allowed.
 3. Performance & A11y: Preserve all React.lazy Suspense boundaries, `<main>` semantic landmarks, and ARIA labels.
 4. AI Capabilities: Preserve the `generateContentStream` logic and `MediaRecorder` voice integrations.
+5. UI & State Persistence: Strictly adhere to the Mobile Responsive Data Displays (Table-to-Card) pattern for dense datasets and enforce AI state persistence via Firestore to minimize token waste.
