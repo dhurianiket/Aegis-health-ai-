@@ -1,6 +1,6 @@
 import React, { useState, Suspense, lazy, useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import LandingPage from "./components/LandingPage/LandingPage";
+const LandingPage = lazy(() => import("./components/LandingPage/LandingPage"));
 import { ShieldCheck } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase/config";
@@ -760,17 +760,25 @@ const PublicLandingPageRoute = () => {
   return <LandingPage />;
 };
 
-import PrivacyPolicy from "./components/Legal/PrivacyPolicy";
-import TermsOfService from "./components/Legal/TermsOfService";
+const PrivacyPolicy = lazy(() => import("./components/Legal/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./components/Legal/TermsOfService"));
+
+const GlobalFallback = () => (
+  <div className="flex h-screen items-center justify-center bg-[var(--color-bg)] text-[var(--color-text-muted)]">
+    <Loader2 className="w-8 h-8 animate-spin" />
+  </div>
+);
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<PublicLandingPageRoute />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/terms-of-service" element={<TermsOfService />} />
-      <Route path="/dashboard" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
-      <Route path="*" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
-    </Routes>
+    <Suspense fallback={<GlobalFallback />}>
+      <Routes>
+        <Route path="/" element={<PublicLandingPageRoute />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/dashboard" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
+        <Route path="*" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
+      </Routes>
+    </Suspense>
   );
 }

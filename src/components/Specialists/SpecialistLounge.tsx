@@ -231,12 +231,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 onClick={() => setActiveSpecialist(s.id)}
                 className={`cursor-pointer flex-shrink-0 w-48 lg:w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all ${
                   activeSpecialist === s.id 
-                  ? 'bg-[var(--color-primary)] text-white shadow-lg' 
+                  ? 'bg-[var(--color-primary)] text-teal-950 shadow-lg' 
                   : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400'
                 }`}
               >
                 <div className="font-bold text-sm tracking-wide">{s.displayName}</div>
-                <div className={`text-xs ${activeSpecialist === s.id ? 'text-indigo-200' : 'text-slate-600 dark:text-slate-300'}`}>
+                <div className={`text-xs ${activeSpecialist === s.id ? 'text-teal-900' : 'text-slate-600 dark:text-slate-300'}`}>
                   {s.expertise.slice(0, 2).join(', ')}...
                 </div>
               </div>
@@ -335,7 +335,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 <ArrowUp size={20} strokeWidth={2.5} />
               </button>
             </form>
-            <div className="mt-3 text-center text-[10px] text-slate-500 flex items-center justify-center gap-2">
+            <div className="mt-3 text-center text-[10px] text-gray-800 dark:text-slate-300 flex items-center justify-center gap-2">
               <Info className="w-3 h-3 text-amber-500" />
               <strong>MEDICAL DISCLAIMER:</strong> Not a substitute for professional medical advice, diagnosis, or treatment.
             </div>
