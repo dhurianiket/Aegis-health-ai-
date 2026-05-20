@@ -8,3 +8,5 @@ coverage/
 !.env.example
 firebase-applet-config.json
 firebase-blueprint.json
+pwd.txt
+firebase-adminsdk.json
