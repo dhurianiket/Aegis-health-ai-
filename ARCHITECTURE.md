@@ -9,7 +9,12 @@ This document serves as the single source of truth for the technical architectur
   - *Routing:* **Gemini Flash** is utilized exclusively for high-speed data extraction and structured telemetry parsing. **Gemini Pro** handles conversational depth and virtual multi-specialty polyclinic threads.
 - **Medical Intelligence Hub:** U.S. National Library of Medicine (NLM) RxNorm Datasets.
 
-## 2. Component Hierarchy & Data Flow
+## 2. Security & API Management
+- **API Key Hardening:** All Google Cloud API keys (specifically for the Gemini 2.5 Flash model) must be secured using HTTP Referrer restrictions limited strictly to our production domain (`*aegishealthai.co.in/*`) and local development environments.
+- **Environment Variables:** The frontend must solely rely on Vite environment variables (e.g., `import.meta.env.VITE_GEMINI_API_KEY`) for API access.
+- **Zero-Trust Hardcoding Guardrail:** Strict architectural rule established: raw API keys or secrets must **never** be hardcoded inside standard files or committed to version control.
+
+## 3. Component Hierarchy & Data Flow
 
 ```
 [User Document Upload] ➔ [UploadPipeline.ts] ➔ [Gemini Flash Extraction API]

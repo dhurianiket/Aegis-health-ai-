@@ -4,7 +4,10 @@ dist/
 coverage/
 .DS_Store
 *.log
-.env*
+.env
+.env.local
+.env.development
+.env.production
 !.env.example
 firebase-applet-config.json
 firebase-blueprint.json

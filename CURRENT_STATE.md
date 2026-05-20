@@ -48,6 +48,13 @@
   - Memoized top-level `App.tsx` handlers with `useCallback`.
 - **Verification Status:** Passed all 5 pillars of the Senior Staff Audit. 100% Production Ready.
 
+### [May 20, 2026] — v1.7.1 Security & Incident Recovery
+- **Reason:** Google Cloud API key hijack on project `aegis-health-prod` due to an exposed key on GitHub.
+- **What Changed:** 
+  - Vulnerability completely patched: the compromised key was permanently deleted, the `.env` file was secured, and we successfully migrated to a new backup key with strict HTTP Referrer restrictions locked to `*aegishealthai.co.in/*`.
+  - Application is back online and stable.
+- **Support Status:** Google Cloud Support Case #71428397 is currently processing our billing waiver.
+
 ### [May 20, 2026] — v1.7.0 Persistent Memory & Global Context Overhaul
 - **Reason:** Addressed token burn on page refreshes, fragmented AI context, white-screen hydration crashes, and poor mobile table readability.
 - **What Changed:**

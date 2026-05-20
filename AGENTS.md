@@ -50,6 +50,10 @@ If any feature request, optimization, or refactoring task violates a documented 
 - **Rule:** AI summaries and deep conversational histories must not be kept purely in volatile state.
 - **Constraint:** High-value AI generations (like SBAR summaries or Specialist chats) must be saved to Firestore. Always check for an existing Firestore record before triggering a fresh Gemini API call on component mount.
 
+### K. Agent Credential Management & Output Boundaries
+- **Rule:** The AI agent must NEVER generate, suggest, or output raw API keys (e.g., strings starting with `AIza`), Firebase secret keys, or connection credentials directly in code snippets. All outputs containing keys must use explicit placeholder labels (e.g., `PASTE_KEY_HERE`).
+- **Constraint:** Proactively verify that `.env`, `.env.local`, and other credential environments are explicitly included in `.gitignore` before suggesting any git commands, commits, or deployment steps.
+
 ## 2. Environment Variables Constraints
 All environment variables configured for Aegis Health AI:
 - `VITE_FIREBASE_API_KEY`: Firebase connection bindings.
