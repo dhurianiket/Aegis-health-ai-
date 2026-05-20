@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   User,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
@@ -38,6 +40,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setAuthResolved(true);
       }
     }, 10000);
+
+    // Check for redirect result on load
+    getRedirectResult(auth).then((result) => {
+      if (result?.user && isMounted) {
+        setUser(result.user);
+        markUserActive(result.user.uid).catch(err => console.error(err));
+      }
+    }).catch(error => {
+      console.error("Redirect sign-in error:", error);
+    });
 
     const unsubscribe = onAuthStateChanged(
       auth,
@@ -96,9 +108,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         await signInWithPopup(auth, googleProvider);
         console.log("Sign-in successful.");
       } catch (popupError: any) {
-        if (popupError?.code === "auth/popup-blocked") {
-          console.warn("Popup blocked.");
-          alert("The sign-in popup was blocked. Please allow popups for this site and try again.");
+        if (popupError?.code === "auth/popup-blocked" || popupError?.code === "auth/unsupported-browser") {
+          console.warn("Popup blocked or unsupported. Falling back to redirect sign-in...", popupError);
+          await signInWithRedirect(auth, googleProvider);
         } else if (popupError?.code === "auth/cancelled-popup-request" || popupError?.code === "auth/popup-closed-by-user") {
           console.log("Sign-in popup closed by user or cancelled.");
         } else {
