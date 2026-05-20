@@ -28,6 +28,28 @@ export enum MedicationStatus {
   DISCONTINUED = "discontinued",
 }
 
+export interface ReproductiveProfile {
+  cycleTrackingEnabled: boolean;
+  menstruates: boolean;
+  consentGivenAt?: string;
+  averageCycleLength?: number;
+  averagePeriodLength?: number;
+  lastPeriodStart?: string | null;
+  updatedAt?: string;
+}
+
+export interface CycleLog {
+  id: string;
+  date: string;
+  eventType: 'period_start' | 'period_day' | 'symptom' | 'flow';
+  symptoms?: string[];
+  flowIntensity?: 'light' | 'medium' | 'heavy';
+  note?: string;
+  source: 'manual' | 'calendar' | 'aura';
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface UserProfile {
   id: string;
   userId: string;
@@ -45,6 +67,7 @@ export interface UserProfile {
   medications?: Medication[];
   labValues?: LabResult[];
   doctorNotes?: string[];
+  reproductiveProfile?: ReproductiveProfile;
   createdAt: string;
 }
 

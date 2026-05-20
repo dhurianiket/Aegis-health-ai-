@@ -54,6 +54,10 @@ If any feature request, optimization, or refactoring task violates a documented 
 - **Rule:** The AI agent must NEVER generate, suggest, or output raw API keys (e.g., strings starting with `AIza`), Firebase secret keys, or connection credentials directly in code snippets. All outputs containing keys must use explicit placeholder labels (e.g., `PASTE_KEY_HERE`).
 - **Constraint:** Proactively verify that `.env`, `.env.local`, and other credential environments are explicitly included in `.gitignore` before suggesting any git commands, commits, or deployment steps.
 
+### L. Cycle Tracking & Reproductive Health
+- **Rule:** Never silently persist reproductive health data without explicit user confirmation, and never introduce top-level sensitive collections.
+- **Constraint:** All cycle logging must remain purely within `users/{userId}/profiles/{profileId}/cycleLogs/{logId}`. Menstrual cycle tracking is strictly protected by explicit opt-in consent and remains logically bound directly to a specific user and profile.
+
 ## 2. Environment Variables Constraints
 All environment variables configured for Aegis Health AI:
 - `VITE_FIREBASE_API_KEY`: Firebase connection bindings.

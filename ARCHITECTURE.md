@@ -47,8 +47,12 @@ This document serves as the single source of truth for the technical architectur
 
 ## 4. Database Schema
 ### Firestore Collections
+User-owned app data remains exclusively under `users/{userId}/...`
 - `users/{userId}/profiles/{profileId}`: Primary patient context.
   - `specialistChats/{specialistId}`: Persists historical chat arrays or chat payloads for individual AI specialists.
+  - `cycleLogs/{logId}`: Dedicated timeline events for reproductive cycle tracking.
+- `users/{userId}/documents/{documentId}`: Report metadata.
+- Storage uploads remain under `users/{userId}/documents/...`
 
 ## 5. Data Models
 ### Profile Schema
@@ -57,6 +61,14 @@ This document serves as the single source of truth for the technical architectur
   - `weight`
   - `bmi`
   - `clinicalNotes`
+  - `reproductiveProfile` (Optional): Consent-gated tracking (e.g. `cycleTrackingEnabled`, `menstruates`, etc.).
+
+### Cycle Tracking Constraints
+- Menstrual cycle tracking is strictly consent-gated and not driven by simplistic `gender === "female"` logic.
+- Aura AI must not silently persist reproductive health data without explicit user confirmation.
 
 ## 6. Core Services & Hooks
 - `useClinicalContext.ts`: Acts as the centralized patient-context source for Gemini AI prompts across Aura, Specialists, and SBAR.
+
+## 7. Protected Layouts
+- **Specialist Lounge:** The mobile experience strictly uses a portal-based full-screen consultation shell (`createPortal`) to escape transformed/scrolling parent containers.

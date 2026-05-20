@@ -48,6 +48,17 @@
   - Memoized top-level `App.tsx` handlers with `useCallback`.
 - **Verification Status:** Passed all 5 pillars of the Senior Staff Audit. 100% Production Ready.
 
+### [May 20, 2026] — v1.7.2 Cycle Tracking Feature
+- **Reason:** Added an optional, privacy-respecting menstrual cycle tracking feature.
+- **What Changed:** 
+  - `reproductiveProfile` added as an optional extension on the user profile model.
+  - Cycle logs are saved inside individual `users/{userId}/profiles/{profileId}/cycleLogs/{logId}` subcollectons; no top-level public collections were created.
+  - Cycle tracking dashboard widget respects strict eligibility rules: is disabled by default, requires explicit user consent, and is correctly gated based on the profile settings.
+  - Profile settings updated to use nested Firestore dot notation correctly, avoiding the risk of overwriting the full `reproductiveProfile` field.
+  - Firestore updates now serialize timestamps correctly using Firestore's `serverTimestamp()` or `Timestamp` to match existing patterns.
+  - Validated that existing Specialist Lounge's mobile portal/scroll protections remain perfectly intact.
+- **Verification Status:** Passed all regression tests. `npx tsc --noEmit` is perfectly clean.
+
 ### [May 20, 2026] — v1.7.1 Security & Incident Recovery
 - **Reason:** Google Cloud API key hijack on project `aegis-health-prod` due to an exposed key on GitHub.
 - **What Changed:** 

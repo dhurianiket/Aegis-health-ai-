@@ -17,6 +17,7 @@ import { logger } from "../../lib/logger";
 import { getUserUsageStats } from "../../services/usageService";
 import { auth } from "../../lib/firebase/config";
 import { version } from "../../../package.json";
+import CycleTrackingSettings from "./CycleTrackingSettings";
 
 export default function ProfileManagement() {
   const {
@@ -425,6 +426,12 @@ export default function ProfileManagement() {
           </motion.div>
         ))}
       </div>
+
+      {activeProfile && (
+         <div className="mt-8">
+            <CycleTrackingSettings profile={activeProfile} />
+         </div>
+      )}
 
       <AnimatePresence>
         {deletingId && (

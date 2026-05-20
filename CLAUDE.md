@@ -25,3 +25,4 @@ Aegis uses a strictly enforced hybrid Gemini strategy:
 3. Performance & A11y: Preserve all React.lazy Suspense boundaries, `<main>` semantic landmarks, and ARIA labels.
 4. AI Capabilities: Preserve the `generateContentStream` logic and `MediaRecorder` voice integrations.
 5. UI & State Persistence: Strictly adhere to the Mobile Responsive Data Displays (Table-to-Card) pattern for dense datasets and enforce AI state persistence via Firestore to minimize token waste.
+6. Cycle Tracking & Reproductive Health: Preserve `users/{userId}/...` ownership structure. Do not introduce top-level sensitive collections. Do not silently write reproductive health data. Do not remove Specialist Lounge portal/mobile scroll protections. Update docs whenever architectural behavior changes.

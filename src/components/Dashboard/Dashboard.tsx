@@ -48,6 +48,8 @@ const EmptyDashboard = lazy(() => import("./EmptyDashboard"));
 const ShareReport = lazy(() => import("../Export/ShareReport"));
 const HealthRadarChart = lazy(() => import("./HealthRadarChart"));
 
+const CycleTrackingWidget = lazy(() => import("./CycleTrackingWidget"));
+
 /**
  * Dashboard - The primary clinical analytics view.
  *
@@ -304,8 +306,13 @@ export default function Dashboard({
 
       {!loading && !error && (keyLabs.length > 0 || healthScores.length > 0 || latestInsights.length > 0) && (
         <div className="flex flex-col lg:flex-none">
-          <motion.div variants={tileVariants} className="order-first lg:order-none w-full mb-8">
+          <motion.div variants={tileVariants} className="order-first lg:order-none w-full mb-8 space-y-6">
             {user && <RemindersWidget userId={user.uid} />}
+            {activeProfile?.reproductiveProfile?.cycleTrackingEnabled && activeProfile?.reproductiveProfile?.menstruates && (
+               <Suspense fallback={<div className="h-40 w-full animate-pulse bg-surface/50 rounded-3xl" />}>
+                 <CycleTrackingWidget userProfile={activeProfile} />
+               </Suspense>
+            )}
           </motion.div>
 
           <motion.div variants={tileVariants}>
