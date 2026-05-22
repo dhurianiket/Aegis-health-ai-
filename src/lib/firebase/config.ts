@@ -11,7 +11,7 @@ const sanitizeDomain = (domain?: string) => {
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: sanitizeDomain(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "aegishealthai.co.in",
+  authDomain: sanitizeDomain(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "gen-lang-client-0643133134.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,

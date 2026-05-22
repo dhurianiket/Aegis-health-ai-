@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.7.0 (Persistent Context & Mobile UX)
+- **Current Version:** v1.7.3 (Firebase Auth Resilience)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -32,6 +32,14 @@
 ---
 
 ## 4. Changelog
+### [May 22, 2026] — v1.7.3 Firebase Auth Resilience & Domain Fix
+- **Reason:** Addressed production sign-in failures (`auth/internal-error`, `auth/network-request-failed`) experienced on the live `aegishealthai.co.in` deployment.
+- **What Changed:**
+  - Restored `authDomain` in Firebase config to the system default `gen-lang-client-0643133134.firebaseapp.com`, resolving cross-origin issues caused by overriding the domain without an Identity Platform configuration.
+  - Enhanced `AuthContext.tsx` with rigorous debug logging block prefixed with `[Auth]` and robust error-handling logic.
+  - Hardened popup vs redirect fallback pathways to reliably catch embedded webview contexts.
+- **Verification Status:** Live configuration deployed, and authenticating successfully without cross-origin rejections.
+
 ### [May 22, 2026] — Security, Compliance, and AI Safety Hardening
 Aegis Health AI has now been hardened across security, legal trust, and AI safety layers. Firebase Hosting headers were added, legal pages were updated for public beta and medical disclaimer clarity, and the Gemini prompt flow was hardened against prompt injection by isolating user content from system instructions. TypeScript checks passed cleanly with `npx tsc --noEmit`, and no regressions were found in auth, Firestore structure, or the Specialist Lounge mobile flow. Remaining work is limited to manual Cloudflare/Firebase/Google console verification, including SSL/TLS mode, HSTS, authorized domains, and OAuth consent settings.
 

@@ -90,7 +90,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     
     signInInProgress.current = true;
     setIsSigningIn(true);
-    if (import.meta.env.DEV) console.log("Initiating Google Sign-In...");
+    
+    // Debug logging for config values
+    console.log("[Auth] Initiating Google Sign-In...");
+    console.log("[Auth] Configuration values:", {
+      authDomain: auth.config?.authDomain,
+      apiKeySet: !!auth.app.options.apiKey,
+      projectId: auth.app.options.projectId
+    });
+    
     try {
       // Ensure Google provider is clean
       googleProvider.setCustomParameters({
@@ -105,9 +113,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // Cloudflare caching often breaks signInWithRedirect because of /__/auth/handler
       // Therefore, we must enforce popup auth exclusively.
       try {
+        console.log("[Auth] Attempting signInWithPopup...");
+        // Enforce popup auth mainly, with custom parameters to help with some browser edge cases
+        googleProvider.setCustomParameters({
+          prompt: 'select_account'
+        });
         await signInWithPopup(auth, googleProvider);
-        console.log("Sign-in successful.");
+        console.log("[Auth] Sign-in with popup successful.");
       } catch (popupError: any) {
+        console.error("[Auth] signInWithPopup failed:", popupError?.code, popupError?.message);
         if (
           popupError?.code === "auth/popup-blocked" || 
           popupError?.code === "auth/unsupported-browser" ||
@@ -117,19 +131,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.warn("Popup error (blocked, unsupported, or internal). Embedded status:", isEmbedded, popupError);
           
           if (isEmbedded) {
+            console.error("[Auth] Blocked because in embedded context.");
             throw new Error("embedded-auth-blocked");
           }
           
-          console.warn("Falling back to redirect sign-in...");
+          console.warn("[Auth] Falling back to redirect sign-in...");
+          // Fallback to redirect sign in if we aren't embedded
           await signInWithRedirect(auth, googleProvider);
+          console.log("[Auth] signInWithRedirect initiated.");
         } else if (popupError?.code === "auth/cancelled-popup-request" || popupError?.code === "auth/popup-closed-by-user") {
-          console.log("Sign-in popup closed by user or cancelled.");
+          console.log("[Auth] Sign-in popup closed by user or cancelled.");
         } else {
           throw popupError;
         }
       }
     } catch (error: any) {
-      console.error("Error signing in with Google:", error);
+      console.error("[Auth] Error signing in with Google:", error?.code, error?.message);
       
       const errorCode = error?.code;
       const errorMessage = error?.message || "";
@@ -160,7 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       } else {
         alert(
-          `Failed to sign in (${errorCode || errorMessage || "Unknown Error"}). \n\nIf you are on Safari or an iPhone, please ensure popups are permitted, or try opening this app outside of an embedded preview.`
+          `Failed to sign in (${errorCode || errorMessage || "Unknown Error"}). \n\nIf you see this and are using Safari on iPhone or Mac:\n1. Ensure 'aegishealthai.co.in' is added to Authorized Domains in Firebase Console > Authentication > Settings.\n2. In Google Cloud Console, ensure 'https://aegishealthai.co.in/__/auth/handler' is an authorized redirect URI.\n3. Clear your Safari cache (you may be seeing an older version of this message if it mentions 'AI Studio preview').`
         );
       }
     } finally {

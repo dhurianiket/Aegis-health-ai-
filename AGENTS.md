@@ -58,6 +58,10 @@ If any feature request, optimization, or refactoring task violates a documented 
 - **Rule:** Never silently persist reproductive health data without explicit user confirmation, and never introduce top-level sensitive collections.
 - **Constraint:** All cycle logging must remain purely within `users/{userId}/profiles/{profileId}/cycleLogs/{logId}`. Menstrual cycle tracking is strictly protected by explicit opt-in consent and remains logically bound directly to a specific user and profile.
 
+### M. Firebase Authentication Domain
+- **Rule:** Never override the default Firebase `authDomain` with the production custom domain (e.g., `aegishealthai.co.in`) unless Identity Platform custom domains are fully provisioned.
+- **Constraint:** The app must strictly use the default `gen-lang-client-0643133134.firebaseapp.com` for `authDomain`. `AuthContext` must enforce popup sign-in as primary, with a robust fallback to redirect flow for environments with strict pop-up blocks or Cloudflare caching.
+
 ## 2. Environment Variables Constraints
 All environment variables configured for Aegis Health AI:
 - `VITE_FIREBASE_API_KEY`: Firebase connection bindings.

@@ -10,6 +10,8 @@ This document serves as the single source of truth for the technical architectur
 - **Medical Intelligence Hub:** U.S. National Library of Medicine (NLM) RxNorm Datasets.
 
 ## 2. Security & API Management
+- **Firebase Auth Constraint:** Authentication is built on standard Firebase Auth (Identity Platform is NOT enabled). The `authDomain` MUST remain the system-provisioned `gen-lang-client-0643133134.firebaseapp.com`.
+- **Auth Flow Resilience:** The system runs primarily on `signInWithPopup` (to avoid Cloudflare caching breaking `/__/auth/handler`), with automated, graceful degradation to `signInWithRedirect` upon detecting popup blockers or embedded webview environments.
 - **API Key Hardening:** All Google Cloud API keys (specifically for the Gemini 2.5 Flash model) must be secured using HTTP Referrer restrictions limited strictly to our production domain (`*aegishealthai.co.in/*`) and local development environments.
 - **Environment Variables:** The frontend must solely rely on Vite environment variables (e.g., `import.meta.env.VITE_GEMINI_API_KEY`) for API access.
 - **Zero-Trust Hardcoding Guardrail:** Strict architectural rule established: raw API keys or secrets must **never** be hardcoded inside standard files or committed to version control.
