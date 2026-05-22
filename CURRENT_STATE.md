@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.7.4 (Firebase Auth CSP Fix)
+- **Current Version:** v1.7.5 (Firebase Auth Hang Fix Fix)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -32,6 +32,14 @@
 ---
 
 ## 4. Changelog
+### [May 22, 2026] — v1.7.5 Firebase Auth Hang Fix
+- **Reason:** Users were experiencing silent hangs during `signInWithPopup` ("Auth resolution timeout reached" from the generic loader). This happens when `Cross-Origin-Opener-Policy` isolates the popup from the window.
+- **What Changed:**
+  - Added `Cross-Origin-Opener-Policy: same-origin-allow-popups` to `firebase.json` headers to explicitly allow the login popup to communicate with the main application.
+  - Added a defensive 15-second `Promise.race` timeout to `signInWithPopup` inside `AuthContext.tsx`. If it hangs and expires, it will automatically fall back to `signInWithRedirect`.
+  - Hardcoded `authDomain` in `src/lib/firebase/config.ts` to `gen-lang-client-0643133134.firebaseapp.com` to prevent `.env` variable domain mismatch bugs.
+- **Verification Status:** Timeout implemented and configuration updated. Ready for deployment.
+
 ### [May 22, 2026] — v1.7.4 Firebase Auth CSP Header Fix
 - **Reason:** Users were receiving `auth/internal-error` caused by aggressive `Content-Security-Policy` headers blocking the Firebase Auth iframe when falling back to redirect/popup flows on live domain. 
 - **What Changed:**

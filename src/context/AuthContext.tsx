@@ -93,11 +93,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     
     // Debug logging for config values
     console.log("[Auth] Initiating Google Sign-In...");
-    console.log("[Auth] Configuration values:", {
-      authDomain: auth.config?.authDomain,
+    console.log("[Auth] Configuration values:", JSON.stringify({
+      authDomain: auth.config?.authDomain ?? (auth.app.options as any).authDomain,
       apiKeySet: !!auth.app.options.apiKey,
       projectId: auth.app.options.projectId
-    });
+    }));
     
     try {
       // Ensure Google provider is clean
@@ -118,17 +118,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         googleProvider.setCustomParameters({
           prompt: 'select_account'
         });
-        await signInWithPopup(auth, googleProvider);
+        
+        // Add a timeout around signInWithPopup in case it hangs due to COOP/COEP isolation
+        const popupPromise = signInWithPopup(auth, googleProvider);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("auth/popup-timeout")), 15000)
+        );
+        
+        await Promise.race([popupPromise, timeoutPromise]);
+        
         console.log("[Auth] Sign-in with popup successful.");
       } catch (popupError: any) {
         console.error("[Auth] signInWithPopup failed:", popupError?.code, popupError?.message);
         if (
           popupError?.code === "auth/popup-blocked" || 
           popupError?.code === "auth/unsupported-browser" ||
-          popupError?.code === "auth/internal-error"
+          popupError?.code === "auth/internal-error" ||
+          popupError?.message === "auth/popup-timeout"
         ) {
           const isEmbedded = window !== window.parent;
-          console.warn("Popup error (blocked, unsupported, or internal). Embedded status:", isEmbedded, popupError);
+          console.warn("Popup error (blocked, unsupported, internal, or timeout). Embedded status:", isEmbedded, popupError);
           
           if (isEmbedded) {
             console.error("[Auth] Blocked because in embedded context.");
