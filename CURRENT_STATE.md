@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.7.7 (iPhone Safari Auth Fix)
+- **Current Version:** v1.7.8 (React 310 Loop & Auth Fixes)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -32,6 +32,15 @@
 ---
 
 ## 4. Changelog
+### [May 22, 2026] — v1.7.8 Rewrite Auth & Fix React 310 Loop
+- **Reason:** Users were experiencing infinite redirect loops (minified React error 310) due to race conditions between `onAuthStateChanged` and `getRedirectResult`, COOP warnings during popup, and incorrect Firestore rules for admin data.
+- **What Changed:**
+  - Rewrote `AuthContext.tsx` to strictly await `getRedirectResult` before resolving the `loading` state. This prevents `<ProtectedRoute>` from unmounting and immediately remounting during redirect checks.
+  - Fixed `firestore.rules` to allow `request.auth != null` to increment `/analytics/globalStats` directly instead of encountering silent 403 blocks.
+  - Added `collectionGroup('usage')` and `collectionGroup('documents')` definitions to `firestore.rules` to fix admin dashboard permission errors.
+  - Forced Safari and embedded iFrames to use `signInWithRedirect` immediately without triggering COOP popup errors.
+- **Verification Status:** Auth flow normalized. Ready for deployment.
+
 ### [May 22, 2026] — v1.7.7 iPhone Safari Auth & Offline Reliability Fix
 - **Reason:** Users were experiencing `signInWithPopup` timeouts on iPhone Safari, `auth/network-request-failed` during fallback redirect due to ITP/cross-site tracking, and app crashes stringifying offline Firestore errors.
 - **What Changed:**

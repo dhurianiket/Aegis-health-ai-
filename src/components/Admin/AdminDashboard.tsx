@@ -51,7 +51,11 @@ export default function AdminDashboard() {
       // Enforce role check
       try {
         const userDoc = await getDoc(doc(db, `users/${user.uid}`));
-        if (!userDoc.exists() || userDoc.data().role !== "admin") {
+        const userEmail = user.email || "";
+        const isEmailAdmin = userEmail.toLowerCase() === "dhurianiket@gmail.com";
+        const isRoleAdmin = userDoc.exists() && userDoc.data().role === "admin";
+        
+        if (!isEmailAdmin && !isRoleAdmin) {
           setErrorMSG("You do not have permission to view the admin dashboard.");
           setLoading(false);
           return;

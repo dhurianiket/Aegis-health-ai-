@@ -221,14 +221,6 @@ function MainApp() {
     setIsConsentGranted(exists);
   }, []);
 
-  if (shareId && shareUid) {
-    return (
-      <Suspense fallback={<Fallback />}>
-        <SharedProfile shareId={shareId} userId={shareUid} />
-      </Suspense>
-    );
-  }
-
   const handleCreateProfile = React.useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileError("");
@@ -251,14 +243,15 @@ function MainApp() {
 
   const activeAlertsCount = unreadCount;
 
-  const [splashTimeout, setSplashTimeout] = useState(true);
+  const isLoading = authLoading;
 
-  useEffect(() => {
-    const timer = setTimeout(() => setSplashTimeout(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const isLoading = authLoading || splashTimeout;
+  if (shareId && shareUid) {
+    return (
+      <Suspense fallback={<Fallback />}>
+        <SharedProfile shareId={shareId} userId={shareUid} />
+      </Suspense>
+    );
+  }
 
   if (isLoading) {
     return <SplashScreen />;
@@ -753,7 +746,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const PublicLandingPageRoute = () => {
   const { user, loading: authLoading } = useAuth();
 
-  if (!authLoading && user) {
+  if (authLoading) {
+    return <SplashScreen />;
+  }
+
+  if (user) {
     return <Navigate to="/dashboard" replace />;
   }
 
