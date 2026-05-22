@@ -42,13 +42,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }, 10000);
 
     // Check for redirect result on load
+    console.log("[Auth] Checking redirect result on load...");
     getRedirectResult(auth).then((result) => {
-      if (result?.user && isMounted) {
-        setUser(result.user);
-        markUserActive(result.user.uid).catch(err => console.error(err));
+      if (result) {
+        console.log("[Auth] Redirect sign-in success for user:", result.user?.uid);
+        if (result.user && isMounted) {
+          setUser(result.user);
+          markUserActive(result.user.uid).catch(err => console.error("[Auth] Error marking active after redirect:", err));
+        }
+      } else {
+        console.log("[Auth] No redirect result found on load.");
       }
     }).catch(error => {
-      console.error("Redirect sign-in error:", error);
+      console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
     });
 
     const unsubscribe = onAuthStateChanged(
@@ -109,9 +115,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // and ensure we are starting fresh.
       
       console.log("Current Origin:", window.location.origin);
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const preferRedirect = isIOS || isMobile || isSafari;
+
+      if (preferRedirect) {
+        console.log("[Auth] Mobile/Safari detected. Attempting signInWithRedirect...");
+        await signInWithRedirect(auth, googleProvider);
+        console.log("[Auth] signInWithRedirect initiated.");
+        // Redirect doesn't resolve here, it navigates away
+        return;
+      }
       
       // Cloudflare caching often breaks signInWithRedirect because of /__/auth/handler
-      // Therefore, we must enforce popup auth exclusively.
+      // Therefore, we try popup auth exclusively for other browsers.
       try {
         console.log("[Auth] Attempting signInWithPopup...");
         // Enforce popup auth mainly, with custom parameters to help with some browser edge cases
@@ -183,6 +202,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } else if (error.message === "embedded-auth-blocked") {
         alert(
           "Safari and some mobile browsers block authentication inside embedded previews. Please click the 'Open in New Tab' button in the top right to sign in."
+        );
+      } else if (errorCode === "auth/network-request-failed") {
+        alert(
+          "Network request failed during authentication. This is common on Safari when 'Prevent Cross-Site Tracking' is enabled. Please try allowing cross-site tracking or check your network connection."
         );
       } else {
         alert(

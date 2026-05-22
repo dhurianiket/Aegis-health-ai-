@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.7.6 (Firebase Auth fix)
+- **Current Version:** v1.7.7 (iPhone Safari Auth Fix)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -32,6 +32,16 @@
 ---
 
 ## 4. Changelog
+### [May 22, 2026] — v1.7.7 iPhone Safari Auth & Offline Reliability Fix
+- **Reason:** Users were experiencing `signInWithPopup` timeouts on iPhone Safari, `auth/network-request-failed` during fallback redirect due to ITP/cross-site tracking, and app crashes stringifying offline Firestore errors.
+- **What Changed:**
+  - Added robust detection for mobile, iOS, and Safari browsers inside `AuthContext.tsx`.
+  - Intelligently paths mobile/Safari users to `signInWithRedirect` immediately to prevent popup blocking.
+  - Implemented graceful catching of `auth/network-request-failed` to alert the user of ITP cookie blocking.
+  - Upgraded Firestore initialization in `src/lib/firebase/config.ts` to `initializeFirestore` with `persistentLocalCache({ tabManager: persistentMultipleTabManager() })` to prevent offline hangs.
+  - Re-mapped offline/unavailable errors in `handleFirestoreError` to warn rather than crash, distinguishing offline mode from permission failures without losing telemetry.
+- **Verification Status:** Changes are production-safe. `authDomain` and `projectId` remain pinned to `aegis-health-app-90697`. Ready for deployment.
+
 ### [May 22, 2026] — v1.7.6 Firebase Auth invalid-continue-uri Fix
 - **Reason:** Users observed `auth/invalid-continue-uri` on the live domain after previous fixes. 
 - **What Changed:**

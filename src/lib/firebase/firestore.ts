@@ -52,8 +52,11 @@ function handleFirestoreError(
   operationType: OperationType,
   path: string | null,
 ) {
+  const errCode = error && typeof error === 'object' && 'code' in error ? (error as any).code : 'unknown';
+  const errMsg = error instanceof Error ? error.message : String(error);
+
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errMsg,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
@@ -69,7 +72,19 @@ function handleFirestoreError(
     operationType,
     path,
   };
-  console.error("Firestore Error: ", JSON.stringify(errInfo));
+
+  if (errCode === 'unavailable' || errCode === 'failed-precondition') {
+      console.warn(`[Firestore Offline] ${operationType} operation on ${path} failed due to network unavailability. Check connection.`);
+      // We don't throw for offline reads if we want components to degrade gracefully, but throwing a custom error lets components handle the offline state explicitly.
+      throw new Error(`offline/${errCode}`);
+  }
+  
+  if (errCode === 'permission-denied') {
+      console.error(`[Firestore Permission Denied] Insufficient permissions for ${operationType} on ${path}. Check Security Rules or Auth state.`);
+  } else {
+      console.error("Firestore Error: ", JSON.stringify(errInfo));
+  }
+
   throw new Error(JSON.stringify(errInfo));
 }
 
