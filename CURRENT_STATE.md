@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.7.5 (Firebase Auth Hang Fix Fix)
+- **Current Version:** v1.7.6 (Firebase Auth fix)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -32,6 +32,14 @@
 ---
 
 ## 4. Changelog
+### [May 22, 2026] — v1.7.6 Firebase Auth invalid-continue-uri Fix
+- **Reason:** Users observed `auth/invalid-continue-uri` on the live domain after previous fixes. 
+- **What Changed:**
+  - Removed the hardcoded `gen-lang-client-0643133134` authDomain that was incorrectly causing the Google Auth handler to check the AI studio preview project's authorized domains list instead of the actual `aegis-health-app-90697` project list.
+  - Reverted `authDomain` in `src/lib/firebase/config.ts` to use `VITE_FIREBASE_AUTH_DOMAIN` environment variable, with a safe fallback to `aegis-health-app-90697.firebaseapp.com`
+  - Updated `AGENTS.md` and `ARCHITECTURE.md` architectural rules to reflect the correct use of the project native `firebaseapp.com` domain.
+- **Verification Status:** `authDomain` configuration reverted to match the actual production Firebase project. Ready for deployment.
+
 ### [May 22, 2026] — v1.7.5 Firebase Auth Hang Fix
 - **Reason:** Users were experiencing silent hangs during `signInWithPopup` ("Auth resolution timeout reached" from the generic loader). This happens when `Cross-Origin-Opener-Policy` isolates the popup from the window.
 - **What Changed:**
