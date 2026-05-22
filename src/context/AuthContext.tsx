@@ -108,8 +108,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         await signInWithPopup(auth, googleProvider);
         console.log("Sign-in successful.");
       } catch (popupError: any) {
-        if (popupError?.code === "auth/popup-blocked" || popupError?.code === "auth/unsupported-browser") {
-          console.warn("Popup blocked or unsupported. Falling back to redirect sign-in...", popupError);
+        if (
+          popupError?.code === "auth/popup-blocked" || 
+          popupError?.code === "auth/unsupported-browser" ||
+          popupError?.code === "auth/internal-error"
+        ) {
+          const isEmbedded = window !== window.parent;
+          console.warn("Popup error (blocked, unsupported, or internal). Embedded status:", isEmbedded, popupError);
+          
+          if (isEmbedded) {
+            throw new Error("embedded-auth-blocked");
+          }
+          
+          console.warn("Falling back to redirect sign-in...");
           await signInWithRedirect(auth, googleProvider);
         } else if (popupError?.code === "auth/cancelled-popup-request" || popupError?.code === "auth/popup-closed-by-user") {
           console.log("Sign-in popup closed by user or cancelled.");
@@ -143,9 +154,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         alert(
           "Firebase API key is missing or invalid. Please check your .env.local file or Secrets panel.",
         );
+      } else if (error.message === "embedded-auth-blocked") {
+        alert(
+          "Safari and some mobile browsers block authentication inside embedded previews. Please click the 'Open in New Tab' button in the top right to sign in."
+        );
       } else {
         alert(
-          `Failed to sign in (${errorCode || "Unknown Error"}). \n\nIf you are in the AI Studio preview, please open the app in a new tab to sign in with Google.`
+          `Failed to sign in (${errorCode || errorMessage || "Unknown Error"}). \n\nIf you are on Safari or an iPhone, please ensure popups are permitted, or try opening this app outside of an embedded preview.`
         );
       }
     } finally {
