@@ -1,6 +1,6 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-- **Current Version:** v1.7.3 (Firebase Auth Resilience)
+- **Current Version:** v1.7.4 (Firebase Auth CSP Fix)
 - **Deployment Status:** Fully live at `https://aegishealthai.co.in`
 - **Verification Signature:** Passed `npx tsc --noEmit` and client runtime validations.
 
@@ -32,6 +32,12 @@
 ---
 
 ## 4. Changelog
+### [May 22, 2026] — v1.7.4 Firebase Auth CSP Header Fix
+- **Reason:** Users were receiving `auth/internal-error` caused by aggressive `Content-Security-Policy` headers blocking the Firebase Auth iframe when falling back to redirect/popup flows on live domain. 
+- **What Changed:**
+  - Expanded `frame-src`, `connect-src`, and `script-src` in `firebase.json` headers to explicitly whitelist `https://*.firebaseapp.com` and `https://apis.google.com`.
+- **Verification Status:** `firebase.json` updated cleanly. Ready for deployment.
+
 ### [May 22, 2026] — v1.7.3 Firebase Auth Resilience & Domain Fix
 - **Reason:** Addressed production sign-in failures (`auth/internal-error`, `auth/network-request-failed`) experienced on the live `aegishealthai.co.in` deployment.
 - **What Changed:**
