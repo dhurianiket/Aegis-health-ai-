@@ -590,6 +590,13 @@ export default function LandingPage() {
               </div>
             </div>
 
+            <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 mb-8">
+              <p className="text-xs text-slate-400 text-center uppercase tracking-widest mb-2 font-semibold">Important Medical Disclaimer (Public Beta)</p>
+              <p className="text-[11px] text-slate-500 text-center max-w-4xl mx-auto leading-relaxed">
+                Aegis Health AI is currently in public beta. It is an informational tool and does NOT provide medical advice, diagnosis, or treatment. It does not replace professional clinical assessments. Always consult a qualified healthcare provider regarding your health data or any medical condition. If you are experiencing an urgent medical issue, contact emergency services immediately.
+              </p>
+            </div>
+
             <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="text-center md:text-left">
                 <p className="text-xs text-slate-400 tracking-wide uppercase mb-1">

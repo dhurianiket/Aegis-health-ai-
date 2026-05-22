@@ -93,7 +93,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       role: "user",
       parts: [
         {
-          text: `Medical Context:\n${patientDataPrompt}\n\nQuestion: ${userMessage}`,
+          text: `Medical Context:\n${patientDataPrompt}\n\nQuestion: <user_content>${userMessage}</user_content>`,
         },
       ],
     });
@@ -105,7 +105,9 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 
       // Inject context into the very first user message of the history
       if (i === 0 && role === "user") {
-        text = `Context:\n${patientDataPrompt}\n\nUser previously said: ${text}`;
+        text = `Context:\n${patientDataPrompt}\n\nUser previously said: <user_content>${text}</user_content>`;
+      } else if (role === "user") {
+        text = `<user_content>${text}</user_content>`;
       }
 
       // Handle potential duplicate roles in history (though useCoach should prevent this)
@@ -120,11 +122,11 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     if (contents[contents.length - 1].role === "user") {
       // Append to last user message if history ended with user
       contents[contents.length - 1].parts[0].text +=
-        `\n\nFollow-up Question: ${userMessage}`;
+        `\n\nFollow-up Question: <user_content>${userMessage}</user_content>`;
     } else {
       contents.push({
         role: "user",
-        parts: [{ text: userMessage }],
+        parts: [{ text: `<user_content>${userMessage}</user_content>` }],
       });
     }
   }

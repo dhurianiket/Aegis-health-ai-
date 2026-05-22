@@ -14,8 +14,8 @@ export default function PrivacyPolicy() {
         
         <div className="space-y-6 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
           <section>
-            <h2 className="text-xl font-semibold mb-3 text-slate-900 dark:text-slate-100">1. Introduction</h2>
-            <p>Welcome to Aegis Health AI. We respect your privacy and are deeply committed to protecting your personal data.</p>
+            <h2 className="text-xl font-semibold mb-3 text-slate-900 dark:text-slate-100">1. Introduction (Public Beta)</h2>
+            <p>Welcome to Aegis Health AI. We respect your privacy and are deeply committed to protecting your personal data. Please note that this product is currently in a public beta/early access phase. Your health data should be reviewed carefully, and AI output is strictly informational.</p>
           </section>
 
           <section>

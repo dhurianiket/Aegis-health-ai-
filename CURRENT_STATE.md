@@ -32,6 +32,9 @@
 ---
 
 ## 4. Changelog
+### [May 22, 2026] — Security, Compliance, and AI Safety Hardening
+Aegis Health AI has now been hardened across security, legal trust, and AI safety layers. Firebase Hosting headers were added, legal pages were updated for public beta and medical disclaimer clarity, and the Gemini prompt flow was hardened against prompt injection by isolating user content from system instructions. TypeScript checks passed cleanly with `npx tsc --noEmit`, and no regressions were found in auth, Firestore structure, or the Specialist Lounge mobile flow. Remaining work is limited to manual Cloudflare/Firebase/Google console verification, including SSL/TLS mode, HSTS, authorized domains, and OAuth consent settings.
+
 ### [May 17, 2026] — Version 1.6 Stabilization
 - **Reason:** Layout collapse fixes and cross-origin error defense implementations.
 - **What Changed:** - Enforced numerical parent pixel heights to stop Recharts `width="-1"` collapsing loop errors on mobile layouts.
