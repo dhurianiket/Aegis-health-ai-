@@ -561,7 +561,7 @@ export default function Dashboard({
 
           <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
         <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
-          Built by <span className="text-[var(--color-text-muted)]">Aniket Dhuri</span> · Powered by Gemini AI
+          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>
     </div>

@@ -528,7 +528,7 @@ export default function Timeline() {
 
       <div className="pt-8 mt-12 border-t border-white/10 opacity-40 text-center">
         <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.15em]">
-          Built by <span className="text-slate-400">Aniket Dhuri</span> · Powered by Gemini AI
+          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-300 underline decoration-slate-500 transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>
     </div>

@@ -481,7 +481,7 @@ export default function ProfileManagement() {
       </AnimatePresence>
       
       <div className="text-center text-slate-500 text-xs mt-12 pb-8">
-        Built by Aniket Dhuri • Version {version}
+        Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 underline decoration-slate-600 transition-colors">Aniket Dhuri</a> • Version {version}
       </div>
     </div>
   );

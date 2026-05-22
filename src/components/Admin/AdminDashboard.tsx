@@ -357,7 +357,7 @@ export default function AdminDashboard() {
       </div>
       
       <div className="text-center text-muted text-xs mt-8">
-        Built by Aniket Dhuri • Version {version}
+        Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-text)] underline decoration-muted transition-colors">Aniket Dhuri</a> • Version {version}
       </div>
     </div>
   );

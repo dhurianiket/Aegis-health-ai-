@@ -486,7 +486,7 @@ export default function LandingPage() {
                   <div className="flex flex-col text-left">
                     <h3 className="text-2xl font-bold text-white mb-4">Our Story</h3>
                     <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
-                      Hi, I’m Aniket Dhuri, the founder of Aegis Health AI. I’m based in Dombivli, Maharashtra.
+                      Hi, I’m <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-400/30 hover:decoration-emerald-400 transition-all">Aniket Dhuri, the founder</a> of Aegis Health AI. I’m based in Dombivli, Maharashtra.
                     </p>
                     <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
                       This project started from a simple, frustrating observation: medical lab reports are written for doctors, not for the patients paying for them. When a family member gets a blood test or a scan, the days spent waiting for a doctor's appointment are often filled with anxiety, frantic Googling, and confusing medical jargon. 
