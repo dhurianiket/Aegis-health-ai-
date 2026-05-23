@@ -108,13 +108,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       console.log("Current Origin:", window.location.origin);
 
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const preferRedirect = isIOS || isMobile || isSafari || (window !== window.parent); // Also use redirect if embedded
+      const preferRedirect = (window !== window.parent); // Only prefer redirect if embedded in an iframe
 
       if (preferRedirect) {
-        console.log("[Auth] Mobile/Safari/Embedded detected. Attempting signInWithRedirect...");
+        console.log("[Auth] Embedded detected. Attempting signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
         console.log("[Auth] signInWithRedirect initiated.");
         // Redirect navigates away from the page, no need to resolve state here
@@ -144,7 +141,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.warn("[Auth] Falling back to redirect sign-in due to popup failure...");
         await signInWithRedirect(auth, googleProvider).catch(e => {
             console.error("[Auth] Fatal redirect initiation failure:", e);
+            if (e?.code === "auth/network-request-failed") {
+                alert("Sign in failed due to a network error during fallback. Please check ad blockers/Brave Shields.");
+            } else {
+                alert(`Redirect sign-in failed: ${e?.message}`);
+            }
         });
+      } else if (popupError?.code === "auth/network-request-failed") {
+        alert("Sign in failed due to a network error. If you are using an ad blocker (like Brave Shields or uBlock), please disable it for this site and try again. It blocks secure authentication components.");
       } else if (popupError?.code !== "auth/cancelled-popup-request" && popupError?.code !== "auth/popup-closed-by-user") {
         alert(
           `Failed to sign in (${popupError?.code || popupError?.message || "Unknown Error"}). \n\nIf you see this and are using Safari on iPhone or Mac:\n1. Ensure 'aegishealthai.co.in' is added to Authorized Domains in Firebase Console > Authentication > Settings.\n2. In Google Cloud Console, ensure 'https://aegishealthai.co.in/__/auth/handler' is an authorized redirect URI.\n`
@@ -152,7 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     } finally {
       setIsSigningIn(false);
-      signInInProgress.current = false;
+      // Give a brief cooldown before allowing another sign-in attempt
+      setTimeout(() => {
+        signInInProgress.current = false;
+      }, 1000);
     }
   };
 
