@@ -50,6 +50,7 @@ export default function ProfileManagement() {
   const [editBloodType, setEditBloodType] = useState("");
   const [editHeight, setEditHeight] = useState<number | "">("");
   const [editWeight, setEditWeight] = useState<number | "">("");
+  const [editGoogleFormId, setEditGoogleFormId] = useState("");
   const [editDoctorNotes, setEditDoctorNotes] = useState("");
   const [editError, setEditError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -99,6 +100,7 @@ export default function ProfileManagement() {
     setEditBloodType(p.bloodType || "");
     setEditHeight(p.height || "");
     setEditWeight(p.weight || "");
+    setEditGoogleFormId(p.googleFormId || "");
     setEditDoctorNotes(p.clinicalNotes || p.doctorNotes?.join("\n") || "");
     setEditError("");
   };
@@ -116,6 +118,7 @@ export default function ProfileManagement() {
         weight: editWeight ? Number(editWeight) : undefined,
         bmi: (editHeight && editWeight) ? Number(calculateBMI(Number(editWeight), Number(editHeight))) : undefined,
         clinicalNotes: editDoctorNotes,
+        googleFormId: editGoogleFormId,
         doctorNotes: editDoctorNotes.split("\n").filter(Boolean),
       };
       await updateProfile(id, updates);
@@ -324,6 +327,17 @@ export default function ProfileManagement() {
                     </div>
                   </div>
                   <div>
+                    <label className="block text-xs text-slate-400 mb-1">Google Forms Intake ID (Optional)</label>
+                    <input
+                      type="text"
+                      value={editGoogleFormId}
+                      onChange={(e) => setEditGoogleFormId(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                      placeholder="e.g. 1FAIpQLScX..."
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">If provided, AI will fetch your form responses as clinical context.</p>
+                  </div>
+                  <div>
                     <label className="block text-xs text-slate-400 mb-1">Clinical Notes</label>
                     <textarea
                       value={editDoctorNotes}
@@ -369,6 +383,13 @@ export default function ProfileManagement() {
                         {p.bloodType && <div><span className="text-slate-500">Type:</span> <span className="font-bold text-red-400">{p.bloodType}</span></div>}
                      </div>
                      
+                     {p.googleFormId && (
+                       <div className="mt-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-2 flex items-center gap-2 text-xs text-indigo-300">
+                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                         Google Forms Intake Linked
+                       </div>
+                     )}
+
                      <div className="bg-white/5 rounded-lg p-3 border border-white/10 flex items-center justify-between">
                         <div>
                            <div className="text-xs text-slate-400 mb-0.5">BMI</div>

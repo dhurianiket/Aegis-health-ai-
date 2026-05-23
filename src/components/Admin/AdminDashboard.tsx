@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { getDoc, doc, collectionGroup, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase/config";
+import { getFormResponses } from "../../services/googleFormsService";
 import {
   BarChart,
   Bar,
@@ -38,6 +39,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [globalStats, setGlobalStats] = useState<any>(null);
   const [dailyUploads, setDailyUploads] = useState<any[]>([]);
+  const [feedbackResponses, setFeedbackResponses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMSG, setErrorMSG] = useState<string | null>(null);
 
@@ -115,6 +117,19 @@ export default function AdminDashboard() {
         if (e.code !== 'permission-denied') {
            console.error("Failed to fetch documents for chart", e);
         }
+      }
+
+      // 4. Fetch Feedback from Google Forms
+      try {
+         const formId = import.meta.env.VITE_ADMIN_FEEDBACK_FORM_ID;
+         if (formId) {
+            const resp = await getFormResponses(formId);
+            if (resp && resp.responses) {
+               setFeedbackResponses(resp.responses.sort((a: any, b: any) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime()));
+            }
+         }
+      } catch (e: any) {
+         console.warn("Failed to fetch feedback responses", e);
       }
 
       setLoading(false);
@@ -316,6 +331,10 @@ export default function AdminDashboard() {
 
       {/* Users Table */}
       <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl border border-[var(--color-border)] shadow-xl shadow-black/5 p-8">
+        <div className="flex items-center gap-2 mb-6 text-[var(--color-primary)]">
+          <Users className="w-5 h-5" />
+          <h2 className="text-lg font-bold text-theme">System Users & Allocation</h2>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -360,6 +379,44 @@ export default function AdminDashboard() {
         </div>
       </div>
       
+      {/* Beta Feedback Table */}
+      <div className="bg-[var(--color-surface)] backdrop-blur-xl rounded-3xl border border-[var(--color-border)] shadow-xl shadow-black/5 p-8">
+        <div className="flex items-center gap-2 mb-6 text-amber-500">
+          <FileText className="w-5 h-5" />
+          <h2 className="text-lg font-bold text-theme">Beta Feedback / Issues</h2>
+        </div>
+        <div className="space-y-4">
+           {feedbackResponses.length > 0 ? feedbackResponses.map((r, i) => {
+              // Extract text answers nicely
+              const answers: any[] = [];
+              for (const [qId, ans] of Object.entries(r.answers || {})) {
+                 const text = (ans as any)?.textAnswers?.answers?.[0]?.value;
+                 if (text) {
+                    answers.push({ qId, text });
+                 }
+              }
+              const d = new Date(r.lastSubmittedTime);
+              return (
+                 <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/10 text-sm">
+                    <div className="text-xs text-muted mb-2">{d.toLocaleString()} (ID: {r.responseId})</div>
+                    <div className="space-y-2">
+                       {answers.map((a, j) => (
+                          <div key={j} className="flex flex-col gap-1">
+                             <span className="font-semibold text-[var(--color-text)]">Q {a.qId}</span>
+                             <span className="text-muted">{a.text}</span>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+              );
+           }) : (
+              <div className="p-8 text-center text-muted max-w-sm mx-auto">
+                 No feedback loaded. Ensure <code className="bg-white/10 px-2 py-0.5 rounded text-xs">VITE_ADMIN_FEEDBACK_FORM_ID</code> is set in .env and the user has authorized Forms API.
+              </div>
+           )}
+        </div>
+      </div>
+
       <div className="text-center text-muted text-xs mt-8">
         Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-text)] underline decoration-muted transition-colors">Aniket Dhuri</a> • Version {version}
       </div>

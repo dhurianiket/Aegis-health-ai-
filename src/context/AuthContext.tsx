@@ -6,9 +6,13 @@ import {
   getRedirectResult,
   onAuthStateChanged,
   signOut,
+  GoogleAuthProvider,
 } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase/config";
 import { markUserActive } from "../services/usageService";
+
+let cachedAccessToken: string | null = null;
+export const getAccessToken = () => cachedAccessToken;
 
 interface AuthContextType {
   user: User | null;
@@ -50,6 +54,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         
         if (result?.user) {
           console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          if (credential?.accessToken) {
+            cachedAccessToken = credential.accessToken;
+          }
           // Wait for custom analytics / active user marking before unlocking UI
           await markUserActive(result.user.uid).catch(err => console.error("[Auth] Error marking active after redirect:", err));
           resolveAuth(result.user);
@@ -126,7 +134,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setTimeout(() => reject(new Error("auth/popup-timeout")), 20000)
       );
       
-      await Promise.race([popupPromise, timeoutPromise]);
+      const result: any = await Promise.race([popupPromise, timeoutPromise]);
+      if (result) {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        if (credential?.accessToken) {
+          cachedAccessToken = credential.accessToken;
+        }
+      }
       console.log("[Auth] Sign-in with popup successful.");
 
     } catch (popupError: any) {
@@ -166,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logOut = async () => {
     try {
       await signOut(auth);
+      cachedAccessToken = null;
     } catch (error) {
       console.error("Error signing out", error);
     }

@@ -62,6 +62,7 @@ export interface UserProfile {
   weight?: number; // kg
   bmi?: number;
   clinicalNotes?: string;
+  googleFormId?: string; // Links to a Google Forms Intake
   chronicConditions: string[];
   allergies: string[];
   medications?: Medication[];

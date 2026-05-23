@@ -63,6 +63,8 @@ const CycleTrackingWidget = lazy(() => import("./CycleTrackingWidget"));
  * )
  */
 import RemindersWidget from "./RemindersWidget";
+import FeedbackWidget from "./FeedbackWidget";
+import VisitPrepWidget from "./VisitPrepWidget";
 
 const aggregateLabs = (docs: MedicalDocument[]): any[] => {
   const labMap = new Map<string, any[]>();
@@ -307,12 +309,19 @@ export default function Dashboard({
       {!loading && !error && (keyLabs.length > 0 || healthScores.length > 0 || latestInsights.length > 0) && (
         <div className="flex flex-col lg:flex-none">
           <motion.div variants={tileVariants} className="order-first lg:order-none w-full mb-8 space-y-6">
-            {user && <RemindersWidget userId={user.uid} />}
-            {activeProfile?.reproductiveProfile?.cycleTrackingEnabled && activeProfile?.reproductiveProfile?.menstruates && (
-               <Suspense fallback={<div className="h-40 w-full animate-pulse bg-surface/50 rounded-3xl" />}>
-                 <CycleTrackingWidget userProfile={activeProfile} />
-               </Suspense>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-6">
+                 {user && <RemindersWidget userId={user.uid} />}
+                 {activeProfile?.reproductiveProfile?.cycleTrackingEnabled && activeProfile?.reproductiveProfile?.menstruates && (
+                    <Suspense fallback={<div className="h-40 w-full animate-pulse bg-surface/50 rounded-3xl" />}>
+                      <CycleTrackingWidget userProfile={activeProfile} />
+                    </Suspense>
+                 )}
+               </div>
+               <div>
+                  <VisitPrepWidget />
+               </div>
+            </div>
           </motion.div>
 
           <motion.div variants={tileVariants}>
@@ -564,8 +573,9 @@ export default function Dashboard({
           Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>
-    </div>
-    )}
+        </div>
+      )}
+      <FeedbackWidget />
     </motion.div>
   );
 }

@@ -3,21 +3,24 @@ import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
 import { getActiveMedications } from '../services/medicationService';
 import { calculateBMI } from '../utils/calculateBMI';
+import { getForm, getFormResponses } from '../services/googleFormsService';
 
 export function useClinicalContext() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   
   const [medications, setMedications] = useState<any[]>([]);
+  const [formResponsesText, setFormResponsesText] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    async function loadMeds() {
+    async function loadData() {
       if (!user) {
         if (isMounted) {
           setMedications([]);
+          setFormResponsesText("");
           setLoading(false);
         }
         return;
@@ -26,18 +29,52 @@ export function useClinicalContext() {
       try {
         setLoading(true);
         // Attempt to load from medication service
-        const activeMeds = await getActiveMedications(user.uid);
+        const activeMeds = await getActiveMedications(user.uid).catch(err => {
+          console.error("Failed to load active medications for clinical context", err);
+          return [];
+        });
         if (isMounted) setMedications(activeMeds);
+        
+        let formContext = "";
+        if (activeProfile?.googleFormId) {
+          try {
+            const formMeta = await getForm(activeProfile.googleFormId);
+            const responses = await getFormResponses(activeProfile.googleFormId);
+            
+            // Format the latest response
+            if (responses?.responses?.length > 0) {
+               // Get easiest latest
+               const latest = responses.responses.sort((a,b) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime())[0];
+               
+               let answersText = [];
+               for (const [qId, answerObj] of Object.entries(latest.answers)) {
+                   const item = formMeta.items.find(i => i.questionItem?.question?.questionId === qId);
+                   const qTitle = item?.title || "Unknown Question";
+                   const ansArr = (answerObj as any).textAnswers?.answers?.map((a:any) => a.value) || [];
+                   answersText.push(`${qTitle}: ${ansArr.join(", ")}`);
+               }
+               formContext = `\n[Google Forms Intake Data - ${formMeta.info.title}]\n${answersText.join("\n")}\n`;
+            }
+          } catch (e) {
+            console.warn("Failed to load Google Forms Intake data", e);
+          }
+        }
+        if (isMounted) {
+          setFormResponsesText(formContext);
+          if (formContext) {
+            console.log("[useClinicalContext] Fetched Google Forms Intake Data:", formContext);
+          }
+        }
+        
       } catch (err) {
-        console.error("Failed to load active medications for clinical context", err);
         if (isMounted) setError("Failed to load clinical context");
       } finally {
         if (isMounted) setLoading(false);
       }
     }
-    loadMeds();
+    loadData();
     return () => { isMounted = false; };
-  }, [user]);
+  }, [user, activeProfile?.googleFormId]);
 
   const bmi = useMemo(() => {
     if (activeProfile?.height && activeProfile?.weight) {
@@ -69,8 +106,13 @@ export function useClinicalContext() {
     } else {
       ctx += `Active medications: None recorded.\n`;
     }
+    
+    if (formResponsesText) {
+      ctx += formResponsesText;
+    }
+    
     return ctx.trim();
-  }, [activeProfile, medications, bmi]);
+  }, [activeProfile, medications, bmi, formResponsesText]);
 
   return {
     contextString,

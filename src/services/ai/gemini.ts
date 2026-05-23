@@ -395,11 +395,13 @@ export interface ExtractedReportResponse {
 
 export async function extractMedicalReports(
   filesData: { base64Data: string; mimeType: string }[],
+  clinicalContext?: string
 ): Promise<ExtractedReportResponse | null> {
     const prompt = `
     Extract the following information from this medical report (image or PDF).
     Extract the information into a single structured JSON format.
     
+    ${clinicalContext ? `The patient has provided the following clinical context that might help you identify their age, baseline, or symptoms while reading the report:\n${clinicalContext}\n` : ''}
     CRITICAL: 
     - Output ONLY valid JSON.
     - Be concise. 

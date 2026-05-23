@@ -34,4 +34,5 @@ export const db = initializeFirestore(app, {
 });
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('https://www.googleapis.com/auth/forms');
 export default app;

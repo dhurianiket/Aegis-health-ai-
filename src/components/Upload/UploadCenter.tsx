@@ -27,6 +27,7 @@ import {
 import NoteAnalyzer from "./NoteAnalyzer";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
+import { useClinicalContext } from "../../hooks/useClinicalContext";
 import { MedicationStatus, LabStatus } from "../../types/medical";
 import { useToast } from "../../context/ToastContext";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -121,6 +122,7 @@ export default function UploadCenter({
 }) {
   const { user, signIn } = useAuth();
   const { activeProfile } = useProfile();
+  const { contextString } = useClinicalContext();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<"files" | "notes">("files");
   const [fileQueue, setFileQueue] = useState<FileItem[]>([]);
@@ -302,7 +304,7 @@ export default function UploadCenter({
             fileData = await readFileAsSafeBase64(item.file);
 
             // Step 4: Call extractMedicalReports (which uses safeGeminiCall under the hood)
-            extraction = await extractMedicalReports([fileData]);
+            extraction = await extractMedicalReports([fileData], contextString);
 
             if (!extraction || Object.keys(extraction).length === 0) {
               throw new Error(

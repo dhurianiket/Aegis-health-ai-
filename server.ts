@@ -29,6 +29,34 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  app.post("/api/generate-visit-prep", async (req, res) => {
+    try {
+       const prompt = req.body.prompt;
+       if (!prompt) return res.status(400).json({ error: "No prompt provided" });
+       
+       const gApiKey = process.env.GEMINI_API_KEY;
+       if (!gApiKey) return res.status(500).json({ error: "Gemini API key is not configured on server" });
+
+       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gApiKey}`, {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+             contents: [{ role: "user", parts: [{ text: prompt }]}]
+         })
+       });
+
+       if (!response.ok) {
+           return res.status(response.status).json({ error: "Gemini generation failed" });
+       }
+       
+       const data = await response.json();
+       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+       res.json({ text });
+    } catch (e: any) {
+       res.status(500).json({ error: e.message || "Failed to generate report" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
