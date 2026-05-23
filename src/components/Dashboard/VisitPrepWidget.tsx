@@ -101,7 +101,7 @@ Format as a clean, highly structured Markdown document with:
        {!summary && !loading && (
           <button 
              onClick={generatePrep}
-             className="w-full bg-[var(--color-primary)] hover:opacity-90 text-white font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2"
+             className="w-full bg-[var(--color-primary)] hover:opacity-90 text-slate-900 font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2"
           >
              <FileDown className="w-4 h-4" />
              Generate Prep Document

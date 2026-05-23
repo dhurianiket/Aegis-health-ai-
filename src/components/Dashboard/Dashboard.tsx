@@ -349,7 +349,7 @@ export default function Dashboard({
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-light text-[var(--color-text)]">
                 {latestScore.overall}
-                <span className="text-sm opacity-40 ml-1">/100</span>
+                <span className="text-sm opacity-70 ml-1">/100</span>
               </span>
               <span className="text-emerald-400 text-xs font-bold flex items-center">
                 <TrendingUp className="w-3 h-3 mr-1" /> +4%

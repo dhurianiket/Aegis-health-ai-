@@ -464,6 +464,7 @@ function MainApp() {
                             </button>
                             <button
                               onClick={() => setIsChatOpen(true)}
+                              aria-label="Consult AI"
                               className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 rounded-[12px] text-xs font-semibold transition-colors"
                             >
                               <Sparkles className="w-4 h-4" /> 
