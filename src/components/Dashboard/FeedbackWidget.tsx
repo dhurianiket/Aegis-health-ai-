@@ -12,7 +12,8 @@ export default function FeedbackWidget() {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-4 rounded-full bg-[var(--color-primary)] text-white shadow-xl shadow-[var(--color-primary)]/20 hover:scale-105 transition-transform z-40 flex items-center justify-center"
+        aria-label="Open Feedback Form"
+        className="fixed bottom-6 right-6 p-4 rounded-full bg-[var(--color-primary)] text-slate-900 shadow-xl shadow-[var(--color-primary)]/20 hover:scale-105 transition-transform z-40 flex items-center justify-center"
       >
         <MessageSquare className="w-6 h-6" />
       </button>
@@ -27,7 +28,11 @@ export default function FeedbackWidget() {
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
               <h3 className="font-bold text-sm">Beta Feedback</h3>
-              <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
+              <button 
+                onClick={() => setIsOpen(false)} 
+                aria-label="Close Feedback Form"
+                className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+              >
                 <X className="w-4 h-4 text-slate-400" />
               </button>
             </div>

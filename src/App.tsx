@@ -80,6 +80,7 @@ const LabReportsSection = lazy(
   () => import("./components/Reports/LabReportsSection"),
 );
 const AdminDashboard = lazy(() => import("./components/Admin/AdminDashboard"));
+const FeedbackWidget = lazy(() => import("./components/Dashboard/FeedbackWidget"));
 
 // Loading Fallback
 const Fallback = () => (
@@ -716,6 +717,10 @@ function MainApp() {
               showTrigger={false}
             />
           </AIErrorBoundary>
+        </Suspense>
+        
+        <Suspense fallback={null}>
+          <FeedbackWidget />
         </Suspense>
       </main>
     </div>
