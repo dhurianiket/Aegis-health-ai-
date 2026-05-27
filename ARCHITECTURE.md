@@ -70,7 +70,17 @@ User-owned app data remains exclusively under `users/{userId}/...`
 - Aura AI must not silently persist reproductive health data without explicit user confirmation.
 
 ## 6. Core Services & Hooks
-- `useClinicalContext.ts`: Acts as the centralized patient-context source for Gemini AI prompts across Aura, Specialists, and SBAR.
+- `useClinicalContext.ts`: centralizes the clinical context generation logic mapping state and observations to structured prompt contexts.
 
 ## 7. Protected Layouts
 - **Specialist Lounge:** The mobile experience strictly uses a portal-based full-screen consultation shell (`createPortal`) to escape transformed/scrolling parent containers.
+
+## 8. Static Marketing Directory Map
+The landing site and marketing/article pages reside statically in the `/public/` root, designed for rapid loading, maximum SEO indexability, and clean decoupling from the React PWA client.
+- `/public/index.html` — Primary home gateway and feature matrix.
+- `/public/how-it-works.html` — Deep educational explanation of the biomarker mapping engine and 8-part FAQ.
+- `/public/about.html` — First-person startup founder history and business communication channels.
+- `/public/security.html` — DPDP Act compliance architecture, security boundaries, and data-erasure walk-through.
+- `/public/blog-hba1c.html` & `/public/blog-cbc.html` — Specialized blood sugar and hematology guides.
+- `/public/engineering-playbook.html` — Decentralized agent network automation walkthrough.
+- `/public/styles.css` — Standardized typography headings and responsive visual utilities.

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn how Aegis Health AI decodes complex laboratory medical reports. Explore our secure multi-agent platform, list of supported clinical tests, and answers to common queries.">
+    <meta name="author" content="Aniket Dhuri">
+    <title>How It Works | Aegis Health AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Upper Safety Alert -->
+    <div id="safety-banner" aria-live="polite">
+        <div class="container container-flex">
+            <span>🛡️ <strong>Aegis Safety Standard:</strong> This platform is an informational translation tool and does not provide clinical diagnoses.</span>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header id="main-header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text">AEGIS <span class="accent-text">HEALTH AI</span></span>
+            </a>
+            <nav id="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="how-it-works.html" class="nav-link active">How It Works</a>
+                <a href="about.html" class="nav-link">About Us</a>
+                <a href="security.html" class="nav-link">Security First</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle" aria-haspopup="true">Articles ▾</button>
+                    <div class="dropdown-menu">
+                        <a href="blog-hba1c.html">HbA1c Blood Sugar Guide</a>
+                        <a href="blog-cbc.html">CBC Blood Test Explainer</a>
+                        <a href="engineering-playbook.html">Engineering Playbook</a>
+                    </div>
+                </div>
+                <a href="/dashboard" class="btn btn-primary sm-hidden">Launch App</a>
+            </nav>
+            <button id="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+        <!-- Mobile Dropdown -->
+        <div id="mobile-nav" class="mobile-hidden">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="how-it-works.html" class="mobile-link active">How It Works</a>
+            <a href="about.html" class="mobile-link">About Us</a>
+            <a href="security.html" class="mobile-link">Security First</a>
+            <a href="blog-hba1c.html" class="mobile-link">HbA1c Blood Sugar Guide</a>
+            <a href="blog-cbc.html" class="mobile-link">CBC Blood Test Explainer</a>
+            <a href="engineering-playbook.html" class="mobile-link">Engineering Playbook</a>
+            <a href="/dashboard" class="btn btn-primary" style="margin-top: 20px; display: block; text-align: center;">Launch App</a>
+        </div>
+    </header>
+
+    <!-- Subpage Hero -->
+    <section class="subpage-hero text-center">
+        <div class="container max-w-xl">
+            <span class="badge-accent">Our Process</span>
+            <h1>How Aegis Health AI Works</h1>
+            <p class="hero-subheadline">
+                Simply upload your clinical lab report, get a clear and friendly explanation in plain language, and prepare for your next doctor visit with confidence.
+            </p>
+        </div>
+    </section>
+ 
+    <!-- Detailed 4-Step Walkthrough -->
+    <section class="section-padding">
+        <div class="container">
+            <h2 class="section-title text-center font-sans">Four Simple Steps to Clarity</h2>
+            <p class="section-subtitle text-center">We guide you through your reports with total clarity, safety, and respect for your privacy</p>
+            
+            <div class="detailed-steps border-layout">
+                <div class="detail-step-item">
+                    <div class="detail-step-num">Step 01</div>
+                    <div class="detail-step-content">
+                        <h3>Upload your report securely</h3>
+                        <p>Simply select or drag-and-drop your lab report PDF or image file into our platform. Your upload is fully protected under secure private encryption.</p>
+                    </div>
+                </div>
+                
+                <div class="detail-step-item">
+                    <div class="detail-step-num">Step 02</div>
+                    <div class="detail-step-content font-sans">
+                        <h3>Aegis reads the values</h3>
+                        <p>Our smart platform identifies standard lab indicators (like blood sugar patterns, red blood cells, or cholesterol metrics) and double-checks them against standard healthy ranges.</p>
+                    </div>
+                </div>
+ 
+                <div class="detail-step-item">
+                    <div class="detail-step-num">Step 03</div>
+                    <div class="detail-step-content">
+                        <h3>Get explanation in plain language</h3>
+                        <p>Our friendly ChatCoach breaks down what each abbreviation means, translating clinical jargon into simple, comforting, and easily understandable terms for your family.</p>
+                    </div>
+                </div>
+ 
+                <div class="detail-step-item">
+                    <div class="detail-step-num">Step 04</div>
+                    <div class="detail-step-content">
+                        <h3>Share a doctor-ready summary</h3>
+                        <p>Easily download a structured, professional summary of your key insights and trends. Take it directly to your doctor to have a much more meaningful and focused conversation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+ 
+    <!-- Supported Diagnostic Reports List -->
+    <section class="section-padding bg-surface">
+        <div class="container">
+            <h2 class="section-title text-center">Supported Report Types</h2>
+            <p class="section-subtitle text-center">We understand the standard primary care diagnostic tests ordered across India</p>
+            
+            <div class="supported-grid">
+                <div class="supported-card">
+                    <div class="supported-card-header">🩸 CBC (Complete Blood Count)</div>
+                    <p>Checks your active blood health, including your red blood cells, white blood cells, and platelets.</p>
+                </div>
+                
+                <div class="supported-card">
+                    <div class="supported-card-header">🧪 LFT (Liver Function Tests)</div>
+                    <p>Monitors how well your liver is filtering waste and maintaining chemical balances.</p>
+                </div>
+ 
+                <div class="supported-card">
+                    <div class="supported-card-header">💧 KFT (Kidney Function Tests)</div>
+                    <p>Measures how efficiently your kidneys are cleansing and balances essential electrolytes.</p>
+                </div>
+ 
+                <div class="supported-card">
+                    <div class="supported-card-header">🧬 Lipid Profile (Cholesterol)</div>
+                    <p>Analyzes your cholesterol levels, including healthy HDL and LDL trends, to review heart health.</p>
+                </div>
+ 
+                <div class="supported-card">
+                    <div class="supported-card-header">🦋 Thyroid Tests</div>
+                    <p>Checks your T3, T4, and TSH levels to ensure your body's energy regulation is balanced.</p>
+                </div>
+ 
+                <div class="supported-card">
+                    <div class="supported-card-header">🍬 HbA1c & Diabetes Panel</div>
+                    <p>Evaluates average blood sugar numbers over the last 90 days alongside fasting and post-meal sugar levels.</p>
+                </div>
+ 
+                <div class="supported-card">
+                    <div class="supported-card-header">☀️ Vitamin D & B12 Levels</div>
+                    <p>Tracks these vital essential nutrients, especially important for traditional Indian diets.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+ 
+    <!-- Absolute Medical Boundaries -->
+    <section class="section-padding text-center">
+        <div class="container max-w-md border-alert">
+            <span class="text-error font-mono">⚠️ SAFETY BOUNDARIES</span>
+            <h2>What Aegis Health AI Does Not Do</h2>
+            <p>We believe in absolute safety first. Aegis is built strictly for general health education, not medical treatment:</p>
+            <ul class="text-left boundary-list font-sans" style="margin-top: 24px;">
+                <li><strong>Aegis does not diagnose disease:</strong> We explain what your biomarker numbers mean, but we will never give a clinical diagnosis or try to name an illness.</li>
+                <li><strong>Aegis does not replace your doctor:</strong> We do not offer telemedicine or make decisions for you. Always let a real doctor make the final decisions about your health care.</li>
+                <li><strong>Aegis does not give treatment advice:</strong> You will never receive medicine prescriptions, chemical dosages, or direct treatment recommendations here.</li>
+                <li><strong>Aegis does not keep your files:</strong> All uploaded files and analysis records are securely stored or automatically permanently deleted within 24 hours.</li>
+            </ul>
+        </div>
+    </section>
+ 
+    <!-- Simple FAQ Section -->
+    <section id="faq" class="section-padding bg-surface">
+        <div class="container max-w-xl">
+            <h2 class="section-title text-center">Frequently Asked Questions</h2>
+            <p class="section-subtitle text-center">Plain answers to common questions about your reports, privacy, and safety</p>
+            
+            <div class="faq-accordion">
+                <div class="faq-item">
+                    <h3 class="faq-toggle">Is my data safe with Aegis?</h3>
+                    <p class="faq-content">Yes, completely. Aegis is built with a secure, user-locked privacy setup (using Firebase security). Your uploads are saved only in your isolated private folder, which is completely hidden from third parties. We never sell your health details, and you can delete your files instantly at any time.</p>
+                </div>
+ 
+                <div class="faq-item">
+                    <h3 class="faq-toggle">Does Aegis replace my doctor?</h3>
+                    <p class="faq-content">No. Aegis does not replace your family doctor or specialist. Our goal is to make you feel more confident and prepared for your doctor appointments by explaining technical terms before your visit. You should always trust your physician for clinical diagnosis and treatment plans.</p>
+                </div>
+ 
+                <div class="faq-item">
+                    <h3 class="faq-toggle">What reports can I upload?</h3>
+                    <p class="faq-content">Aegis supports standard clinical lab reports commonly ordered in India. This includes Complete Blood Count (CBC), Liver Function (LFT), Kidney Function (KFT), Lipid Profile, Thyroid, Vitamin D3, Vitamin B12, and HbA1c panels.</p>
+                </div>
+ 
+                <div class="faq-item">
+                    <h3 class="faq-toggle">Is Aegis free to use?</h3>
+                    <p class="faq-content">Yes. We keep Aegis accessible for Indian families to translate and understand standard report values without subscription walls, helping everyone build better health literacy at home.</p>
+                </div>
+ 
+                <div class="faq-item">
+                    <h3 class="faq-toggle">What is ChatCoach?</h3>
+                    <p class="faq-content">ChatCoach is our secure, friendly conversational tool. It lets you ask questions about your report in simple language (including Hinglish, Hindi, Marathi, or Gujarati) and explains complicated blood markers calmly without causing panic.</p>
+                </div>
+ 
+                <div class="faq-item">
+                    <h3 class="faq-toggle">How does trend tracking work?</h3>
+                    <p class="faq-content">If you upload reports chronologically over time, Aegis connects the data points to show you if your levels are improving, stable, or rising. Seeing your health trends visually plotted on a timeline helps you and your doctor understand if your dietary or lifestyle adjustments are working.</p>
+                </div>
+ 
+                <div class="faq-item">
+                    <h3 class="faq-toggle">What is an SBAR summary?</h3>
+                    <p class="faq-content">SBAR is a standardized, clean format (Situation, Background, Assessment, Recommendation) that doctors and clinics use to communicate with each other. Aegis generates this clean summary of your health reports so you can show it to your doctor, saving them time and making your consult more efficient.</p>
+                </div>
+ 
+                <div class="faq-item">
+                    <h3 class="faq-toggle">Is Aegis compliant with Indian data laws?</h3>
+                    <p class="faq-content">Yes. We are fully committed to protecting your privacy in line with India's Digital Personal Data Protection (DPDP) Act. You are in complete control of your data, and we support immediate, permanent account deletion cascades with a single click.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support CTA Area -->
+    <section class="action-strip text-center bg-accent-dark">
+        <div class="container max-w-xl">
+            <h2>Decrypt Your Diagnostics Privately</h2>
+            <p>Paste testing parameters or upload a lab file. Start understanding what your medical levels indicate immediately.</p>
+            <div class="cta-row">
+                <a href="/dashboard" class="btn btn-primary">Launch Sandbox Portal</a>
+                <a href="security.html" class="btn btn-outline-light">Verify Data Policies</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Area -->
+    <footer id="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-col footer-brand-col">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛡️</span>
+                    <span class="logo-text">AEGIS <span class="accent-text">HEALTH AI</span></span>
+                </a>
+                <p>An intelligent health translation companion built with empathy, engineering, and trust. Created to empower families across India with medical clarity.</p>
+                <p class="copyright-text">&copy; 2026 Aegis Health AI. All rights registered.</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Platform Navigation</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="how-it-works.html">How It Works</a></li>
+                    <li><a href="about.html">About Founder Story</a></li>
+                    <li><a href="security.html">Data Privacy & Security</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Health Articles</h4>
+                <ul class="footer-links">
+                    <li><a href="blog-hba1c.html">Understanding HbA1c Reports</a></li>
+                    <li><a href="blog-cbc.html">CBC Vital Blood Jargon Explainer</a></li>
+                    <li><a href="engineering-playbook.html">Autonomous AI Agent Playbook</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Contact Support</h4>
+                <p>Have questions about your data or platform features? Our communication desk is open.</p>
+                <p class="footer-highlight-text"><a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a></p>
+                <p class="location-tag">📍 Proudly designed & coded in Dombivli West, Maharashtra, India.</p>
+            </div>
+        </div>
+        
+        <div class="container footer-disclaimer-wrapper">
+            <p class="footer-global-disclaimer">
+                <strong>Safety Disclaimer:</strong> Aegis Health AI is entirely an online educational translator. We do not offer physical or online clinical operations, telemedicine consultations, electronic medical record hosting, or active emergency response systems. Do not delay professional medical consult, diagnosis, or treatment because of educational information parsed here.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Interactive Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const nav = document.getElementById('mobile-nav');
+            if (toggle && nav) {
+                toggle.addEventListener('click', function() {
+                    toggle.classList.toggle('active');
+                    nav.classList.toggle('mobile-hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

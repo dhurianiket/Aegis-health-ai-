@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Understand your medical reports in plain language. Aegis Health AI translates complex clinical lab results into family-friendly explanations and doctor-ready summaries for Indian families.">
+    <meta name="author" content="Aniket Dhuri">
+    <title>Aegis Health AI | Understand Your Medical Reports in Plain Language</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Upper Safety Alert -->
+    <div id="safety-banner" aria-live="polite">
+        <div class="container container-flex">
+            <span>🛡️ <strong>Aegis Safety Standard:</strong> This platform is an informational translation tool and does not provide clinical diagnoses.</span>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header id="main-header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text">AEGIS <span class="accent-text">HEALTH AI</span></span>
+            </a>
+            <nav id="nav-menu">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="how-it-works.html" class="nav-link">How It Works</a>
+                <a href="about.html" class="nav-link">About Us</a>
+                <a href="security.html" class="nav-link">Security First</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle" aria-haspopup="true">Articles ▾</button>
+                    <div class="dropdown-menu">
+                        <a href="blog-hba1c.html">HbA1c Blood Sugar Guide</a>
+                        <a href="blog-cbc.html">CBC Blood Test Explainer</a>
+                        <a href="engineering-playbook.html">Engineering Playbook</a>
+                    </div>
+                </div>
+                <a href="/dashboard" class="btn btn-primary sm-hidden">Launch App</a>
+            </nav>
+            <button id="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+        <!-- Mobile Dropdown -->
+        <div id="mobile-nav" class="mobile-hidden">
+            <a href="index.html" class="mobile-link active">Home</a>
+            <a href="how-it-works.html" class="mobile-link">How It Works</a>
+            <a href="about.html" class="mobile-link">About Us</a>
+            <a href="security.html" class="mobile-link">Security First</a>
+            <a href="blog-hba1c.html" class="mobile-link">HbA1c Blood Sugar Guide</a>
+            <a href="blog-cbc.html" class="mobile-link">CBC Blood Test Explainer</a>
+            <a href="engineering-playbook.html" class="mobile-link">Engineering Playbook</a>
+            <a href="/dashboard" class="btn btn-primary" style="margin-top: 20px; display: block; text-align: center;">Launch App</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section text-center">
+        <div class="container max-w-xl">
+            <span class="badge-accent">Designed for Indian Families</span>
+            <h1>Understand Your Medical Reports in Plain Language</h1>
+            <p class="hero-subheadline">
+                Transform complex clinical lab results, chemical markers, and dense jargon into clear, comforting explanations. Access medical clarity and prepare highly professional physician handoffs in seconds.
+            </p>
+            <div class="hero-cta-group">
+                <a href="/dashboard" class="btn btn-lg btn-primary">Try Aegis for Free</a>
+                <a href="how-it-works.html" class="btn btn-lg btn-outline">See Supported Tests</a>
+            </div>
+            <p class="disclaimer-mini">
+                <strong>Important Legal Disclaimer:</strong> Aegis Health AI provides automated translations of laboratory markers. It does NOT provide clinical diagnoses, medical treatments, or health prescriptions. Always consult a qualified healthcare professional regarding any clinical queries.
+            </p>
+        </div>
+    </section>
+
+    <!-- Visual 4-Step Flow -->
+    <section id="flow" class="flow-section bg-surface">
+        <div class="container text-center">
+            <h2 class="section-title">From Jargon to Clarity in Seconds</h2>
+            <p class="section-subtitle">Our secure multi-agent platform decodes your lab results through four distinct phases</p>
+            
+            <div class="flow-grid">
+                <div class="flow-step">
+                    <div class="flow-step-num">1</div>
+                    <h3>Secure Upload</h3>
+                    <p>Select any PDF or image of your CBC, Lipid Panel, Vitamin D, or HbA1c test reports. Everything is processed directly inside secure, encrypted database locks.</p>
+                </div>
+                
+                <div class="flow-step">
+                    <div class="flow-step-num">2</div>
+                    <h3>Multi-Agent Decoding</h3>
+                    <p>Aegis divides biological data among specialized AI agents running on optimized medical guidelines to identify key trends and out-of-bounds metrics.</p>
+                </div>
+                
+                <div class="flow-step">
+                    <div class="flow-step-num">3</div>
+                    <h3>Interactive Coach</h3>
+                    <p>Engage with our Streaming ChatCoach. Ask custom questions, clear doubts about complex chemistry, and understand what your biomarker levels represent in plain language.</p>
+                </div>
+                
+                <div class="flow-step">
+                    <div class="flow-step-num">4</div>
+                    <h3>SBAR Handoff Report</h3>
+                    <p>Synthesize a highly structured, doctor-ready SBAR summary. Print it out to maximize the value of your next clinical appointment with standard physician-friendly structures.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Bento Grid (6 Features) -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title">Built for Precision, Comfort, and Trust</h2>
+                <p class="section-subtitle">Explore the medical intelligence utilities built inside our flagship assistant application</p>
+            </div>
+            
+            <div class="features-grid">
+                <!-- ChatCoach Card -->
+                <div class="feature-card">
+                    <div class="card-icon">💬</div>
+                    <h3>Interactive ChatCoach</h3>
+                    <p>An abort-safe, streaming conversational guide built to explain clinical nomenclature. Ask whatever questions your family has and get safe, non-alarmist, context-aware answers.</p>
+                </div>
+
+                <!-- Trend Analysis Card -->
+                <div class="feature-card">
+                    <div class="card-icon">📈</div>
+                    <h3>Biomarker Trend Analysis</h3>
+                    <p>Track biological shifts across multiple reports longitudinally. Our engine performs strict deterministic mathematical calculations—never AI-invented values—to show how your levels shift.</p>
+                </div>
+
+                <!-- ReportVault Card -->
+                <div class="feature-card">
+                    <div class="card-icon">🗄️</div>
+                    <h3>ReportVault Store</h3>
+                    <p>Your medical archives are structured automatically. Retrieve previous test results and compare old panels against newest telemetry panels instantly inside your private portal.</p>
+                </div>
+
+                <!-- Doctor Export Card -->
+                <div class="feature-card">
+                    <div class="card-icon">📄</div>
+                    <h3>Doctor-Friendly Exports</h3>
+                    <p>Compile an elegant PDF handoff matching the global hospital-standard SBAR layout. Summarize your current levels, timeline events, and active symptoms to hand to your GP.</p>
+                </div>
+
+                <!-- Medication Log Card -->
+                <div class="feature-card">
+                    <div class="card-icon">💊</div>
+                    <h3>Smart Medication Tracker</h3>
+                    <p>Map your active prescriptions and screen drug-to-drug interactions. Armed with real-time checks connected directly to the National Library of Medicine API database.</p>
+                </div>
+
+                <!-- Privacy First Card -->
+                <div class="feature-card">
+                    <div class="card-icon">🔒</div>
+                    <h3>Privacy-First Architecture</h3>
+                    <p>Aegis operates in complete compliance with safe-data practices. All uploads exist under strict user-isolated storage locks, and metadata is purgable on-demand.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Credibility Section -->
+    <section id="founder" class="founder-section bg-surface">
+        <div class="container container-flex founder-container">
+            <div class="founder-image-container">
+                <div class="founder-avatar">AD</div>
+            </div>
+            <div class="founder-content">
+                <span class="founder-tag">A Note From Our Founder</span>
+                <h2>"Health Data belongs to Indian Families, Not the Systems That Output It."</h2>
+                <p>
+                    I founded Aegis Health AI because of a constant frustration: the lab reports we pay for are written for clinicians, not the anxious patients holding them. In Dombivli, Maharashtra, my family and neighbors would spend hours searching online for basic lipid or blood sugar explanations, only to face confusion or dread.
+                </p>
+                <p>
+                    Leveraging my technical background in electronics and telecommunication engineering, along with an absolute obsession with designing secure generative systems, I built Aegis as a solo developer. My mission is to give you a patient-centric shield—a clear, reliable translator that enables you to step into the clinic with agency, prepared with the perfect questions to make your doctor visits 10x more valuable.
+                </p>
+                <div class="founder-bio">
+                    <strong>Aniket Rajesh Dhuri</strong> <br>
+                    <span class="bio-subtitle">AI Systems Builder & Founder, Aegis Health AI</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support CTA Strip -->
+    <section id="action-strip" class="action-strip text-center bg-accent-dark">
+        <div class="container max-w-xl">
+            <h2>Ready to translate your first report?</h2>
+            <p>Paste a mock report or securely upload any lab document in our high-trust sandbox portal now. No registration required to explore.</p>
+            <div class="cta-row">
+                <a href="/dashboard" class="btn btn-primary">Open Sandbox Sandbox</a>
+                <a href="how-it-works.html" class="btn btn-outline-light">Read Walkthrough</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Area -->
+    <footer id="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-col footer-brand-col">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛡️</span>
+                    <span class="logo-text">AEGIS <span class="accent-text">HEALTH AI</span></span>
+                </a>
+                <p>An intelligent health translation companion built with empathy, engineering, and trust. Created to empower families across India with medical clarity.</p>
+                <p class="copyright-text">&copy; 2026 Aegis Health AI. All rights registered.</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Platform Navigation</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="how-it-works.html">How It Works</a></li>
+                    <li><a href="about.html">About Founder Story</a></li>
+                    <li><a href="security.html">Data Privacy & Security</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Health Articles</h4>
+                <ul class="footer-links">
+                    <li><a href="blog-hba1c.html">Understanding HbA1c Reports</a></li>
+                    <li><a href="blog-cbc.html">CBC Vital Blood Jargon Explainer</a></li>
+                    <li><a href="engineering-playbook.html">Autonomous AI Agent Playbook</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Contact Support</h4>
+                <p>Have questions about your data or platform features? Our communication desk is open.</p>
+                <p class="footer-highlight-text"><a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a></p>
+                <p class="location-tag">📍 Proudly designed & coded in Dombivli, West, Maharashtra, India.</p>
+            </div>
+        </div>
+        
+        <div class="container footer-disclaimer-wrapper">
+            <p class="footer-global-disclaimer">
+                <strong>Safety Disclaimer:</strong> Aegis Health AI is entirely an online educational translator. We do not offer physical or online clinical operations, telemedicine consultations, electronic medical record hosting, or active emergency response systems. Do not delay professional medical consult, diagnosis, or treatment because of educational information parsed here.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Interactive Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const nav = document.getElementById('mobile-nav');
+            if (toggle && nav) {
+                toggle.addEventListener('click', function() {
+                    toggle.classList.toggle('active');
+                    nav.classList.toggle('mobile-hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

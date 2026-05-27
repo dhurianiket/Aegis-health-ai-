@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore Aegis Health AI's security architecture. Read why our isolated storage, Indian DPDP Act compliance, and strict whitelists ensure your personal diagnostic data remains fully private.">
+    <meta name="author" content="Aniket Dhuri">
+    <title>Privacy & Security Policies | Aegis Health AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Upper Safety Alert Banner -->
+    <div id="safety-banner" aria-live="polite">
+        <div class="container container-flex">
+            <span>🛡️ <strong>Aegis Safety Standard:</strong> This platform is an informational translation tool and does not provide clinical diagnoses.</span>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header id="main-header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text">AEGIS <span class="accent-text">HEALTH AI</span></span>
+            </a>
+            <nav id="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="how-it-works.html" class="nav-link">How It Works</a>
+                <a href="about.html" class="nav-link">About Us</a>
+                <a href="security.html" class="nav-link active">Security First</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle" aria-haspopup="true">Articles ▾</button>
+                    <div class="dropdown-menu">
+                        <a href="blog-hba1c.html">HbA1c Blood Sugar Guide</a>
+                        <a href="blog-cbc.html">CBC Blood Test Explainer</a>
+                        <a href="engineering-playbook.html">Engineering Playbook</a>
+                    </div>
+                </div>
+                <a href="/dashboard" class="btn btn-primary sm-hidden">Launch App</a>
+            </nav>
+            <button id="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+        <!-- Mobile Dropdown -->
+        <div id="mobile-nav" class="mobile-hidden">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="how-it-works.html" class="mobile-link">How It Works</a>
+            <a href="about.html" class="mobile-link">About Us</a>
+            <a href="security.html" class="mobile-link active">Security First</a>
+            <a href="blog-hba1c.html" class="mobile-link">HbA1c Blood Sugar Guide</a>
+            <a href="blog-cbc.html" class="mobile-link">CBC Blood Test Explainer</a>
+            <a href="engineering-playbook.html" class="mobile-link">Engineering Playbook</a>
+            <a href="/dashboard" class="btn btn-primary" style="margin-top: 20px; display: block; text-align: center;">Launch App</a>
+        </div>
+    </header>
+
+    <!-- Subpage Hero -->
+    <section class="subpage-hero text-center">
+        <div class="container max-w-xl">
+            <span class="badge-accent">Data Protection</span>
+            <h1>Your Health Data. Fully Yours.</h1>
+            <p class="hero-subheadline">
+                Aegis is built from the ground up to keep your personal health information private, safe, and completely under your control.
+            </p>
+        </div>
+    </section>
+
+    <!-- Security Architecture Section -->
+    <section class="section-padding">
+        <div class="container">
+            <h2 class="section-title text-center">How We Keep Your Information Safe</h2>
+            <p class="section-subtitle text-center">Simple, robust protections built to give you and your family ultimate peace of mind</p>
+            
+            <div class="security-pillars grid-3">
+                <div class="pillar-card border-layout">
+                    <div class="pillar-icon">🔒</div>
+                    <h3>Private Folder for Every Family</h3>
+                    <p>Every lab report you upload and its parsed details are stored inside your own private, secure folder. No one else can see or access your family's personal files.</p>
+                </div>
+                
+                <div class="pillar-card border-layout">
+                    <div class="pillar-icon">🛡️</div>
+                    <h3>Shielded Connections</h3>
+                    <p>Aegis connects to our AI translation backend using safe, hidden servers. We never expose raw API keys or credentials in the browser, keeping all communication lines highly secure.</p>
+                </div>
+
+                <div class="pillar-card border-layout">
+                    <div class="pillar-icon">📋</div>
+                    <h3>We Only Read What is Needed</h3>
+                    <p>Our platform is made to look only for standard blood and biomarker values. It ignores other private texts on your documents, processing only the essential metrics needed to explain your report.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DPDP Act, India Compliance -->
+    <section class="section-padding bg-surface">
+        <div class="container container-flex compliance-wrapper">
+            <div class="compliance-content">
+                <span class="badge-accent">Regulatory Commitment</span>
+                <h2>Aligned with Indian Privacy Laws</h2>
+                <p>
+                    Aegis is built in full compliance with India's <strong>Digital Personal Data Protection (DPDP) Act, 2023</strong>. We make sure you have complete authority over your information through simple choices:
+                </p>
+                <ul class="compliance-rules font-sans">
+                    <li><strong>Active Opt-In Consent:</strong> We will never read or process any file until you read and click our clear opt-in consent box.</li>
+                    <li><strong>Only What's Necessary:</strong> We collect only the bare indicators required to build your personal dashboards and trace your history over time. We don't ask for unneeded personal data.</li>
+                    <li><strong>Your Right to Ask and Erase:</strong> You have the absolute right to see your histories, request your data logs, or delete everything within seconds.</li>
+                </ul>
+            </div>
+            <div class="compliance-graphics border-layout">
+                <h4 class="font-mono">🇮🇳 DPDP standard</h4>
+                <div class="comp-box">
+                    <strong>Active Consent</strong>
+                    <span class="accent-text text-xs">STATUS: OPT-IN</span>
+                </div>
+                <div class="comp-box">
+                    <strong>Instant Purging</strong>
+                    <span class="accent-text text-xs">STATUS: AVAILABLE</span>
+                </div>
+                <div class="comp-box">
+                    <strong>Minimization</strong>
+                    <span class="accent-text text-xs">STATUS: ENFORCED</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Custody: What We NEVER Do -->
+    <section class="section-padding text-center">
+        <div class="container max-w-md border-alert">
+            <span class="text-error font-mono">⚠️ OUR PLEDGE TO YOU</span>
+            <h2>What We NEVER Do</h2>
+            <p>To earn your trust and keep your family's confidence, we follow four absolute rules:</p>
+            <div class="never-grid text-left font-sans">
+                <div class="never-item">
+                    <h4>❌ We never sell or share your health data</h4>
+                    <p>We do not share, lease, trade, or sell your health metrics to insurance companies, advertising agencies, or pharmaceutical businesses.</p>
+                </div>
+                <div class="never-item">
+                    <h4>❌ We never display advertisement banners</h4>
+                    <p>No annoying pop-up ads, target campaigns, or marketing tracking scripts infect your dashboard or clean reading workspace.</p>
+                </div>
+                <div class="never-item">
+                    <h4>❌ We never use your data to train AI models</h4>
+                    <p>Your personal diagnostic values and uploaded report files are never used to train or improve external machine-learning models.</p>
+                </div>
+                <div class="never-item">
+                    <h4>❌ We never keep files longer than they are needed</h4>
+                    <p>We do not keep permanent records for inactive accounts. You can wipe your data instantly, and we auto-delete temporary files quickly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Account Deletion Instructions -->
+    <section class="section-padding bg-surface">
+        <div class="container max-w-xl text-center">
+            <h2>Delete Your Records Instantly</h2>
+            <p class="section-subtitle font-sans">
+                Your data is yours to keep, and yours to delete. We make it simple and direct to completely erase your footprint at any time.
+            </p>
+            <div class="erasure-walkthrough text-left font-sans border-layout" style="background: var(--color-bg); padding: 30px; border-radius: 12px; margin-top: 30px;">
+                <p style="margin-bottom: 16px;"><strong>Option 1: Self-Service Dashboard Deletion</strong></p>
+                <ol style="margin-left: 20px; line-height: 1.8; margin-bottom: 24px;">
+                    <li>Open your <strong>Settings dashboard</strong> tab inside the application.</li>
+                    <li>Scroll down to the <strong>Data Controls and Privacy</strong> section.</li>
+                    <li>Click the <strong>Delete My Profile and Data</strong> button.</li>
+                    <li>Confirm your selection. The database will instantly execute a full system purge, permanently wiping out your profile, uploaded documents, chat history, medication trackers, and timeline trends. This holds zero backups.</li>
+                </ol>
+                <p style="margin-bottom: 16px;"><strong>Option 2: Email Deletion Request</strong></p>
+                <ul style="margin-left: 20px; line-height: 1.8; list-style-type: disc;">
+                    <li>Send an email to: <a href="mailto:support@aegishealthai.co.in"><strong>support@aegishealthai.co.in</strong></a></li>
+                    <li>Use the subject line: <strong>Data Deletion Request</strong></li>
+                    <li>We will manually verify and process your permanent deletion request within <strong>72 hours</strong>.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailed Medical Disclaimer -->
+    <section class="section-padding">
+        <div class="container max-w-xl border-layout" style="padding: 40px; border-radius: 16px;">
+            <h3 class="font-mono text-center text-error" style="margin-top: 0;">📜 SAFETY DISCLAIMER</h3>
+            <p class="disclaimer-text font-sans text-xs" style="line-height: 1.8; color: var(--color-text-muted);">
+                Aegis Health AI is entirely an online educational translator. We do not offer physical or online clinical operations, telemedicine consultations, medical diagnoses, electronic health record hosting, or active emergency response systems. All visual graphs, biomarker reviews, and ChatCoach interactions represent purely general educational summaries. Do not delay professional medical consult, diagnosis, or treatment because of educational information parsed here. Aegis Health AI is informational only and does not replace standard patient-physician partnerships.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer Area -->
+    <footer id="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-col footer-brand-col">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🛡️</span>
+                    <span class="logo-text">AEGIS <span class="accent-text">HEALTH AI</span></span>
+                </a>
+                <p>An intelligent health translation companion built with empathy, engineering, and trust. Created to empower families across India with medical clarity.</p>
+                <p class="copyright-text">&copy; 2026 Aegis Health AI. All rights registered.</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Platform Navigation</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="how-it-works.html">How It Works</a></li>
+                    <li><a href="about.html">About Founder Story</a></li>
+                    <li><a href="security.html">Data Privacy & Security</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Health Articles</h4>
+                <ul class="footer-links">
+                    <li><a href="blog-hba1c.html">Understanding HbA1c Reports</a></li>
+                    <li><a href="blog-cbc.html">CBC Vital Blood Jargon Explainer</a></li>
+                    <li><a href="engineering-playbook.html">Autonomous AI Agent Playbook</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Contact Support</h4>
+                <p>Have questions about your data or platform features? Our communication desk is open.</p>
+                <p class="footer-highlight-text"><a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a></p>
+                <p class="location-tag">📍 Proudly designed & coded in Dombivli West, Maharashtra, India.</p>
+            </div>
+        </div>
+        
+        <div class="container footer-disclaimer-wrapper">
+            <p class="footer-global-disclaimer">
+                <strong>Safety Disclaimer:</strong> Aegis Health AI is entirely an online educational translator. We do not offer physical or online clinical operations, telemedicine consultations, electronic medical record hosting, or active emergency response systems. Do not delay professional medical consult, diagnosis, or treatment because of educational information parsed here.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Interactive Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const nav = document.getElementById('mobile-nav');
+            if (toggle && nav) {
+                toggle.addEventListener('click', function() {
+                    toggle.classList.toggle('active');
+                    nav.classList.toggle('mobile-hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
