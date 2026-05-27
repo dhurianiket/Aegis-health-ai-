@@ -1,5 +1,16 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
+## Latest Update — May 27, 2026 (Landing Page Visibility Fix)
+### Completed by: AI Studio Agent
+### Tasks Completed:
+- **Created "Explore Aegis Pages" Block**: Appended a dedicated visual quick directory right below the main homepage hero segment in `index.html` featuring high-contrast card navigation to all 6 fundamental sections.
+- **Implemented Responsive Explore Grid Styles**: Configured robust CSS rules inside `styles.css` enabling smooth translate transitions and custom hover borders. Ensured responsive stacking (dual-column sizing below `1024px`, and single-column full-width flow below `768px`) for zero visual clipping.
+- **Checked Zero Contrast or Opacity Hiding Rules**: Confirmed default display values are persistent, readable, and highly accessible on small and large touchscreens.
+
+### Current Status:
+- The entire list of guides, security pages, and walkthrough are prominently displayed right below the hero section on mobile and desktop without hiding behind menu-triggers.
+- Build compiles perfectly.
+
 ## Latest Update — May 27, 2026 (Internal Linking Update)
 ### Completed by: AI Studio Agent
 ### Tasks Completed:

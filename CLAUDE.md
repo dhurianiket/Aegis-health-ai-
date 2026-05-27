@@ -29,6 +29,18 @@ Aegis uses a strictly enforced hybrid Gemini strategy:
 
 ---
 
+## Session: May 27, 2026 (Landing Page Visibility Fix)
+### Work Done:
+- **Created "Explore Aegis Pages" Quick Directory**: Appended a highly prominent, full-width, centered card-grid under the Hero section of `index.html` featuring instant buttons/cards for How It Works, About Us, Security First, HbA1c Guide, CBC Guide, and the Engineering Playbook.
+- **Configured CSS Layout Styles**: Added `.explore-section`, `.explore-grid`, and `.explore-card` classes with translate lift offsets and custom highlight borders in `styles.css`.
+- **Ensured High Responsiveness**: Configured specific layout scaling overrides under media query sections in `styles.css`. This includes 2-column stacking for medium screens and stable vertical single-column blocks for responsive mobile viewing.
+
+### Decisions Made:
+- Standardized link labels, responsive breakpoints, and modern font choices (Inter coupled with Space Grotesk) to remain strictly synchronized with the Aegis visual look and feel.
+
+### Pending for Human Review:
+- Cross-check touchscreen hover state styles in iOS/Android WebViews.
+
 ## Session: May 27, 2026 (Internal Linking & Footer Harmonization)
 ### Work Done:
 - **Interconnected All Static Resources**: Enabled full visibility and fluid navigation of all public assets (`index.html`, `how-it-works.html`, `about.html`, `security.html`, `blog-hba1c.html`, `blog-cbc.html`, `engineering-playbook.html`) directly through the global header nav menus and footer listings.
