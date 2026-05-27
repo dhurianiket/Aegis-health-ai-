@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import LegalModal from './LegalModal';
 
@@ -14,6 +14,45 @@ const BENTO_LABS = [
   { id: 'hba1c', label: 'HbA1c', value: '5.8%', status: 'borderline', desc: 'Slightly elevated. Monitor dietary sugar.', trend: 'up', icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
   { id: 'vitd', label: 'Vitamin D', value: '18 ng/mL', status: 'abnormal', desc: 'Deficient level. Supplementation recommended.', trend: 'down', icon: AlertCircle, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
   { id: 'crp', label: 'CRP', value: '3.5 mg/L', status: 'borderline', desc: 'Slight systemic inflammation detected.', trend: 'up', icon: AlertCircle, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+];
+
+const EXPLORE_PAGES = [
+  {
+    title: "How It Works",
+    desc: "Discover how Aegis safely translates raw blood, biochemistry, and scan reports into helpful clinical models step-by-step.",
+    href: "/how-it-works.html",
+    icon: Brain
+  },
+  {
+    title: "About Us",
+    desc: "Learn about our vision, our roots in Dombivli, Maharashtra, and our personal commitment to clinical transparency for Indian families.",
+    href: "/about.html",
+    icon: Heart
+  },
+  {
+    title: "Security First",
+    desc: "Understand our multi-tiered security, DPDP Act 2023 alignment, absolute privacy, and enterprise-grade data isolation protocols.",
+    href: "/security.html",
+    icon: ShieldCheck
+  },
+  {
+    title: "HbA1c Blood Sugar Guide",
+    desc: "Demystify your HbA1c lab values, find out how long-term blood glucose counts work, and learn how to manage home health trends.",
+    href: "/blog-hba1c.html",
+    icon: Droplets
+  },
+  {
+    title: "CBC Blood Test Explainer",
+    desc: "Read our comprehensive Complete Blood Count guide and learn what platelets, red cells, and white cells indicate in plain words.",
+    href: "/blog-cbc.html",
+    icon: Stethoscope
+  },
+  {
+    title: "Engineering Playbook",
+    desc: "Deep dive into our engineering logic, detailing how Aegis structures autonomous multi-specialty agent systems at scale.",
+    href: "/engineering-playbook.html",
+    icon: Zap
+  }
 ];
 
 const CHAOS_TEXT = [
@@ -44,6 +83,7 @@ export default function LandingPage() {
   const { user, loading, signIn, isSigningIn } = useAuth();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [legalModalOpen, setLegalModalOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
 
@@ -123,6 +163,25 @@ export default function LandingPage() {
                 AEGIS
               </span>
             </div>
+
+            {/* Desktop Center Navigation Links */}
+            <div className="hidden lg:flex items-center gap-6">
+              <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
+              <Link to="/about.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">About Us</Link>
+              <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
+              
+              <div className="relative group py-2">
+                <button className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none">
+                  Articles <span className="text-[10px]">▾</span>
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-[#0F2A4A] border border-white/10 rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <Link to="/blog-hba1c.html" className="block px-4 py-2 text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">HbA1c Blood Sugar Guide</Link>
+                  <Link to="/blog-cbc.html" className="block px-4 py-2 text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">CBC Blood Test Explainer</Link>
+                  <Link to="/engineering-playbook.html" className="block px-4 py-2 text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">Engineering Playbook</Link>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center gap-2 md:gap-4">
               <button
                 onClick={handleSignIn}
@@ -139,8 +198,53 @@ export default function LandingPage() {
               >
                 {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "TRY FREE"}
               </button>
+
+              {/* Mobile Menu Toggle Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle Menu"
+                className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors focus:outline-none"
+              >
+                {mobileMenuOpen ? (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
+
+          {/* Mobile Sliding Navigation Drawer */}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="lg:hidden w-full bg-[#0A192F] border-b border-white/10 z-40 overflow-hidden shadow-2xl relative"
+              >
+                <div className="px-6 py-6 flex flex-col gap-4">
+                  <Link to="/how-it-works.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">How It Works</Link>
+                  <Link to="/about.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">About Us</Link>
+                  <Link to="/security.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">Security First</Link>
+                  
+                  <div className="py-2">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block mb-2">Articles & Playbooks</span>
+                    <div className="pl-4 flex flex-col gap-3">
+                      <Link to="/blog-hba1c.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">HbA1c Blood Sugar Guide</Link>
+                      <Link to="/blog-cbc.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">CBC Blood Test Explainer</Link>
+                      <Link to="/engineering-playbook.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">Engineering Playbook</Link>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </nav>
 
         {/* 1. HERO SECTION */}
@@ -261,6 +365,57 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+
+        {/* EXPLORE AEGIS PAGES DIRECTORY */}
+        <section id="explore" className="w-full relative z-20 bg-[#0A192F] border-t border-b border-white/5 py-20 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16 max-w-2xl mx-auto">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-4">
+                <Sparkles className="w-3.5 h-3.5" /> Resource Center
+              </span>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
+                Explore Aegis Pages
+              </h2>
+              <p className="text-lg text-slate-400 font-light leading-relaxed">
+                Deep dive into blood reading guides, platform workflows, and autonomous system engineering.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {EXPLORE_PAGES.map((page, index) => {
+                const Icon = page.icon;
+                return (
+                  <Link
+                    key={index}
+                    to={page.href}
+                    className="rounded-3xl p-8 border border-white/10 bg-white/5 backdrop-blur-sm relative overflow-hidden flex flex-col group hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.01]"
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/5 text-slate-400 group-hover:bg-emerald-500/10 group-hover:text-emerald-400 transition-colors duration-300">
+                        LEARN MORE →
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white tracking-wide mb-2 group-hover:text-emerald-400 transition-colors">
+                        {page.title}
+                      </h3>
+                      <p className="text-sm text-slate-400 leading-relaxed font-light">
+                        {page.desc}
+                      </p>
+                    </div>
+                    
+                    {/* Decorative glow */}
+                    <div className="absolute -bottom-10 -right-10 w-24 h-24 rounded-full blur-[40px] opacity-10 bg-emerald-500 pointer-events-none group-hover:opacity-20 transition-opacity duration-300" />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
 
         <div ref={stickyRef} className="relative w-full h-[250vh]">
           <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-clip transform-gpu will-change-transform">
@@ -541,7 +696,7 @@ export default function LandingPage() {
           
           {/* Footer */}
           <footer className="mt-32 pb-12 border-t border-white/5 pt-16 bg-[#0A192F]">
-            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12">
               <div className="text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
                   <ShieldCheck className="w-6 h-6 text-emerald-400" strokeWidth={2} />
@@ -552,6 +707,42 @@ export default function LandingPage() {
                 <p className="text-sm text-slate-400 font-light leading-relaxed max-w-xs mx-auto md:mx-0">
                   Premium health intelligence for everyone. Powered by enterprise-grade AI infrastructure.
                 </p>
+              </div>
+
+              <div className="text-center md:text-left">
+                <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Explore Aegis</h4>
+                <ul className="space-y-3">
+                  <li>
+                    <Link to="/how-it-works.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+                      How It Works
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/about.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/security.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+                      Security First
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/blog-hba1c.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+                      HbA1c Sugar Guide
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/blog-cbc.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+                      CBC Blood Explainer
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/engineering-playbook.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+                      Engineering Playbook
+                    </Link>
+                  </li>
+                </ul>
               </div>
 
               <div className="text-center md:text-left">

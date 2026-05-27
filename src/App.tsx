@@ -766,6 +766,13 @@ const PublicLandingPageRoute = () => {
 const PrivacyPolicy = lazy(() => import("./components/Legal/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/Legal/TermsOfService"));
 
+const HowItWorks = lazy(() => import("./components/InfoPages/HowItWorks"));
+const AboutUs = lazy(() => import("./components/InfoPages/AboutUs"));
+const SecurityFirst = lazy(() => import("./components/InfoPages/SecurityFirst"));
+const BlogHbA1c = lazy(() => import("./components/InfoPages/BlogHbA1c"));
+const BlogCBC = lazy(() => import("./components/InfoPages/BlogCBC"));
+const EngineeringPlaybook = lazy(() => import("./components/InfoPages/EngineeringPlaybook"));
+
 const GlobalFallback = () => (
   <div className="flex h-screen items-center justify-center bg-[var(--color-bg)] text-[var(--color-text-muted)]">
     <Loader2 className="w-8 h-8 animate-spin" />
@@ -779,6 +786,20 @@ export default function App() {
         <Route path="/" element={<PublicLandingPageRoute />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
+        
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/how-it-works.html" element={<HowItWorks />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/about.html" element={<AboutUs />} />
+        <Route path="/security" element={<SecurityFirst />} />
+        <Route path="/security.html" element={<SecurityFirst />} />
+        <Route path="/blog-hba1c" element={<BlogHbA1c />} />
+        <Route path="/blog-hba1c.html" element={<BlogHbA1c />} />
+        <Route path="/blog-cbc" element={<BlogCBC />} />
+        <Route path="/blog-cbc.html" element={<BlogCBC />} />
+        <Route path="/engineering-playbook" element={<EngineeringPlaybook />} />
+        <Route path="/engineering-playbook.html" element={<EngineeringPlaybook />} />
+
         <Route path="/dashboard" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
         <Route path="*" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
       </Routes>

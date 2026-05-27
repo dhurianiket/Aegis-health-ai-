@@ -3,7 +3,6 @@ import { Stethoscope, Loader2, FileDown, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { getForm, getFormResponses } from '../../services/googleFormsService';
-import { getMedications } from '../../services/medicationService';
 
 // Fallback to fetch latest lab from dashboard state or firestore
 // For simplicity, we assume we fetch the context from useClinicalContext or similar.
