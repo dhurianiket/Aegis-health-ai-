@@ -1,5 +1,32 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
+## Latest Update — May 27, 2026 (Internal Linking Update)
+### Completed by: AI Studio Agent
+### Tasks Completed:
+- **Interlinked All Static Public Pages**: Synchronized header menus and footer links consistently across all public assets (`index.html`, `how-it-works.html`, `about.html`, `security.html`, `blog-hba1c.html`, `blog-cbc.html`, `engineering-playbook.html`).
+- **Introduced Resources Section on Homepage**: Created the elegant "Learn More & Explore Aegis Resources" section on `index.html` referencing key clinical sugar parameters, complete blood counts, and AI playbook links.
+- **Harmonized Geographical Footer Locations**: Standardized location lines across all public footers to "Dombivli West, Maharashtra, India" ensuring consistent local trust-building.
+
+### Current Status:
+- All index configurations, guides, articles, and playbook are now easily browsable from both header menus and footer areas.
+- Build compiles perfectly with no regressions.
+
+### Issues/Items for Human Review:
+- Confirm formatting of internal link connections across modern smartphone viewports.
+
+## Latest Update — May 27, 2026 (Homepage Revision)
+### Completed by: AI Studio Agent
+### Tasks Completed:
+- **Overhauled `/public/index.html`**: Fully rewrote the landing page content. Simplified the landing copy into clear standard sentences, updated the 4-step walkthrough into high-level descriptive segments, simplified the 6 features grid descriptions, and transformed Aniket's founder statement into an incredibly authentic, personal story.
+- **Harmonized safety reminders**: Softened terminology across the hero disclaimers, standardized support coordinates, and refined geographical tags to "Dombivli West, Maharashtra, India" for absolute consistency.
+
+### Current Status:
+- The complete set of public-facing files is now fully revised, thoroughly polished, clear of unnecessary tech jargon, and safe for Indian homes.
+- The web app builds correctly with full compilation integrity.
+
+### Issues/Items for Human Review:
+- Cross-check that external links and anchors function correctly on target browsers.
+
 ## Latest Update — May 27, 2026 (Security Page Revision)
 ### Completed by: AI Studio Agent
 ### Tasks Completed:

@@ -29,6 +29,31 @@ Aegis uses a strictly enforced hybrid Gemini strategy:
 
 ---
 
+## Session: May 27, 2026 (Internal Linking & Footer Harmonization)
+### Work Done:
+- **Interconnected All Static Resources**: Enabled full visibility and fluid navigation of all public assets (`index.html`, `how-it-works.html`, `about.html`, `security.html`, `blog-hba1c.html`, `blog-cbc.html`, `engineering-playbook.html`) directly through the global header nav menus and footer listings.
+- **Added Homepage Resource Center**: Appended a supportive three-card block to the main homepage (`index.html`) featuring direct links to clinical sugar indices (HbA1c), Complete Blood Counts (CBC), and autonomous system playbooks.
+- **Aligned Footer Geolocation Declarations**: Synchronized footer coordinates to "Dombivli West, Maharashtra, India" across all pages.
+
+### Decisions Made:
+- Standardized link labels and styling classes cleanly without modifying custom class sheets or disrupting active React bindings.
+
+### Pending for Human Review:
+- Verify redirect behaviors in non-standard browsers.
+
+## Session: May 27, 2026 (Homepage & Layout Harmonization)
+### Work Done:
+- **Overhauled landing page (`/public/index.html`)**: Transformed complex promotional copy, specialized AI descriptions ("multi-agent decoding", "biomarker mapping"), and technical logs into a calm, plain-language description tailored specifically for Indian families.
+- **Improved founder's statement**: Rewrote the bio story of Aniket Rajesh Dhuri to emphasize a supportive, empathetic, and authentic neighborhood perspective from Dombivli, Maharashtra.
+- **Harmonized branding footers & disclaimers**: Synchronized safety disclaimers, support email addresses, and geographical coordinates across the homepage.
+
+### Decisions Made:
+- Kept design layout markers identical (e.g., `#hero`, `#flow`, `#features`, `#founder`, `#action-strip`) to preserve existing classes, typography settings, and margins.
+- Replaced technical features descriptions with supportive daily wellness outcomes (e.g. "Interactive ChatCoach" explaining key indicators calmly).
+
+### Pending for Human Review:
+- Verification of mobile layout flow of the simplified steps and features grid under responsive scaling.
+
 ## Session: May 27, 2026 (Security Page & Policy Overhaul)
 ### Work Done:
 - **Overhauled security page (`/public/security.html`)**: Rewrote technical, high-stress words (like "zero-trust baseline", "defensive whitelists") into everyday, soothing protective concepts (isolated private folders for each family, proxy shielded connections, selective biomarker extraction).
