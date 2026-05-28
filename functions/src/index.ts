@@ -1,4 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { initializeApp } from "firebase-admin/app";
+
+initializeApp();
 
 // Export secondary autonomous orchestrator integrations
 export { handleGitHubWebhook } from "./julesWebhook";
