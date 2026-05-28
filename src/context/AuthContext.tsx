@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error("Failed to set persistence:", err);
       }
 
-      let redirectFinished = false;
+      let foundUserViaRedirect = false;
 
       try {
         console.log("[Auth] Checking redirect result on load...");
@@ -69,13 +69,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             cachedAccessToken = credential.accessToken;
           }
           if (isMounted) {
+             foundUserViaRedirect = true;
              resolveAuth(result.user);
           }
         }
       } catch (error: any) {
         console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
-      } finally {
-        redirectFinished = true;
       }
 
       // Step 2: Register onAuthStateChanged as the primary source of truth
@@ -86,15 +85,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             if (u) {
               markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
             }
-            // Only resolve auth via observer once redirect flow is complete
-            if (redirectFinished) {
+            // If redirect already found the user, we don't strictly need to resolve again,
+            // but it's safe to update. If it didn't, resolve it here.
+            if (!foundUserViaRedirect || u === null) {
                resolveAuth(u ?? null);
             }
           }
         },
         (error) => {
           console.error("Auth observer error:", error);
-          if (isMounted && redirectFinished) {
+          if (isMounted && !foundUserViaRedirect) {
             resolveAuth(null);
           }
         }
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       console.log("Current Origin:", window.location.origin);
 
-      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isMobileDevice = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
       const preferRedirect = (window !== window.parent) || isMobileDevice; // Use redirect if in iframe or on mobile
 
       if (preferRedirect) {
