@@ -7,6 +7,8 @@ import {
   onAuthStateChanged,
   signOut,
   GoogleAuthProvider,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase/config";
 import { markUserActive } from "../services/usageService";
@@ -48,32 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const initializeAuth = async () => {
       try {
-        // Step 1: Wait for getRedirectResult so we don't render protected pages before the OAuth token is resolved by Firebase internals
-        console.log("[Auth] Checking redirect result on load...");
-        const result = await getRedirectResult(auth);
-        
-        if (result?.user) {
-          console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          if (credential?.accessToken) {
-            cachedAccessToken = credential.accessToken;
-          }
-          // Wait for custom analytics / active user marking before unlocking UI
-          await markUserActive(result.user.uid).catch(err => console.error("[Auth] Error marking active after redirect:", err));
-          resolveAuth(result.user);
-        }
-      } catch (error: any) {
-        console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
-        const errorCode = error?.code;
-        if (errorCode === "auth/invalid-continue-uri") {
-           console.error("Firebase auth/invalid-continue-uri detected.", {
-             origin: window.location.origin,
-             authDomain: (auth as any).config?.authDomain
-           });
-        }
+        await setPersistence(auth, browserLocalPersistence);
+      } catch (err) {
+        console.error("Failed to set persistence:", err);
       }
 
-      // Step 2: Register onAuthStateChanged as the final source of truth for subsequent sessions
+      // Step 1: Register onAuthStateChanged as the primary source of truth for all sessions immediately
       onAuthStateChanged(
         auth,
         (u) => {
@@ -91,6 +73,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         }
       );
+
+      try {
+        // Step 2: Handle popup fallback / redirect sign-ins
+        console.log("[Auth] Checking redirect result on load...");
+        const result = await getRedirectResult(auth);
+        
+        if (result?.user) {
+          console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          if (credential?.accessToken) {
+            cachedAccessToken = credential.accessToken;
+          }
+        }
+      } catch (error: any) {
+        console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
+        const errorCode = error?.code;
+        if (errorCode === "auth/invalid-continue-uri") {
+           console.error("Firebase auth/invalid-continue-uri detected.", {
+             origin: window.location.origin,
+             authDomain: (auth as any).config?.authDomain
+           });
+        }
+      }
     };
 
     initializeAuth();
