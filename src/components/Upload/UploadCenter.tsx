@@ -210,28 +210,23 @@ export default function UploadCenter({
 
         if (result.lab_values && result.lab_values.length > 0) {
           let savedCount = 0;
-          const labPromises = [];
           for (let i = 0; i < result.lab_values.length; i++) {
             if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
               const lab = result.lab_values[i];
-              labPromises.push(
-                saveLabResult(userId, {
-                  docId: docId || "unknown",
-                  date: lab.date || result.date || new Date().toISOString(),
-                  markerName: lab.marker || "Unknown",
-                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                  unit: lab.unit || "",
-                  referenceRange: lab.reference_range || "",
-                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                  profileId: activeProfile?.id,
-                }).then(() => {
-                  console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
-                })
-              );
+              await saveLabResult(userId, {
+                docId: docId || "unknown",
+                date: lab.date || result.date || new Date().toISOString(),
+                markerName: lab.marker || "Unknown",
+                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                unit: lab.unit || "",
+                referenceRange: lab.reference_range || "",
+                status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                profileId: activeProfile?.id,
+              });
+              console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
               savedCount++;
             }
           }
-          await Promise.all(labPromises);
           totalSavedLabs += savedCount;
           console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
         }
@@ -365,24 +360,20 @@ export default function UploadCenter({
              trackStorageUsage(user.uid, item.file.size).catch(e => console.error(e));
           } catch(e) {}
 
-          const syncPromises = [];
-
           if (result.lab_values && result.lab_values.length > 0) {
             for (let i = 0; i < result.lab_values.length; i++) {
               const lab = result.lab_values[i];
-              syncPromises.push(
-                saveLabResult(user.uid, {
-                  id: `${stableId}_lab_${i}`,
-                  docId: stableId,
-                  date: lab.date,
-                  markerName: lab.marker || "Unknown",
-                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                  unit: lab.unit || "",
-                  referenceRange: lab.reference_range || "",
-                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                  profileId: activeProfile?.id,
-                })
-              );
+              await saveLabResult(user.uid, {
+                id: `${stableId}_lab_${i}`,
+                docId: stableId,
+                date: lab.date,
+                markerName: lab.marker || "Unknown",
+                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                unit: lab.unit || "",
+                referenceRange: lab.reference_range || "",
+                status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                profileId: activeProfile?.id,
+              });
             }
           }
 
@@ -390,22 +381,16 @@ export default function UploadCenter({
             for (let i = 0; i < result.medications.length; i++) {
               const med = result.medications[i];
               const medName = typeof med === 'string' ? med : (med.name || "Unknown");
-              syncPromises.push(
-                saveMedication(user.uid, {
-                  id: `${stableId}_med_${i}`,
-                  name: medName,
-                  dosage: typeof med === 'object' ? (med.dose || med.dosage || "") : "",
-                  frequency: typeof med === 'object' ? (med.frequency || "") : "",
-                  status: MedicationStatus.ACTIVE,
-                  startDate: result.date || new Date().toISOString().split("T")[0],
-                  profileId: activeProfile?.id,
-                })
-              );
+              await saveMedication(user.uid, {
+                id: `${stableId}_med_${i}`,
+                name: medName,
+                dosage: typeof med === 'object' ? (med.dose || med.dosage || "") : "",
+                frequency: typeof med === 'object' ? (med.frequency || "") : "",
+                status: MedicationStatus.ACTIVE,
+                startDate: result.date || new Date().toISOString().split("T")[0],
+                profileId: activeProfile?.id,
+              });
             }
-          }
-
-          if (syncPromises.length > 0) {
-            await Promise.all(syncPromises);
           }
           
           setProcessingStep(3);
@@ -542,7 +527,7 @@ export default function UploadCenter({
                   <span className="text-xs">Reports are encrypted, processed securely, and kept strictly private.</span>
                 </div>
                 <button 
-                  onClick={() => showToast('Sample report feature coming soon.', 'info')}
+                  onClick={() => console.log('Sample report feature coming soon.')}
                   className="px-6 py-2 bg-surface hover:bg-black/5 dark:hover:bg-white/5 border border-border text-xs rounded-full font-semibold transition-all inline-flex items-center gap-2"
                 >
                   🔎 Try with a Sample Report

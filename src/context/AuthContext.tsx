@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeFn: (() => void) | null = null;
 
     // A safely wrapped function for resolving the auth state to prevent early termination
     const resolveAuth = (u: User | null) => {
@@ -55,27 +56,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error("Failed to set persistence:", err);
       }
 
-      // Step 1: Register onAuthStateChanged as the primary source of truth for all sessions immediately
-      onAuthStateChanged(
-        auth,
-        (u) => {
-          if (isMounted) {
-            if (u) {
-              markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
-            }
-            resolveAuth(u ?? null);
-          }
-        },
-        (error) => {
-          console.error("Auth observer error:", error);
-          if (isMounted) {
-            resolveAuth(null);
-          }
-        }
-      );
+      let redirectFinished = false;
 
       try {
-        // Step 2: Handle popup fallback / redirect sign-ins
         console.log("[Auth] Checking redirect result on load...");
         const result = await getRedirectResult(auth);
         
@@ -85,23 +68,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (credential?.accessToken) {
             cachedAccessToken = credential.accessToken;
           }
+          if (isMounted) {
+             resolveAuth(result.user);
+          }
         }
       } catch (error: any) {
         console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
-        const errorCode = error?.code;
-        if (errorCode === "auth/invalid-continue-uri") {
-           console.error("Firebase auth/invalid-continue-uri detected.", {
-             origin: window.location.origin,
-             authDomain: (auth as any).config?.authDomain
-           });
-        }
+      } finally {
+        redirectFinished = true;
       }
+
+      // Step 2: Register onAuthStateChanged as the primary source of truth
+      unsubscribeFn = onAuthStateChanged(
+        auth,
+        (u) => {
+          if (isMounted) {
+            if (u) {
+              markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
+            }
+            // Only resolve auth via observer once redirect flow is complete
+            if (redirectFinished) {
+               resolveAuth(u ?? null);
+            }
+          }
+        },
+        (error) => {
+          console.error("Auth observer error:", error);
+          if (isMounted && redirectFinished) {
+            resolveAuth(null);
+          }
+        }
+      );
     };
 
     initializeAuth();
 
     return () => {
       isMounted = false;
+      if (unsubscribeFn) {
+        unsubscribeFn();
+      }
     };
   }, []);
 

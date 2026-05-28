@@ -112,18 +112,13 @@ export async function saveMedication(userId: string, med: Omit<Medication, "id" 
      // we can just delete old interactions and add new, but simplest is to just overwrite if they exist, or just add new.
      // To strictly overwrite, we fetch old ones and delete them, or use a specific doc id.
      const oldInteractionsSnap = await getDocs(collection(db, 'users', userId, 'drugInteractions'));
-     const { writeBatch, doc } = await import('firebase/firestore');
+     const { deleteDoc } = await import('firebase/firestore');
+     await Promise.all(oldInteractionsSnap.docs.map(d => deleteDoc(d.ref)));
      
-     const batch = writeBatch(db);
-     oldInteractionsSnap.docs.forEach(d => batch.delete(d.ref));
-
-     newInteractions.forEach(interaction => {
+     await Promise.all(newInteractions.map(interaction => {
        const { id, ...data } = interaction;
-       const newDocRef = doc(collection(db, 'users', userId, 'drugInteractions'));
-       batch.set(newDocRef, data);
-     });
-
-     await batch.commit();
+       return addDoc(collection(db, 'users', userId, 'drugInteractions'), data);
+     }));
   }
   
   return baseDoc.id;
