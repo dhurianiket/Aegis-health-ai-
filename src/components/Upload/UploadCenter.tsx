@@ -542,7 +542,7 @@ export default function UploadCenter({
                   <span className="text-xs">Reports are encrypted, processed securely, and kept strictly private.</span>
                 </div>
                 <button 
-                  onClick={() => console.log('Sample report feature coming soon.')}
+                  onClick={() => showToast('Sample report feature coming soon.', 'info')}
                   className="px-6 py-2 bg-surface hover:bg-black/5 dark:hover:bg-white/5 border border-border text-xs rounded-full font-semibold transition-all inline-flex items-center gap-2"
                 >
                   🔎 Try with a Sample Report
