@@ -84,3 +84,10 @@ The landing site and marketing/article pages reside statically in the `/public/`
 - `/public/blog-hba1c.html` & `/public/blog-cbc.html` — Specialized blood sugar and hematology guides.
 - `/public/engineering-playbook.html` — Decentralized agent network automation walkthrough.
 - `/public/styles.css` — Standardized typography headings and responsive visual utilities.
+
+## 9. Google Jules Autonomous Cloud VM Integration
+To achieve zero-human content creation and automated bug resolution, Aegis integrates custom **Google Jules** sandboxed environments.
+- **GitHub Triggers:** Labeled issue webhooks (`jules-fix`, `jules-feature`) invoke Firebase Cloud Functions to instantiate Google Jules VM sessions under isolated branch checkouts (`jules/branch-issue-*`).
+- **Plan Verification Pre-Flight:** Refuses compilation execution loops until an internal **Gemini Pro Plan Auditor** verifies the session steps. This ensures strict adherence to structural boundaries, CORS wrappers, and secret variables whitelists.
+- **Failover / Retries:** Incorporates exponential backoff retry profiles. If a Jules session encounters terminal regression blocks, a callback gracefully triggers the **Hermes Manager Failover Protocol** to release active orchestrator queue locks and log diagnostic reports under isolated developer pathways: `users/developer_agent_jules/julesSessions/{sessionId}`.
+- **Downstream Sync Script:** CLI staging pull runs (`jules remote pull --session`) execute automatic static typing (`npm run lint`), local unit testing frameworks (`npm run test` with Vitest), and optional browser assertions (`npx playwright test`) before moving code into main paths.

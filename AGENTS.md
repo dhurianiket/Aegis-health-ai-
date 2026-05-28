@@ -67,3 +67,40 @@ All environment variables configured for Aegis Health AI:
 - `VITE_FIREBASE_API_KEY`: Firebase connection bindings.
 - `GEMINI_API_KEY`: Server-side model key.
 - `VITE_RECAPTCHA_SITE_KEY`: Frontend Anti-bot tracker config.
+
+---
+
+## 3. Google Jules Autonomous Cloud VM Protocol
+This section governs the sandbox setup, dependency installation, and local compilation/testing pipelines for the **Google Jules** automated coding VM.
+
+### A. Dependency Trees & Auto-Installation Order
+- **Rule:** Before running test commands or static analyses inside the Cloud VM, dependencies must be fully installed across all project boundaries.
+- **Node.js (Main Workspace):** Build from lockfile using `npm ci` or fallback to `npm install` directly in the project root.
+- **Node.js (Serverless Backend / Functions):** Transition context into the `/functions` directory and execute `npm install` before launching compiler tasks.
+- **Execution Workflow Sequence:**
+  ```bash
+  # 1. Install root dependencies (React, Vite, Recharts, testing library)
+  npm ci || npm install
+  
+  # 2. Install and bundle Serverless Functions dependencies
+  cd functions && (npm ci || npm install) && cd ..
+  ```
+
+### B. Compilation Verification & Lint Testing Suite
+- **Rule:** Never attempt a direct branch push or create a pull request if the test pipeline displays any failure codes.
+- **Lint Check Execution:** Run `npm run lint` (`tsc --noEmit`) to verify there are no typings mismatches.
+- **Function Testing Execution:** Run the test suite using Vitest via `npm run test` (`vitest run`) to verify all mathematical and logic functions are stable.
+- **Clean Execution Sequence:**
+  ```bash
+  # Verify root TypeScript compilations
+  npm run lint
+  
+  # Run structural vitest matches
+  npm run test
+  ```
+
+### C. Isolated Cloud Sandbox Guardrails
+- **Environment Isolation:** Jules must never inject actual administrative secrets into `.env` directories inside the Cloud VM. Mock values reflecting non-sensitive settings (e.g. `VITE_FIREBASE_API_KEY=mock-key`) should be leveraged during local test suites.
+- **Local SQLite / Mock DB Binding:** If testing requires active Firestore responses, Jules must bind its connections to the local Firebase Emulator Suite or stub out read-writes utilizing mock transaction responses in standard test folders.
+- **Rulebook Obedience:** All architectural invariants listed in Sections 1.A through 1.M must be strictly validated inside the codebase modifications prior to publishing changes.
+

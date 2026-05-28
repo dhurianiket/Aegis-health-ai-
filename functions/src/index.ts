@@ -1,5 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 
+// Export secondary autonomous orchestrator integrations
+export { handleGitHubWebhook } from "./julesWebhook";
+export { PaperclipJulesCoordinator } from "./paperclipJulesCoordinator";
+
 export const verifyRecaptchaToken = async (token: string, secretKey: string | undefined): Promise<boolean> => {
   if (!secretKey) {
     console.error("Missing RECAPTCHA_SECRET_KEY in environment variables.");
