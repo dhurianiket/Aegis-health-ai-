@@ -23,5 +23,7 @@ Always read `ARCHITECTURE.md` and `CURRENT_STATE.md` FIRST to understand the lat
 - **Component Height Enforcements:** Recharts MUST have strict `h-[300px]` pixel boundary envelopes injected strictly to prevent flex-box visual collapses during rendering.
 
 ## 4. Coding & Maintenance
+- **Gemini API Resilience Interceptor:** All AI feature interactions must go through the pre-initialized wrapper in `geminiClient.ts` which handles model normalization (e.g., mapping deprecated preview models to stable long-term models) and implements a 503 high-demand retry transparent fallback to stable fallback models. Do not bypass this wrapper by calling the GoogleGenAI SDK directly with unhandled endpoints.
+- **Google Forms Sandbox Cookie Mitigation:** When loading/fetching forms, gracefully catch sandbox/iframe cookie blocking exceptions (`expected pattern`, `atob` failures) and suggest breakout actions (like navigating natively in a separate tab) so authentication state flows correctly.
 - **Firebase Backend Updates:** Any server-side webhook, schedule, or orchestrator script MUST go inside the `/functions/src/` folder and adhere to standard Firebase Functions v2 TypeScript syntax.
 - **Agent Self-Documentation:** When concluding a major structural change, update `CURRENT_STATE.md` to keep future AI sessions synchronized with your accomplishments.

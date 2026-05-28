@@ -11,7 +11,7 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - **Backend / Triggers:** Firebase Cloud Functions (Node.js) located in `/functions/src/`.
 - **Auth:** Firebase Google Sign-In (Authentication).
 - **Anti-Bot:** reCAPTCHA v3 (`VITE_RECAPTCHA_SITE_KEY`).
-- **AI:** Google Gemini API (@google/genai).
+- **AI:** Google Gemini API (@google/genai) with automated request interception in `geminiClient.ts`. Maps older preview model identifiers to stable, long-term options (`gemini-3.5-flash` and `gemini-3.1-pro-preview`) and retries using `gemini-3.5-flash` to handle 503 high-demand errors.
 
 ## Core Conventions & Rules
 1. **Repository Awareness:** ALWAYS read `ARCHITECTURE.md`, `CURRENT_STATE.md`, and `AGENTS.md` before making sweeping changes. 

@@ -8,6 +8,7 @@ This document serves as the single source of truth for the technical architectur
 - **Infrastructure Core:** Firebase Authentication, Cloud Firestore, Firebase Hosting.
 - **AI Analytics Engine:** Google Gemini API.
   - *Routing:* **Gemini Flash** is utilized exclusively for high-speed data extraction and structured telemetry parsing. **Gemini Pro** handles conversational depth and virtual multi-specialty polyclinic threads.
+  - *Resilience Layer:* Real-time interceptors normalization automatically parses and maps older/deprecated preview models to stable long-term endpoints (`gemini-3.5-flash` and `gemini-3.1-pro-preview`). A defensive retry mechanism captures remote `503 Service Unavailable / High Demand` API errors and transparently redirects processing to stable fallback pools, guaranteeing zero conversational downtime.
 - **Medical Intelligence Hub:** U.S. National Library of Medicine (NLM) RxNorm Datasets.
 
 ## 2. Security & API Management
