@@ -56,28 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error("Failed to set persistence:", err);
       }
 
-      let foundUserViaRedirect = false;
-
-      try {
-        console.log("[Auth] Checking redirect result on load...");
-        const result = await getRedirectResult(auth);
-        
-        if (result?.user) {
-          console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          if (credential?.accessToken) {
-            cachedAccessToken = credential.accessToken;
-          }
-          if (isMounted) {
-             foundUserViaRedirect = true;
-             resolveAuth(result.user);
-          }
-        }
-      } catch (error: any) {
-        console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
-      }
-
-      // Step 2: Register onAuthStateChanged as the primary source of truth
+      // Step 1: Register onAuthStateChanged as the primary source of truth IMMEDIATELY
       unsubscribeFn = onAuthStateChanged(
         auth,
         (u) => {
@@ -85,20 +64,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             if (u) {
               markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
             }
-            // If redirect already found the user, we don't strictly need to resolve again,
-            // but it's safe to update. If it didn't, resolve it here.
-            if (!foundUserViaRedirect || u === null) {
-               resolveAuth(u ?? null);
-            }
+            resolveAuth(u ?? null);
           }
         },
         (error) => {
           console.error("Auth observer error:", error);
-          if (isMounted && !foundUserViaRedirect) {
+          if (isMounted) {
             resolveAuth(null);
           }
         }
       );
+
+      // Step 2: Extract redirect credential if available, but do not block on it
+      try {
+        console.log("[Auth] Checking redirect result on load...");
+        // Add a timeout race so it doesn't hang indefinitely if AppCheck keeps failing
+        const redirectPromise = getRedirectResult(auth);
+        const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject(new Error("redirect-timeout")), 5000));
+        const result = await Promise.race([redirectPromise, timeoutPromise]);
+        
+        if (result?.user) {
+          console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          if (credential?.accessToken) {
+            cachedAccessToken = credential.accessToken;
+          }
+        }
+      } catch (error: any) {
+        if (error.message !== "redirect-timeout") {
+            console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
+        } else {
+            console.warn("[Auth] getRedirectResult timed out, continuing with normal auth state.");
+        }
+      }
     };
 
     initializeAuth();
@@ -127,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       console.log("Current Origin:", window.location.origin);
 
-      const isMobileDevice = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
+      const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
       const preferRedirect = (window !== window.parent) || isMobileDevice; // Use redirect if in iframe or on mobile
 
       if (preferRedirect) {
