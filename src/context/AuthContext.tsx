@@ -127,10 +127,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       console.log("Current Origin:", window.location.origin);
 
-      const preferRedirect = (window !== window.parent); // Only prefer redirect if embedded in an iframe
+      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const preferRedirect = (window !== window.parent) || isMobileDevice; // Use redirect if in iframe or on mobile
 
       if (preferRedirect) {
-        console.log("[Auth] Embedded detected. Attempting signInWithRedirect...");
+        console.log("[Auth] Embedded/Mobile detected. Attempting signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
         console.log("[Auth] signInWithRedirect initiated.");
         // Redirect navigates away from the page, no need to resolve state here

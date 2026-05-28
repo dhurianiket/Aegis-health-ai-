@@ -21,12 +21,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 let appCheck = null;
+// Temporarily isolated App Check due to throttling and 500 errors breaking auth flow
+/*
 if (typeof window !== "undefined" && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
   appCheck = initializeAppCheck(app, {
     provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
     isTokenAutoRefreshEnabled: true
   });
 }
+*/
 
 export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
