@@ -210,23 +210,28 @@ export default function UploadCenter({
 
         if (result.lab_values && result.lab_values.length > 0) {
           let savedCount = 0;
+          const labPromises = [];
           for (let i = 0; i < result.lab_values.length; i++) {
             if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
               const lab = result.lab_values[i];
-              await saveLabResult(userId, {
-                docId: docId || "unknown",
-                date: lab.date || result.date || new Date().toISOString(),
-                markerName: lab.marker || "Unknown",
-                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                unit: lab.unit || "",
-                referenceRange: lab.reference_range || "",
-                status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                profileId: activeProfile?.id,
-              });
-              console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
+              labPromises.push(
+                saveLabResult(userId, {
+                  docId: docId || "unknown",
+                  date: lab.date || result.date || new Date().toISOString(),
+                  markerName: lab.marker || "Unknown",
+                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                  unit: lab.unit || "",
+                  referenceRange: lab.reference_range || "",
+                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                  profileId: activeProfile?.id,
+                }).then(() => {
+                  console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
+                })
+              );
               savedCount++;
             }
           }
+          await Promise.all(labPromises);
           totalSavedLabs += savedCount;
           console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
         }
@@ -360,20 +365,24 @@ export default function UploadCenter({
              trackStorageUsage(user.uid, item.file.size).catch(e => console.error(e));
           } catch(e) {}
 
+          const syncPromises = [];
+
           if (result.lab_values && result.lab_values.length > 0) {
             for (let i = 0; i < result.lab_values.length; i++) {
               const lab = result.lab_values[i];
-              await saveLabResult(user.uid, {
-                id: `${stableId}_lab_${i}`,
-                docId: stableId,
-                date: lab.date,
-                markerName: lab.marker || "Unknown",
-                value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
-                unit: lab.unit || "",
-                referenceRange: lab.reference_range || "",
-                status: (lab.status as LabStatus) || LabStatus.NORMAL,
-                profileId: activeProfile?.id,
-              });
+              syncPromises.push(
+                saveLabResult(user.uid, {
+                  id: `${stableId}_lab_${i}`,
+                  docId: stableId,
+                  date: lab.date,
+                  markerName: lab.marker || "Unknown",
+                  value: isNaN(parseFloat(lab.value)) ? 0 : parseFloat(lab.value),
+                  unit: lab.unit || "",
+                  referenceRange: lab.reference_range || "",
+                  status: (lab.status as LabStatus) || LabStatus.NORMAL,
+                  profileId: activeProfile?.id,
+                })
+              );
             }
           }
 
@@ -381,16 +390,22 @@ export default function UploadCenter({
             for (let i = 0; i < result.medications.length; i++) {
               const med = result.medications[i];
               const medName = typeof med === 'string' ? med : (med.name || "Unknown");
-              await saveMedication(user.uid, {
-                id: `${stableId}_med_${i}`,
-                name: medName,
-                dosage: typeof med === 'object' ? (med.dose || med.dosage || "") : "",
-                frequency: typeof med === 'object' ? (med.frequency || "") : "",
-                status: MedicationStatus.ACTIVE,
-                startDate: result.date || new Date().toISOString().split("T")[0],
-                profileId: activeProfile?.id,
-              });
+              syncPromises.push(
+                saveMedication(user.uid, {
+                  id: `${stableId}_med_${i}`,
+                  name: medName,
+                  dosage: typeof med === 'object' ? (med.dose || med.dosage || "") : "",
+                  frequency: typeof med === 'object' ? (med.frequency || "") : "",
+                  status: MedicationStatus.ACTIVE,
+                  startDate: result.date || new Date().toISOString().split("T")[0],
+                  profileId: activeProfile?.id,
+                })
+              );
             }
+          }
+
+          if (syncPromises.length > 0) {
+            await Promise.all(syncPromises);
           }
           
           setProcessingStep(3);
