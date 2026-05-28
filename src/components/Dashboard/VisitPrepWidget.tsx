@@ -15,7 +15,8 @@ export default function VisitPrepWidget() {
   const [summary, setSummary] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const formId = import.meta.env.VITE_VISIT_PREP_FORM_ID;
+  const rawFormId = import.meta.env.VITE_VISIT_PREP_FORM_ID;
+  const formId = rawFormId ? rawFormId.replace(/['"]/g, "").trim() : "";
 
   const generatePrep = async () => {
     setLoading(true);
@@ -33,17 +34,25 @@ export default function VisitPrepWidget() {
                // Get earliest latest
                const latest = responses.responses.sort((a,b) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime())[0];
                let answersText = [];
-               for (const [qId, answerObj] of Object.entries(latest.answers)) {
-                   const item = formMeta.items.find(i => i.questionItem?.question?.questionId === qId);
-                   const qTitle = item?.title || "Unknown Question";
-                   const ansArr = (answerObj as any).textAnswers?.answers?.map((a:any) => a.value) || [];
-                   answersText.push(`${qTitle}: ${ansArr.join(", ")}`);
+               if (latest && latest.answers) {
+                  for (const [qId, answerObj] of Object.entries(latest.answers)) {
+                      const item = formMeta.items?.find((i: any) => i.questionItem?.question?.questionId === qId);
+                      const qTitle = item?.title || "Unknown Question";
+                      const ansArr = (answerObj as any).textAnswers?.answers?.map((a:any) => a.value) || [];
+                      answersText.push(`${qTitle}: ${ansArr.join(", ")}`);
+                  }
+                  prepContext = answersText.join("\n");
+               } else {
+                  prepContext = "No answers found in the latest form submission.";
                }
-               prepContext = answersText.join("\n");
             }
-         } catch (e) {
+         } catch (e: any) {
             console.warn("Could not fetch visit prep form.", e);
-            prepContext = "Could not load prep form data. Ensure Google account is linked and you have filled the form.";
+            let prepError = e?.message || "";
+            if (prepError.includes("expected pattern") || prepError.includes("Failed to execute") || prepError.includes("token")) {
+               throw new Error("Third-party cookie restrictions or oauth state mismatch in this iframe is blocking Google Forms lookup. Please open the app in a new tab using the top-right button!");
+            }
+            prepContext = `Could not load prep form data: ${prepError || "Ensure Google account is linked and you have filled the form."}`;
          }
       } else {
          prepContext = "Visit Prep form ID not configured (VITE_VISIT_PREP_FORM_ID).";
@@ -81,7 +90,11 @@ Format as a clean, highly structured Markdown document with:
       setSummary(data.text || "Generated Document empty.");
 
     } catch (e: any) {
-      setError(e.message || "Failed to generate Visit Prep summary.");
+      let msg = e.message || "Failed to generate Visit Prep summary.";
+      if (msg.includes("expected pattern") || msg.includes("Failed to execute") || msg.toLowerCase().includes("atob")) {
+         msg = "Third-party cookie restrictions or oauth state mismatch in this iframe is blocking Google Forms lookup. Please open the app in a new tab using the top-right button to allow proper authentication!";
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

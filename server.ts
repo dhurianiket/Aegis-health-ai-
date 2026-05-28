@@ -37,7 +37,9 @@ async function startServer() {
        const gApiKey = process.env.GEMINI_API_KEY;
        if (!gApiKey) return res.status(500).json({ error: "Gemini API key is not configured on server" });
 
-       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gApiKey}`, {
+       // Using the highly stable, reliable and supported gemini-3.5-flash model
+       let targetModel = "gemini-3.5-flash";
+       let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${gApiKey}`, {
          method: "POST",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({
@@ -46,13 +48,16 @@ async function startServer() {
        });
 
        if (!response.ok) {
-           return res.status(response.status).json({ error: "Gemini generation failed" });
+           const errBody = await response.text();
+           console.error("[Server Gemini API Error]:", errBody);
+           return res.status(response.status).json({ error: `Gemini generation failed: ${response.statusText}`, details: errBody });
        }
        
        const data = await response.json();
        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
        res.json({ text });
     } catch (e: any) {
+       console.error("[Server Internal Error]:", e);
        res.status(500).json({ error: e.message || "Failed to generate report" });
     }
   });
