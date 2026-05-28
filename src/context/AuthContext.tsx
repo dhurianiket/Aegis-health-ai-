@@ -89,6 +89,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (credential?.accessToken) {
             cachedAccessToken = credential.accessToken;
           }
+          if (isMounted) {
+             resolveAuth(result.user);
+          }
         }
       } catch (error: any) {
         if (error.message !== "redirect-timeout") {
