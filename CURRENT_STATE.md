@@ -18,7 +18,7 @@
 
 ### Recent Deployments & Changes
 - **Google Jules Autonomous Integration:** Webhook triggers and Cloud Functions deployed inside `/functions/` to enable autonomous VM staging.
-- **Mobile Login & App Check Fix:** Refactored `AuthContext.tsx` to mount `onAuthStateChanged` asynchronously alongside `getRedirectResult`, bypassing endless App Check 500 error hangs and explicitly triggering strictly `signInWithRedirect` for mobile sizes (`window.innerWidth <= 768`) and iPad signatures.
+- **Mobile Login & App Check Fix:** Refactored `AuthContext.tsx` and `App.tsx` navigation guards, added detailed diagnostic logging inside redirect results and page resolution filters, bypassed endless App Check 500 errors by safety isolation, and explicitly routed non-popup devices strictly through dynamic same-origin `signInWithRedirect` flows.
 - **React 310 Loop Fix:** Suppressed render loop race conditions by strict state dependency management.
 - **Landing Page Revisions:** Cleaned up marketing copy to speak plainly and support Indian patient-demographics.
 - **Dependency Cleanups:** Aligned all module resolutions to ensure Firebase Admin, Firebase Functions, and Vite dependencies coexist perfectly.

@@ -737,29 +737,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const isLoading = authLoading || splashTimeout;
+  console.log("[ProtectedRoute] Render state:", { authLoading, splashTimeout, isLoading, hasUser: !!user });
 
   if (isLoading) {
     return <SplashScreen />;
   }
 
   if (!user) {
+    console.warn("[ProtectedRoute] No user found and splash timeout completed! Redirecting back to /");
     return <Navigate to="/" replace />;
   }
 
+  console.log("[ProtectedRoute] Authentication resolved and user exists! Rendering child components...");
   return <>{children}</>;
 };
 
 const PublicLandingPageRoute = () => {
   const { user, loading: authLoading } = useAuth();
+  console.log("[PublicLandingPageRoute] Render state:", { authLoading, hasUser: !!user });
 
   if (authLoading) {
     return <SplashScreen />;
   }
 
   if (user) {
+    console.log("[PublicLandingPageRoute] User found! Redirecting to /dashboard via <Navigate />");
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log("[PublicLandingPageRoute] No user found. Rendering LandingPage...");
   return <LandingPage />;
 };
 

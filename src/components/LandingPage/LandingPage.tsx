@@ -88,7 +88,9 @@ export default function LandingPage() {
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
 
   useEffect(() => {
+    console.log("[LandingPage] Auth State Checked:", { loading, hasUser: !!user });
     if (!loading && user) {
+      console.log("[LandingPage] Condition met! Navigating manually to /dashboard...");
       navigate('/dashboard', { replace: true });
     }
   }, [user, loading, navigate]);

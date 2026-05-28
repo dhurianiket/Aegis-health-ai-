@@ -43,9 +43,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // A safely wrapped function for resolving the auth state to prevent early termination
     const resolveAuth = (u: User | null) => {
        if (isMounted) {
+         console.log("[Auth] resolveAuth called with user:", u ? u.uid : "null", "current state user:", user ? user.uid : "null");
          setUser(u);
          setLoading(false);
          setAuthResolved(true);
+       } else {
+         console.warn("[Auth] resolveAuth called but component is NOT mounted!");
        }
     };
 
@@ -61,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         auth,
         (u) => {
           if (isMounted) {
+            console.log("[Auth] onAuthStateChanged fired with user:", u ? u.uid : "null");
             if (u) {
               markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
             }
