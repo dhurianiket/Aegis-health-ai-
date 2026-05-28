@@ -95,17 +95,25 @@ export default function Medications({
       const { checkInteractions } = await import("../../services/medicationService");
       if (rxcuis.length >= 2) {
         const newInteractions = await checkInteractions(rxcuis);
-        const { getDocs, collection, deleteDoc, addDoc } = await import('firebase/firestore');
+        const { getDocs, collection, writeBatch, doc } = await import('firebase/firestore');
         const oldInteractionsSnap = await getDocs(collection(db, 'users', user.uid, 'drugInteractions'));
-        await Promise.all(oldInteractionsSnap.docs.map(d => deleteDoc(d.ref)));
-        await Promise.all(newInteractions.map(interaction => {
+
+        const batch = writeBatch(db);
+        oldInteractionsSnap.docs.forEach(d => batch.delete(d.ref));
+
+        newInteractions.forEach(interaction => {
           const { id, ...data } = interaction;
-          return addDoc(collection(db, 'users', user.uid, 'drugInteractions'), data);
-        }));
+          const newDocRef = doc(collection(db, 'users', user.uid, 'drugInteractions'));
+          batch.set(newDocRef, data);
+        });
+        await batch.commit();
       } else {
-        const { getDocs, collection, deleteDoc } = await import('firebase/firestore');
+        const { getDocs, collection, writeBatch } = await import('firebase/firestore');
         const oldInteractionsSnap = await getDocs(collection(db, 'users', user.uid, 'drugInteractions'));
-        await Promise.all(oldInteractionsSnap.docs.map(d => deleteDoc(d.ref)));
+
+        const batch = writeBatch(db);
+        oldInteractionsSnap.docs.forEach(d => batch.delete(d.ref));
+        await batch.commit();
       }
 
       await logAuditEvent(user.uid, "REMOVE_MEDICATION", med.genericName);
