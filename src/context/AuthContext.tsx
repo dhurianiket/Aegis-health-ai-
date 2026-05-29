@@ -14,6 +14,11 @@ import { auth, googleProvider } from "../lib/firebase/config";
 import { markUserActive } from "../services/usageService";
 
 let cachedAccessToken: string | null = null;
+try {
+  cachedAccessToken = localStorage.getItem("google_access_token");
+} catch (e) {
+  console.warn("[Auth] Failed to load cachedAccessToken from localStorage:", e);
+}
 export const getAccessToken = () => cachedAccessToken;
 
 interface AuthContextType {
@@ -92,6 +97,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const credential = GoogleAuthProvider.credentialFromResult(result);
           if (credential?.accessToken) {
             cachedAccessToken = credential.accessToken;
+            try {
+              localStorage.setItem("google_access_token", credential.accessToken);
+            } catch (e) {
+              console.warn("[Auth] Failed to persist google_access_token to localStorage:", e);
+            }
           }
           if (isMounted) {
              resolveAuth(result.user);
@@ -156,6 +166,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const credential = GoogleAuthProvider.credentialFromResult(result);
         if (credential?.accessToken) {
           cachedAccessToken = credential.accessToken;
+          try {
+            localStorage.setItem("google_access_token", credential.accessToken);
+          } catch (e) {
+            console.warn("[Auth] Failed to persist google_access_token to localStorage:", e);
+          }
         }
       }
       console.log("[Auth] Sign-in with popup successful.");
@@ -198,6 +213,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await signOut(auth);
       cachedAccessToken = null;
+      try {
+        localStorage.removeItem("google_access_token");
+      } catch (e) {}
     } catch (error) {
       console.error("Error signing out", error);
     }

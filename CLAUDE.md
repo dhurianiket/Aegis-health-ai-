@@ -12,6 +12,9 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - **Auth:** Firebase Google Sign-In (Authentication).
 - **Anti-Bot:** reCAPTCHA v3 (`VITE_RECAPTCHA_SITE_KEY`).
 - **AI:** Google Gemini API (@google/genai) with automated request interception in `geminiClient.ts`. Maps older preview model identifiers to stable, long-term options (`gemini-3.5-flash` and `gemini-3.1-pro-preview`) and retries using `gemini-3.5-flash` to handle 503 high-demand errors.
+- **Voice Integration:** Powered by the Web Speech API transcription class `VoiceService.ts`. Programmatically mounted inside the `ChatCoach.tsx` conversational assistant for hands-free health logs.
+- **Care Map & Directions:** Powered by Google Maps Platform using `@vis.gl/react-google-maps` and global `Route.computeRoutes` overlays.
+- **Calendar Sync:** Direct Google Calendar API queries leveraging the Google Auth access token, syncing medical agendas with strict confirmation modals.
 
 ## Core Conventions & Rules
 1. **Repository Awareness:** ALWAYS read `ARCHITECTURE.md`, `CURRENT_STATE.md`, and `AGENTS.md` before making sweeping changes. 
@@ -20,6 +23,9 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 4. **Preserve Brand Styling:** Aegis has a specific, soft, high-contrast, patient-friendly look. Do not arbitrarily change semantic colors (`bg-theme`, `text-surface`) to default gray or black without reason.
 5. **Firebase Patterns:** We use standard Firebase SDK patterns. Keep functions inside `/functions/` and frontend queries isolated in standard hook structures. Do not mix Next.js paradigms into the Vite setup.
 6. **Authentication:** The auth flow explicitly utilizes `onAuthStateChanged` state to handle seamless transition to the dashboard. 
+7. **Real-time Synchronized Context:** Patient medications must always sync in real-time using `onSnapshot` inside `useClinicalContext.ts`. Any components formatting medications MUST dynamically fallback and support flexible keys (`genericName`, `name`, `brandName`, `medicationName`) across internal mappings.
+8. **Visual Interaction Matrix:** Hosted inside `src/components/Medications/InteractionMatrix.tsx`. Displays compatible and warning medication pairings using colored matrix grid cells linked to RxNorm datastores and Aura AI advisory cards.
+
 
 ## Workflow
 - Verify current status via `CURRENT_STATE.md`.

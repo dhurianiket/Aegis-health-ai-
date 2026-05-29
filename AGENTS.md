@@ -18,9 +18,11 @@ Always read `ARCHITECTURE.md` and `CURRENT_STATE.md` FIRST to understand the lat
 
 ## 3. Data, Layout & Performance Rules
 - **Firestore Isolation:** Write data strictly to isolated paths (e.g., `users/{userId}/{subcollection}`). Avoid global unsandboxed collections.
+- **Real-Time Context Synchronization:** Any updates to clinical data (including manual edits or newly extracted reports for medications, active treatments, or biomarkers) MUST run through real-time reactive Firestore listeners (e.g., `onSnapshot` inside standard React hooks/context triggers like `useClinicalContext`) rather than static, one-time loads, to prevent AI systems from relying on stale, unrecognized records.
 - **Mobile-Responsive First:** All components must handle mobile viewports graciously. Dense data tables must convert to stacked vertical cards on small screens (`md:hidden block`).
 - **Main-Thread Safety (React):** Offload heavy map/reduce processing of Health Data out of render cycles (`useEffect`) to dedicated service files or Cloud Functions to maintain 60FPS UI experiences.
 - **Component Height Enforcements:** Recharts MUST have strict `h-[300px]` pixel boundary envelopes injected strictly to prevent flex-box visual collapses during rendering.
+- **Visual Drug-Drug Interaction Matrix Rules:** Grid/matrix rendering MUST be responsive and handle layout overflow scroll gracefully. Intersecting tile items must check both RxCUI and string name lowercasing for compatibility mapping, and show clear safety labels for the user without clinical jargon overload.
 - **Text Measurement & Layout Shifts:** Always use `@chenglou/pretext` for synchronous, canvas-backed text height/width measurements before mounting elements to the DOM. Avoid rendering text blocks off-screen or using `getBoundingClientRect()` to measure layouts, as this creates DOM thrashing and layout shifts. Utilize `AutoSizeTextarea`, `FixedSizeText`, and `VirtualizedChatList` components for adaptive blocks and dense text contexts.
 
 ## 4. Coding & Maintenance

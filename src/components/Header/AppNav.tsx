@@ -16,6 +16,7 @@ import {
   User,
   MoreHorizontal,
   ShieldAlert,
+  Map,
 } from "lucide-react";
 import { BottomSheet } from "./BottomSheet";
 import { useProfile } from "../../context/ProfileContext";
@@ -36,6 +37,8 @@ const ALL_DESKTOP_TABS = [
   { id: "specialist", label: "Specialist Lounge", icon: Stethoscope },
   { id: "chat", label: "Aura AI", icon: Sparkles },
   null, // divider
+  { id: "caremap", label: "Care Map", icon: Map },
+  { id: "calendar", label: "Calendar Sync", icon: Calendar },
   { id: "medications", label: "Medications", icon: Pill },
   { id: "settings", label: "Settings", icon: Settings },
   { id: "profile", label: "Profile", icon: User },
@@ -141,6 +144,8 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                   "medications",
                   "settings",
                   "profile",
+                  "caremap",
+                  "calendar",
                 ].includes(activeTab));
 
             if (tab.id === "upload") {
@@ -205,6 +210,24 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 Update
               </div>
             )}
+          </button>
+          <button
+            onClick={() => handleTabChange("caremap")}
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3"
+          >
+            <Map className="w-8 h-8 text-[var(--color-primary)] animate-pulse" style={{ animationDuration: "3s" }} />
+            <span className="font-medium text-sm text-[var(--color-text)]">
+              Care Map
+            </span>
+          </button>
+          <button
+            onClick={() => handleTabChange("calendar")}
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3"
+          >
+            <Calendar className="w-8 h-8 text-[var(--color-primary)]" />
+            <span className="font-medium text-sm text-[var(--color-text)]">
+              Calendar Sync
+            </span>
           </button>
           <button
             onClick={() => handleTabChange("trends")}

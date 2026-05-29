@@ -39,8 +39,22 @@ This document serves as the single source of truth for the technical architectur
 ### C. Follow-up Chronology Monitor (`reminderService.ts`)
 - Hooks into upload flows to automatically schedule reminder follow-ups 90 days out in Firestore.
 
-### D. Keyless Drug-to-Drug Interaction Matrix
+### D. Keyless & Visual Drug-to-Drug Interaction Matrix
 - Operates entirely over open-source public endpoints (`https://rxnav.nlm.nih.gov/REST/...`). Maps severity to structured internal schemas.
+- Incorporates a rich, interactive frontend visual grid (`InteractionMatrix.tsx`) representing active medications on both X and Y axes. Color-codes intersection cells to display safety alerts (Red = Severe, Amber = Moderate, Green/Emerald = Compatible). Supports interactive cell selection to present full RxNorm narrative and Aura AI recommendations below the folder.
+
+
+### E. Real-Time Telemetry AI Synchronization (RAG Context)
+- Subscribes via standard Firestore reactive queries to live changes in user medications, health metrics, and patient profiles. The clinical context hooks (`useClinicalContext.ts`) consume real-time streams and dynamically formulate contextual tokens. All formatting queries map flexible keys (`genericName`, `name`, `brandName`, `medicationName`) across internal RAG pipelines seamlessly, enabling real-time context propagation to conversational assistants and multi-specialty virtual clinic engines.
+
+### F. Web Speech API Voice Transcription
+- Binds full-fidelity Web Speech Recognition protocols inside the `ChatCoach.tsx` component. Speech recognition sessions transcribe user prompts in real-time, providing hands-free queries on mobile browser viewports without remote server latency.
+
+### G. Localized Care Map (Google Maps Platform)
+- Uses `@vis.gl/react-google-maps` and Google Maps Platform APIs. Biases searches near patient longitude/latitude coordinates for emergency clinics, diagnostic labs, pharmacies, and lists them in highly detailed card directories. Computes driving direction polygons natively via `Route.computeRoutes()` utilizing modern routes library references.
+
+### H. Google Calendar Sync Subsystem (Workspace Integration)
+- Connects authenticated sessions directly to Google Calendar APIs. Reads future itineraries, highlights healthcare-related appointments in dedicated highlights, and enables addition/deletion of clinical timelines with strict confirmation modals.
 
 ## 6. Database Schema
 ### Firestore Collections

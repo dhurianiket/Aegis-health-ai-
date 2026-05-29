@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { getActiveMedications } from '../services/medicationService';
 import { calculateBMI } from '../utils/calculateBMI';
 import { getForm, getFormResponses } from '../services/googleFormsService';
+import { db } from '../lib/firebase/config';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 
 export function useClinicalContext() {
   const { user } = useAuth();
@@ -11,70 +13,92 @@ export function useClinicalContext() {
   
   const [medications, setMedications] = useState<any[]>([]);
   const [formResponsesText, setFormResponsesText] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const [medsLoading, setMedsLoading] = useState(true);
+  const [formLoading, setFormLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 1. Listen for real-time medication updates
+  useEffect(() => {
+    if (!user) {
+      setMedications([]);
+      setMedsLoading(false);
+      return;
+    }
+
+    setMedsLoading(true);
+    const q = query(
+      collection(db, 'users', user.uid, 'medications'),
+      where('endDate', '==', null),
+      orderBy('addedAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const activeMeds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMedications(activeMeds);
+      setMedsLoading(false);
+    }, (err) => {
+      console.error("[useClinicalContext] Failed to load medications via onSnapshot, falling back:", err);
+      // Fallback
+      getActiveMedications(user.uid)
+        .then(activeMeds => {
+          setMedications(activeMeds);
+        })
+        .catch(console.error)
+        .finally(() => setMedsLoading(false));
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // 2. Load Google Form Intake data
   useEffect(() => {
     let isMounted = true;
-    async function loadData() {
-      if (!user) {
+    async function loadFormResponses() {
+      if (!user || !activeProfile?.googleFormId) {
         if (isMounted) {
-          setMedications([]);
           setFormResponsesText("");
-          setLoading(false);
+          setFormLoading(false);
         }
         return;
       }
       
       try {
-        setLoading(true);
-        // Attempt to load from medication service
-        const activeMeds = await getActiveMedications(user.uid).catch(err => {
-          console.error("Failed to load active medications for clinical context", err);
-          return [];
-        });
-        if (isMounted) setMedications(activeMeds);
-        
+        setFormLoading(true);
         let formContext = "";
-        if (activeProfile?.googleFormId) {
-          try {
-            const formMeta = await getForm(activeProfile.googleFormId);
-            const responses = await getFormResponses(activeProfile.googleFormId);
-            
-            // Format the latest response
-            if (responses?.responses?.length > 0) {
-               // Get easiest latest
-               const latest = responses.responses.sort((a,b) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime())[0];
-               
-               let answersText = [];
-               for (const [qId, answerObj] of Object.entries(latest.answers)) {
-                   const item = formMeta.items.find(i => i.questionItem?.question?.questionId === qId);
-                   const qTitle = item?.title || "Unknown Question";
-                   const ansArr = (answerObj as any).textAnswers?.answers?.map((a:any) => a.value) || [];
-                   answersText.push(`${qTitle}: ${ansArr.join(", ")}`);
-               }
-               formContext = `\n[Google Forms Intake Data - ${formMeta.info.title}]\n${answersText.join("\n")}\n`;
-            }
-          } catch (e) {
-            console.warn("Failed to load Google Forms Intake data", e);
+        try {
+          const formMeta = await getForm(activeProfile.googleFormId);
+          const responses = await getFormResponses(activeProfile.googleFormId);
+          
+          if (responses?.responses?.length > 0) {
+             const latest = responses.responses.sort((a,b) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime())[0];
+             
+             let answersText = [];
+             for (const [qId, answerObj] of Object.entries(latest.answers)) {
+                 const item = formMeta.items.find(i => i.questionItem?.question?.questionId === qId);
+                 const qTitle = item?.title || "Unknown Question";
+                 const ansArr = (answerObj as any).textAnswers?.answers?.map((a:any) => a.value) || [];
+                 answersText.push(`${qTitle}: ${ansArr.join(", ")}`);
+             }
+             formContext = `\n[Google Forms Intake Data - ${formMeta.info.title}]\n${answersText.join("\n")}\n`;
           }
+        } catch (e) {
+             console.warn("Failed to load Google Forms Intake data for context", e);
         }
         if (isMounted) {
           setFormResponsesText(formContext);
-          if (formContext) {
-            console.log("[useClinicalContext] Fetched Google Forms Intake Data:", formContext);
-          }
         }
-        
       } catch (err) {
-        if (isMounted) setError("Failed to load clinical context");
+        if (isMounted) setError("Failed to load clinical form data");
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) setFormLoading(false);
       }
     }
-    loadData();
+
+    loadFormResponses();
     return () => { isMounted = false; };
   }, [user, activeProfile?.googleFormId]);
+
+  const loading = medsLoading || formLoading;
 
   const bmi = useMemo(() => {
     if (activeProfile?.height && activeProfile?.weight) {

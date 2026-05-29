@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
-import { X, ArrowUp, Square, Sparkles, Loader2 } from "lucide-react";
+import { X, ArrowUp, Square, Sparkles, Loader2, Mic, MicOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
@@ -44,9 +44,57 @@ export default function ChatCoach({
 
   const [inputValue, setInputValue] = useState("");
   const [isAlAvailable, setIsAlAvailable] = useState(true);
+  const [isListening, setIsListening] = useState(false);
+  const voiceServiceRef = useRef<any>(null);
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { contextString: globalClinicalContext } = useClinicalContext();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const SpeechRecognitionImpl =
+          (window as any).SpeechRecognition ||
+          (window as any).webkitSpeechRecognition;
+        if (SpeechRecognitionImpl) {
+          voiceServiceRef.current = new VoiceService({
+            onResult: (text) => {
+              if (text) {
+                setInputValue((prev) => {
+                  const prefix = prev.trim() ? prev.trim() + " " : "";
+                  return prefix + text;
+                });
+              }
+            },
+            onEnd: () => {
+              setIsListening(false);
+            },
+            onError: (err) => {
+              console.warn("[Voice] Error:", err);
+              setIsListening(false);
+            },
+            language: "en-US",
+          });
+        }
+      } catch (e) {
+        console.warn("[Voice] Web Speech API initialization skipped", e);
+      }
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!voiceServiceRef.current) {
+      console.warn("[Voice] Speech recognition not supported or not loaded.");
+      return;
+    }
+    if (isListening) {
+      voiceServiceRef.current.stop();
+      setIsListening(false);
+    } else {
+      setIsListening(true);
+      voiceServiceRef.current.start();
+    }
+  };
 
   useEffect(() => {
     try {
@@ -150,7 +198,7 @@ export default function ChatCoach({
       const reminders = await getUpcomingReminders(user.uid, 30);
       
       const medsContext = activeMeds.length > 0 
-        ? `\nPatient's Active Medications: ${activeMeds.map(m => `${m.genericName} ${m.dosage || ''}`).join(', ')}` 
+        ? `\nPatient's Active Medications: ${activeMeds.map(m => `${(m as any).genericName || (m as any).name || (m as any).brandName || (m as any).medicationName || 'Unknown'} ${m.dosage || ''}`).join(', ')}` 
         : '\nPatient has no active medications logged.';
         
       const remindersContext = reminders.length > 0
@@ -512,18 +560,34 @@ ${remindersContext}`;
                   <input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={isAlAvailable ? "Ask Aura AI..." : "Neural Link Offline"}
+                    placeholder={isAlAvailable ? (isListening ? "Listening..." : "Ask Aura AI...") : "Neural Link Offline"}
                     disabled={isTyping || !isAlAvailable}
-                    className={`w-full bg-[var(--color-surface)] border border-transparent rounded-full py-3.5 pl-5 pr-12 text-[15px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${isTyping || !isAlAvailable ? "pointer-events-none opacity-50" : ""}`}
+                    className={`w-full bg-[var(--color-surface)] border border-transparent rounded-full py-3.5 pl-5 pr-24 text-[15px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${isTyping || !isAlAvailable ? "pointer-events-none opacity-50" : ""} ${isListening ? "ring-2 ring-indigo-500 bg-indigo-500/5 animate-pulse" : ""}`}
                   />
-                  <button
-                    type="submit"
-                    aria-label="Send message"
-                    disabled={!inputValue.trim() || isTyping || !isAlAvailable}
-                    className="absolute right-1.5 top-1.5 bottom-1.5 aspect-square bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                  >
-                    <ArrowUp size={18} strokeWidth={2.5} />
-                  </button>
+                  <div className="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1.5">
+                    {voiceServiceRef.current && (
+                      <button
+                        type="button"
+                        onClick={toggleListening}
+                        className={`aspect-square w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                          isListening
+                            ? "bg-red-500 text-white animate-pulse"
+                            : "bg-[var(--color-surface)] hover:bg-[var(--color-border)] text-[var(--color-text-muted)]"
+                        }`}
+                        title={isListening ? "Stop listening" : "Talk to Aura AI"}
+                      >
+                        {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      aria-label="Send message"
+                      disabled={!inputValue.trim() || isTyping || !isAlAvailable}
+                      className="aspect-square w-10 h-10 bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                    >
+                      <ArrowUp size={18} strokeWidth={2.5} />
+                    </button>
+                  </div>
                 </form>
                 <div className="mt-2 text-center text-[10px] text-[var(--color-text-faint)]">
                   {isAlAvailable ? "Generated by Aegis AI. Not a diagnosis." : "Please configure VITE_GEMINI_API_KEY to enable AI."}

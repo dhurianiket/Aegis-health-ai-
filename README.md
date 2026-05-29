@@ -2,7 +2,7 @@
 
 A modern, clinical-grade health management system. Aegis Health AI enables users to centralize medical records, extract intelligence from lab reports using Gemini 1.5 Flash, and monitor long-term clinical narratives.
 
-**Live URL**: [https://aegishealthai.co.in]
+**Live URL**: [https://aegis-health-app-90697.web.app](https://aegis-health-app-90697.web.app)
 
 ## 🚀 Features
 

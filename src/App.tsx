@@ -81,6 +81,8 @@ const LabReportsSection = lazy(
 );
 const AdminDashboard = lazy(() => import("./components/Admin/AdminDashboard"));
 const FeedbackWidget = lazy(() => import("./components/Dashboard/FeedbackWidget"));
+const CareMap = lazy(() => import("./components/CareMap/CareMap"));
+const CalendarSync = lazy(() => import("./components/CalendarSync/CalendarSync"));
 
 // Loading Fallback
 const Fallback = () => (
@@ -329,8 +331,12 @@ function MainApp() {
                     ? "SBAR Summary"
                     : activeTab === "settings"
                       ? "Settings"
-                      : activeTab === "medications"
-                        ? "Pharmacy"
+                      : activeTab === "caremap"
+                        ? "Localized Care Map"
+                        : activeTab === "calendar"
+                          ? "Calendar Sync"
+                          : activeTab === "medications"
+                            ? "Pharmacy"
                         : activeTab === "reports"
                           ? "Lab Reports"
                           : activeTab === "trends"
@@ -512,6 +518,16 @@ function MainApp() {
                     {activeTab === "specialist" && (
                       <SectionErrorBoundary sectionName="Specialist Lounge">
                         <SpecialistLounge />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "caremap" && (
+                      <SectionErrorBoundary sectionName="Care Map">
+                        <CareMap />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "calendar" && (
+                      <SectionErrorBoundary sectionName="Calendar Sync">
+                        <CalendarSync />
                       </SectionErrorBoundary>
                     )}
                     {activeTab === "medications" && (
