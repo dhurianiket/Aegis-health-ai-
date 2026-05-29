@@ -4,6 +4,7 @@
 
 ### What is Currently Built & Deployed
 - **Frontend App:** Fully built using React 18, Vite, TypeScript, and Tailwind CSS. Next.js and Firebase App Hosting are completely removed/not used.
+- **Performance & Virtualization (Pretext):** Implemented `@chenglou/pretext` and `react-window` to eliminate layout shifts and virtualize dense text contexts. Added `AutoSizeTextarea`, `FixedSizeText`, `VirtualizedChatList`, and a `MasonryLabCards` dashboard component powered by `pretext` for synchronous, canvas-backed layout measurement without DOM thrashing.
 - **Gemini API Resilience Interceptor:** Integrated a global request wrapper in `geminiClient.ts` that intercepts model calls. It automatically normalizes deprecated models (e.g., `gemini-3-flash-preview`, `gemini-2.0-flash`) and provides an automatic retry fallback to `gemini-3.5-flash` when encountering `503 Unavailable` "high demand" errors, preventing feature downtime.
 - **Google Forms & Visit Prep Safeguards:** Sanitized Google Form IDs by stripping quotes/white space. Handled third-party iframe cookie restrictions (e.g. `atob` or `expected pattern` errors) in `VisitPrepWidget.tsx` and `googleFormsService.ts` elegantly, guiding the user to open the application in a new tab for seamless Google OAuth form loading.
 - **Landing Page:** The landing page is successfully hosted as the main entry point to the web application. Navigation is fully synced.

@@ -23,8 +23,6 @@ import {
   saveDocument,
   saveLabResult,
   saveMedication,
-  saveLabResultsBatch,
-  saveMedicationsBatch,
 } from "../../lib/firebase/firestore";
 import NoteAnalyzer from "./NoteAnalyzer";
 import { useAuth } from "../../context/AuthContext";
@@ -211,11 +209,11 @@ export default function UploadCenter({
         totalSavedDocs++;
 
         if (result.lab_values && result.lab_values.length > 0) {
-          const labsToSave = [];
+          let savedCount = 0;
           for (let i = 0; i < result.lab_values.length; i++) {
             if (confirmedLabIndices.has(`${extIndex}-${i}`)) {
               const lab = result.lab_values[i];
-              labsToSave.push({
+              await saveLabResult(userId, {
                 docId: docId || "unknown",
                 date: lab.date || result.date || new Date().toISOString(),
                 markerName: lab.marker || "Unknown",
@@ -225,14 +223,12 @@ export default function UploadCenter({
                 status: (lab.status as LabStatus) || LabStatus.NORMAL,
                 profileId: activeProfile?.id,
               });
+              console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
+              savedCount++;
             }
           }
-          if (labsToSave.length > 0) {
-            await saveLabResultsBatch(userId, labsToSave);
-            totalSavedLabs += labsToSave.length;
-            console.log(`[Sync Stage 4] Database lab batch write SUCCESS for ${labsToSave.length} markers`);
-          }
-          console.log(`[Sync] Saved ${labsToSave.length} lab values for ${result.fileName}`);
+          totalSavedLabs += savedCount;
+          console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
         }
       }
 
@@ -365,10 +361,9 @@ export default function UploadCenter({
           } catch(e) {}
 
           if (result.lab_values && result.lab_values.length > 0) {
-            const labsToSave = [];
             for (let i = 0; i < result.lab_values.length; i++) {
               const lab = result.lab_values[i];
-              labsToSave.push({
+              await saveLabResult(user.uid, {
                 id: `${stableId}_lab_${i}`,
                 docId: stableId,
                 date: lab.date,
@@ -380,17 +375,13 @@ export default function UploadCenter({
                 profileId: activeProfile?.id,
               });
             }
-            if (labsToSave.length > 0) {
-              await saveLabResultsBatch(user.uid, labsToSave);
-            }
           }
 
           if (result.medications && result.medications.length > 0) {
-            const medsToSave = [];
             for (let i = 0; i < result.medications.length; i++) {
               const med = result.medications[i];
               const medName = typeof med === 'string' ? med : (med.name || "Unknown");
-              medsToSave.push({
+              await saveMedication(user.uid, {
                 id: `${stableId}_med_${i}`,
                 name: medName,
                 dosage: typeof med === 'object' ? (med.dose || med.dosage || "") : "",
@@ -399,9 +390,6 @@ export default function UploadCenter({
                 startDate: result.date || new Date().toISOString().split("T")[0],
                 profileId: activeProfile?.id,
               });
-            }
-            if (medsToSave.length > 0) {
-              await saveMedicationsBatch(user.uid, medsToSave);
             }
           }
           

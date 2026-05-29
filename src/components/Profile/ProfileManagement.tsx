@@ -18,6 +18,7 @@ import { getUserUsageStats } from "../../services/usageService";
 import { auth } from "../../lib/firebase/config";
 import { version } from "../../../package.json";
 import CycleTrackingSettings from "./CycleTrackingSettings";
+import AutoSizeTextarea from "../Form/AutoSizeTextarea";
 
 export default function ProfileManagement() {
   const {
@@ -339,11 +340,12 @@ export default function ProfileManagement() {
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Clinical Notes</label>
-                    <textarea
+                    <AutoSizeTextarea
                       value={editDoctorNotes}
-                      onChange={(e) => setEditDoctorNotes(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm h-20"
+                      onChange={(e: any) => setEditDoctorNotes(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
                       placeholder="Medical history, allergies, or notes..."
+                      minLines={3}
                     />
                   </div>
                   {editError && (

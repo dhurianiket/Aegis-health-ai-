@@ -4,7 +4,7 @@
 Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA). It allows users to upload medical reports, track health trends, and consult AI-powered specialists using text, voice, and real-time internet grounding.
 
 ## Active Tech Stack (Read Carefully)
-- **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion. 
+- **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion. Uses `@chenglou/pretext` and `react-window` for synchronous text measurement and virtualized layout performance.
   *(Note: Next.js and Firebase App Hosting are NOT used. Do not assume App Directory setups).*
 - **Hosting:** Firebase Hosting.
 - **Database / Storage:** Firebase Firestore & Firebase Storage.

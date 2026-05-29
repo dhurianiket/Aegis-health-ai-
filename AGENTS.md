@@ -16,11 +16,12 @@ Always read `ARCHITECTURE.md` and `CURRENT_STATE.md` FIRST to understand the lat
 - **State-Driven Routing:** The main route transition between the landing page and protected paths (Dashboard) must remain bound to Firebase `onAuthStateChanged` lifecycles.
 - **Login Fixes:** We rely on browser local persistence. Do not inject new authentication libraries. Google Sign-In via Firebase is the sole provider. 
 
-## 3. Data & Layout Rules
+## 3. Data, Layout & Performance Rules
 - **Firestore Isolation:** Write data strictly to isolated paths (e.g., `users/{userId}/{subcollection}`). Avoid global unsandboxed collections.
 - **Mobile-Responsive First:** All components must handle mobile viewports graciously. Dense data tables must convert to stacked vertical cards on small screens (`md:hidden block`).
 - **Main-Thread Safety (React):** Offload heavy map/reduce processing of Health Data out of render cycles (`useEffect`) to dedicated service files or Cloud Functions to maintain 60FPS UI experiences.
 - **Component Height Enforcements:** Recharts MUST have strict `h-[300px]` pixel boundary envelopes injected strictly to prevent flex-box visual collapses during rendering.
+- **Text Measurement & Layout Shifts:** Always use `@chenglou/pretext` for synchronous, canvas-backed text height/width measurements before mounting elements to the DOM. Avoid rendering text blocks off-screen or using `getBoundingClientRect()` to measure layouts, as this creates DOM thrashing and layout shifts. Utilize `AutoSizeTextarea`, `FixedSizeText`, and `VirtualizedChatList` components for adaptive blocks and dense text contexts.
 
 ## 4. Coding & Maintenance
 - **Gemini API Resilience Interceptor:** All AI feature interactions must go through the pre-initialized wrapper in `geminiClient.ts` which handles model normalization (e.g., mapping deprecated preview models to stable long-term models) and implements a 503 high-demand retry transparent fallback to stable fallback models. Do not bypass this wrapper by calling the GoogleGenAI SDK directly with unhandled endpoints.

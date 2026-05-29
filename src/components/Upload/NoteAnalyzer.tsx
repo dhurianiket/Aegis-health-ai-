@@ -22,6 +22,10 @@ import { saveDocument } from "../../lib/firebase/firestore";
 import { DocumentType } from "../../types/medical";
 import getAI from "../../lib/geminiClient";
 
+import AutoSizeTextarea from "../Form/AutoSizeTextarea";
+
+import FixedSizeText from "../Text/FixedSizeText";
+
 export default function NoteAnalyzer() {
   const [note, setNote] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -106,11 +110,12 @@ export default function NoteAnalyzer() {
           </div>
         </div>
 
-        <textarea
+        <AutoSizeTextarea
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e: any) => setNote(e.target.value)}
           placeholder="e.g., Patient presents with mild hypertension. Currently taking Lisinopril 10mg. Follow up in 3 weeks with Cardiology..."
-          className="w-full h-48 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-2xl p-4 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all resize-none"
+          className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-2xl p-4 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
+          minLines={5}
         />
 
         <button
@@ -159,9 +164,13 @@ export default function NoteAnalyzer() {
                   Processed
                 </div>
               </div>
-              <p className="text-[var(--color-text-muted)] text-sm mt-4 leading-relaxed font-light italic">
-                "{result.summary}"
-              </p>
+              <div className="text-[var(--color-text-muted)] mt-4 flex font-light italic">
+                <FixedSizeText
+                  text={`"${result.summary}"`}
+                  font="300 14px Inter, sans-serif"
+                  lineHeight={24}
+                />
+              </div>
             </div>
 
             <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">

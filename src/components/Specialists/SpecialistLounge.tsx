@@ -14,6 +14,7 @@ import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
+import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
 
 const PROMPT_VERSION = "v1.0";
 
@@ -309,24 +310,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
              </div>
           </div>
         ) : (
-          <div className="space-y-6 pb-2">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end pl-12' : 'justify-start pr-12'}`}>
-                <div className={`max-w-[100%] rounded-[24px] px-5 py-4 text-[16px] leading-[1.6] shadow-sm ${
-                  msg.role === 'user' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-[8px]' : 'bg-slate-50 dark:bg-[#1C1C1E] text-slate-800 dark:text-slate-200 rounded-bl-[8px] border border-slate-100/50 dark:border-[#2C2C2E]'
-                }`}>
-                  <div className={`prose prose-sm md:prose-base max-w-none ${msg.role === 'user' ? 'prose-invert dark:prose-p:text-slate-900 dark:prose-headings:text-slate-900 dark:prose-strong:text-slate-900 prose-p:text-white prose-headings:text-white prose-strong:text-white' : 'dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-400 dark:marker:text-slate-500'}`}>
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                  <div className={`text-[11px] opacity-40 mt-3 font-semibold tracking-wide ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                    {(() => {
-                      const d = parseSafeTimestamp(msg.timestamp);
-                      return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-                    })()}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="flex-1 w-full relative min-h-0 min-h-[400px]">
+            <VirtualizedChatList 
+              messages={messages.map((m: any, i) => ({ id: String(i), role: m.role, text: m.content || "" }))} 
+            />
           </div>
         )}
         

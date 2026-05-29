@@ -10,7 +10,6 @@ import {
   doc,
   getDoc,
   deleteDoc,
-  writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "./config";
 export { auth, db };
@@ -113,42 +112,6 @@ export async function saveDocument(
   }
 }
 
-export async function saveLabResultsBatch(
-  userId: string,
-  labResults: Array<Partial<LabResult> & { id?: string }>,
-) {
-  const pathString = `users/${userId}/labResults`;
-  if (!labResults || labResults.length === 0) return [];
-
-  try {
-    const batch = writeBatch(db);
-    const labIds: string[] = [];
-
-    for (const labData of labResults) {
-      let docRef;
-      if (labData.id) {
-        docRef = doc(db, "users", userId, "labResults", labData.id);
-        labIds.push(labData.id);
-      } else {
-        docRef = doc(collection(db, "users", userId, "labResults"));
-        labIds.push(docRef.id);
-      }
-
-      batch.set(docRef, sanitizeData({
-        ...labData,
-        userId,
-        createdAt: (labData as any).createdAt || serverTimestamp(),
-      }), { merge: true });
-    }
-
-    await batch.commit();
-    return labIds;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, pathString);
-    return [];
-  }
-}
-
 export async function getDocuments(userId: string, profileId?: string) {
   const pathString = `users/${userId}/documents`;
   try {
@@ -236,42 +199,6 @@ export async function saveLabResult(
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, pathString);
-  }
-}
-
-export async function saveMedicationsBatch(
-  userId: string,
-  medications: Array<Partial<Medication> & { id?: string }>,
-) {
-  const pathString = `users/${userId}/medications`;
-  if (!medications || medications.length === 0) return [];
-
-  try {
-    const batch = writeBatch(db);
-    const medIds: string[] = [];
-
-    for (const medData of medications) {
-      let docRef;
-      if (medData.id) {
-        docRef = doc(db, "users", userId, "medications", medData.id);
-        medIds.push(medData.id);
-      } else {
-        docRef = doc(collection(db, "users", userId, "medications"));
-        medIds.push(docRef.id);
-      }
-
-      batch.set(docRef, sanitizeData({
-        ...medData,
-        userId,
-        createdAt: (medData as any).createdAt || serverTimestamp(),
-      }), { merge: true });
-    }
-
-    await batch.commit();
-    return medIds;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, pathString);
-    return [];
   }
 }
 
