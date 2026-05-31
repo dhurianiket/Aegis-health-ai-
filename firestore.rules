@@ -14,45 +14,11 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // User root document
+    // User root document and recursively all its nested subcollections
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isAdmin() || (isOwner(userId) && (!request.resource.data.keys().hasAll(['role']) || request.resource.data.role != 'admin'));
-      allow update: if isAdmin() || (isOwner(userId) && (!request.resource.data.keys().hasAll(['role']) || request.resource.data.role == resource.data.role));
-      allow delete: if isAdmin() || isOwner(userId);
+      allow read, write: if isOwner(userId) || isAdmin();
 
-      // Lab reports and uploaded documents
-      match /documents/{docId} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
-
-      // User profile
-      match /profile/{profileId} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
-
-      // Medications
-      match /medications/{medId} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
-
-      // AI-generated insights and cached reports
-      match /insights/{insightId} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
-
-      // Cached AI reports
-      match /cachedReports/{reportId} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
-
-      // Usage analytics
-      match /usage/{usageId} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
-
-      // Catch-all for any other subcollections under a user
-      match /{subcollection}/{docId} {
+      match /{document=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
     }

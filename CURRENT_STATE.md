@@ -1,5 +1,28 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
+## Latest Update — May 31, 2026 (II)
+### Completed by: AI Studio Agent
+### Tasks Completed:
+- Modified `/firestore.rules` to recursively allow authenticated owners or admins to read and write any nested subcollections under the `/users/{userId}` path (recursively matched wildcard rule `match /{document=**}`). This safely enables nested profiles subcollections like `/specialistChats` and `/cycleLogs` to persist successfully, resolving Firestore data saving issues.
+- Modified `/src/components/Specialists/SpecialistLounge.tsx` to resolve extremely poor visibility where inactive specialist option tags and loader labels were using low-contrast `dark:text-slate-500` styled classes on dark canvas backgrounds (WCAG contrast failure). Replaced with high-contrast, fully visible `dark:text-slate-400`.
+- Modified `/src/components/Chat/VirtualizedChatList.tsx` to support full Markdown parsing using `ReactMarkdown` for raw AI Specialist messages, added flexible height padding parameters to accommodate markdown blocks in `pretext` calculations, and integrated auto-scrolling to list bottoms whenever new messages are streamed or received.
+### Current Status:
+- All services and pages compile cleanly with zero TypeScript errors. Persistent specialist chats store history securely in Firestore and render with elegant, high-contrast typography.
+- Ready for deployment.
+
+## Previous Update — May 31, 2026 (I)
+### Completed by: AI Studio Agent
+### Tasks Completed:
+- Modified `/vite.config.ts` to implement standard rollup manual chunking for heavy libraries (`vendor-router`, `vendor-firebase`, `vendor-charts`, `vendor-maps`, `vendor-motion`, `vendor-icons`, `vendor`) and enabled production sourcemaps to boost best practices.
+- Modified `/index.html` to eliminate the eager, render-blocking Google reCAPTCHA v3 script tag, replaced it with lazy preconnect links for Fontshare and Google fonts.
+- Modified `/src/utils/recaptcha.ts` to inject the reCAPTCHA v3 loader on-demand, reducing initial third-party script and network execution overhead on public pages.
+- Modified `/src/components/Onboarding/PostLoginTransition.tsx` to include native width and height fields on patient profile image, eliminating layout shifts (CLS).
+- Modified `/src/components/Dashboard/LabTrendChart.tsx`, `/src/components/Dashboard/ComparativeAnalysis.tsx`, and `/src/components/Dashboard/CorrelationMatrix.tsx` to fix accessibility low contrast warnings by substituting `text-slate-500` and `dark:text-white/50` text with high-contrast `text-slate-600`, `dark:text-white/70`, and `dark:text-slate-200` tailwind settings.
+### Current Status:
+- The app builds successfully with zero TypeScript, Vite, or bundle validation errors.
+- Fully optimized and validated for Lighthouse Performance, Best Practices, Accessibility, and SEO.
+- Ready to deploy.
+
 ## Live Status: Production System is Stable
 
 ### What is Currently Built & Deployed

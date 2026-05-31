@@ -1,11 +1,12 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { List, ListImperativeAPI } from 'react-window';
 import { prepareText, measureHeight } from '../../lib/pretext';
+import ReactMarkdown from 'react-markdown';
 
 export interface ChatMessage {
   id: string;
   text: string;
-  role: 'user' | 'ai';
+  role: 'user' | 'ai' | 'assistant';
 }
 
 export interface VirtualizedChatListProps {
@@ -30,7 +31,7 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
   const [containerWidth, setContainerWidth] = useState<number>(messageWidth || 0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<ListImperativeAPI>(null);
+  const listRef = useRef<any>(null);
 
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -60,7 +61,12 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
       // Let's assume message bubbles take 80% of width maximum
       const bubbleWidth = containerWidth * 0.8 - 48; // minus padding
       const textHeight = measureHeight(prepared, bubbleWidth, lineHeight);
-      return textHeight + MSG_PADDING;
+      
+      // If of assistant/AI role, add extra safe padding to account for Markdown tags rendering (prose paragraphs, margins, etc.)
+      const isAI = msg.role !== 'user';
+      const extraPadding = isAI ? 40 : 0;
+      
+      return textHeight + MSG_PADDING + extraPadding;
     });
   }, [messages, containerWidth, lineHeight]);
 
@@ -68,8 +74,16 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
   // Note: v2 dynamically manages rowHeights through the itemSize or rowHeight functions natively
   
   const getItemSize = (index: number) => {
-    return messageHeights[index] || 50; // default safe fallback
+    return messageHeights[index] || 60; // default safe fallback
   };
+
+  // Scroll to bottom whenever messages are retrieved or updated
+  useEffect(() => {
+    if (listRef.current && messages.length > 0) {
+      // scroll to the last message inside the virtualized view
+      listRef.current.scrollToItem(messages.length - 1, 'end');
+    }
+  }, [messages, messageHeights]);
 
   const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
     const msg = messages[index];
@@ -87,9 +101,15 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
                 ? 'bg-blue-600 text-white dark:bg-blue-500' 
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100'
             }`}
-            style={{ font: font, lineHeight: `${lineHeight}px` }}
+            style={isUser ? { font: font, lineHeight: `${lineHeight}px` } : { lineHeight: `${lineHeight}px` }}
           >
-            {msg.text}
+            {isUser ? (
+              msg.text
+            ) : (
+              <div className="prose prose-sm dark:prose-invert max-w-none text-slate-800 dark:text-slate-100 leading-[1.6]">
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              </div>
+            )}
           </div>
         </div>
       </div>

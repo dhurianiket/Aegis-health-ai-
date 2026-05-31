@@ -5,6 +5,7 @@ This document serves as the single source of truth for the technical architectur
 ## 1. Technical Stack Blueprint
 - **Frontend Core:** React 18, TypeScript, Vite, Tailwind CSS, Framer Motion (animations). Next.js and App Hosting are explicitly NOT used.
 - **UI Performance & Virtualization:** Uses `@chenglou/pretext` for Canvas-backed synchronous text layout measurement and `react-window` for virtualizing densely populated lists (chats, labs) with zero layout thrashing or browser reflows.
+- **Lighthouse Performance & Bundle Chunks:** Employs precise Rollup code-splitting (Vite manualChunks) segmenting heavy assets (react-router, firebase client libraries, recharts/d3 graphs, google-maps services, motion managers) into distinct background modules. Features adaptive, on-demand third-party inclusions (e.g., lazy Google reCAPTCHA v3 hook loader) and strict dimension binding on dynamic image layers to sustain maximum Lighthouse ratings.
 - **Backend & APIs:** Firebase Cloud Functions (Node.js). We use this for backend logic, webhooks, and automation instead of Next.js API routes.
 - **Infrastructure Core:** Firebase Authentication, Cloud Firestore, Firebase Hosting.
 - **AI Analytics Engine:** Google Gemini API.

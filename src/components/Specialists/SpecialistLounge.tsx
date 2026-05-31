@@ -289,13 +289,13 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       >
         {initialLoading ? (
           <div className="h-full flex flex-col items-center justify-center space-y-4">
-             <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-500 animate-spin" />
-             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase">Loading Conversation</p>
+             <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-400 animate-spin" />
+             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-400 tracking-widest uppercase">Loading Conversation</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center opacity-70 space-y-6 px-6">
              <div className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-100/50 dark:border-white/5">
-                <Stethoscope className="text-slate-400 dark:text-slate-500 w-10 h-10"/>
+                <Stethoscope className="text-slate-400 dark:text-slate-400 w-10 h-10"/>
              </div>
              <p className="text-[15px] text-slate-500 dark:text-slate-400 text-center font-medium leading-relaxed max-w-sm">
                Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
@@ -417,7 +417,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}>{s.displayName}</div>
-                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-white/70' : 'text-slate-500 dark:text-slate-500'}`}>
+                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>
                       {s.expertise.slice(0, 2).join(' • ')}...
                     </div>
                   </div>

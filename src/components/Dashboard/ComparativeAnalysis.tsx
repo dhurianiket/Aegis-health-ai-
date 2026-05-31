@@ -103,9 +103,9 @@ export default function ComparativeAnalysis({
                 <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/20"></div>
               </div>
 
-              <div className="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300">
                 <span>Lower</span>
-                <span className="text-slate-400">Median</span>
+                <span className="text-slate-400 dark:text-slate-200">Median</span>
                 <span>Upper</span>
               </div>
             </div>

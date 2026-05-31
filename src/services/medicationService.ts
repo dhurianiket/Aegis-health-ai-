@@ -112,35 +112,13 @@ export async function saveMedication(userId: string, med: Omit<Medication, "id" 
      // we can just delete old interactions and add new, but simplest is to just overwrite if they exist, or just add new.
      // To strictly overwrite, we fetch old ones and delete them, or use a specific doc id.
      const oldInteractionsSnap = await getDocs(collection(db, 'users', userId, 'drugInteractions'));
-     const { writeBatch, doc } = await import('firebase/firestore');
+     const { deleteDoc } = await import('firebase/firestore');
+     await Promise.all(oldInteractionsSnap.docs.map(d => deleteDoc(d.ref)));
      
-     // WriteBatches in Firestore have a limit of 500 operations per batch.
-     let batch = writeBatch(db);
-     let operationCount = 0;
-     const commitBatch = async () => {
-       if (operationCount > 0) {
-         await batch.commit();
-         batch = writeBatch(db);
-         operationCount = 0;
-       }
-     };
-
-     for (const d of oldInteractionsSnap.docs) {
-       batch.delete(d.ref);
-       operationCount++;
-       if (operationCount >= 500) await commitBatch();
-     }
-
-     const interactionsRef = collection(db, 'users', userId, 'drugInteractions');
-     for (const interaction of newInteractions) {
+     await Promise.all(newInteractions.map(interaction => {
        const { id, ...data } = interaction;
-       const newDocRef = doc(interactionsRef);
-       batch.set(newDocRef, data);
-       operationCount++;
-       if (operationCount >= 500) await commitBatch();
-     }
-
-     await commitBatch();
+       return addDoc(collection(db, 'users', userId, 'drugInteractions'), data);
+     }));
   }
   
   return baseDoc.id;

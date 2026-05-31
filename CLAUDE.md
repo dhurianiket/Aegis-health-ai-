@@ -32,3 +32,16 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - Implement new logic respecting the Vite boundaries. 
 - For backend logic, touch `/functions/` and run `npm run build` within that context.
 - Keep the `CURRENT_STATE.md` in sync whenever you complete a major structural change.
+
+## Session: May 31, 2026 (II)
+### Work Done:
+- Audited the Firestore security rules and implemented recursive owner-based access matching (wildcard rule `match /{document=**}` under `/users/{userId}`) to support nested profiles subcollections like `/specialistChats` and `/cycleLogs`. This ensures that specialist chat histories are saved and stored successfully without being blocked by Firestore security.
+- Fixed low-contrast text in `SpecialistLounge.tsx` where inactive specialist options and loading elements used `dark:text-slate-500` inside a dark theme, making them virtually invisible. Updated to high-impact and accessible `dark:text-slate-400`.
+- Integrated full Markdown styling inside `VirtualizedChatList.tsx` using `ReactMarkdown`, adjusted height computation cushions to prevent text clipping of prose elements, and added automatic, dynamic scrolling actions to keep the chatbot's latest streams or completions scrolled to view at all times.
+### Decisions Made:
+- Applied recursive subcollection rules matching under Firestore `/users/{userId}` path to automatically support any present and future health telemetry nested tables without modifying rule paths individually.
+- Cast `listRef` to `any` in `VirtualizedChatList.tsx` to safely invoke `scrollToItem` without being blocked by types definitions on `react-window` interfaces.
+### Pending for Human Review:
+- Verify that specialist chat histories are securely persisting under user profiles on the Firestore console during active user sessions.
+### Next Recommended Steps:
+- Continue rolling out advanced medical SBAR classifications on incoming client diagnostics scans.

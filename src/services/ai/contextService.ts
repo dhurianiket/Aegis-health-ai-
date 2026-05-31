@@ -105,158 +105,113 @@ export const getPatientContext = async (
 export const formatContextForPrompt = (context: any): string => {
   const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics, clinicalNotes } = context;
 
-  const lines: string[] = [];
-
-  lines.push(`PATIENT PROFILE:`);
-  lines.push(`- Name: ${profile?.name || profile?.fullName || "Unknown"}`);
-  lines.push(`- Demographics: Age: ${demographics?.age || "Not provided"}, Gender: ${demographics?.gender || "Not provided"}`);
+  let prompt = `PATIENT PROFILE:\n`;
+  prompt += `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`;
+  prompt += `- Demographics: Age: ${demographics?.age || "Not provided"}, Gender: ${demographics?.gender || "Not provided"}\n`;
   if (demographics?.height || demographics?.weight) {
-    let metricsLine = `- Metrics: `;
-    if (demographics?.height) metricsLine += `Height: ${demographics.height} cm. `;
-    if (demographics?.weight) metricsLine += `Weight: ${demographics.weight} kg. `;
+    prompt += `- Metrics: `;
+    if (demographics?.height) prompt += `Height: ${demographics.height} cm. `;
+    if (demographics?.weight) prompt += `Weight: ${demographics.weight} kg. `;
     if (demographics?.height && demographics?.weight) {
       const h = demographics.height / 100;
       const bmi = Math.round((demographics.weight / (h * h)) * 10) / 10;
-      metricsLine += `BMI: ${bmi}`;
+      prompt += `BMI: ${bmi}`;
     }
-    lines.push(metricsLine);
+    prompt += `\n`;
   }
-  lines.push(`- Chronic Conditions: ${knownConditions?.join(", ") || profile?.chronicConditions?.join(", ") || "None reported"}`);
-  lines.push(`- Allergies: ${profile?.allergies?.join(", ") || "None reported"}`);
+  prompt += `- Chronic Conditions: ${knownConditions?.join(", ") || profile?.chronicConditions?.join(", ") || "None reported"}\n`;
+  prompt += `- Allergies: ${profile?.allergies?.join(", ") || "None reported"}\n`;
   if (clinicalNotes) {
-    lines.push(`- Clinical Notes: ${clinicalNotes}`);
+    prompt += `- Clinical Notes: ${clinicalNotes}\n`;
   }
-  lines.push(`- Reported Symptoms: ${reportedSymptoms?.join(", ") || "None reported"}\n`);
+  prompt += `- Reported Symptoms: ${reportedSymptoms?.join(", ") || "None reported"}\n\n`;
 
-  lines.push(`ACTIVE MEDICATIONS:`);
+  prompt += `ACTIVE MEDICATIONS:\n`;
   if (medications && medications.length > 0) {
-    let hasActiveMeds = false;
-    for (let i = 0; i < medications.length; i++) {
-      const m = medications[i];
-      const status = m.status ? String(m.status).toLowerCase() : "";
-      if (status === "active" || status === "current" || status === "ongoing" || m.status === undefined || m.status === null || status === "") {
-        lines.push(`- ${m.name || 'Unknown Medication'}: ${m.dosage || ''} ${m.frequency || ''}`);
-        hasActiveMeds = true;
-      }
-    }
-    if (!hasActiveMeds) {
-      for (let i = 0; i < medications.length; i++) {
-        const m = medications[i];
-        lines.push(`- ${m.name || 'Unknown Medication'}: ${m.dosage || ''} ${m.frequency || ''}`);
-      }
-    }
+    const activeMeds = medications.filter((m: any) => {
+      const status = String(m.status || "").toLowerCase();
+      return status === "active" || status === "current" || status === "ongoing" || m.status === undefined || m.status === null || status === "";
+    });
+    
+    const displayMeds = activeMeds.length > 0 ? activeMeds : medications;
+    
+    displayMeds.forEach((m: any) => {
+      prompt += `- ${m.name || 'Unknown Medication'}: ${m.dosage || ''} ${m.frequency || ''}\n`;
+    });
   } else {
-    lines.push(`- None reported`);
+    prompt += `- None reported\n`;
   }
-  lines.push("");
+  prompt += `\n`;
 
   let lastReportDate = "None";
-  if (labHistory && labHistory.length > 0) {
-    let maxDate = -Infinity;
-    for (let i = 0; i < labHistory.length; i++) {
-       const d = parseSafeTimestamp(labHistory[i].date);
-       if (d) {
-         const t = d.getTime();
-         if (!isNaN(t) && t > maxDate) {
-           maxDate = t;
-         }
-       }
-    }
-    if (maxDate !== -Infinity) {
-      lastReportDate = new Date(maxDate).toISOString().split("T")[0];
+  if (labHistory.length > 0) {
+    const dates = labHistory.map((l: any) => {
+       const d = parseSafeTimestamp(l.date);
+       return d ? d.getTime() : NaN;
+    }).filter((n: any) => !isNaN(n));
+    if (dates.length > 0) {
+      lastReportDate = new Date(Math.max(...dates)).toISOString().split("T")[0];
     }
   }
-  lines.push(`LAST REPORT DATE: ${lastReportDate}\n`);
+  prompt += `LAST REPORT DATE: ${lastReportDate}\n\n`;
 
-  lines.push(`LAB RESULTS HISTORY (Grouped by Marker, chronological):`);
-  if (labHistory && labHistory.length > 0) {
+  prompt += `LAB RESULTS HISTORY (Grouped by Marker, chronological):\n`;
+  if (labHistory.length > 0) {
     const labsByMarker = new Map();
-    for (let i = 0; i < labHistory.length; i++) {
-      const lab = labHistory[i];
-      let existing = labsByMarker.get(lab.markerName);
-      if (!existing) {
-        existing = [];
-        labsByMarker.set(lab.markerName, existing);
-      }
+    labHistory.forEach((lab: any) => {
+      const existing = labsByMarker.get(lab.markerName) || [];
       existing.push(lab);
-    }
+      labsByMarker.set(lab.markerName, existing);
+    });
 
     const severityScore = (status: string) => {
-      if (!status) return 1;
       const s = String(status).toLowerCase();
       if (s === "critical") return 3;
       if (s === "high" || s === "low" || s === "abnormal") return 2;
       return 1;
     };
 
-    const getT = (doc: any) => {
-      if (!doc) return 0;
-      const dateStr = doc.extractedDate || doc.date;
-      if (!dateStr) return 0;
-      const parsed = parseSafeTimestamp(dateStr);
-      return parsed ? parsed.getTime() : 0;
-    }
-
+    // Sort markers by severity of their most recent lab
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
       const labsA = labsByMarker.get(a);
       const labsB = labsByMarker.get(b);
-
-      let latestA = labsA[0];
-      let maxTA = getT(latestA);
-      for (let i=1; i<labsA.length; i++) {
-        const t = getT(labsA[i]);
-        if (t > maxTA) { maxTA = t; latestA = labsA[i]; }
-      }
-
-      let latestB = labsB[0];
-      let maxTB = getT(latestB);
-      for (let i=1; i<labsB.length; i++) {
-        const t = getT(labsB[i]);
-        if (t > maxTB) { maxTB = t; latestB = labsB[i]; }
-      }
-
+      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
+      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
+      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
       return severityScore(latestB.status) - severityScore(latestA.status);
     });
 
-    const maxMarkers = Math.min(15, sortedMarkers.length);
-    for (let i = 0; i < maxMarkers; i++) {
-      const markerName = sortedMarkers[i];
-      lines.push(`- ${markerName}:`);
-
-      const labs = labsByMarker.get(markerName);
-
-      const labsWithTime = labs.map((l:any) => ({ lab: l, t: getT(l) }));
-      labsWithTime.sort((a:any, b:any) => a.t - b.t);
-
-      const recentLabs = labsWithTime.slice(-5);
-
-      for (let j = 0; j < recentLabs.length; j++) {
-        const lab = recentLabs[j].lab;
+    sortedMarkers.slice(0, 15).forEach((markerName) => {
+      prompt += `- ${markerName}:\n`;
+      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
+      const labs = labsByMarker.get(markerName)
+        .sort((a: any, b: any) => getT(a) - getT(b))
+        .slice(-5); // Get up to 5 most recent
+      labs.forEach((lab: any) => {
         const dateStr = lab.extractedDate || lab.date;
         const _parsed = parseSafeTimestamp(dateStr);
         const formattedDate = _parsed ? _parsed.toISOString().split("T")[0] : "Recent";
         const valStr = lab.display_value || lab.numeric_value || lab.value;
-        lines.push(`  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})`);
-      }
-    }
+        prompt += `  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})\n`;
+      });
+    });
   } else {
-    lines.push(`- None reported`);
+    prompt += `- None reported\n`;
   }
-  lines.push("");
+  prompt += `\n`;
 
-  lines.push(`CLINICAL ALERTS:`);
-  if (alerts && alerts.length > 0) {
-    for (let i = 0; i < alerts.length; i++) {
-      const alert = alerts[i];
-      lines.push(`- [${(alert.severity || "").toUpperCase()}] ${alert.title}: ${alert.description}`);
-    }
+  prompt += `CLINICAL ALERTS:\n`;
+  if (alerts.length > 0) {
+    alerts.forEach((alert: any) => {
+      prompt += `- [${alert.severity.toUpperCase()}] ${alert.title}: ${alert.description}\n`;
+    });
   } else {
-    lines.push(`- No critical alerts detected`);
+    prompt += `- No critical alerts detected\n`;
   }
 
   if (extraContext) {
-    lines.push(`\nPAST SBAR SUMMARIES / MEDICAL NOTES:\n${extraContext}`);
+    prompt += `\nPAST SBAR SUMMARIES / MEDICAL NOTES:\n${extraContext}\n`;
   }
 
-  return lines.join('\n') + '\n';
+  return prompt;
 };

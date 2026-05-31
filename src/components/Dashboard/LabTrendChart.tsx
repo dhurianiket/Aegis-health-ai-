@@ -259,17 +259,17 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       const data = payload[0].payload;
       return (
         <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md border border-[var(--color-border)] p-4 rounded-2xl shadow-xl min-w-[150px]">
-          <p className="text-slate-500 dark:text-white/50 text-[10px] font-bold uppercase tracking-widest mb-2">
+          <p className="text-slate-600 dark:text-white/70 text-[10px] font-bold uppercase tracking-widest mb-2">
             {data.date}
           </p>
           <div className="flex items-baseline gap-1">
             <p className="text-slate-900 dark:text-white font-medium text-xl">{data.value}</p>
-            <span className="text-slate-500 dark:text-white/50 text-xs font-normal">
+            <span className="text-slate-600 dark:text-white/70 text-xs font-normal">
               {data.unit}
             </span>
           </div>
           {data.referenceRange && (
-            <p className="text-slate-500 dark:text-white/50 text-[10px] mt-1">
+            <p className="text-slate-600 dark:text-white/70 text-[10px] mt-1">
               Ref: {data.referenceRange}
             </p>
           )}

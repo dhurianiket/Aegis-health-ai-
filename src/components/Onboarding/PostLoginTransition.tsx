@@ -45,7 +45,7 @@ export default function PostLoginTransition({ onComplete }: PostLoginTransitionP
             >
               {userPhoto ? (
                 <div className="mb-4">
-                  <img src={userPhoto} alt={userName} className="w-20 h-20 rounded-[24px] object-cover border-2 border-teal-500/30" referrerPolicy="no-referrer" />
+                  <img src={userPhoto} alt={userName} width={80} height={80} className="w-20 h-20 rounded-[24px] object-cover border-2 border-teal-500/30" referrerPolicy="no-referrer" />
                 </div>
               ) : (
                 <div className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-teal-500/20 to-indigo-500/20 border-2 border-teal-500/30 flex items-center justify-center mb-4 text-teal-400 font-bold text-3xl">
