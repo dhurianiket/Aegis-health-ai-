@@ -161,7 +161,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                 ) : user ? (
                   "GO TO DASHBOARD"
                 ) : (
-                  "TRY FREE"
+                  "GET STARTED"
                 )}
               </button>
 
