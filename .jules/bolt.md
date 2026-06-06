@@ -1,3 +1,6 @@
+## 2025-05-31 - Memoizing expensive string operations in Lab Reports Filter
+**Learning:** React performance can degrade significantly when using array `.filter()` containing multiple string manipulations (like `toLowerCase()` and `.includes()`) directly within the render cycle, especially as the number of reports/entries grows. This is a common performance pitfall in components displaying large lists.
+**Action:** Always wrap heavy list filtering/sorting logic in `useMemo` when they depend on specific state changes rather than recalculating on every re-render.
 ## 2024-06-01 - Dashboard Component Memoization
 **Learning:** The Dashboard component renders multiple heavy child components inside a map loop (like HeroMetric). These components re-render unnecessarily when the Dashboard's state updates, even if their props haven't changed. Memoizing them is a crucial optimization.
 **Action:** Use React.memo() on frequently rendered child components like HeroMetric and ConditionTile to prevent unnecessary re-renders.
