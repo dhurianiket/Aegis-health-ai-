@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { HealthAlert } from "../../types/alerts";
 import AlertBanner from "../ui/AlertBanner";
@@ -19,7 +19,9 @@ export default function NotificationCenter({
   onAction,
   onClose,
 }: NotificationCenterProps) {
-  const visibleAlerts = alerts.filter((a) => !dismissedIds.has(a.id));
+  const visibleAlerts = useMemo(() => {
+    return alerts.filter((a) => !dismissedIds.has(a.id));
+  }, [alerts, dismissedIds]);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">

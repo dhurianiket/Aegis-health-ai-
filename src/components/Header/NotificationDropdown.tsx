@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Bell,
@@ -26,16 +26,18 @@ export default function NotificationDropdown({
   const [activeCategory, setActiveCategory] =
     useState<NotificationCategory>("all");
 
-  const filteredAlerts = alerts.filter((alert) => {
-    if (activeCategory === "all") return true;
-    if (activeCategory === "critical")
-      return alert.severity === "critical" || alert.severity === "high";
-    if (activeCategory === "reminders")
-      return alert.type === "appointment" || alert.type === "medication";
-    if (activeCategory === "updates")
-      return alert.type === "lab_value" || alert.type === "goal";
-    return true;
-  });
+  const filteredAlerts = useMemo(() => {
+    return alerts.filter((alert) => {
+      if (activeCategory === "all") return true;
+      if (activeCategory === "critical")
+        return alert.severity === "critical" || alert.severity === "high";
+      if (activeCategory === "reminders")
+        return alert.type === "appointment" || alert.type === "medication";
+      if (activeCategory === "updates")
+        return alert.type === "lab_value" || alert.type === "goal";
+      return true;
+    });
+  }, [alerts, activeCategory]);
 
   const getCategoryIcon = (category: NotificationCategory) => {
     switch (category) {
