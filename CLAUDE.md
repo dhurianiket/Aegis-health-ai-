@@ -33,6 +33,13 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - For backend logic, touch `/functions/` and run `npm run build` within that context.
 - Keep the `CURRENT_STATE.md` in sync whenever you complete a major structural change.
 
+## Session: June 06, 2026 (I)
+### Work Done:
+- Addressed 4 moderate-risk Dependabot security vulnerability warnings across the main root app and Firebase Cloud Functions backend.
+- Set up root `overrides` in `package.json` locking safe, non-vulnerable versions of transitive packages `protobufjs` to `>=7.5.8`, `ws` to `>=8.20.1`, and `qs` to `>=6.15.2`.
+- Added the resolved version of `uuid` (`^11.1.1`) into the `functions/package.json` dependencies and its associated override block.
+- Confirmed full module compilation and linting success across all features.
+
 ## Session: June 01, 2026 (I)
 ### Work Done:
 - Reverted Vite `manualChunks` setup which broke React context sharing and Firebase initialized states globally inside the module graph, causing a full production outage.

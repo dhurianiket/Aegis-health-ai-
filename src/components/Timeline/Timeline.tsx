@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -39,15 +39,6 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string }> = {
   [DocumentType.DISCHARGE_SUMMARY]: { icon: FileText, color: "indigo" },
   default: { icon: FileText, color: "slate" },
 };
-
-const CATEGORIES = [
-  { id: "ALL", label: "All Records" },
-  { id: DocumentType.LAB_REPORT, label: "Blood & Labs" },
-  { id: DocumentType.IMAGING_REPORT, label: "MRI & X-Rays" },
-  { id: DocumentType.PRESCRIPTION, label: "Prescriptions" },
-  { id: DocumentType.CONSULTATION_NOTE, label: "Consults" },
-  { id: DocumentType.DISCHARGE_SUMMARY, label: "Discharges" },
-];
 
 export default function Timeline() {
   const { user } = useAuth();
@@ -98,11 +89,10 @@ export default function Timeline() {
     fetchDocs();
   }, [user, activeProfile]);
 
-  const filteredDocs = useMemo(() => {
-    return filterType === "ALL"
+  const filteredDocs =
+    filterType === "ALL"
       ? documents
       : documents.filter((d) => d.type === filterType);
-  }, [documents, filterType]);
 
   const categories = [
     { id: "ALL", label: "All Records" },
@@ -174,7 +164,7 @@ export default function Timeline() {
         </div>
 
         <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-white/5 overflow-x-auto w-full md:w-auto scrollbar-none snap-x">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setFilterType(cat.id)}

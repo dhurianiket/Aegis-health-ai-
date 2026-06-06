@@ -12,7 +12,7 @@ export interface ConditionTileProps {
   onClick: () => void;
 }
 
-export const ConditionTile: React.FC<ConditionTileProps> = React.memo(({
+export const ConditionTile: React.FC<ConditionTileProps> = ({
   condition,
   keyMetric,
   unit,
@@ -95,4 +95,4 @@ export const ConditionTile: React.FC<ConditionTileProps> = React.memo(({
       </div>
     </motion.button>
   );
-});
+};

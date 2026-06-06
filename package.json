@@ -42,6 +42,11 @@
     "vite": "^6.2.3",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "protobufjs": "^7.5.8",
+    "ws": "^8.20.1",
+    "qs": "^6.15.2"
+  },
   "devDependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
     "@playwright/test": "^1.60.0",
