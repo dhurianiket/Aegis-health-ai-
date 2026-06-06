@@ -81,6 +81,8 @@ const LabReportsSection = lazy(
 );
 const AdminDashboard = lazy(() => import("./components/Admin/AdminDashboard"));
 const FeedbackWidget = lazy(() => import("./components/Dashboard/FeedbackWidget"));
+const CareMap = lazy(() => import("./components/CareMap/CareMap"));
+const CalendarSync = lazy(() => import("./components/CalendarSync/CalendarSync"));
 
 // Loading Fallback
 const Fallback = () => (
@@ -329,8 +331,12 @@ function MainApp() {
                     ? "SBAR Summary"
                     : activeTab === "settings"
                       ? "Settings"
-                      : activeTab === "medications"
-                        ? "Pharmacy"
+                      : activeTab === "caremap"
+                        ? "Localized Care Map"
+                        : activeTab === "calendar"
+                          ? "Calendar Sync"
+                          : activeTab === "medications"
+                            ? "Pharmacy"
                         : activeTab === "reports"
                           ? "Lab Reports"
                           : activeTab === "trends"
@@ -512,6 +518,16 @@ function MainApp() {
                     {activeTab === "specialist" && (
                       <SectionErrorBoundary sectionName="Specialist Lounge">
                         <SpecialistLounge />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "caremap" && (
+                      <SectionErrorBoundary sectionName="Care Map">
+                        <CareMap />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "calendar" && (
+                      <SectionErrorBoundary sectionName="Calendar Sync">
+                        <CalendarSync />
                       </SectionErrorBoundary>
                     )}
                     {activeTab === "medications" && (
@@ -737,29 +753,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const isLoading = authLoading || splashTimeout;
+  console.log("[ProtectedRoute] Render state:", { authLoading, splashTimeout, isLoading, hasUser: !!user });
 
   if (isLoading) {
     return <SplashScreen />;
   }
 
   if (!user) {
+    console.warn("[ProtectedRoute] No user found and splash timeout completed! Redirecting back to /");
     return <Navigate to="/" replace />;
   }
 
+  console.log("[ProtectedRoute] Authentication resolved and user exists! Rendering child components...");
   return <>{children}</>;
 };
 
 const PublicLandingPageRoute = () => {
   const { user, loading: authLoading } = useAuth();
+  console.log("[PublicLandingPageRoute] Render state:", { authLoading, hasUser: !!user });
 
   if (authLoading) {
     return <SplashScreen />;
   }
 
   if (user) {
+    console.log("[PublicLandingPageRoute] User found! Redirecting to /dashboard via <Navigate />");
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log("[PublicLandingPageRoute] No user found. Rendering LandingPage...");
   return <LandingPage />;
 };
 

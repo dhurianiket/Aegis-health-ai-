@@ -35,7 +35,7 @@ export const getPatientContext = async (
   (medications || []).forEach(m => {
      parsedMeds.push({ 
        ...m, 
-       name: m.name || m.medicationName || m.drugName || "Unknown Medication",
+       name: (m as any).genericName || (m as any).name || (m as any).medicationName || (m as any).drugName || (m as any).brandName || "Unknown Medication",
        source: 'manual', 
        priority: 1 
      });

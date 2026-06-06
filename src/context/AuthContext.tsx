@@ -7,11 +7,18 @@ import {
   onAuthStateChanged,
   signOut,
   GoogleAuthProvider,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase/config";
 import { markUserActive } from "../services/usageService";
 
 let cachedAccessToken: string | null = null;
+try {
+  cachedAccessToken = localStorage.getItem("google_access_token");
+} catch (e) {
+  console.warn("[Auth] Failed to load cachedAccessToken from localStorage:", e);
+}
 export const getAccessToken = () => cachedAccessToken;
 
 interface AuthContextType {
@@ -36,48 +43,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeFn: (() => void) | null = null;
 
     // A safely wrapped function for resolving the auth state to prevent early termination
     const resolveAuth = (u: User | null) => {
        if (isMounted) {
+         console.log("[Auth] resolveAuth called with user:", u ? u.uid : "null", "current state user:", user ? user.uid : "null");
          setUser(u);
          setLoading(false);
          setAuthResolved(true);
+       } else {
+         console.warn("[Auth] resolveAuth called but component is NOT mounted!");
        }
     };
 
     const initializeAuth = async () => {
       try {
-        // Step 1: Wait for getRedirectResult so we don't render protected pages before the OAuth token is resolved by Firebase internals
-        console.log("[Auth] Checking redirect result on load...");
-        const result = await getRedirectResult(auth);
-        
-        if (result?.user) {
-          console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          if (credential?.accessToken) {
-            cachedAccessToken = credential.accessToken;
-          }
-          // Wait for custom analytics / active user marking before unlocking UI
-          await markUserActive(result.user.uid).catch(err => console.error("[Auth] Error marking active after redirect:", err));
-          resolveAuth(result.user);
-        }
-      } catch (error: any) {
-        console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
-        const errorCode = error?.code;
-        if (errorCode === "auth/invalid-continue-uri") {
-           console.error("Firebase auth/invalid-continue-uri detected.", {
-             origin: window.location.origin,
-             authDomain: (auth as any).config?.authDomain
-           });
-        }
+        await setPersistence(auth, browserLocalPersistence);
+      } catch (err) {
+        console.error("Failed to set persistence:", err);
       }
 
-      // Step 2: Register onAuthStateChanged as the final source of truth for subsequent sessions
-      onAuthStateChanged(
+      // Step 1: Register onAuthStateChanged as the primary source of truth IMMEDIATELY
+      unsubscribeFn = onAuthStateChanged(
         auth,
         (u) => {
           if (isMounted) {
+            console.log("[Auth] onAuthStateChanged fired with user:", u ? u.uid : "null");
             if (u) {
               markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
             }
@@ -91,12 +83,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         }
       );
+
+      // Step 2: Extract redirect credential if available, but do not block on it
+      try {
+        console.log("[Auth] Checking redirect result on load...");
+        // Add a timeout race so it doesn't hang indefinitely if AppCheck keeps failing
+        const redirectPromise = getRedirectResult(auth);
+        const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject(new Error("redirect-timeout")), 5000));
+        const result = await Promise.race([redirectPromise, timeoutPromise]);
+        
+        if (result?.user) {
+          console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          if (credential?.accessToken) {
+            cachedAccessToken = credential.accessToken;
+            try {
+              localStorage.setItem("google_access_token", credential.accessToken);
+            } catch (e) {
+              console.warn("[Auth] Failed to persist google_access_token to localStorage:", e);
+            }
+          }
+          if (isMounted) {
+             resolveAuth(result.user);
+          }
+        }
+      } catch (error: any) {
+        if (error.message !== "redirect-timeout") {
+            console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
+        } else {
+            console.warn("[Auth] getRedirectResult timed out, continuing with normal auth state.");
+        }
+      }
     };
 
     initializeAuth();
 
     return () => {
       isMounted = false;
+      if (unsubscribeFn) {
+        unsubscribeFn();
+      }
     };
   }, []);
 
@@ -116,10 +142,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       console.log("Current Origin:", window.location.origin);
 
-      const preferRedirect = (window !== window.parent); // Only prefer redirect if embedded in an iframe
+      const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
+      const preferRedirect = (window !== window.parent) || isMobileDevice; // Use redirect if in iframe or on mobile
 
       if (preferRedirect) {
-        console.log("[Auth] Embedded detected. Attempting signInWithRedirect...");
+        console.log("[Auth] Embedded/Mobile detected. Attempting signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
         console.log("[Auth] signInWithRedirect initiated.");
         // Redirect navigates away from the page, no need to resolve state here
@@ -139,6 +166,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const credential = GoogleAuthProvider.credentialFromResult(result);
         if (credential?.accessToken) {
           cachedAccessToken = credential.accessToken;
+          try {
+            localStorage.setItem("google_access_token", credential.accessToken);
+          } catch (e) {
+            console.warn("[Auth] Failed to persist google_access_token to localStorage:", e);
+          }
         }
       }
       console.log("[Auth] Sign-in with popup successful.");
@@ -181,6 +213,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await signOut(auth);
       cachedAccessToken = null;
+      try {
+        localStorage.removeItem("google_access_token");
+      } catch (e) {}
     } catch (error) {
       console.error("Error signing out", error);
     }

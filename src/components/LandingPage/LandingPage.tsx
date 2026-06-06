@@ -88,7 +88,9 @@ export default function LandingPage() {
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
 
   useEffect(() => {
+    console.log("[LandingPage] Auth State Checked:", { loading, hasUser: !!user });
     if (!loading && user) {
+      console.log("[LandingPage] Condition met! Navigating manually to /dashboard...");
       navigate('/dashboard', { replace: true });
     }
   }, [user, loading, navigate]);
@@ -196,7 +198,7 @@ export default function LandingPage() {
                 disabled={isSigningIn}
                 className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-[10px] md:text-xs font-black tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               >
-                {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "TRY FREE"}
+                {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "GET STARTED"}
               </button>
 
               {/* Mobile Menu Toggle Button */}
@@ -318,7 +320,7 @@ export default function LandingPage() {
                   className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-[#0A192F] rounded-full font-bold tracking-wide transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex flex-col items-center justify-center"
                 >
                   <div className="flex items-center gap-2 text-base">
-                    {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "START FOR FREE"}
+                    {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "GET STARTED FOR FREE"}
                   </div>
                   <span className="text-[10px] font-semibold opacity-75 mt-0.5 tracking-wider">NO CREDIT CARD REQUIRED</span>
                 </button>
@@ -689,7 +691,7 @@ export default function LandingPage() {
                 disabled={isSigningIn}
                 className="px-10 py-5 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full font-bold tracking-wide transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-flex items-center gap-2"
               >
-                {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Sparkles className="w-5 h-5 text-emerald-500" /> START YOUR JOURNEY</>}
+                {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Sparkles className="w-5 h-5 text-emerald-500" /> GET STARTED NOW</>}
               </button>
             </div>
           </div>

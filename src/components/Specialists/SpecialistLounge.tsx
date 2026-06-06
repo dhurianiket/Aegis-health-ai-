@@ -14,6 +14,7 @@ import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
+import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
 
 const PROMPT_VERSION = "v1.0";
 
@@ -265,6 +266,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     <>
       <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl flex items-center gap-4 shrink-0 transition-colors z-10">
         <button 
+          aria-label="Go back"
           className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-[var(--color-text)] transition-colors active:scale-95"
           onClick={() => setIsMobileChatOpen(false)}
         >
@@ -288,13 +290,13 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       >
         {initialLoading ? (
           <div className="h-full flex flex-col items-center justify-center space-y-4">
-             <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-500 animate-spin" />
-             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase">Loading Conversation</p>
+             <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-400 animate-spin" />
+             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-400 tracking-widest uppercase">Loading Conversation</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center opacity-70 space-y-6 px-6">
              <div className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-100/50 dark:border-white/5">
-                <Stethoscope className="text-slate-400 dark:text-slate-500 w-10 h-10"/>
+                <Stethoscope className="text-slate-400 dark:text-slate-400 w-10 h-10"/>
              </div>
              <p className="text-[15px] text-slate-500 dark:text-slate-400 text-center font-medium leading-relaxed max-w-sm">
                Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
@@ -309,24 +311,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
              </div>
           </div>
         ) : (
-          <div className="space-y-6 pb-2">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end pl-12' : 'justify-start pr-12'}`}>
-                <div className={`max-w-[100%] rounded-[24px] px-5 py-4 text-[16px] leading-[1.6] shadow-sm ${
-                  msg.role === 'user' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-[8px]' : 'bg-slate-50 dark:bg-[#1C1C1E] text-slate-800 dark:text-slate-200 rounded-bl-[8px] border border-slate-100/50 dark:border-[#2C2C2E]'
-                }`}>
-                  <div className={`prose prose-sm md:prose-base max-w-none ${msg.role === 'user' ? 'prose-invert dark:prose-p:text-slate-900 dark:prose-headings:text-slate-900 dark:prose-strong:text-slate-900 prose-p:text-white prose-headings:text-white prose-strong:text-white' : 'dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-400 dark:marker:text-slate-500'}`}>
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                  <div className={`text-[11px] opacity-40 mt-3 font-semibold tracking-wide ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                    {(() => {
-                      const d = parseSafeTimestamp(msg.timestamp);
-                      return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-                    })()}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="flex-1 w-full relative min-h-0 min-h-[400px]">
+            <VirtualizedChatList 
+              messages={messages.map((m: any, i) => ({ id: String(i), role: m.role, text: m.content || "" }))} 
+            />
           </div>
         )}
         
@@ -430,7 +418,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}>{s.displayName}</div>
-                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-white/70' : 'text-slate-500 dark:text-slate-500'}`}>
+                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>
                       {s.expertise.slice(0, 2).join(' • ')}...
                     </div>
                   </div>

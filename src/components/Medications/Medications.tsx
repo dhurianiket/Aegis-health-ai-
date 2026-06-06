@@ -7,6 +7,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { logAuditEvent } from "../../lib/auditLogger";
 import { getActiveMedications, getInteractions, saveMedication, lookupRxCUI } from "../../services/medicationService";
 import { Medication, DrugInteraction } from "../../types/health";
+import InteractionMatrix from "./InteractionMatrix";
 
 export default function Medications({
   onOpenChat,
@@ -300,6 +301,14 @@ export default function Medications({
             </div>
           )}
         </AnimatePresence>
+      </div>
+
+      <div className="mt-12 pt-8 border-t border-[var(--color-border)]">
+        <InteractionMatrix 
+          medications={meds} 
+          interactions={interactions} 
+          onOpenChat={onOpenChat} 
+        />
       </div>
 
       {interactions.length > 0 && (

@@ -128,7 +128,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
             {markers.map((m) => (
               <div
                 key={m}
-                className="w-16 text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase truncate px-1"
+                className="w-16 text-center text-[10px] font-bold text-slate-600 dark:text-slate-200 uppercase truncate px-1"
               >
                 {m}
               </div>

@@ -22,7 +22,7 @@ async function startServer() {
   // Apply rate limiter globally
   app.use(limiter);
 
-  app.use(express.json({ limit: "50mb" }));
+  app.use(express.json({ limit: "1mb" }));
 
   // API routes
   app.get("/api/health", (req, res) => {
@@ -33,11 +33,15 @@ async function startServer() {
     try {
        const prompt = req.body.prompt;
        if (!prompt) return res.status(400).json({ error: "No prompt provided" });
+       if (typeof prompt !== 'string') return res.status(400).json({ error: "Invalid prompt format" });
+       if (prompt.length > 50000) return res.status(400).json({ error: "Prompt is too long" });
        
        const gApiKey = process.env.GEMINI_API_KEY;
        if (!gApiKey) return res.status(500).json({ error: "Gemini API key is not configured on server" });
 
-       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gApiKey}`, {
+       // Using the highly stable, reliable and supported gemini-3.5-flash model
+       let targetModel = "gemini-3.5-flash";
+       let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${gApiKey}`, {
          method: "POST",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({
@@ -46,13 +50,16 @@ async function startServer() {
        });
 
        if (!response.ok) {
-           return res.status(response.status).json({ error: "Gemini generation failed" });
+           const errBody = await response.text();
+           console.error("[Server Gemini API Error]:", errBody);
+           return res.status(response.status).json({ error: `Gemini generation failed: ${response.statusText}`, details: errBody });
        }
        
        const data = await response.json();
        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
        res.json({ text });
     } catch (e: any) {
+       console.error("[Server Internal Error]:", e);
        res.status(500).json({ error: e.message || "Failed to generate report" });
     }
   });

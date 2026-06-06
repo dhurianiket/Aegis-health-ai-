@@ -1,4 +1,4 @@
-import { onRequest, HttpsError } from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import * as crypto from "crypto";
 import { getFirestore } from "firebase-admin/firestore";
 
