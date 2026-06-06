@@ -53,3 +53,14 @@ npm test
 - [Features Overview](./FEATURES.md)
 - [Development Guide](./DEVELOPMENT.md)
 - [Architecture Details](./ARCHITECTURE.md)
+
+
+---
+
+## 🤝 Sponsors
+
+We are grateful to our sponsors for supporting the development of Aegis Health AI.
+
+[![Termius](https://termius.com/images/termius-logo.svg)](https://termius.com)
+
+**[Termius](https://termius.com)** — Modern SSH client for teams. Connect securely to remote servers from any device.
