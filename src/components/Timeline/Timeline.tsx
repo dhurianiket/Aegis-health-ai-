@@ -104,6 +104,15 @@ export default function Timeline() {
       : documents.filter((d) => d.type === filterType);
   }, [documents, filterType]);
 
+  const categories = [
+    { id: "ALL", label: "All Records" },
+    { id: DocumentType.LAB_REPORT, label: "Blood & Labs" },
+    { id: DocumentType.IMAGING_REPORT, label: "MRI & X-Rays" },
+    { id: DocumentType.PRESCRIPTION, label: "Prescriptions" },
+    { id: DocumentType.CONSULTATION_NOTE, label: "Consults" },
+    { id: DocumentType.DISCHARGE_SUMMARY, label: "Discharges" },
+  ];
+
   const handleDownload = (docResult: MedicalDocument) => {
     const json = JSON.stringify(docResult.extractedData || {}, null, 2);
     const blob = new Blob([json], { type: "application/json" });
