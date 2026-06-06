@@ -1,8 +1,8 @@
 # Aegis Health AI [![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](https://github.com/dhurianiket/aegis-health-app-90697)
 
-A modern, clinical-grade health management system. Aegis Health AI enables users to centralize medical records, extract intelligence from lab reports using Gemini 1.5 Flash, and monitor long-term clinical narratives.
+A modern, clinical-grade health management system. Aegis Health AI enables users to centralize medical records, extract intelligence from lab reports using Gemini 3.5 Flash, 3.1 pro and monitor long-term clinical narratives.
 
-**Live URL**: [https://aegis-health-app-90697.web.app](https://aegis-health-app-90697.web.app)
+**Live URL**: (https://aegishealthai.co.in/)
 
 ## 🚀 Features
 
@@ -53,3 +53,14 @@ npm test
 - [Features Overview](./FEATURES.md)
 - [Development Guide](./DEVELOPMENT.md)
 - [Architecture Details](./ARCHITECTURE.md)
+
+
+---
+
+## 🤝 Sponsors
+
+We are grateful to our sponsors for supporting the development of Aegis Health AI.
+
+[![Termius](https://termius.com/images/termius-logo.svg)](https://termius.com)
+
+**[Termius](https://termius.com)** — Modern SSH client for teams. Connect securely to remote servers from any device.
