@@ -66,6 +66,18 @@ import RemindersWidget from "./RemindersWidget";
 import FeedbackWidget from "./FeedbackWidget";
 import VisitPrepWidget from "./VisitPrepWidget";
 
+const DEFAULT_HEALTH_SCORE: HealthScore = {
+  overall: 85,
+  systems: {
+    metabolic: 85,
+    heart: 70,
+    liver: 92,
+    kidney: 88,
+    blood: 65,
+    inflammation: 78,
+  },
+} as HealthScore;
+
 const aggregateLabs = (docs: MedicalDocument[]): any[] => {
   const labMap = new Map<string, any[]>();
   docs.forEach(doc => {
@@ -202,19 +214,7 @@ export default function Dashboard({
     return () => { isMounted = false; };
   }, [user, activeProfile, retryCount, authResolved]);
 
-  const latestScore =
-    healthScores[0] ||
-    ({
-      overall: 85,
-      systems: {
-        metabolic: 85,
-        heart: 70,
-        liver: 92,
-        kidney: 88,
-        blood: 65,
-        inflammation: 78,
-      },
-    } as HealthScore);
+  const latestScore = healthScores[0] || DEFAULT_HEALTH_SCORE;
 
   const radarData = useMemo(
     () => [
@@ -235,6 +235,20 @@ export default function Dashboard({
     ],
     [latestScore.systems],
   );
+
+  const abnormalLabs = useMemo(() => {
+    return keyLabs.filter(l =>
+      (l.status as any) === 'high' ||
+      (l.status as any) === 'abnormal' ||
+      (l.status as any) === 'low' ||
+      (l.status as any) === 'critical'
+    );
+  }, [keyLabs]);
+
+  const keyMarkersLabs = useMemo(() => {
+    const targetMarkers = new Set(['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr']);
+    return keyLabs.filter(l => targetMarkers.has(l.markerName.toLowerCase().trim()));
+  }, [keyLabs]);
 
   const containerVariants: any = {
     hidden: { opacity: 0 },
@@ -480,7 +494,7 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => (
+                {abnormalLabs.slice(0, 5).map((lab, i) => (
                   <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
                      <div className="flex justify-between items-center mb-2">
                         <span className="font-semibold text-sm text-[var(--color-text)]">{lab.markerName}</span>
@@ -499,7 +513,7 @@ export default function Dashboard({
                      </div>
                   </div>
                 ))}
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
+                {abnormalLabs.length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
               </div>
@@ -512,7 +526,7 @@ export default function Dashboard({
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => {
+                  {keyMarkersLabs.map((lab, i) => {
                      const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
                      const numericValue = isNaN(valRaw) ? 0 : valRaw;
                      
