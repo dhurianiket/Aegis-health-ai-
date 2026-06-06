@@ -7,15 +7,15 @@
     <strong>A modern, clinical-grade health management system powered by Gemini AI.</strong>
   </p>
 
-  [![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](https://github.com/dhurianiket/aegis-health-app-90697/releases)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![React](https://img.shields.io/badge/React-19.0.1-61dafb.svg?logo=react)](https://react.dev)
-  [![Firebase](https://img.shields.io/badge/Firebase-12.13.0-FFCA28.svg?logo=firebase)](https://firebase.google.com/)
-  [![Google Gemini](https://img.shields.io/badge/Gemini-1.5_Flash-8E75B2.svg?logo=google)](https://deepmind.google/technologies/gemini/)
-  [![Deploy Status](https://github.com/dhurianiket/aegis-health-app-90697/actions/workflows/deploy.yml/badge.svg)](https://github.com/dhurianiket/aegis-health-app-90697/actions)
+[![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](https://github.com/dhurianiket/aegis-health-app-90697/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-19.0.1-61dafb.svg?logo=react)](https://react.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-12.13.0-FFCA28.svg?logo=firebase)](https://firebase.google.com/)
+[![Google Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-8E75B2.svg?logo=google)](https://deepmind.google/technologies/gemini/)
+[![Deploy Status](https://github.com/dhurianiket/aegis-health-app-90697/actions/workflows/deploy.yml/badge.svg)](https://github.com/dhurianiket/aegis-health-app-90697/actions)
 
   <h3>
-    <a href="https://aegis-health-app-90697.web.app">Live Demo</a>
+    <a href="https://aegishealthai.co.in/">Live Demo</a>
     <span> | </span>
     <a href="#-features">Features</a>
     <span> | </span>
@@ -33,14 +33,14 @@
 
 Aegis Health Intelligence is your **"Personal Medical Intelligence Bureau."** It bridges the gap between raw laboratory data and patient understanding without replacing physicians.
 
-By leveraging **Gemini 1.5 Flash** for high-speed extraction and **Gemini Pro** for nuanced conversational context, Aegis transforms fragmented, opaque medical records (PDFs/Images) into a structured, longitudinal health narrative. It provides intelligent insights, detects drug interactions via the RxNorm dataset, and prepares you for your next physician consult.
+By leveraging **Gemini 2.5 Flash** for high-speed extraction and **Gemini 2.5 Pro** / **Gemini 3.1 Pro** for nuanced conversational context, Aegis transforms fragmented, opaque medical records (PDFs/Images) into a structured, longitudinal health narrative. It provides intelligent insights, detects drug interactions via the RxNorm dataset, and prepares you for your next physician consult.
 
 ---
 
 ## ✨ Features
 
 - 🔐 **Secure Health Vault**: Enterprise-grade health data storage with strict Firebase per-user isolation.
-- 📄 **AI-Powered Lab Extraction**: Instantly digitize and structure physical or PDF lab reports via Gemini 1.5 Flash.
+- 📄 **AI-Powered Lab Extraction**: Instantly digitize and structure physical or PDF lab reports via Gemini 2.5 Flash.
 - 📈 **Clinical Trend Engine**: Automatically visualize metabolic and physiological trends across multiple lab tests over time.
 - 🧑‍⚕️ **Virtual Specialist Lounge**: Consult specialized AI agents (Cardiologist, Endocrinologist, Internal Medicine) grounded strictly in your personal health timeline.
 - 💊 **Medication Intelligence**: Real-time detection of drug-to-drug interactions and duplicate therapies leveraging the U.S. NLM RxNorm APIs.
@@ -66,8 +66,9 @@ By leveraging **Gemini 1.5 Flash** for high-speed extraction and **Gemini Pro** 
 
 ### AI & Integrations
 - **Google Gemini API** (`@google/genai`)
-  - *Gemini 1.5 Flash*: Structured JSON telemetry parsing.
-  - *Gemini Pro*: Deep conversational multi-agent multi-specialty chats.
+  - *Gemini 2.5 Flash*: Structured JSON telemetry parsing and high-speed lab report digitization.
+  - *Gemini 2.5 Pro*: Deep conversational multi-agent multi-specialty chats.
+  - *Gemini 3.1 Pro*: Advanced clinical reasoning and nuanced multi-step medical analysis.
 - **U.S. National Library of Medicine (NLM)** (RxNorm for Drug Interactions)
 
 ---
@@ -110,6 +111,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 # Server/AI key - MUST remain secret
 GEMINI_API_KEY=your_gemini_api_key
 ```
+
 > ⚠️ **Security Note:** Variables prefixed with `VITE_` are public. Never expose `GEMINI_API_KEY` or admin tokens to the client.
 
 ### 4. Start the Development Server
@@ -156,6 +158,18 @@ We welcome contributions! Please follow our established workflows:
 2. Write unit tests for new services (Vitest).
 3. Ensure no linting errors (`npm run lint`).
 4. Submit a Pull Request targeting the `main` branch with a clear description of the impact.
+
+---
+
+## 💎 Sponsors
+
+Aegis Health AI is proudly sponsored by:
+
+<a href="https://terminus.com" target="_blank">
+  <img src="https://img.shields.io/badge/Sponsored%20by-Terminus-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==" alt="Sponsored by Terminus" height="40" />
+</a>
+
+> **[Terminus](https://terminus.com)** — Powering go-to-market success for B2B companies worldwide.
 
 ---
 
