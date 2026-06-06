@@ -1,6 +1,14 @@
 # CURRENT_STATE.md — Verified Production Snapshot
 
-## Latest Update — May 31, 2026 (II)
+## Latest Update — June 01, 2026 (I)
+### Completed by: AI Studio Agent
+### Tasks Completed:
+- Reverted risky `manualChunks` bundle splitting configuration in `vite.config.ts` that caused a total production startup crash due to broken React context and Firebase module state sharing.
+- Updated documentation (`AGENTS.md`, `ARCHITECTURE.md`, `CURRENT_STATE.md`, and `CLAUDE.md`) to explicitly forbid `manualChunks` overriding, mandating the use of route-level `React.lazy()` for safe chunk splitting in Vite.
+### Current Status:
+- Restored production access, removing startup blockers. The app successfully compiles.
+
+## Previous Update — May 31, 2026 (II)
 ### Completed by: AI Studio Agent
 ### Tasks Completed:
 - Modified `/firestore.rules` to recursively allow authenticated owners or admins to read and write any nested subcollections under the `/users/{userId}` path (recursively matched wildcard rule `match /{document=**}`). This safely enables nested profiles subcollections like `/specialistChats` and `/cycleLogs` to persist successfully, resolving Firestore data saving issues.

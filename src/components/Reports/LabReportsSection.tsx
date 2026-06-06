@@ -296,7 +296,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
     return () => unsubscribe();
   }, [user, activeProfile]);
 
-  // ⚡ Bolt: Memoize filtered reports to prevent re-calculating expensive string operations on every render
+  // Performance optimization: Memoize filtered reports to avoid re-evaluating O(N*M) string matching on unrelated re-renders
   const filteredReports = useMemo(() => {
     return reports.filter(r => {
        if (filterType !== 'All') {
