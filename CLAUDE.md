@@ -33,6 +33,13 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - For backend logic, touch `/functions/` and run `npm run build` within that context.
 - Keep the `CURRENT_STATE.md` in sync whenever you complete a major structural change.
 
+## Session: June 01, 2026 (I)
+### Work Done:
+- Reverted Vite `manualChunks` setup which broke React context sharing and Firebase initialized states globally inside the module graph, causing a full production outage.
+- Updated agent markdown directives regarding safe Vite chunking procedures.
+### Decisions Made:
+- Bundle chunk splitting should rely solely on React-level `route-level lazy loading` (via `React.lazy()`) rather than Vite `manualChunks` configurations, preventing inadvertent internal module state splitting.
+
 ## Session: May 31, 2026 (II)
 ### Work Done:
 - Audited the Firestore security rules and implemented recursive owner-based access matching (wildcard rule `match /{document=**}` under `/users/{userId}`) to support nested profiles subcollections like `/specialistChats` and `/cycleLogs`. This ensures that specialist chat histories are saved and stored successfully without being blocked by Firestore security.
