@@ -266,6 +266,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     <>
       <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl flex items-center gap-4 shrink-0 transition-colors z-10">
         <button 
+          aria-label="Go back"
           className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-[var(--color-text)] transition-colors active:scale-95"
           onClick={() => setIsMobileChatOpen(false)}
         >
