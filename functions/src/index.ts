@@ -45,7 +45,7 @@ export const verifyRecaptchaToken = async (token: string, secretKey: string | un
 // Cloud Function Entrypoint
 export const verifyRecaptcha = onCall(
   { secrets: ["RECAPTCHA_SECRET_KEY"] },
-  async (request) => {
+  async (request: any) => {
     const token = request.data?.token;
 
     if (!token) {

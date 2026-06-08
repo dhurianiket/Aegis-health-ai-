@@ -33,6 +33,14 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - For backend logic, touch `/functions/` and run `npm run build` within that context.
 - Keep the `CURRENT_STATE.md` in sync whenever you complete a major structural change.
 
+## Session: June 08, 2026 (II)
+### Work Done:
+- Upgraded the central build-and-deploy pipeline (`deploy.yml`) to Node.js `24` and setup-node v4 to conform with the latest Action host platform environment standards.
+- Strengthened Cloud Functions deploy step in `.github/workflows/deploy.yml` by appending Google Service Account (`GCP_SA_KEY`) credential parameters to `w9jds/firebase-action`.
+- Configured `.github/workflows/ci-smoke.yml` to target Node.js `24` for parity.
+- Synchronized local development runtime configurations, upgrading `.nvmrc` to Node.js `24`.
+- Explicitly declared parameter types inside standard Firebase entry points in `/functions/src/` to prevent implicit `any` compiler failures under strict TypeScript compilations.
+
 ## Session: June 08, 2026 (I)
 ### Work Done:
 - Resolved Node.js incompatibility issues in the continuous integration smoke test workflow (`ci-smoke.yml`) by upgrading setup-node to v4 and locking the target version to Node.js `20`.

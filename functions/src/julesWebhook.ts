@@ -38,7 +38,7 @@ function verifySignature(payload: string, signature: string | string[] | undefin
  */
 export const handleGitHubWebhook = onRequest(
   { secrets: ["GITHUB_WEBHOOK_SECRET", "GEMINI_API_KEY"] },
-  async (req, res) => {
+  async (req: any, res: any) => {
     try {
       const rawBody = req.rawBody?.toString();
       if (!rawBody) {
