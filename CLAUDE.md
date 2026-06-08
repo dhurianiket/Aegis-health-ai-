@@ -33,6 +33,14 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - For backend logic, touch `/functions/` and run `npm run build` within that context.
 - Keep the `CURRENT_STATE.md` in sync whenever you complete a major structural change.
 
+## Session: June 08, 2026 (I)
+### Work Done:
+- Resolved Node.js incompatibility issues in the continuous integration smoke test workflow (`ci-smoke.yml`) by upgrading setup-node to v4 and locking the target version to Node.js `20`.
+- Added the `"engines": { "node": ">=20" }` constraint block to `package.json` to prevent local runs using legacy engine runtimes.
+- Configured a `.nvmrc` file set to Node.js `20` to guarantee consistent local development runtimes across teams.
+- Re-synchronized the package manifest list and refreshed client-side locks.
+- Documented Node.js requirements clearly inside `README.md`.
+
 ## Session: June 06, 2026 (I)
 ### Work Done:
 - Addressed 4 moderate-risk Dependabot security vulnerability warnings across the main root app and Firebase Cloud Functions backend.
@@ -44,6 +52,7 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 ### Work Done:
 - Reverted Vite `manualChunks` setup which broke React context sharing and Firebase initialized states globally inside the module graph, causing a full production outage.
 - Updated agent markdown directives regarding safe Vite chunking procedures.
+- Fixed Playwright smoke test failure by standardizing primary CTAs in both `LandingPage.tsx` and `InfoPageLayout.tsx` with accessible, stable, and highly visible `"GET STARTED"` label buttons.
 ### Decisions Made:
 - Bundle chunk splitting should rely solely on React-level `route-level lazy loading` (via `React.lazy()`) rather than Vite `manualChunks` configurations, preventing inadvertent internal module state splitting.
 

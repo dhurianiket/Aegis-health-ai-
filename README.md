@@ -24,10 +24,16 @@ A modern, clinical-grade health management system. Aegis Health AI enables users
 - **Intelligence**: Google Gemini 1.5 Flash (@google/genai)
 - **CI/CD**: GitHub Actions + Firebase Hosting
 
-## 📦 Installation
+## 📦 Requirements & Installation
+
+- **Node.js**: `v20.0.0` or higher (configured in `.nvmrc` and `engines` property)
+- **NPM**: `v10` or higher
+
+To get started:
 
 1. Clone the repository
-2. Install dependencies:
+2. Ensure you are using Node 20+ (e.g., run `nvm use` if using nvm)
+3. Install dependencies:
    ```bash
    npm install
    ```
