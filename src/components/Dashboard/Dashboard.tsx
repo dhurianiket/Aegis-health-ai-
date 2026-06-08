@@ -236,6 +236,24 @@ export default function Dashboard({
     [latestScore.systems],
   );
 
+  // Memoize filtered arrays to avoid recalculating on every re-render
+  // This improves performance, especially when there are many labs
+  const needsAttentionLabs = useMemo(() => {
+    return keyLabs.filter(l =>
+      (l.status as any) === 'high' ||
+      (l.status as any) === 'abnormal' ||
+      (l.status as any) === 'low' ||
+      (l.status as any) === 'critical'
+    );
+  }, [keyLabs]);
+
+  const trackedKeyLabs = useMemo(() => {
+    return keyLabs.filter(l =>
+      ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr']
+      .includes(l.markerName.toLowerCase().trim())
+    );
+  }, [keyLabs]);
+
   const containerVariants: any = {
     hidden: { opacity: 0 },
     visible: {
@@ -480,7 +498,7 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => (
+                {needsAttentionLabs.slice(0, 5).map((lab, i) => (
                   <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
                      <div className="flex justify-between items-center mb-2">
                         <span className="font-semibold text-sm text-[var(--color-text)]">{lab.markerName}</span>
@@ -499,7 +517,7 @@ export default function Dashboard({
                      </div>
                   </div>
                 ))}
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
+                {needsAttentionLabs.length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
               </div>
@@ -512,7 +530,7 @@ export default function Dashboard({
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => {
+                  {trackedKeyLabs.map((lab, i) => {
                      const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
                      const numericValue = isNaN(valRaw) ? 0 : valRaw;
                      
