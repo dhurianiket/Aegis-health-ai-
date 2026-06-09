@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin, Cloud } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
@@ -331,6 +331,44 @@ export default function LandingPage() {
                 >
                   VIEW DEMO <ArrowRight className="w-4 h-4" />
                 </button>
+              </motion.div>
+
+              {/* Founder Milestone / Social Proof */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+                className="mt-12 pt-8 border-t border-white/10 w-full max-w-lg"
+              >
+                <div className="bg-[#0f172a]/60 backdrop-blur-md border border-slate-700/40 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+                  
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 relative z-10">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shrink-0 shadow-inner">
+                      <Cloud className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white text-[13px] font-bold tracking-wide mb-1">Founder Milestone</h4>
+                      <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-1">
+                        Approved for startup support from AWS Activate, Microsoft Azure, and Google Cloud AI Builder.
+                      </p>
+                      <p className="text-emerald-400/90 text-[11px] font-semibold tracking-wide">
+                        More runway for secure healthcare AI.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-[10px] font-semibold text-slate-200 tracking-wide shadow-sm">
+                          AWS Activate
+                        </span>
+                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-[10px] font-semibold text-slate-200 tracking-wide shadow-sm">
+                          Azure Startup Support
+                        </span>
+                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-[10px] font-semibold text-slate-200 tracking-wide shadow-sm">
+                          Google Cloud AI Builder
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             </div>
 
