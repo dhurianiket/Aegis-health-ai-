@@ -69,3 +69,4 @@ User-owned app data remains exclusively under `users/{userId}/...`
 ## 7. Operational & Autonomous Deployments (Google Jules)
 - **GitHub Triggers:** Labeled issue webhooks invoke Firebase Cloud Functions to instantiate autonomous sessions.
 - **Verification:** Built against strict Vite/React linting and Vitest testing checks before staging branch synchronization.
+- **Environment Parity & Lockfile Security:** Both local sandbox nodes and remote GitHub Actions integration environments stand locked on Node.js `22` (Active LTS) with dynamic npm caching layers enabled. Absolute overrides are enforced within `package.json` configurations to secure transient modules (such as `ws`, `qs`, `protobufjs`) against automated regressions while keeping `package-lock.json` in absolute sync.
