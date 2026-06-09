@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../../context/AuthContext";
 import { db } from "../../lib/firebase/config";
@@ -296,22 +296,25 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
     return () => unsubscribe();
   }, [user, activeProfile]);
 
-  const filteredReports = reports.filter(r => {
-     if (filterType !== 'All') {
-        const typeMatch = filterType === 'Lab Reports' ? r.type?.toLowerCase().includes('lab') || r.type?.toLowerCase().includes('blood') || r.type?.toLowerCase().includes('pathology')
-           : filterType === 'Consultations' ? r.type?.toLowerCase().includes('consult') || r.type?.toLowerCase().includes('visit')
-           : true;
-        if (!typeMatch) return false;
-     }
-     if (searchQuery.trim().length > 0) {
-        const queryStr = searchQuery.toLowerCase();
-        const hospMatch = (r.hospitalName || '').toLowerCase().includes(queryStr);
-        const docMatch = (r.doctorName || '').toLowerCase().includes(queryStr);
-        const markerMatch = (r.extractedData?.lab_values || []).some(l => (l.marker || l.testName || '').toLowerCase().includes(queryStr));
-        if (!hospMatch && !docMatch && !markerMatch) return false;
-     }
-     return true;
-  });
+  // ⚡ Bolt: Memoize expensive filtering logic to prevent unnecessary re-renders when data hasn't changed
+  const filteredReports = useMemo(() => {
+     return reports.filter(r => {
+        if (filterType !== 'All') {
+           const typeMatch = filterType === 'Lab Reports' ? r.type?.toLowerCase().includes('lab') || r.type?.toLowerCase().includes('blood') || r.type?.toLowerCase().includes('pathology')
+              : filterType === 'Consultations' ? r.type?.toLowerCase().includes('consult') || r.type?.toLowerCase().includes('visit')
+              : true;
+           if (!typeMatch) return false;
+        }
+        if (searchQuery.trim().length > 0) {
+           const queryStr = searchQuery.toLowerCase();
+           const hospMatch = (r.hospitalName || '').toLowerCase().includes(queryStr);
+           const docMatch = (r.doctorName || '').toLowerCase().includes(queryStr);
+           const markerMatch = (r.extractedData?.lab_values || []).some((l: any) => (l.marker || l.testName || '').toLowerCase().includes(queryStr));
+           if (!hospMatch && !docMatch && !markerMatch) return false;
+        }
+        return true;
+     });
+  }, [reports, filterType, searchQuery]);
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-24">
