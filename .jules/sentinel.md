@@ -1,0 +1,4 @@
+## 2026-06-09 - Secure crypto.timingSafeEqual Buffer Validation
+**Vulnerability:** Unhandled TypeError crash leading to DoS when buffers of unequal length were passed to `crypto.timingSafeEqual` during GitHub webhook signature verification.
+**Learning:** Node.js `crypto.timingSafeEqual` throws an exception if the lengths of the two buffers do not match. If an attacker passes a malformed signature of an unexpected length, it results in a server crash or unhandled error state, acting as a Denial of Service.
+**Prevention:** Always check if the lengths of the two buffers are identical (`if (buf1.length !== buf2.length) return false;`) before invoking `crypto.timingSafeEqual`. Since HMAC outputs have fixed lengths based on the algorithm, returning early on a length mismatch is safe and prevents the crash.
