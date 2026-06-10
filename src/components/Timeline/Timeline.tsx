@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -89,12 +89,10 @@ export default function Timeline() {
     fetchDocs();
   }, [user, activeProfile]);
 
-  // ⚡ Bolt: Memoize filtered documents to prevent unnecessary recalculations on every render
-  const filteredDocs = useMemo(() => {
-    return filterType === "ALL"
+  const filteredDocs =
+    filterType === "ALL"
       ? documents
       : documents.filter((d) => d.type === filterType);
-  }, [filterType, documents]);
 
   const categories = [
     { id: "ALL", label: "All Records" },

@@ -599,7 +599,6 @@ function MainApp() {
                     Create Profile
                   </h3>
                   <button
-                    aria-label="Close Create Profile Modal"
                     onClick={() => setIsNewProfileModaOpen(false)}
                     className="p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors"
                   >
