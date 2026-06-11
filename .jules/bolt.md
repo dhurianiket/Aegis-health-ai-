@@ -1,0 +1,3 @@
+## 2024-05-18 - Promise.all Optimization for Sequential Awaits in API Processing
+**Learning:** In `medicationService.ts`, nested iterations over a nested JSON response were initiating async requests sequentially (`await explainInteraction(pair)`). This created an unnecessary bottleneck since each request was independent and essentially blocked the next request. Using an array of Promises allows parallel execution of independent async queries.
+**Action:** Always identify independent asynchronous operations in loops and run them concurrently using `Promise.all()` to drastically lower overall latency.
