@@ -33,12 +33,16 @@ export default function LoadingSpinner({
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       className={`flex flex-col items-center justify-center gap-4 ${className}`}
     >
+      <span className="sr-only">{label || "Loading..."}</span>
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
         className="text-indigo-500"
+        aria-hidden="true"
       >
         <Loader2 className={sizeClasses[size]} />
       </motion.div>
@@ -47,6 +51,7 @@ export default function LoadingSpinner({
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-slate-400 font-medium tracking-tight"
+          aria-hidden="true"
         >
           {label}
         </motion.p>
