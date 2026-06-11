@@ -1,3 +1,3 @@
-## 2024-05-24 - Icon-Only Buttons Require ARIA Labels
-**Learning:** Found an accessibility issue where the close button (`<button><X /></button>`) in `NotificationDropdown.tsx` lacked an `aria-label`. This pattern is common for icon-only buttons and makes them inaccessible to screen readers.
-**Action:** When implementing icon-only buttons, always ensure an `aria-label` is provided to describe the action.
+## 2024-06-11 - Screen Reader Redundancy in Animated Loaders
+**Learning:** Animated loaders with visual text labels often cause screen readers to announce both the visual label and internal structure redundantly if not properly hidden. In React/motion loaders like `LoadingSpinner`, wrapping the entire component with `role="status"` and `aria-live="polite"` while explicitly adding `aria-hidden="true"` to the visual/animated pieces is necessary. Using an explicit `sr-only` span provides the cleanest, single-source-of-truth announcement.
+**Action:** Always add an `sr-only` span with fallback text ("Loading...") inside `role="status"` containers, and proactively `aria-hidden="true"` any sibling visual spinners or motion elements.
