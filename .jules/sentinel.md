@@ -10,3 +10,7 @@
 **Vulnerability:** The application was vulnerable to Denial of Service via a 50MB `express.json` parsing limit and lack of type checking on parameters passed directly from `req.body` into native and external APIs.
 **Learning:** Using a massive JSON parsing limit allows an attacker to exhaust server memory easily. Failing to check if `req.body.prompt` is an actual string before passing it allows prototype pollution and type mismatches.
 **Prevention:** Always restrict `express.json({ limit: "1mb" })` unless large payloads are strictly required, and always validate request parameter types (e.g., `typeof param !== "string"`) before executing business logic.
+## 2025-03-01 - HTTP Parameter Pollution in API Request Bodies
+**Vulnerability:** The reCAPTCHA verification function manually constructed an `application/x-www-form-urlencoded` payload without URL-encoding its parameters, allowing HTTP Parameter Pollution if a malicious user injected characters like `&` or `=`.
+**Learning:** When using template literals to construct URL-encoded payloads, raw strings map directly to the payload, bypassing safety checks inherent in objects/URLSearchParams.
+**Prevention:** When manually constructing `application/x-www-form-urlencoded` request bodies (e.g., in `fetch` API calls), always wrap user-supplied or dynamic parameters with `encodeURIComponent()` to prevent HTTP Parameter Pollution (HPP) vulnerabilities.
