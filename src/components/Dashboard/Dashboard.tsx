@@ -101,30 +101,24 @@ const aggregateLabs = (docs: MedicalDocument[]): any[] => {
 
   const aggregatedLabs: any[] = [];
   labMap.forEach((vals, normalizedMarker) => {
-    vals.sort((a, b) => {
-      const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
-      const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
-      return timeB - timeA;
-    });
+    // ⚡ Bolt: Cache parsed timestamps to avoid O(N log N) regex/parsing calls during sort
+    const mappedVals = vals.map((val) => ({
+      val,
+      time: parseSafeTimestamp(val.date)?.getTime() || 0,
+    }));
+    mappedVals.sort((a, b) => b.time - a.time);
+
+    // Mutate original array for downstream compatibility (though usually we just need the first/second)
+    for (let i = 0; i < vals.length; i++) {
+      vals[i] = mappedVals[i].val;
+    }
+
     const latest = vals[0];
     const previous = vals.length > 1 ? vals[1] : null;
     let trend = "stable";
-    if (
-      previous &&
-      !isNaN(
-        parseFloat(
-          String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ""),
-        ),
-      ) &&
-      !isNaN(
-        parseFloat(
-          String(previous.value || previous.display_value).replace(
-            /[^0-9.-]/g,
-            "",
-          ),
-        ),
-      )
-    ) {
+
+    if (previous) {
+      // ⚡ Bolt: Cache parsed numbers to avoid duplicate string allocation and regex execution
       const latestNum = parseFloat(
         String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ""),
       );
@@ -134,9 +128,12 @@ const aggregateLabs = (docs: MedicalDocument[]): any[] => {
           "",
         ),
       );
-      const diff = latestNum - previousNum;
-      if (diff > 0) trend = "up";
-      else if (diff < 0) trend = "down";
+
+      if (!isNaN(latestNum) && !isNaN(previousNum)) {
+        const diff = latestNum - previousNum;
+        if (diff > 0) trend = "up";
+        else if (diff < 0) trend = "down";
+      }
     }
     aggregatedLabs.push({
       markerName:
