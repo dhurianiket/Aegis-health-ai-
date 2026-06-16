@@ -338,9 +338,12 @@ export default function Timeline() {
                 <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4">
                   <FileText className="w-8 h-8 text-slate-500" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Your health vault is empty.</h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                  Your health vault is empty.
+                </h3>
                 <p className="text-slate-500 text-sm max-w-sm mx-auto">
-                  Upload your first lab report to generate insights and track your trends.
+                  Upload your first lab report to generate insights and track
+                  your trends.
                 </p>
               </motion.div>
             )}
@@ -391,6 +394,7 @@ export default function Timeline() {
                 </div>
                 <button
                   onClick={() => setSelectedDoc(null)}
+                  aria-label="Close modal"
                   className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -485,42 +489,42 @@ export default function Timeline() {
                   )}
               </div>
 
-                <div className="p-6 md:p-8 border-t border-white/5 flex items-center gap-3 shrink-0 flex-wrap">
-                  {selectedDoc.fileUrl && (
-                    <a
-                      href={selectedDoc.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/80 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
-                    >
-                      <Download className="w-4 h-4" /> Original PDF
-                    </a>
-                  )}
-                  <button
-                    onClick={() => handleDownload(selectedDoc)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+              <div className="p-6 md:p-8 border-t border-white/5 flex items-center gap-3 shrink-0 flex-wrap">
+                {selectedDoc.fileUrl && (
+                  <a
+                    href={selectedDoc.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/80 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
                   >
-                    <Download className="w-4 h-4" /> JSON
-                  </button>
-                  <button
-                    onClick={() => handleShare(selectedDoc)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
-                  >
-                    <Share2 className="w-4 h-4" /> Share Info
-                  </button>
-                  <button
-                    onClick={() => handleDelete(selectedDoc)}
-                    disabled={isDeleting}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center disabled:opacity-50"
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}{" "}
-                    Delete
-                  </button>
-                </div>
+                    <Download className="w-4 h-4" /> Original PDF
+                  </a>
+                )}
+                <button
+                  onClick={() => handleDownload(selectedDoc)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                >
+                  <Download className="w-4 h-4" /> JSON
+                </button>
+                <button
+                  onClick={() => handleShare(selectedDoc)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                >
+                  <Share2 className="w-4 h-4" /> Share Info
+                </button>
+                <button
+                  onClick={() => handleDelete(selectedDoc)}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}{" "}
+                  Delete
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -528,7 +532,16 @@ export default function Timeline() {
 
       <div className="pt-8 mt-12 border-t border-white/10 opacity-40 text-center">
         <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.15em]">
-          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-300 underline decoration-slate-500 transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
+          Built by{" "}
+          <a
+            href="https://aniket.aegishealthai.co.in/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-400 hover:text-slate-300 underline decoration-slate-500 transition-colors"
+          >
+            Aniket Dhuri
+          </a>{" "}
+          · Powered by Gemini AI
         </p>
       </div>
     </div>
