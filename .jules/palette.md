@@ -1,3 +1,3 @@
-## 2024-06-11 - Screen Reader Redundancy in Animated Loaders
-**Learning:** Animated loaders with visual text labels often cause screen readers to announce both the visual label and internal structure redundantly if not properly hidden. In React/motion loaders like `LoadingSpinner`, wrapping the entire component with `role="status"` and `aria-live="polite"` while explicitly adding `aria-hidden="true"` to the visual/animated pieces is necessary. Using an explicit `sr-only` span provides the cleanest, single-source-of-truth announcement.
-**Action:** Always add an `sr-only` span with fallback text ("Loading...") inside `role="status"` containers, and proactively `aria-hidden="true"` any sibling visual spinners or motion elements.
+## 2024-06-25 - ARIA Labels for Icon-Only Navigation Buttons
+**Learning:** Icon-only navigation buttons in custom components (like `CycleTrackingWidget` header settings) often lack context for screen readers. Using `aria-label` provides this context without affecting the visual layout.
+**Action:** When creating or reviewing icon-only buttons, especially in widget headers or custom UI elements, ensure `aria-label` is populated with a descriptive action text.
