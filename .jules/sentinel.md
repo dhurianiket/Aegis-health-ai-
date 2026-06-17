@@ -14,3 +14,7 @@
 **Vulnerability:** The reCAPTCHA verification function manually constructed an `application/x-www-form-urlencoded` payload without URL-encoding its parameters, allowing HTTP Parameter Pollution if a malicious user injected characters like `&` or `=`.
 **Learning:** When using template literals to construct URL-encoded payloads, raw strings map directly to the payload, bypassing safety checks inherent in objects/URLSearchParams.
 **Prevention:** When manually constructing `application/x-www-form-urlencoded` request bodies (e.g., in `fetch` API calls), always wrap user-supplied or dynamic parameters with `encodeURIComponent()` to prevent HTTP Parameter Pollution (HPP) vulnerabilities.
+## 2026-06-17 - Broken Access Control in Global Analytics
+**Vulnerability:** The `firestore.rules` file allowed any authenticated user to write to the `/analytics/globalStats` collection via `allow write: if request.auth != null;`.
+**Learning:** While the rule correctly required admin access to *read* the stats, it mistakenly allowed any logged-in user to *write* to them, enabling potential tampering or data corruption of global analytics.
+**Prevention:** Always verify that both `read` and `write` rules for administrative paths use the `isAdmin()` function.
