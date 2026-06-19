@@ -125,7 +125,10 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium transition text-[var(--color-text)]">
+              <button
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium transition text-[var(--color-text)]"
+                aria-label="Export Data"
+              >
                 <Download className="w-4 h-4" /> Export
               </button>
             </div>
@@ -145,6 +148,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleEmergencyMode}
                 className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-xl text-sm font-medium transition border border-amber-500/20"
+                aria-label="Enable Global Emergency Mode"
               >
                 Enable Mode
               </button>
@@ -168,6 +172,7 @@ export default function SettingsPage() {
                 onClick={handleDeleteProfile}
                 disabled={profiles.length <= 1}
                 className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Delete Profile"
               >
                 Delete Profile
               </button>
@@ -198,6 +203,7 @@ export default function SettingsPage() {
                   }
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20"
+                aria-label="Delete Account Data"
               >
                 Delete Data
               </button>
@@ -231,6 +237,7 @@ export default function SettingsPage() {
           <button
             onClick={logOut}
             className="px-6 py-2 border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] rounded-full text-sm font-medium transition"
+            aria-label="Sign Out"
           >
             Sign Out
           </button>
@@ -238,10 +245,23 @@ export default function SettingsPage() {
 
         <div className="pt-12 mt-8 border-t border-[var(--color-border)] opacity-60">
           <div className="flex flex-col items-center text-center space-y-1">
-            <h4 className="text-sm font-semibold text-[var(--color-text)] tracking-tight">Aegis Health AI</h4>
-            <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.2em] mb-2">Version 1.7.0</p>
+            <h4 className="text-sm font-semibold text-[var(--color-text)] tracking-tight">
+              Aegis Health AI
+            </h4>
+            <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.2em] mb-2">
+              Version 1.7.0
+            </p>
             <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5">
-              Developed by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-[var(--color-text)] hover:text-emerald-500 underline underline-offset-2 decoration-[var(--color-text-faint)] hover:decoration-emerald-500 transition-colors">Aniket Dhuri</a> ✨
+              Developed by{" "}
+              <a
+                href="https://aniket.aegishealthai.co.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-[var(--color-text)] hover:text-emerald-500 underline underline-offset-2 decoration-[var(--color-text-faint)] hover:decoration-emerald-500 transition-colors"
+              >
+                Aniket Dhuri
+              </a>{" "}
+              ✨
             </p>
             <p className="text-[10px] text-[var(--color-text-faint)] font-medium">
               Powered by Google AI Studio & Gemini AI
