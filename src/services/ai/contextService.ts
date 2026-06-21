@@ -19,12 +19,13 @@ export const getPatientContext = async (
 ): Promise<PatientContext> => {
   const profileId = profile?.id === "Myself" ? undefined : profile?.id;
 
-  const [labHistory, medications, recentInsights, documents] = await Promise.all([
-    getLabHistory(userId, undefined, profileId),
-    getMedications(userId, profileId),
-    getLatestInsights(userId, profileId),
-    getDocuments(userId, profileId),
-  ]);
+  const [labHistory, medications, recentInsights, documents] =
+    await Promise.all([
+      getLabHistory(userId, undefined, profileId),
+      getMedications(userId, profileId),
+      getLatestInsights(userId, profileId),
+      getDocuments(userId, profileId),
+    ]);
 
   // Extract from documents if possible
   const docSbars: string[] = [];
@@ -32,13 +33,19 @@ export const getPatientContext = async (
   const parsedMeds: any[] = [];
 
   // A) Manual Medications
-  (medications || []).forEach(m => {
-     parsedMeds.push({ 
-       ...m, 
-       name: (m as any).genericName || (m as any).name || (m as any).medicationName || (m as any).drugName || (m as any).brandName || "Unknown Medication",
-       source: 'manual', 
-       priority: 1 
-     });
+  (medications || []).forEach((m) => {
+    parsedMeds.push({
+      ...m,
+      name:
+        (m as any).genericName ||
+        (m as any).name ||
+        (m as any).medicationName ||
+        (m as any).drugName ||
+        (m as any).brandName ||
+        "Unknown Medication",
+      source: "manual",
+      priority: 1,
+    });
   });
 
   if (documents) {
@@ -50,13 +57,17 @@ export const getPatientContext = async (
       if (doc.extractedData) {
         if (Array.isArray(doc.extractedData.medications)) {
           doc.extractedData.medications.forEach((m: any) => {
-            const medObj = typeof m === 'string' ? { name: m } : m;
-            parsedMeds.push({ 
-              ...medObj, 
-              name: medObj.name || medObj.medicationName || medObj.drugName || "Unknown Medication",
-              source: 'report', 
-              priority: 3, 
-              date: doc.date 
+            const medObj = typeof m === "string" ? { name: m } : m;
+            parsedMeds.push({
+              ...medObj,
+              name:
+                medObj.name ||
+                medObj.medicationName ||
+                medObj.drugName ||
+                "Unknown Medication",
+              source: "report",
+              priority: 3,
+              date: doc.date,
             });
           });
         }
@@ -69,12 +80,14 @@ export const getPatientContext = async (
 
   // Deduplicate by name, keeping highest priority first
   const deduplicatedMeds = new Map();
-  parsedMeds.sort((a,b) => a.priority - b.priority).forEach(m => {
-     const key = m.name?.toLowerCase().trim();
-     if (key && !deduplicatedMeds.has(key)) {
+  parsedMeds
+    .sort((a, b) => a.priority - b.priority)
+    .forEach((m) => {
+      const key = m.name?.toLowerCase().trim();
+      if (key && !deduplicatedMeds.has(key)) {
         deduplicatedMeds.set(key, m);
-     }
-  });
+      }
+    });
 
   const allMedications = Array.from(deduplicatedMeds.values());
   const alerts = getConsolidatedAlerts(labHistory || [], allMedications);
@@ -86,16 +99,23 @@ export const getPatientContext = async (
     recentInsights: recentInsights || [],
     alerts,
     // Add raw SBAR text for extra context
-    extraContext: docSbars.join("\n\n") + (docDates.length ? `\n\nUPLOADED REPORT DATES:\n${docDates.join(', ')}` : ''),
+    extraContext:
+      docSbars.join("\n\n") +
+      (docDates.length
+        ? `\n\nUPLOADED REPORT DATES:\n${docDates.join(", ")}`
+        : ""),
     reportedSymptoms: [], // Populate from chat history if possible
     knownConditions: profile?.chronicConditions || [],
     demographics: {
-      age: profile?.dob && parseSafeTimestamp(profile.dob) ? `${new Date().getFullYear() - parseSafeTimestamp(profile.dob)!.getFullYear()} years` : "Not provided",
+      age:
+        profile?.dob && parseSafeTimestamp(profile.dob)
+          ? `${new Date().getFullYear() - parseSafeTimestamp(profile.dob)!.getFullYear()} years`
+          : "Not provided",
       gender: profile?.gender || "Not provided",
       height: profile?.height,
       weight: profile?.weight,
     },
-    clinicalNotes: profile?.clinicalNotes
+    clinicalNotes: profile?.clinicalNotes,
   } as PatientContext;
 };
 
@@ -103,7 +123,17 @@ export const getPatientContext = async (
  * Formats the patient context into a clean, prompt-friendly string.
  */
 export const formatContextForPrompt = (context: any): string => {
-  const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics, clinicalNotes } = context;
+  const {
+    profile,
+    labHistory,
+    medications,
+    alerts,
+    extraContext,
+    reportedSymptoms,
+    knownConditions,
+    demographics,
+    clinicalNotes,
+  } = context;
 
   let prompt = `PATIENT PROFILE:\n`;
   prompt += `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`;
@@ -130,13 +160,20 @@ export const formatContextForPrompt = (context: any): string => {
   if (medications && medications.length > 0) {
     const activeMeds = medications.filter((m: any) => {
       const status = String(m.status || "").toLowerCase();
-      return status === "active" || status === "current" || status === "ongoing" || m.status === undefined || m.status === null || status === "";
+      return (
+        status === "active" ||
+        status === "current" ||
+        status === "ongoing" ||
+        m.status === undefined ||
+        m.status === null ||
+        status === ""
+      );
     });
-    
+
     const displayMeds = activeMeds.length > 0 ? activeMeds : medications;
-    
+
     displayMeds.forEach((m: any) => {
-      prompt += `- ${m.name || 'Unknown Medication'}: ${m.dosage || ''} ${m.frequency || ''}\n`;
+      prompt += `- ${m.name || "Unknown Medication"}: ${m.dosage || ""} ${m.frequency || ""}\n`;
     });
   } else {
     prompt += `- None reported\n`;
@@ -145,10 +182,12 @@ export const formatContextForPrompt = (context: any): string => {
 
   let lastReportDate = "None";
   if (labHistory.length > 0) {
-    const dates = labHistory.map((l: any) => {
-       const d = parseSafeTimestamp(l.date);
-       return d ? d.getTime() : NaN;
-    }).filter((n: any) => !isNaN(n));
+    const dates = labHistory
+      .map((l: any) => {
+        const d = parseSafeTimestamp(l.date);
+        return d ? d.getTime() : NaN;
+      })
+      .filter((n: any) => !isNaN(n));
     if (dates.length > 0) {
       lastReportDate = new Date(Math.max(...dates)).toISOString().split("T")[0];
     }
@@ -171,26 +210,38 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
+    // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
+    const decoratedLabs = new Map();
+    labsByMarker.forEach((labs, marker) => {
+      const decorated = labs.map((lab: any) => ({
+        lab,
+        time: parseSafeTimestamp(lab.extractedDate || lab.date)?.getTime() || 0,
+      }));
+      decorated.sort((a: any, b: any) => a.time - b.time);
+      decoratedLabs.set(marker, decorated);
+    });
+
     // Sort markers by severity of their most recent lab
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      const labsA = labsByMarker.get(a);
-      const labsB = labsByMarker.get(b);
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
+      const decA = decoratedLabs.get(a);
+      const decB = decoratedLabs.get(b);
+      const latestA = decA[decA.length - 1].lab;
+      const latestB = decB[decB.length - 1].lab;
       return severityScore(latestB.status) - severityScore(latestA.status);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {
       prompt += `- ${markerName}:\n`;
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const labs = labsByMarker.get(markerName)
-        .sort((a: any, b: any) => getT(a) - getT(b))
-        .slice(-5); // Get up to 5 most recent
+      const labs = decoratedLabs
+        .get(markerName)
+        .slice(-5)
+        .map((item: any) => item.lab); // Get up to 5 most recent
       labs.forEach((lab: any) => {
         const dateStr = lab.extractedDate || lab.date;
         const _parsed = parseSafeTimestamp(dateStr);
-        const formattedDate = _parsed ? _parsed.toISOString().split("T")[0] : "Recent";
+        const formattedDate = _parsed
+          ? _parsed.toISOString().split("T")[0]
+          : "Recent";
         const valStr = lab.display_value || lab.numeric_value || lab.value;
         prompt += `  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})\n`;
       });

@@ -54,7 +54,7 @@ export const getCoachResponse = async (
   userMessage: string,
   history: { role: "user" | "assistant"; content: string }[] = [],
   signal?: AbortSignal,
-  isSummaryRequest?: boolean
+  isSummaryRequest?: boolean,
 ): Promise<AsyncGenerator<string>> => {
   const ai = getAI();
   const patientDataPrompt = formatContextForPrompt(context);
@@ -82,7 +82,6 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 - **Recommendation:** Numbered list grouped by Immediate, Lifestyle, and Follow-up.
 `;
   }
-
 
   // GenAI SDK requires strictly alternating roles: user -> model -> user -> model
   const contents: { role: "user" | "model"; parts: { text: string }[] }[] = [];
@@ -131,16 +130,23 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     }
   }
 
-  if (!ai) throw new Error("Aura AI is currently offline. Please check your configuration.");
-  
+  if (!ai)
+    throw new Error(
+      "Aura AI is currently offline. Please check your configuration.",
+    );
+
   try {
-    const targetModel = isSummaryRequest ? "gemini-3-flash-preview" : "gemini-1.5-pro";
+    const targetModel = isSummaryRequest
+      ? "gemini-3-flash-preview"
+      : "gemini-1.5-pro";
     // History Sanitation
     contents.forEach((c) => {
-      c.parts = c.parts.filter(p => typeof p.text === 'string' && p.text.trim() !== "");
+      c.parts = c.parts.filter(
+        (p) => typeof p.text === "string" && p.text.trim() !== "",
+      );
     });
     // Remove any messages that ended up with no parts
-    const sanitizedContents = contents.filter(c => c.parts.length > 0);
+    const sanitizedContents = contents.filter((c) => c.parts.length > 0);
 
     const reqConfig = {
       contents: sanitizedContents,
@@ -158,14 +164,21 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         model: targetModel,
       });
     } catch (modelError: any) {
-      console.error("[GEMINI API FATAL ERROR]:", modelError?.message || modelError, modelError?.status);
+      console.error(
+        "[GEMINI API FATAL ERROR]:",
+        modelError?.message || modelError,
+        modelError?.status,
+      );
       try {
         stream = await ai.models.generateContentStream({
           ...reqConfig,
           model: "gemini-1.5-pro",
         });
       } catch (fallbackError: any) {
-        console.error("[GEMINI API FATAL ERROR] (1.5-pro fallback failed):", fallbackError?.message || fallbackError);
+        console.error(
+          "[GEMINI API FATAL ERROR] (1.5-pro fallback failed):",
+          fallbackError?.message || fallbackError,
+        );
         stream = await ai.models.generateContentStream({
           ...reqConfig,
           model: "gemini-3-flash-preview",

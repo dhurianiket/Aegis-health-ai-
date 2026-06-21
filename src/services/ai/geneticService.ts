@@ -43,7 +43,16 @@ export const analyzeSharedRisks = async (
   const ai = getAI();
   try {
     const aiConfig = {
-      contents: [{ role: "user", parts: [{ text: `${GENETIC_PROMPT}\n\n<input>\n${JSON.stringify(profilesData)}\n</input>` }] }],
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `${GENETIC_PROMPT}\n\n<input>\n${JSON.stringify(profilesData)}\n</input>`,
+            },
+          ],
+        },
+      ],
       config: {
         responseMimeType: "application/json",
       },
@@ -53,14 +62,17 @@ export const analyzeSharedRisks = async (
       response = await ai.models.generateContent({
         ...aiConfig,
         model: "gemini-3.1-pro-preview",
-        contents: aiConfig.contents as any
+        contents: aiConfig.contents as any,
       });
     } catch (proErr) {
-      console.warn("Genetic analysis failed with Pro, falling back to Flash", proErr);
+      console.warn(
+        "Genetic analysis failed with Pro, falling back to Flash",
+        proErr,
+      );
       response = await ai.models.generateContent({
         ...aiConfig,
         model: "gemini-3-flash-preview",
-        contents: aiConfig.contents as any
+        contents: aiConfig.contents as any,
       });
     }
 

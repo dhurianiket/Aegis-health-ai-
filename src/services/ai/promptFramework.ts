@@ -3,7 +3,11 @@ import { getAI } from "../../lib/geminiClient";
 import { safeJsonParse } from "../../utils/aiUtils";
 import { auth } from "../../lib/firebase/config";
 import { trackUsage } from "../usageService";
-import { generateSourceHash, getCachedReport, saveCachedReport } from "../cacheService";
+import {
+  generateSourceHash,
+  getCachedReport,
+  saveCachedReport,
+} from "../cacheService";
 
 export const CORE_SYSTEM_PROMPT = `
 <role>
@@ -77,7 +81,13 @@ Do not include prose outside the schema.
  * LabExtractionSchema - Comprehensive Zod schema for laboratory results.
  */
 export const LabExtractionSchema = z.object({
-  collection_date: z.string().describe("CRITICAL: The exact date the lab sample was collected or generated. MUST be formatted exactly as YYYY-MM-DD. Do NOT use today's date.").nullable().optional(),
+  collection_date: z
+    .string()
+    .describe(
+      "CRITICAL: The exact date the lab sample was collected or generated. MUST be formatted exactly as YYYY-MM-DD. Do NOT use today's date.",
+    )
+    .nullable()
+    .optional(),
   patient: z.object({
     name: z.string().nullable(),
     dob: z.string().nullable(),
@@ -96,15 +106,25 @@ export const LabExtractionSchema = z.object({
         panel: z.string().nullable(),
         testName: z.string(),
         loincLikeName: z.string().nullable(),
-        display_value: z.string().nullable().describe("The exact string from the report, e.g., '< 0.1'"),
-        numeric_value: z.number().nullable().describe("The parsed numeric value after stripping operators (<, >, <=, >=, ~)"),
-        valueOriginal: z.preprocess((val) => {
-          if (typeof val === "string") {
-            const n = parseFloat(val);
-            return isNaN(n) ? null : n;
-          }
-          return val;
-        }, z.number().nullable()).optional(),
+        display_value: z
+          .string()
+          .nullable()
+          .describe("The exact string from the report, e.g., '< 0.1'"),
+        numeric_value: z
+          .number()
+          .nullable()
+          .describe(
+            "The parsed numeric value after stripping operators (<, >, <=, >=, ~)",
+          ),
+        valueOriginal: z
+          .preprocess((val) => {
+            if (typeof val === "string") {
+              const n = parseFloat(val);
+              return isNaN(n) ? null : n;
+            }
+            return val;
+          }, z.number().nullable())
+          .optional(),
         unitOriginal: z.string().nullable(),
         valueCanonical: z.number().nullable(),
         unitCanonical: z.string().nullable(),
@@ -153,12 +173,13 @@ export function normalizeObservation<
   const result = { ...obs };
   const unit = (obs.unitOriginal || "").toLowerCase();
   const test = (obs.testName || "").toLowerCase();
-  
+
   let valRaw = obs.numeric_value;
   if (valRaw === undefined || valRaw === null) {
-    valRaw = typeof obs.valueOriginal === "number"
-      ? obs.valueOriginal
-      : parseFloat(String(obs.valueOriginal));
+    valRaw =
+      typeof obs.valueOriginal === "number"
+        ? obs.valueOriginal
+        : parseFloat(String(obs.valueOriginal));
   }
 
   if (valRaw === undefined || valRaw === null || isNaN(valRaw)) return result;
@@ -231,7 +252,12 @@ export function normalizeObservation<
     result.unitCanonical = "%";
   }
   // Haemoglobin
-  else if (unit.includes("g/l") && (test.includes("haemoglobin") || test.includes("hemoglobin") || test.includes("hb"))) {
+  else if (
+    unit.includes("g/l") &&
+    (test.includes("haemoglobin") ||
+      test.includes("hemoglobin") ||
+      test.includes("hb"))
+  ) {
     result.valueCanonical = val * 0.1;
     result.unitCanonical = "g/dL";
   }
@@ -253,70 +279,123 @@ export class GeminiQuotaError extends Error {}
 export class GeminiInputError extends Error {}
 export class GeminiTimeoutError extends Error {}
 
-export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3, featureName?: string): Promise<any> {
-    let attempt = 0;
-    while (attempt < retries) {
-        try {
-            const response = await apiCall();
-            
-            try {
-              if (response?.usageMetadata) {
-                 const userId = auth?.currentUser?.uid;
-                 if (userId) {
-                    await trackUsage(userId, {
-                       promptTokens: response.usageMetadata.promptTokenCount,
-                       responseTokens: response.usageMetadata.candidatesTokenCount,
-                       totalTokens: response.usageMetadata.totalTokenCount,
-                       feature: featureName || 'general'
-                    });
-                 }
-              }
-            } catch (err) {
-              console.error("Usage tracking failed", err);
-            }
-            
-            return response;
-        } catch (error: any) {
-            console.error("[GEMINI API FATAL ERROR]:", error?.message || error, error?.status);
-            attempt++;
-            const isQuotaError =
-                error?.status === 429 ||
-                error?.code === 429 ||
-                error?.status === "RESOURCE_EXHAUSTED" ||
-                (error?.message && (error.message.includes("429") || error.message.includes("quota")));
-                
-            if (isQuotaError && attempt < retries) {
-                const backoff = attempt === 1 ? 1000 : attempt === 2 ? 2000 : 4000;
-                console.info(JSON.stringify({ event: "gemini_backoff", attempt, delayMs: backoff, status: "429" }));
-                console.count('gemini_backoff');
-                await new Promise(resolve => setTimeout(resolve, backoff));
-                continue;
-            }
-            if (isQuotaError) throw new GeminiQuotaError("Final failure: Gemini Quota exceeded after 3 attempts.");
-            if (error?.message?.includes("400") || error?.status === 400) throw new GeminiInputError("Invalid argument.");
-            if (error?.message?.includes("504") || error?.message?.includes("deadline")) throw new GeminiTimeoutError("Deadline exceeded.");
-            throw new Error(`Gemini Call Failed: ${error?.message || 'Unknown error'}`);
+export async function safeGeminiCall(
+  apiCall: () => Promise<any>,
+  retries = 3,
+  featureName?: string,
+): Promise<any> {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      const response = await apiCall();
+
+      try {
+        if (response?.usageMetadata) {
+          const userId = auth?.currentUser?.uid;
+          if (userId) {
+            await trackUsage(userId, {
+              promptTokens: response.usageMetadata.promptTokenCount,
+              responseTokens: response.usageMetadata.candidatesTokenCount,
+              totalTokens: response.usageMetadata.totalTokenCount,
+              feature: featureName || "general",
+            });
+          }
         }
+      } catch (err) {
+        console.error("Usage tracking failed", err);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(
+        "[GEMINI API FATAL ERROR]:",
+        error?.message || error,
+        error?.status,
+      );
+      attempt++;
+      const isQuotaError =
+        error?.status === 429 ||
+        error?.code === 429 ||
+        error?.status === "RESOURCE_EXHAUSTED" ||
+        (error?.message &&
+          (error.message.includes("429") || error.message.includes("quota")));
+
+      if (isQuotaError && attempt < retries) {
+        const backoff = attempt === 1 ? 1000 : attempt === 2 ? 2000 : 4000;
+        console.info(
+          JSON.stringify({
+            event: "gemini_backoff",
+            attempt,
+            delayMs: backoff,
+            status: "429",
+          }),
+        );
+        console.count("gemini_backoff");
+        await new Promise((resolve) => setTimeout(resolve, backoff));
+        continue;
+      }
+      if (isQuotaError)
+        throw new GeminiQuotaError(
+          "Final failure: Gemini Quota exceeded after 3 attempts.",
+        );
+      if (error?.message?.includes("400") || error?.status === 400)
+        throw new GeminiInputError("Invalid argument.");
+      if (
+        error?.message?.includes("504") ||
+        error?.message?.includes("deadline")
+      )
+        throw new GeminiTimeoutError("Deadline exceeded.");
+      throw new Error(
+        `Gemini Call Failed: ${error?.message || "Unknown error"}`,
+      );
     }
+  }
 }
 
-export async function classifyDocument(filesData: { base64Data: string; mimeType: string }[]) {
+export async function classifyDocument(
+  filesData: { base64Data: string; mimeType: string }[],
+) {
   const ai = getAI();
-  
-  const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: [
-      { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
-    ],
-    config: { maxOutputTokens: 8192, temperature: 0.1, responseMimeType: "application/json" }
-  }), 3, "pdf_extraction");
+
+  const response = await safeGeminiCall(
+    () =>
+      ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: 'Classify this document. Return JSON: { "documentType": "lab_report"|"prescription"|"other", "labPanels": ["CBC", "Lipid", ...], "confidence": number(0-1), "extractionRecommended": boolean }',
+              },
+              ...filesData.map((f) => ({
+                inlineData: { data: f.base64Data, mimeType: f.mimeType },
+              })),
+            ],
+          },
+        ],
+        config: {
+          maxOutputTokens: 8192,
+          temperature: 0.1,
+          responseMimeType: "application/json",
+        },
+      }),
+    3,
+    "pdf_extraction",
+  );
   return safeJsonParse<any>(response.text, {});
 }
 
-export async function generateSBAR(patientContextJSON: string, trendSummariesJSON: string, medications: any[], symptoms: any[], forceRefresh: boolean = false) {
+export async function generateSBAR(
+  patientContextJSON: string,
+  trendSummariesJSON: string,
+  medications: any[],
+  symptoms: any[],
+  forceRefresh: boolean = false,
+) {
   const ai = getAI();
   const PROMPT_VERSION = "v1.0";
-  
+
   const promptText = `${CORE_SYSTEM_PROMPT}
 
 You are the clinical reasoning and medical report summarization engine for Aegis Health AI.
@@ -374,52 +453,81 @@ ${JSON.stringify(symptoms)}
   const userId = auth?.currentUser?.uid || "unknown";
 
   if (userId !== "unknown") {
-    const cachedContent = await getCachedReport(userId, profileId, "SBAAR_Prompt", sourceHash, PROMPT_VERSION, forceRefresh);
+    const cachedContent = await getCachedReport(
+      userId,
+      profileId,
+      "SBAAR_Prompt",
+      sourceHash,
+      PROMPT_VERSION,
+      forceRefresh,
+    );
     if (cachedContent) {
-       console.log("Returning cached SBAAR Prompt report.");
-       return cachedContent;
+      console.log("Returning cached SBAAR Prompt report.");
+      return cachedContent;
     }
   }
 
   let response;
   let modelUsed = "gemini-3.1-pro-preview";
   try {
-    response = await safeGeminiCall(() => ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: [{ role: "user", parts: [{ text: promptText }] }],
-      config: { maxOutputTokens: 8192, temperature: 0.1 }
-    }), 2, "sbar"); // try Pro up to 2 times
+    response = await safeGeminiCall(
+      () =>
+        ai.models.generateContent({
+          model: "gemini-3.1-pro-preview",
+          contents: [{ role: "user", parts: [{ text: promptText }] }],
+          config: { maxOutputTokens: 8192, temperature: 0.1 },
+        }),
+      2,
+      "sbar",
+    ); // try Pro up to 2 times
   } catch (err: any) {
     console.error("[GEMINI API FATAL ERROR] (3.1-pro failed):", err.message);
     try {
       modelUsed = "gemini-1.5-pro";
-      response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-1.5-pro",
-        contents: [{ role: "user", parts: [{ text: promptText }] }],
-        config: { maxOutputTokens: 8192, temperature: 0.1 }
-      }), 2, "sbar_fallback_1.5_pro");
+      response = await safeGeminiCall(
+        () =>
+          ai.models.generateContent({
+            model: "gemini-1.5-pro",
+            contents: [{ role: "user", parts: [{ text: promptText }] }],
+            config: { maxOutputTokens: 8192, temperature: 0.1 },
+          }),
+        2,
+        "sbar_fallback_1.5_pro",
+      );
     } catch (fallbackErr: any) {
-      console.error("[GEMINI API FATAL ERROR] (1.5-pro failed):", fallbackErr.message);
+      console.error(
+        "[GEMINI API FATAL ERROR] (1.5-pro failed):",
+        fallbackErr.message,
+      );
       modelUsed = "gemini-3-flash-preview";
-      response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [{ role: "user", parts: [{ text: promptText }] }],
-        config: { maxOutputTokens: 8192, temperature: 0.1 }
-      }), 2, "sbar_fallback_flash");
+      response = await safeGeminiCall(
+        () =>
+          ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: [{ role: "user", parts: [{ text: promptText }] }],
+            config: { maxOutputTokens: 8192, temperature: 0.1 },
+          }),
+        2,
+        "sbar_fallback_flash",
+      );
     }
   }
-  
+
   const content = response.text || "Failed to generate summary.";
-  if (content && content !== "Failed to generate summary." && userId !== "unknown") {
-      await saveCachedReport(userId, {
-        patientId: profileId,
-        reportType: "SBAAR_Prompt",
-        sourceHash,
-        content,
-        modelUsed,
-        promptVersion: PROMPT_VERSION,
-        status: "success"
-      });
+  if (
+    content &&
+    content !== "Failed to generate summary." &&
+    userId !== "unknown"
+  ) {
+    await saveCachedReport(userId, {
+      patientId: profileId,
+      reportType: "SBAAR_Prompt",
+      sourceHash,
+      content,
+      modelUsed,
+      promptVersion: PROMPT_VERSION,
+      status: "success",
+    });
   }
 
   return content;
@@ -427,12 +535,26 @@ ${JSON.stringify(symptoms)}
 
 export async function explainInteraction(medicationContext: any) {
   const ai = getAI();
-  
-  const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
-    config: { maxOutputTokens: 8192, temperature: 0.1 }
-  }), 3, "med_interaction");
+
+  const response = await safeGeminiCall(
+    () =>
+      ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}`,
+              },
+            ],
+          },
+        ],
+        config: { maxOutputTokens: 8192, temperature: 0.1 },
+      }),
+    3,
+    "med_interaction",
+  );
   return response.text;
 }
 
@@ -471,25 +593,39 @@ export async function extractLabData(
   let currentPrompt = Object.assign(basePrompt, {}); // Value copy
 
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const finalPrompt = attempt === 1
-      ? currentPrompt
-      : attempt === 2 
-        ? `${currentPrompt}\n\nYour previous response had schema errors: ${lastValidationErrors}. Return corrected JSON matching the schema exactly.`
-        : `${currentPrompt}\n\nYour previous response had issues analyzing the document properly: ${lastValidationErrors}. Please fix these and provide correct structured JSON.`;
+    const finalPrompt =
+      attempt === 1
+        ? currentPrompt
+        : attempt === 2
+          ? `${currentPrompt}\n\nYour previous response had schema errors: ${lastValidationErrors}. Return corrected JSON matching the schema exactly.`
+          : `${currentPrompt}\n\nYour previous response had issues analyzing the document properly: ${lastValidationErrors}. Please fix these and provide correct structured JSON.`;
 
     try {
-      const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        config: {
-          systemInstruction: CORE_SYSTEM_PROMPT,
-          temperature: 0.1,
-          responseMimeType: "application/json",
-          maxOutputTokens: 8192,
-        },
-        contents: [
-          { role: "user", parts: [{ text: finalPrompt }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
-        ],
-      }), 3, "pdf_extraction");
+      const response = await safeGeminiCall(
+        () =>
+          ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            config: {
+              systemInstruction: CORE_SYSTEM_PROMPT,
+              temperature: 0.1,
+              responseMimeType: "application/json",
+              maxOutputTokens: 8192,
+            },
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  { text: finalPrompt },
+                  ...filesData.map((f) => ({
+                    inlineData: { data: f.base64Data, mimeType: f.mimeType },
+                  })),
+                ],
+              },
+            ],
+          }),
+        3,
+        "pdf_extraction",
+      );
 
       const parsed = safeJsonParse<any>(response.text, {});
 
@@ -513,10 +649,10 @@ export async function extractLabData(
       }
 
       // Apply normalization to observations capturing original string correctly
-      validatedData.observations = validatedData.observations.map(obs => {
+      validatedData.observations = validatedData.observations.map((obs) => {
         // if original was missing, or non-numeric string preserve as rawText and valueCanonical null (from req)
         if (obs.valueOriginal == null && typeof obs.rawText === "string") {
-           // handled by Zod coercing to null already.
+          // handled by Zod coercing to null already.
         }
         return normalizeObservation(obs);
       });
@@ -527,7 +663,8 @@ export async function extractLabData(
         lastValidationErrors = err.message;
         continue;
       }
-      if (attempt === 3) throw new Error(`Lab extraction failed: ${err.message}`);
+      if (attempt === 3)
+        throw new Error(`Lab extraction failed: ${err.message}`);
     }
   }
 

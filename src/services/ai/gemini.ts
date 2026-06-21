@@ -8,7 +8,11 @@ import {
   SpecialistInsight,
   UserProfile,
 } from "../../types/medical";
-import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON, safeGeminiCall } from "./promptFramework";
+import {
+  CORE_SYSTEM_PROMPT,
+  OUTPUT_FORMAT_JSON,
+  safeGeminiCall,
+} from "./promptFramework";
 import { safeJsonParse } from "../../utils/aiUtils";
 import { auth } from "../../lib/firebase/config";
 import { trackUsage } from "../usageService";
@@ -112,9 +116,9 @@ ${OUTPUT_FORMAT_JSON}
                 type: Type.OBJECT,
                 properties: {
                   marker: { type: Type.STRING },
-                  reason: { type: Type.STRING }
-                }
-              }
+                  reason: { type: Type.STRING },
+                },
+              },
             },
             key_concern: { type: Type.STRING },
             observations: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -146,34 +150,37 @@ ${OUTPUT_FORMAT_JSON}
         },
       },
     };
-    
+
     let response;
     try {
       response = await ai.models.generateContent({
         ...geminiConfig,
         model: "gemini-3.1-pro-preview",
-        contents: geminiConfig.contents as any
+        contents: geminiConfig.contents as any,
       });
     } catch (proError: any) {
-      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
+      console.warn(
+        "Gemini Pro failed, falling back to Flash:",
+        proError.message || proError,
+      );
       response = await ai.models.generateContent({
         ...geminiConfig,
         model: "gemini-3-flash-preview",
-        contents: geminiConfig.contents as any
+        contents: geminiConfig.contents as any,
       });
     }
 
     try {
       if (response?.usageMetadata) {
-         const userId = auth?.currentUser?.uid;
-         if (userId) {
-            await trackUsage(userId, {
-               promptTokens: response.usageMetadata.promptTokenCount,
-               responseTokens: response.usageMetadata.candidatesTokenCount,
-               totalTokens: response.usageMetadata.totalTokenCount,
-               feature: 'specialist'
-            });
-         }
+        const userId = auth?.currentUser?.uid;
+        if (userId) {
+          await trackUsage(userId, {
+            promptTokens: response.usageMetadata.promptTokenCount,
+            responseTokens: response.usageMetadata.candidatesTokenCount,
+            totalTokens: response.usageMetadata.totalTokenCount,
+            feature: "specialist",
+          });
+        }
       }
     } catch (e) {
       console.error("Usage track err:", e);
@@ -209,20 +216,29 @@ export async function generateClinicalSummary(
   insights: SpecialistInsight[],
 ): Promise<string> {
   const ai = getAI();
-  
-  // Sort labs by date (newest first)
-  const sortedLabs = [...labHistory].sort((a, b) => 
-    (parseSafeTimestamp(b.date)?.getTime() || 0) - (parseSafeTimestamp(a.date)?.getTime() || 0)
-  );
+
+  // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
+  const sortedLabs = labHistory
+    .map((lab) => ({
+      lab,
+      time: parseSafeTimestamp(lab.date)?.getTime() || 0,
+    }))
+    .sort((a, b) => b.time - a.time)
+    .map((item) => item.lab);
 
   const age = patientData.dob
-    ? Math.floor((new Date().getTime() - (parseSafeTimestamp(patientData.dob)?.getTime() || new Date().getTime())) / 3.15576e10)
+    ? Math.floor(
+        (new Date().getTime() -
+          (parseSafeTimestamp(patientData.dob)?.getTime() ||
+            new Date().getTime())) /
+          3.15576e10,
+      )
     : "Unknown";
-    
-  const today = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
   const prompt = `${CORE_SYSTEM_PROMPT}
@@ -249,7 +265,7 @@ You can keep this on your phone or print it out. It is the perfect format to han
 
 <structure_example>
 SBAR CLINICAL SUMMARY
-Patient: ${patientData.fullName || patientData.name} | Age/Sex: ${age}/${patientData.gender || 'Unknown'} | Date: ${today}
+Patient: ${patientData.fullName || patientData.name} | Age/Sex: ${age}/${patientData.gender || "Unknown"} | Date: ${today}
 
 S - SITUATION
 [2-3 sentences: current chief complaint, duration, key recent lab findings, current treatment plan]
@@ -293,17 +309,19 @@ ALL DIAGNOSES:
 ${JSON.stringify(patientData.chronicConditions)}
 
 LAB RESULTS (Sorted newest first, include units and reference range status):
-${JSON.stringify(sortedLabs.map(l => ({
-  date: l.date,
-  marker: l.markerName,
-  value: l.value,
-  unit: l.unit,
-  range: l.referenceRange,
-  status: l.status
-})))}
+${JSON.stringify(
+  sortedLabs.map((l) => ({
+    date: l.date,
+    marker: l.markerName,
+    value: l.value,
+    unit: l.unit,
+    range: l.referenceRange,
+    status: l.status,
+  })),
+)}
 
 DOCUMENT SUMMARIES:
-${JSON.stringify(documents.map(d => ({ type: d.type, date: d.date, findings: d.extractedData?.findings })))}
+${JSON.stringify(documents.map((d) => ({ type: d.type, date: d.date, findings: d.extractedData?.findings })))}
 </data_input>
 
 Generate the summary strictly following the plain text format above.
@@ -321,7 +339,10 @@ Generate the summary strictly following the plain text format above.
         },
       });
     } catch (proError: any) {
-      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
+      console.warn(
+        "Gemini Pro failed, falling back to Flash:",
+        proError.message || proError,
+      );
       response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -334,15 +355,15 @@ Generate the summary strictly following the plain text format above.
 
     try {
       if (response?.usageMetadata) {
-         const userId = auth?.currentUser?.uid;
-         if (userId) {
-            await trackUsage(userId, {
-               promptTokens: response.usageMetadata.promptTokenCount,
-               responseTokens: response.usageMetadata.candidatesTokenCount,
-               totalTokens: response.usageMetadata.totalTokenCount,
-               feature: 'summary'
-            });
-         }
+        const userId = auth?.currentUser?.uid;
+        if (userId) {
+          await trackUsage(userId, {
+            promptTokens: response.usageMetadata.promptTokenCount,
+            responseTokens: response.usageMetadata.candidatesTokenCount,
+            totalTokens: response.usageMetadata.totalTokenCount,
+            feature: "summary",
+          });
+        }
       }
     } catch (e) {
       console.error("Usage track err:", e);
@@ -395,13 +416,13 @@ export interface ExtractedReportResponse {
 
 export async function extractMedicalReports(
   filesData: { base64Data: string; mimeType: string }[],
-  clinicalContext?: string
+  clinicalContext?: string,
 ): Promise<ExtractedReportResponse | null> {
-    const prompt = `
+  const prompt = `
     Extract the following information from this medical report (image or PDF).
     Extract the information into a single structured JSON format.
     
-    ${clinicalContext ? `The patient has provided the following clinical context that might help you identify their age, baseline, or symptoms while reading the report:\n${clinicalContext}\n` : ''}
+    ${clinicalContext ? `The patient has provided the following clinical context that might help you identify their age, baseline, or symptoms while reading the report:\n${clinicalContext}\n` : ""}
     CRITICAL: 
     - Output ONLY valid JSON.
     - Be concise. 
@@ -409,130 +430,120 @@ export async function extractMedicalReports(
     - Even if the document quality is poor, extract whatever data is visible. Return partial results rather than failing. For any field you cannot read, use null.
   `;
 
-    const ai = getAI();
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
+  const ai = getAI();
 
-    try {
-      if (import.meta.env.DEV) console.log("[Extraction] Starting report extraction for", filesData.length, "files");
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
 
-      const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: prompt },
-              ...filesData.map((f) => {
-                console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
-                return {
-                  inlineData: { data: f.base64Data, mimeType: f.mimeType },
-                };
-              }),
-            ],
-          },
-        ],
-        config: {
-          systemInstruction: CORE_SYSTEM_PROMPT,
-          temperature: 0.1,
-          maxOutputTokens: 8192,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              document_type: { type: Type.STRING },
-              date: { type: Type.STRING },
-              hospital_name: { type: Type.STRING },
-              doctor_name: { type: Type.STRING },
-              lab_values: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    date: { type: Type.STRING },
-                    marker: { type: Type.STRING },
-                    value: { type: Type.STRING },
-                    unit: { type: Type.STRING },
-                    reference_range: { type: Type.STRING },
-                    status: { type: Type.STRING }
-                  },
-                  required: ["marker", "value"]
-                }
-              },
-              findings: { type: Type.STRING },
-              medications: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    date: { type: Type.STRING },
-                    name: { type: Type.STRING },
-                    dosage: { type: Type.STRING },
-                    frequency: { type: Type.STRING },
-                    purpose: { type: Type.STRING }
-                  },
-                  required: ["name"]
-                }
-              },
-              follow_up_date: { type: Type.STRING }
+  try {
+    if (import.meta.env.DEV)
+      console.log(
+        "[Extraction] Starting report extraction for",
+        filesData.length,
+        "files",
+      );
+
+    const response = await safeGeminiCall(
+      () =>
+        ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: prompt },
+                ...filesData.map((f) => {
+                  console.log(
+                    "[Extraction] File details:",
+                    f.mimeType,
+                    "Base64 length:",
+                    f.base64Data.length,
+                  );
+                  return {
+                    inlineData: { data: f.base64Data, mimeType: f.mimeType },
+                  };
+                }),
+              ],
             },
-            required: ["document_type", "date", "lab_values"]
-          }
-        },
-      }), 3, "pdf_extraction");
+          ],
+          config: {
+            systemInstruction: CORE_SYSTEM_PROMPT,
+            temperature: 0.1,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                document_type: { type: Type.STRING },
+                date: { type: Type.STRING },
+                hospital_name: { type: Type.STRING },
+                doctor_name: { type: Type.STRING },
+                lab_values: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      date: { type: Type.STRING },
+                      marker: { type: Type.STRING },
+                      value: { type: Type.STRING },
+                      unit: { type: Type.STRING },
+                      reference_range: { type: Type.STRING },
+                      status: { type: Type.STRING },
+                    },
+                    required: ["marker", "value"],
+                  },
+                },
+                findings: { type: Type.STRING },
+                medications: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      date: { type: Type.STRING },
+                      name: { type: Type.STRING },
+                      dosage: { type: Type.STRING },
+                      frequency: { type: Type.STRING },
+                      purpose: { type: Type.STRING },
+                    },
+                    required: ["name"],
+                  },
+                },
+                follow_up_date: { type: Type.STRING },
+              },
+              required: ["document_type", "date", "lab_values"],
+            },
+          },
+        }),
+      3,
+      "pdf_extraction",
+    );
 
-      clearTimeout(timeoutId);
+    clearTimeout(timeoutId);
 
-      const text = response.text || "{}";
-      console.log("RAW_GEMINI:", JSON.stringify(response));
-      console.log("[Extraction] Gemini raw response:", text);
-      const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
-      
-      if (result && Array.isArray(result.lab_values)) {
-        result.lab_values = result.lab_values.map((lab: any) => ({
-          ...lab,
-          unit: lab.unit || "",
-          reference_range: lab.reference_range || "",
-          status: lab.status || "unknown"
-        }));
-      }
+    const text = response.text || "{}";
+    console.log("RAW_GEMINI:", JSON.stringify(response));
+    console.log("[Extraction] Gemini raw response:", text);
+    const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
 
-      const labs = result?.lab_values || [];
-      console.log("NORMALIZED_LABS:", labs);
+    if (result && Array.isArray(result.lab_values)) {
+      result.lab_values = result.lab_values.map((lab: any) => ({
+        ...lab,
+        unit: lab.unit || "",
+        reference_range: lab.reference_range || "",
+        status: lab.status || "unknown",
+      }));
+    }
 
-      console.log("[Extraction] Parsed result success:", !!result);
-      
-      // Relaxed validation: only reject if null or empty JSON
-      if (!result || (Object.keys(result).length === 0) || !result.lab_values) {
-          console.warn("[Extraction] AI returned an empty or invalid response result, but we'll try to provide a skeleton.");
-          return {
-            lab_values: [],
-            document_type: "Unknown",
-            date: new Date().toISOString(),
-            url: "", id: "",
-            hospital_name: null, doctor_name: null,
-            findings: "Extraction resulted in no data.",
-            medications: [], follow_up_date: null
-          };
-      }
-      return result;
-    } catch (error: any) {
-      clearTimeout(timeoutId);
-      if (error.name === "AbortError" || 
-          error.message?.includes("timed out") ||
-          error.message?.includes("AI analysis")) {
-        return {
-          lab_values: [],
-          document_type: "Unknown",
-          date: new Date().toISOString(),
-          url: "", id: "",
-          hospital_name: null, doctor_name: null,
-          findings: "Upload timed out. Please try again.",
-          medications: [], follow_up_date: null
-        };
-      }
-      console.error("Error extracting report:", error);
+    const labs = result?.lab_values || [];
+    console.log("NORMALIZED_LABS:", labs);
+
+    console.log("[Extraction] Parsed result success:", !!result);
+
+    // Relaxed validation: only reject if null or empty JSON
+    if (!result || Object.keys(result).length === 0 || !result.lab_values) {
+      console.warn(
+        "[Extraction] AI returned an empty or invalid response result, but we'll try to provide a skeleton.",
+      );
       return {
         lab_values: [],
         document_type: "Unknown",
@@ -541,9 +552,44 @@ export async function extractMedicalReports(
         id: "",
         hospital_name: null,
         doctor_name: null,
-        findings: null,
+        findings: "Extraction resulted in no data.",
         medications: [],
-        follow_up_date: null
+        follow_up_date: null,
       };
     }
+    return result;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (
+      error.name === "AbortError" ||
+      error.message?.includes("timed out") ||
+      error.message?.includes("AI analysis")
+    ) {
+      return {
+        lab_values: [],
+        document_type: "Unknown",
+        date: new Date().toISOString(),
+        url: "",
+        id: "",
+        hospital_name: null,
+        doctor_name: null,
+        findings: "Upload timed out. Please try again.",
+        medications: [],
+        follow_up_date: null,
+      };
+    }
+    console.error("Error extracting report:", error);
+    return {
+      lab_values: [],
+      document_type: "Unknown",
+      date: new Date().toISOString(),
+      url: "",
+      id: "",
+      hospital_name: null,
+      doctor_name: null,
+      findings: null,
+      medications: [],
+      follow_up_date: null,
+    };
+  }
 }
