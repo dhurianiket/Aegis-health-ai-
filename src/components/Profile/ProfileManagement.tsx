@@ -210,6 +210,7 @@ export default function ProfileManagement() {
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
+                  aria-label="Cancel profile creation"
                   className="text-slate-400 hover:text-white"
                 >
                   <X className="w-5 h-5" />
