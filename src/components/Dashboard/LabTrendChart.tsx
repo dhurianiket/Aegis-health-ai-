@@ -54,59 +54,93 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       setIsLoading(true);
       try {
         let extractedValues: any[] = [];
-        
+
         if (labs && labs.length > 0 && labs[0].history) {
-           // Passed from Dashboard
-           labs.forEach(l => {
-              extractedValues.push(...l.history.map((h: any) => ({
-                 ...h,
-                 markerName: h.marker || h.testName || l.markerName,
-                 actualDate: h.date || h.extractedDate || h.collection_date || null,
-                 fallbackDate: h.docDate || new Date().toISOString()
-              })));
-           });
-        } else if (reports && reports.length > 0) {
-           // Passed from Reports
-           reports.forEach(doc => {
-              const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
-              const docDateFallback = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || doc.date || doc.createdAt || new Date().toISOString();
-              const safeDocDate = typeof docDateFallback === 'string' ? docDateFallback : docDateFallback?.toDate?.()?.toISOString() || new Date().toISOString();
-              obs.forEach((o: any) => {
-                 extractedValues.push({
-                    ...o,
-                    markerName: o.marker || o.testName || o.name || o.label,
-                    actualDate: o.extractedDate || o.collection_date || o.date || null,
-                    fallbackDate: safeDocDate
-                 });
-              });
-           });
-        } else {
-           // Fetch from documents
-           const docs = await getDocuments(user.uid, activeProfile?.id);
-           (docs || []).forEach((doc: any) => {
-              const obs = doc.extractedData?.lab_values || doc.extractedData?.observations || [];
-              const docDateFallback = doc.extractedDate || doc.extractedData?.collection_date || doc.extractedData?.reportMetadata?.collectionDate || doc.date || doc.createdAt || new Date().toISOString();
-              const safeDocDate = typeof docDateFallback === 'string' ? docDateFallback : docDateFallback?.toDate?.()?.toISOString() || new Date().toISOString();
-              obs.forEach((o: any) => {
-                 extractedValues.push({
-                    ...o,
-                    markerName: o.marker || o.testName || o.name || o.label,
-                    actualDate: o.extractedDate || o.collection_date || o.date || null,
-                    fallbackDate: safeDocDate
-                 });
-              });
-           });
-        }
-        
-        if (extractedValues.length > 0) {
-          const normalizedResults = extractedValues.filter(r => r.markerName).map((r) => {
-            const name = r.markerName.trim();
-            const titleCaseName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-            return {
-              ...r,
-              markerName: titleCaseName,
-            };
+          // Passed from Dashboard
+          labs.forEach((l) => {
+            extractedValues.push(
+              ...l.history.map((h: any) => ({
+                ...h,
+                markerName: h.marker || h.testName || l.markerName,
+                actualDate:
+                  h.date || h.extractedDate || h.collection_date || null,
+                fallbackDate: h.docDate || new Date().toISOString(),
+              })),
+            );
           });
+        } else if (reports && reports.length > 0) {
+          // Passed from Reports
+          reports.forEach((doc) => {
+            const obs =
+              doc.extractedData?.lab_values ||
+              doc.extractedData?.observations ||
+              [];
+            const docDateFallback =
+              doc.extractedDate ||
+              doc.extractedData?.collection_date ||
+              doc.extractedData?.reportMetadata?.collectionDate ||
+              doc.date ||
+              doc.createdAt ||
+              new Date().toISOString();
+            const safeDocDate =
+              typeof docDateFallback === "string"
+                ? docDateFallback
+                : docDateFallback?.toDate?.()?.toISOString() ||
+                  new Date().toISOString();
+            obs.forEach((o: any) => {
+              extractedValues.push({
+                ...o,
+                markerName: o.marker || o.testName || o.name || o.label,
+                actualDate:
+                  o.extractedDate || o.collection_date || o.date || null,
+                fallbackDate: safeDocDate,
+              });
+            });
+          });
+        } else {
+          // Fetch from documents
+          const docs = await getDocuments(user.uid, activeProfile?.id);
+          (docs || []).forEach((doc: any) => {
+            const obs =
+              doc.extractedData?.lab_values ||
+              doc.extractedData?.observations ||
+              [];
+            const docDateFallback =
+              doc.extractedDate ||
+              doc.extractedData?.collection_date ||
+              doc.extractedData?.reportMetadata?.collectionDate ||
+              doc.date ||
+              doc.createdAt ||
+              new Date().toISOString();
+            const safeDocDate =
+              typeof docDateFallback === "string"
+                ? docDateFallback
+                : docDateFallback?.toDate?.()?.toISOString() ||
+                  new Date().toISOString();
+            obs.forEach((o: any) => {
+              extractedValues.push({
+                ...o,
+                markerName: o.marker || o.testName || o.name || o.label,
+                actualDate:
+                  o.extractedDate || o.collection_date || o.date || null,
+                fallbackDate: safeDocDate,
+              });
+            });
+          });
+        }
+
+        if (extractedValues.length > 0) {
+          const normalizedResults = extractedValues
+            .filter((r) => r.markerName)
+            .map((r) => {
+              const name = r.markerName.trim();
+              const titleCaseName =
+                name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+              return {
+                ...r,
+                markerName: titleCaseName,
+              };
+            });
           setLabResults(normalizedResults);
         } else {
           setLabResults([]);
@@ -123,29 +157,49 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const uniqueMarkers = useMemo(() => {
     const markerCounts = new Map<string, number>();
     labResults.forEach((r) => {
-       if (r.markerName) {
-          markerCounts.set(r.markerName, (markerCounts.get(r.markerName) || 0) + 1);
-       }
+      if (r.markerName) {
+        markerCounts.set(
+          r.markerName,
+          (markerCounts.get(r.markerName) || 0) + 1,
+        );
+      }
     });
     // Only show markers appearing in 2+ reports as requested
     const markers = Array.from(markerCounts.entries())
-       .filter(([_, count]) => count >= 2)
-       .map(([name]) => name);
-    
+      .filter(([_, count]) => count >= 2)
+      .map(([name]) => name);
+
     // Sort with favorites first
-    const favorites = ['Hemoglobin', 'Hba1c', 'Ldl', 'Hdl', 'Uric acid', 'Crp', 'Vitamin d', 'Egfr', 'Lymphocytes'];
+    const favorites = [
+      "Hemoglobin",
+      "Hba1c",
+      "Ldl",
+      "Hdl",
+      "Uric acid",
+      "Crp",
+      "Vitamin d",
+      "Egfr",
+      "Lymphocytes",
+    ];
     return markers.sort((a, b) => {
-       const aFav = favorites.findIndex(f => a.toLowerCase().includes(f.toLowerCase()));
-       const bFav = favorites.findIndex(f => b.toLowerCase().includes(f.toLowerCase()));
-       if (aFav !== -1 && bFav !== -1) return aFav - bFav;
-       if (aFav !== -1) return -1;
-       if (bFav !== -1) return 1;
-       return a.localeCompare(b);
+      const aFav = favorites.findIndex((f) =>
+        a.toLowerCase().includes(f.toLowerCase()),
+      );
+      const bFav = favorites.findIndex((f) =>
+        b.toLowerCase().includes(f.toLowerCase()),
+      );
+      if (aFav !== -1 && bFav !== -1) return aFav - bFav;
+      if (aFav !== -1) return -1;
+      if (bFav !== -1) return 1;
+      return a.localeCompare(b);
     });
   }, [labResults]);
 
   useEffect(() => {
-    if (uniqueMarkers.length > 0 && (!selectedMarker || !uniqueMarkers.includes(selectedMarker))) {
+    if (
+      uniqueMarkers.length > 0 &&
+      (!selectedMarker || !uniqueMarkers.includes(selectedMarker))
+    ) {
       setSelectedMarker(uniqueMarkers[0]);
     } else if (uniqueMarkers.length === 0 && selectedMarker) {
       setSelectedMarker("");
@@ -164,9 +218,12 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         return new Date().getTime(); // Safe fallback just for sorting if missing
       };
 
+      // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
       const filtered = labResults
         .filter((r) => r.markerName === selectedMarker)
-        .sort((a, b) => getValidTime(a) - getValidTime(b));
+        .map((r) => ({ item: r, time: getValidTime(r) }))
+        .sort((a, b) => a.time - b.time)
+        .map((x) => x.item);
 
       const now = new Date().getTime();
       let cutoff = 0;
@@ -179,57 +236,78 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         return t >= cutoff;
       });
 
-      return ranged.map((r) => {
-        let refMin = undefined;
-        let refMax = undefined;
-        const refRange = r.referenceRange || r.reference_range;
-        const parsedVal = parseFloat(String(r.numeric_value || r.display_value || r.value).replace(/[^0-9.-]/g, ''));
-        const numericValue = isNaN(parsedVal) ? 0 : parsedVal;
+      return ranged
+        .map((r) => {
+          let refMin = undefined;
+          let refMax = undefined;
+          const refRange = r.referenceRange || r.reference_range;
+          const parsedVal = parseFloat(
+            String(r.numeric_value || r.display_value || r.value).replace(
+              /[^0-9.-]/g,
+              "",
+            ),
+          );
+          const numericValue = isNaN(parsedVal) ? 0 : parsedVal;
 
-        if (refRange) {
-          const rangeMatch = refRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
-          if (rangeMatch) {
-            refMin = parseFloat(rangeMatch[1]);
-            refMax = parseFloat(rangeMatch[2]);
-          } else if (refRange.includes("<=") || refRange.includes("<")) {
-            const numMatch = refRange.match(/([0-9.]+)/);
-            if (numMatch) {
-              refMin = 0;
-              refMax = parseFloat(numMatch[1]);
-            }
-          } else if (refRange.includes(">=") || refRange.includes(">")) {
-            const numMatch = refRange.match(/([0-9.]+)/);
-            if (numMatch) {
-              const val = parseFloat(numMatch[1]);
-              refMin = val;
-              refMax = Math.max(val * 1.5, numericValue * 1.5);
+          if (refRange) {
+            const rangeMatch = refRange.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
+            if (rangeMatch) {
+              refMin = parseFloat(rangeMatch[1]);
+              refMax = parseFloat(rangeMatch[2]);
+            } else if (refRange.includes("<=") || refRange.includes("<")) {
+              const numMatch = refRange.match(/([0-9.]+)/);
+              if (numMatch) {
+                refMin = 0;
+                refMax = parseFloat(numMatch[1]);
+              }
+            } else if (refRange.includes(">=") || refRange.includes(">")) {
+              const numMatch = refRange.match(/([0-9.]+)/);
+              if (numMatch) {
+                const val = parseFloat(numMatch[1]);
+                refMin = val;
+                refMax = Math.max(val * 1.5, numericValue * 1.5);
+              }
             }
           }
-        }
 
-        let flagCol = 'emerald';
-        const st = (r.status || r.flag || '').toLowerCase();
-        if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
-        else if (st === 'low') flagCol = 'orange';
+          let flagCol = "emerald";
+          const st = (r.status || r.flag || "").toLowerCase();
+          if (st === "high" || st === "abnormal" || st === "critical")
+            flagCol = "red";
+          else if (st === "low") flagCol = "orange";
 
-        const safeTime = getValidTime(r);
-        return {
-          timestamp: safeTime,
-          date: (() => {
-             const d = parseSafeTimestamp(r.actualDate || r.fallbackDate);
-             return d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recent";
-          })(),
-          numericValue: numericValue,
-          value: numericValue,
-          unit: r.unitCanonical || r.unit,
-          refMin: !isNaN(refMin as number) ? refMin : undefined,
-          refMax: !isNaN(refMax as number) ? refMax : undefined,
-          refRangeArray: !isNaN(refMin as number) && !isNaN(refMax as number) ? [refMin, refMax] : undefined,
-          referenceRange: refRange,
-          status: r.status || r.flag,
-          flagCol
-        };
-      }).filter(r => r.numericValue !== undefined && r.numericValue !== null && !isNaN(r.numericValue));
+          const safeTime = getValidTime(r);
+          return {
+            timestamp: safeTime,
+            date: (() => {
+              const d = parseSafeTimestamp(r.actualDate || r.fallbackDate);
+              return d
+                ? d.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "Recent";
+            })(),
+            numericValue: numericValue,
+            value: numericValue,
+            unit: r.unitCanonical || r.unit,
+            refMin: !isNaN(refMin as number) ? refMin : undefined,
+            refMax: !isNaN(refMax as number) ? refMax : undefined,
+            refRangeArray:
+              !isNaN(refMin as number) && !isNaN(refMax as number)
+                ? [refMin, refMax]
+                : undefined,
+            referenceRange: refRange,
+            status: r.status || r.flag,
+            flagCol,
+          };
+        })
+        .filter(
+          (r) =>
+            r.numericValue !== undefined &&
+            r.numericValue !== null &&
+            !isNaN(r.numericValue),
+        );
     } catch (error) {
       return [];
     }
@@ -247,7 +325,13 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const firstDataPoint = chartData[0];
 
   let summarySentence = "Not enough data points for trend analysis.";
-  if (latestDataPoint && firstDataPoint && chartData.length > 1 && latestDataPoint.value !== undefined && firstDataPoint.value !== undefined) {
+  if (
+    latestDataPoint &&
+    firstDataPoint &&
+    chartData.length > 1 &&
+    latestDataPoint.value !== undefined &&
+    firstDataPoint.value !== undefined
+  ) {
     const delta = latestDataPoint.value - firstDataPoint.value;
     const pct = ((delta / firstDataPoint.value) * 100).toFixed(1);
     const isUp = delta > 0;
@@ -263,7 +347,9 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
             {data.date}
           </p>
           <div className="flex items-baseline gap-1">
-            <p className="text-slate-900 dark:text-white font-medium text-xl">{data.value}</p>
+            <p className="text-slate-900 dark:text-white font-medium text-xl">
+              {data.value}
+            </p>
             <span className="text-slate-600 dark:text-white/70 text-xs font-normal">
               {data.unit}
             </span>
@@ -282,9 +368,23 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const ChartComponent = isMobile ? BarChart : LineChart;
 
   const renderCustomDot = (props: any) => {
-     const { cx, cy, payload } = props;
-     const fillCol = payload.flagCol === 'red' ? '#ef4444' : payload.flagCol === 'orange' ? '#f97316' : '#10b981';
-     return <circle cx={cx} cy={cy} r={6} fill={fillCol} stroke="var(--color-bg)" strokeWidth={2} />;
+    const { cx, cy, payload } = props;
+    const fillCol =
+      payload.flagCol === "red"
+        ? "#ef4444"
+        : payload.flagCol === "orange"
+          ? "#f97316"
+          : "#10b981";
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={6}
+        fill={fillCol}
+        stroke="var(--color-bg)"
+        strokeWidth={2}
+      />
+    );
   };
 
   return (
@@ -295,96 +395,130 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
           {latestDataPoint && chartData.length > 1 ? (
             <div className="text-sm text-muted flex items-center gap-2">
               {summarySentence}
-              <span className={`font-semibold ${latestDataPoint.flagCol === 'red' ? "text-red-500" : latestDataPoint.flagCol === 'orange' ? "text-orange-500" : "text-emerald-500"}`}>
+              <span
+                className={`font-semibold ${latestDataPoint.flagCol === "red" ? "text-red-500" : latestDataPoint.flagCol === "orange" ? "text-orange-500" : "text-emerald-500"}`}
+              >
                 {latestDataPoint.status || "NORMAL"}
               </span>
             </div>
           ) : (
-            <p className="text-sm text-muted">{uniqueMarkers.length === 0 ? "You need at least 2 reports of a specific marker to see its trend." : "Tracking over time"}</p>
+            <p className="text-sm text-muted">
+              {uniqueMarkers.length === 0
+                ? "You need at least 2 reports of a specific marker to see its trend."
+                : "Tracking over time"}
+            </p>
           )}
         </div>
 
         {uniqueMarkers.length > 0 && (
-           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-             <div className="relative">
-               <select
-                 value={selectedMarker}
-                 aria-label="Select Lab Result to filter chart"
-                 onChange={(e) => setSelectedMarker(e.target.value)}
-                 className="appearance-none bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-medium tracking-widest rounded-xl px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
-               >
-                 {uniqueMarkers.map((m) => (
-                   <option key={m} value={m} className="text-slate-900 bg-white dark:text-slate-100 dark:bg-slate-900">
-                     {m}
-                   </option>
-                 ))}
-               </select>
-               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[var(--color-text-muted)]">
-                 <ChevronDown className="w-4 h-4" />
-               </div>
-             </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="relative">
+              <select
+                value={selectedMarker}
+                aria-label="Select Lab Result to filter chart"
+                onChange={(e) => setSelectedMarker(e.target.value)}
+                className="appearance-none bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-medium tracking-widest rounded-xl px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
+              >
+                {uniqueMarkers.map((m) => (
+                  <option
+                    key={m}
+                    value={m}
+                    className="text-slate-900 bg-white dark:text-slate-100 dark:bg-slate-900"
+                  >
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[var(--color-text-muted)]">
+                <ChevronDown className="w-4 h-4" />
+              </div>
+            </div>
 
-             <div className="flex bg-surface rounded-xl p-0.5 border border-border">
-               {["3M", "6M", "1Y", "ALL"].map((tr) => (
-                 <button
-                   key={tr}
-                   onClick={() => setTimeRange(tr as any)}
-                   className={`px-3 py-1.5 text-xs font-medium rounded-[10px] transition-colors ${timeRange === tr ? "bg-[var(--color-primary)] text-white shadow-sm" : "text-muted hover:text-theme"}`}
-                 >
-                   {tr}
-                 </button>
-               ))}
-             </div>
-           </div>
+            <div className="flex bg-surface rounded-xl p-0.5 border border-border">
+              {["3M", "6M", "1Y", "ALL"].map((tr) => (
+                <button
+                  key={tr}
+                  onClick={() => setTimeRange(tr as any)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-[10px] transition-colors ${timeRange === tr ? "bg-[var(--color-primary)] text-white shadow-sm" : "text-muted hover:text-theme"}`}
+                >
+                  {tr}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
       {uniqueMarkers.length > 0 && (
-         <div id="lab-trend-chart-container" className="w-full h-[300px] min-h-[300px] relative">
-           <AIErrorBoundary
-             key={chartKey}
-             onReset={() => setChartKey((k) => k + 1)}
-             fallbackMessage="Chart rendering failed."
-           >
+        <div
+          id="lab-trend-chart-container"
+          className="w-full h-[300px] min-h-[300px] relative"
+        >
+          <AIErrorBoundary
+            key={chartKey}
+            onReset={() => setChartKey((k) => k + 1)}
+            fallbackMessage="Chart rendering failed."
+          >
             <div className="w-full h-[300px] min-h-[300px] relative mt-4">
               <ResponsiveContainer width="100%" height={300} minWidth={0}>
-                <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
-                  
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
-                    tickLine={false} 
-                    axisLine={false} 
-                    dy={10}
-                  />
-                  
-                  <YAxis 
-                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
-                    tickLine={false} 
-                    axisLine={false} 
-                    dx={-10}
-                  />
-                  
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
-                    itemStyle={{ fontWeight: 'bold' }}
+                <ComposedChart
+                  data={chartData}
+                  margin={{ top: 20, right: 20, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="currentColor"
+                    opacity={0.1}
                   />
 
-                  <Line 
-                    type="monotone" 
-                    dataKey="numericValue" 
-                    stroke="var(--color-primary, #2dd4bf)" 
-                    strokeWidth={3} 
-                    dot={{ r: 4, strokeWidth: 2, fill: "var(--color-surface, #ffffff)" }}
-                    activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-primary, #2dd4bf)" }}
-                    isAnimationActive={true} 
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                    tickLine={false}
+                    axisLine={false}
+                    dy={10}
+                  />
+
+                  <YAxis
+                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                    tickLine={false}
+                    axisLine={false}
+                    dx={-10}
+                  />
+
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid var(--color-border)",
+                      backgroundColor: "var(--color-surface)",
+                      color: "var(--color-text)",
+                    }}
+                    itemStyle={{ fontWeight: "bold" }}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="numericValue"
+                    stroke="var(--color-primary, #2dd4bf)"
+                    strokeWidth={3}
+                    dot={{
+                      r: 4,
+                      strokeWidth: 2,
+                      fill: "var(--color-surface, #ffffff)",
+                    }}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 0,
+                      fill: "var(--color-primary, #2dd4bf)",
+                    }}
+                    isAnimationActive={true}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-           </AIErrorBoundary>
-         </div>
+          </AIErrorBoundary>
+        </div>
       )}
     </div>
   );
