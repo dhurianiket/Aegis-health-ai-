@@ -104,6 +104,7 @@ export default function ExportModal({
           <button
             onClick={onClose}
             className="p-2 text-slate-500 hover:text-white rounded-full hover:bg-white/5 transition-colors"
+            aria-label="Close modal"
           >
             <X className="w-6 h-6" />
           </button>

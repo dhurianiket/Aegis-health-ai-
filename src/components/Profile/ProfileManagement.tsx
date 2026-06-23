@@ -211,6 +211,7 @@ export default function ProfileManagement() {
                   type="button"
                   onClick={() => setIsCreating(false)}
                   className="text-slate-400 hover:text-white"
+                  aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
                 </button>

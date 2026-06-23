@@ -54,6 +54,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               <button 
                 onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
                 className="ml-2 hover:opacity-70"
+                aria-label="Dismiss toast"
               >
                 <X className="w-4 h-4" />
               </button>
