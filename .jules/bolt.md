@@ -1,7 +1,3 @@
-## 2024-06-15 - Memoizing expensive array filters in render path
-**Learning:** Found inline `keyLabs.filter(...)` operations in `Dashboard.tsx` executing on every render. Because these filters also performed string casing operations (`toLowerCase`, `trim`) on potentially large lab arrays, it was causing unnecessary CPU cycles during re-renders. Additionally, lookups like `['hba1c', ...].includes(markerName)` were running linearly in the loop.
-**Action:** Always wrap derived datasets using `useMemo` when working with potentially large arrays (like `keyLabs`) to ensure expensive filtering/transformations are only run when the dependencies change. Used a `Set` for array inclusion checks for better algorithmic performance.
-
-## 2026-06-16 - Schwartzian transform for expensive sort keys
-**Learning:** Discovered O(N log N) timestamp parsing in `Dashboard.tsx` and `ComparativeAnalysis.tsx`. Using complex parsing functions inside a `sort` callback causes redundant execution.
-**Action:** Use a Schwartzian transform (map to objects with cached keys, sort, map back) to reduce expensive key parsing to strictly O(N).
+## 2024-06-24 - Pre-calculate and decorate sorts to avoid nested O(N*M log M) performance sinks
+**Learning:** In `src/services/ai/contextService.ts`, nested `sort()` callbacks inside array iterations (`sort` within `sort` with expensive parsing logic like `parseSafeTimestamp`) drastically increase complexity and block the event loop for significant periods (upwards of ~500ms on moderately sized datasets). The `.sort` mutates original arrays, so mapping out or wrapping original values requires a specific approach.
+**Action:** When finding complex `.sort()` predicates over expensive parsing, use the Schwartzian transform (decorate-sort-undecorate) pattern. Calculate parsed times or string metrics once, store them in a temporary structure via `map`, sort on the structure, and finally `map` to revert back to the original objects.

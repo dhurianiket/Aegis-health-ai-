@@ -171,26 +171,37 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
-    // Sort markers by severity of their most recent lab
-    const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      const labsA = labsByMarker.get(a);
-      const labsB = labsByMarker.get(b);
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      return severityScore(latestB.status) - severityScore(latestA.status);
+    // Pre-calculate parsed times and sort once to avoid O(N * M log M) sorts
+    const getT = (doc: any) => {
+      const _parsed = parseSafeTimestamp(doc.extractedDate || doc.date);
+      return {
+        time: _parsed?.getTime() || 0,
+        formattedDate: _parsed ? _parsed.toISOString().split("T")[0] : "Recent"
+      };
+    };
+
+    const markerInfo = Array.from(labsByMarker.entries()).map(([markerName, labs]) => {
+      const decoratedLabs = labs.map((lab: any) => {
+        const { time, formattedDate } = getT(lab);
+        return { lab, time, formattedDate };
+      });
+      // Sort descending by time
+      decoratedLabs.sort((a: any, b: any) => b.time - a.time);
+      return {
+        markerName,
+        decoratedLabs,
+        severity: decoratedLabs.length > 0 ? severityScore(decoratedLabs[0].lab.status) : 0
+      };
     });
 
-    sortedMarkers.slice(0, 15).forEach((markerName) => {
+    // Sort markers by severity of their most recent lab
+    markerInfo.sort((a, b) => b.severity - a.severity);
+
+    markerInfo.slice(0, 15).forEach(({ markerName, decoratedLabs }) => {
       prompt += `- ${markerName}:\n`;
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const labs = labsByMarker.get(markerName)
-        .sort((a: any, b: any) => getT(a) - getT(b))
-        .slice(-5); // Get up to 5 most recent
-      labs.forEach((lab: any) => {
-        const dateStr = lab.extractedDate || lab.date;
-        const _parsed = parseSafeTimestamp(dateStr);
-        const formattedDate = _parsed ? _parsed.toISOString().split("T")[0] : "Recent";
+      // Slice the latest 5 and reverse to get ascending order for the prompt
+      const recentLabs = decoratedLabs.slice(0, 5).reverse();
+      recentLabs.forEach(({ lab, formattedDate }: any) => {
         const valStr = lab.display_value || lab.numeric_value || lab.value;
         prompt += `  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})\n`;
       });
