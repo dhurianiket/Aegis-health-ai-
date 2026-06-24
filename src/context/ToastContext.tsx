@@ -53,7 +53,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               <span className="text-sm font-semibold tracking-tight">{toast.message}</span>
               <button 
                 onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-                className="ml-2 hover:opacity-70"
+                className="ml-2 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-md transition-opacity"
+                aria-label="Dismiss notification"
               >
                 <X className="w-4 h-4" />
               </button>
