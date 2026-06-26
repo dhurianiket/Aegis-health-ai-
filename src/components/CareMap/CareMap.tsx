@@ -64,7 +64,7 @@ export default function CareMapContainer() {
               <a 
                 href="https://console.cloud.google.com/google/maps-apis/start?utm_campaign=gmp-code-assist-ais" 
                 target="_blank" 
-                rel="noopener noreferrer"
+                rel="noreferrer"
                 className="text-indigo-400 underline hover:text-indigo-300 font-semibold"
               >
                 Get Google Maps Platform API Key

@@ -754,7 +754,7 @@ export default function Dashboard({
                 <a
                   href="https://aniket.aegishealthai.co.in/"
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noreferrer"
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors"
                 >
                   Aniket Dhuri

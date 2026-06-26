@@ -364,7 +364,7 @@ export default function Medications({
 
       <div className="pt-8 mt-12 border-t border-surface opacity-40 text-center">
         <p className="text-[10px] text-faint font-mono uppercase tracking-[0.15em]">
-          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-muted hover:text-[var(--color-text)] underline decoration-faint transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
+          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noreferrer" className="text-muted hover:text-[var(--color-text)] underline decoration-faint transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>
     </div>

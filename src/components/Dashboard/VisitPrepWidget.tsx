@@ -233,7 +233,7 @@ Format as a clean, highly structured Markdown document with:
                        <a 
                           href={`https://docs.google.com/forms/d/${formId}/viewform`} 
                           target="_blank" 
-                          rel="noopener noreferrer"
+                          rel="noreferrer"
                           className="inline-block text-xs text-indigo-400 hover:underline"
                        >
                           Open Google Form directly ↗

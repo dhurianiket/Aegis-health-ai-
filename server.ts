@@ -19,6 +19,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Security enhancement: Hide Express technology signature
+  app.disable("x-powered-by");
+
   // Apply rate limiter globally
   app.use(limiter);
 

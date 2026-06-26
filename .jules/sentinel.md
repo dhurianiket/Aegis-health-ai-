@@ -18,3 +18,7 @@
 **Vulnerability:** The `firestore.rules` file allowed any authenticated user to write to the `/analytics/globalStats` collection via `allow write: if request.auth != null;`.
 **Learning:** While the rule correctly required admin access to *read* the stats, it mistakenly allowed any logged-in user to *write* to them, enabling potential tampering or data corruption of global analytics.
 **Prevention:** Always verify that both `read` and `write` rules for administrative paths use the `isAdmin()` function.
+## 2024-06-25 - Express Backend Stack Disclosure
+**Vulnerability:** The application was broadcasting its backend technology stack in HTTP response headers via the default `X-Powered-By: Express` header.
+**Learning:** This exposes the technology stack to automated scanners, enabling targeted attacks if vulnerabilities in Express are discovered.
+**Prevention:** Disable the header using `app.disable("x-powered-by")` in all Express applications as a defense-in-depth practice.

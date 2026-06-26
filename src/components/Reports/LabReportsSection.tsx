@@ -106,7 +106,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
 
         <div className="flex sm:flex-col gap-2 justify-end sm:items-end w-full sm:w-auto">
           {report.fileUrl ? (
-             <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-lg border border-border transition-colors">
+             <a href={report.fileUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-lg border border-border transition-colors">
                 <Download size={14} /> PDF
              </a>
           ) : (
@@ -407,7 +407,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
 
       <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
         <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
-          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
+          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noreferrer" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>
 

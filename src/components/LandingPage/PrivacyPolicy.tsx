@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-4">
           <h2 className="text-xl font-bold">1. Who We Are</h2>
           <p className="text-sm leading-relaxed text-muted">
-            Aegis Health AI is an early-stage health insights platform founded by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-gray-900 border-b border-gray-300 hover:border-gray-900 transition-colors">Aniket Dhuri</a>, based in Dombivli, Maharashtra, India. We are currently in a public beta phase, offering the service free for user feedback. If you have any questions about this policy, you can reach us directly at <span className="text-blue-500 font-semibold">support@aegishealthai.co.in</span>.
+            Aegis Health AI is an early-stage health insights platform founded by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noreferrer" className="text-gray-900 border-b border-gray-300 hover:border-gray-900 transition-colors">Aniket Dhuri</a>, based in Dombivli, Maharashtra, India. We are currently in a public beta phase, offering the service free for user feedback. If you have any questions about this policy, you can reach us directly at <span className="text-blue-500 font-semibold">support@aegishealthai.co.in</span>.
           </p>
         </section>
 

@@ -494,7 +494,7 @@ export default function Timeline() {
                   <a
                     href={selectedDoc.fileUrl}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noreferrer"
                     className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/80 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
                   >
                     <Download className="w-4 h-4" /> Original PDF
@@ -536,7 +536,7 @@ export default function Timeline() {
           <a
             href="https://aniket.aegishealthai.co.in/"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noreferrer"
             className="text-slate-400 hover:text-slate-300 underline decoration-slate-500 transition-colors"
           >
             Aniket Dhuri
