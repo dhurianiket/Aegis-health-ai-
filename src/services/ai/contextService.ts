@@ -171,26 +171,44 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
+    const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
+
+    // Precompute the latest severity score and parse timestamps for each marker
+    const latestSeverityCache = new Map<string, number>();
+    const wrappedLabsByMarker = new Map<string, { lab: any, time: number }[]>();
+
+    for (const [marker, labs] of Array.from(labsByMarker.entries())) {
+      let maxT = -1;
+      let latestStatus = "normal";
+      const wrappedLabs: { lab: any, time: number }[] = [];
+
+      for (const lab of labs) {
+        const t = getT(lab);
+        wrappedLabs.push({ lab, time: t });
+        if (t > maxT) {
+          maxT = t;
+          latestStatus = lab.status;
+        }
+      }
+
+      latestSeverityCache.set(marker, severityScore(latestStatus));
+      wrappedLabsByMarker.set(marker, wrappedLabs);
+    }
+
     // Sort markers by severity of their most recent lab
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      const labsA = labsByMarker.get(a);
-      const labsB = labsByMarker.get(b);
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      return severityScore(latestB.status) - severityScore(latestA.status);
+      return (latestSeverityCache.get(b) || 1) - (latestSeverityCache.get(a) || 1);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {
       prompt += `- ${markerName}:\n`;
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const labs = labsByMarker.get(markerName)
-        .sort((a: any, b: any) => getT(a) - getT(b))
+      const wrappedLabs = wrappedLabsByMarker.get(markerName) || [];
+      const topLabs = wrappedLabs
+        .sort((a, b) => a.time - b.time)
         .slice(-5); // Get up to 5 most recent
-      labs.forEach((lab: any) => {
-        const dateStr = lab.extractedDate || lab.date;
-        const _parsed = parseSafeTimestamp(dateStr);
-        const formattedDate = _parsed ? _parsed.toISOString().split("T")[0] : "Recent";
+
+      topLabs.forEach(({ lab, time }) => {
+        const formattedDate = time !== 0 ? new Date(time).toISOString().split("T")[0] : "Recent";
         const valStr = lab.display_value || lab.numeric_value || lab.value;
         prompt += `  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})\n`;
       });

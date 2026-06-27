@@ -1,7 +1,3 @@
-## 2024-06-15 - Memoizing expensive array filters in render path
-**Learning:** Found inline `keyLabs.filter(...)` operations in `Dashboard.tsx` executing on every render. Because these filters also performed string casing operations (`toLowerCase`, `trim`) on potentially large lab arrays, it was causing unnecessary CPU cycles during re-renders. Additionally, lookups like `['hba1c', ...].includes(markerName)` were running linearly in the loop.
-**Action:** Always wrap derived datasets using `useMemo` when working with potentially large arrays (like `keyLabs`) to ensure expensive filtering/transformations are only run when the dependencies change. Used a `Set` for array inclusion checks for better algorithmic performance.
-
-## 2026-06-16 - Schwartzian transform for expensive sort keys
-**Learning:** Discovered O(N log N) timestamp parsing in `Dashboard.tsx` and `ComparativeAnalysis.tsx`. Using complex parsing functions inside a `sort` callback causes redundant execution.
-**Action:** Use a Schwartzian transform (map to objects with cached keys, sort, map back) to reduce expensive key parsing to strictly O(N).
+## 2025-02-13 - Schwartzian Transform for Array Sort Algorithms
+**Learning:** Nested sorts or computationally expensive parsing functions (like `parseSafeTimestamp`) inside array sort comparators cause severe O(N^2 log N) performance bottlenecks, especially in complex components like `contextService` which process many arrays recursively.
+**Action:** Always precompute and map valid values and timestamps before sorting using the Schwartzian Transform pattern (O(N) mapping, then sorting mapped references) rather than repeatedly computing inside the `Array.sort()` comparator method.
