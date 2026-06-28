@@ -5,3 +5,6 @@
 ## 2026-06-16 - Schwartzian transform for expensive sort keys
 **Learning:** Discovered O(N log N) timestamp parsing in `Dashboard.tsx` and `ComparativeAnalysis.tsx`. Using complex parsing functions inside a `sort` callback causes redundant execution.
 **Action:** Use a Schwartzian transform (map to objects with cached keys, sort, map back) to reduce expensive key parsing to strictly O(N).
+## 2024-05-18 - Schwartzian Transform for O(N log N) Sorting Overhead
+**Learning:** In `src/services/ai/contextService.ts`, array sorting logic was nested inside another sort loop's comparator callback, causing inner `Array.sort()` and redundant `parseSafeTimestamp()` operations to be executed quadratically (`O(M * N log N)`). The application handles lots of mock lab data here so the impact was massive (9x overhead).
+**Action:** Use a Schwartzian Transform pattern (Decorate-Sort-Undecorate) to pre-calculate computed values, map cache lookups, and execute inner sorts outside the primary sort loop to achieve `O(N log N)` flat complexity.

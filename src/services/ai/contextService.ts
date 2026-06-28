@@ -171,22 +171,25 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
+    const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
+    const latestSeverity = new Map();
+
+    // Pre-sort each marker's labs and cache latest severity to avoid O(N log N) inside sorting
+    labsByMarker.forEach((labs, markerName) => {
+      labs.sort((a: any, b: any) => getT(b) - getT(a));
+      latestSeverity.set(markerName, severityScore(labs[0].status));
+    });
+
     // Sort markers by severity of their most recent lab
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      const labsA = labsByMarker.get(a);
-      const labsB = labsByMarker.get(b);
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      return severityScore(latestB.status) - severityScore(latestA.status);
+      return latestSeverity.get(b) - latestSeverity.get(a);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {
       prompt += `- ${markerName}:\n`;
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const labs = labsByMarker.get(markerName)
-        .sort((a: any, b: any) => getT(a) - getT(b))
-        .slice(-5); // Get up to 5 most recent
+      // Labs are already sorted descending (newest first).
+      // We want up to 5 most recent, but in ascending order (oldest first among the 5).
+      const labs = labsByMarker.get(markerName).slice(0, 5).reverse();
       labs.forEach((lab: any) => {
         const dateStr = lab.extractedDate || lab.date;
         const _parsed = parseSafeTimestamp(dateStr);
