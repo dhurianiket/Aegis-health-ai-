@@ -5,3 +5,6 @@
 ## 2026-06-16 - Schwartzian transform for expensive sort keys
 **Learning:** Discovered O(N log N) timestamp parsing in `Dashboard.tsx` and `ComparativeAnalysis.tsx`. Using complex parsing functions inside a `sort` callback causes redundant execution.
 **Action:** Use a Schwartzian transform (map to objects with cached keys, sort, map back) to reduce expensive key parsing to strictly O(N).
+## 2024-06-29 - O(N log N) Date Parsing Bottlenecks in Chart Rendering
+**Learning:** Frontend charts that sort large arrays of lab results dynamically (e.g., `LabTrendChart`) can suffer significant main-thread blocking when parsing strings into Dates during the `.sort()` comparator function. A simple array map and sort triggered a redundant parser execution penalty of 125ms for 50k points in Node.js.
+**Action:** Use a Schwartzian transform (decorate-sort-undecorate) to pre-calculate and cache the parsed timestamps, reducing the operation complexity from O(N log N) expensive parsing executions to just O(N).
