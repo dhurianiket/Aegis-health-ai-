@@ -17,6 +17,7 @@ const limiter = rateLimit({
 
 async function startServer() {
   const app = express();
+  app.disable("x-powered-by"); // Security: Prevent broadcasting tech stack
   const PORT = 3000;
 
   // Apply rate limiter globally
