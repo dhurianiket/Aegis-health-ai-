@@ -210,9 +210,19 @@ export async function generateClinicalSummary(
 ): Promise<string> {
   const ai = getAI();
   
+  // Cache timestamps to avoid redundant parsing during sorting
+  // Using WeakMap to prevent mutating input objects and polluting the model
+  const dateCache = new WeakMap<any, number>();
+  const getCachedDate = (doc: any) => {
+    if (!dateCache.has(doc)) {
+      dateCache.set(doc, parseSafeTimestamp(doc.date)?.getTime() || 0);
+    }
+    return dateCache.get(doc) || 0;
+  };
+
   // Sort labs by date (newest first)
   const sortedLabs = [...labHistory].sort((a, b) => 
-    (parseSafeTimestamp(b.date)?.getTime() || 0) - (parseSafeTimestamp(a.date)?.getTime() || 0)
+    getCachedDate(b) - getCachedDate(a)
   );
 
   const age = patientData.dob

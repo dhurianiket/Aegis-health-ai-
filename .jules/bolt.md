@@ -5,3 +5,7 @@
 ## 2026-06-16 - Schwartzian transform for expensive sort keys
 **Learning:** Discovered O(N log N) timestamp parsing in `Dashboard.tsx` and `ComparativeAnalysis.tsx`. Using complex parsing functions inside a `sort` callback causes redundant execution.
 **Action:** Use a Schwartzian transform (map to objects with cached keys, sort, map back) to reduce expensive key parsing to strictly O(N).
+
+## 2024-07-03 - WeakMap for Safe Object Caching during Sorting
+**Learning:** During array sorting optimizations, caching computed values directly on the input object elements (e.g. `doc._parsedDate = ...`) is a dangerous anti-pattern in React apps that pollutes data models or can trigger crashes on frozen state objects (like RTK Query).
+**Action:** Always use a `WeakMap` external to the data object or a Schwartzian transform (map-sort-map) when safely caching values for `Array.prototype.sort()`.
