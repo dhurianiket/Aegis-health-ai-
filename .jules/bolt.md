@@ -5,3 +5,6 @@
 ## 2026-06-16 - Schwartzian transform for expensive sort keys
 **Learning:** Discovered O(N log N) timestamp parsing in `Dashboard.tsx` and `ComparativeAnalysis.tsx`. Using complex parsing functions inside a `sort` callback causes redundant execution.
 **Action:** Use a Schwartzian transform (map to objects with cached keys, sort, map back) to reduce expensive key parsing to strictly O(N).
+## 2024-03-24 - Array Iteration Timestamp Parsing Optimization
+**Learning:** `LabTrendChart.tsx` iteratively executed a heavy `parseSafeTimestamp` mapping function multiple times during filtering, sorting, and mapping in sequence, resulting in O(N log N) regex operations. This is a common pattern in the dashboard analytics views when handling complex medical data parsing natively in JS.
+**Action:** Used the Schwartzian transform (Decorate-Sort-Undecorate) to pre-compute and cache the parsed timestamp and time value into an intermediate array of objects, running the regex parser strictly once per item.

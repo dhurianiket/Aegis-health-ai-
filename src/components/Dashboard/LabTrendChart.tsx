@@ -156,30 +156,28 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     try {
       if (!selectedMarker) return [];
 
-      const getValidTime = (r: any) => {
-        const d1 = parseSafeTimestamp(r.actualDate);
-        if (d1) return d1.getTime();
-        const d2 = parseSafeTimestamp(r.fallbackDate);
-        if (d2) return d2.getTime();
-        return new Date().getTime(); // Safe fallback just for sorting if missing
-      };
-
-      const filtered = labResults
-        .filter((r) => r.markerName === selectedMarker)
-        .sort((a, b) => getValidTime(a) - getValidTime(b));
-
       const now = new Date().getTime();
       let cutoff = 0;
       if (timeRange === "3M") cutoff = now - 90 * 24 * 60 * 60 * 1000;
       else if (timeRange === "6M") cutoff = now - 180 * 24 * 60 * 60 * 1000;
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
-      const ranged = filtered.filter((r) => {
-        const t = getValidTime(r);
-        return t >= cutoff;
-      });
+      // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing calls
+      const decorated = labResults
+        .filter((r) => r.markerName === selectedMarker)
+        .map((r) => {
+          const d1 = parseSafeTimestamp(r.actualDate);
+          const d2 = !d1 ? parseSafeTimestamp(r.fallbackDate) : null;
+          const parsedDate = d1 || d2;
+          const time = parsedDate ? parsedDate.getTime() : new Date().getTime();
+          return { r, time, parsedDate };
+        });
 
-      return ranged.map((r) => {
+      decorated.sort((a, b) => a.time - b.time);
+
+      const ranged = decorated.filter((item) => item.time >= cutoff);
+
+      return ranged.map(({ r, time, parsedDate }) => {
         let refMin = undefined;
         let refMax = undefined;
         const refRange = r.referenceRange || r.reference_range;
@@ -212,13 +210,10 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
         else if (st === 'low') flagCol = 'orange';
 
-        const safeTime = getValidTime(r);
+        const safeTime = time;
         return {
           timestamp: safeTime,
-          date: (() => {
-             const d = parseSafeTimestamp(r.actualDate || r.fallbackDate);
-             return d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recent";
-          })(),
+          date: parsedDate ? parsedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recent",
           numericValue: numericValue,
           value: numericValue,
           unit: r.unitCanonical || r.unit,
