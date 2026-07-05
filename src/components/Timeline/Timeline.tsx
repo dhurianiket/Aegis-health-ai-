@@ -28,6 +28,7 @@ import {
   computeAllTrends,
   formatTrendForPrompt,
 } from "../../utils/trendAnalysis";
+import { getSourceForMarker } from "../../services/sourceGroundedService";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 import { LabObservation } from "../../types/health";
 
@@ -425,6 +426,7 @@ export default function Timeline() {
                             const isCritical =
                               lab.status === "critical" ||
                               lab.status === "abnormal";
+                            const source = getSourceForMarker(lab.marker);
                             return (
                               <div
                                 key={i}
@@ -436,6 +438,21 @@ export default function Timeline() {
                                   </p>
                                   <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">
                                     Ref: {lab.reference_range || "-"}
+                                  </p>
+                                  <p className="text-[10px] text-slate-500 mt-0.5">
+                                    Source: {source ? (
+                                      <a 
+                                        href={source.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-[var(--color-primary)] hover:underline font-medium inline-flex items-center gap-1"
+                                        id={`ref-link-tl-${lab.id || i}`}
+                                      >
+                                        {source.name}
+                                      </a>
+                                    ) : (
+                                      <span className="text-slate-600 italic">reference not available</span>
+                                    )}
                                   </p>
                                 </div>
                                 <div className="text-right">

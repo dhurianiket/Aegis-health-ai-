@@ -30,6 +30,7 @@ import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
 import { MedicationStatus, LabStatus } from "../../types/medical";
 import { useToast } from "../../context/ToastContext";
+import { getSourceForMarker } from "../../services/sourceGroundedService";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../lib/firebase/config";
 import { getRecaptchaToken } from "../../utils/recaptcha";
@@ -724,10 +725,11 @@ export default function UploadCenter({
                         <table className="w-full text-left text-sm whitespace-normal break-words">
                           <thead className="bg-[var(--color-bg)] text-muted text-[11px] uppercase tracking-widest font-semibold border-b border-surface">
                             <tr>
-                              <th className="px-4 py-3 rounded-tl-xl">Marker</th>
-                              <th className="px-4 py-3 text-right">Value</th>
-                              <th className="px-4 py-3">Status</th>
-                              <th className="px-4 py-3 rounded-tr-xl">Range</th>
+                              <th className="px-4 py-3 rounded-tl-xl w-1/4">Marker</th>
+                              <th className="px-4 py-3 text-right w-1/5">Value</th>
+                              <th className="px-4 py-3 w-1/5">Status</th>
+                              <th className="px-4 py-3 w-1/5">Range</th>
+                              <th className="px-4 py-3 rounded-tr-xl w-1/5">Source</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-surface text-theme">
@@ -735,6 +737,7 @@ export default function UploadCenter({
                               const isHigh = m.status?.toLowerCase() === 'high' || m.status?.toLowerCase() === 'abnormal';
                               const isLow = m.status?.toLowerCase() === 'low';
                               const isNormal = m.status?.toLowerCase() === 'normal';
+                              const source = getSourceForMarker(m.marker);
                               return (
                                 <tr key={i} className="hover:bg-surface/50">
                                   <td className="px-4 py-3 font-medium">{m.marker}</td>
@@ -752,6 +755,21 @@ export default function UploadCenter({
                                      </span>
                                   </td>
                                   <td className="px-4 py-3 text-muted text-xs">{m.reference_range || '-'}</td>
+                                  <td className="px-4 py-3 text-muted text-xs">
+                                     {source ? (
+                                        <a 
+                                           href={source.url} 
+                                           target="_blank" 
+                                           rel="noopener noreferrer" 
+                                           className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                                           id={`ref-link-up-${i}`}
+                                        >
+                                           {source.name}
+                                        </a>
+                                     ) : (
+                                        <span className="text-muted text-xs italic">reference not available</span>
+                                     )}
+                                  </td>
                                 </tr>
                               )
                             })}

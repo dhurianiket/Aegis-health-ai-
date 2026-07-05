@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { db } from "../../lib/firebase/config";
 import { collection, onSnapshot, query, orderBy, where } from "firebase/firestore";
 import { useProfile } from "../../context/ProfileContext";
+import { getSourceForMarker } from "../../services/sourceGroundedService";
 import {
   FileText,
   Loader2,
@@ -138,10 +139,11 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
               <table className="w-full text-left text-sm whitespace-normal break-words">
                 <thead className="bg-[var(--color-bg)] text-[var(--color-text-muted)] text-[11px] uppercase tracking-widest font-semibold">
                   <tr>
-                    <th className="px-4 py-3 rounded-l-lg w-1/3">Marker</th>
-                    <th className="px-4 py-3 text-right w-1/4">Value</th>
-                    <th className="px-4 py-3 w-1/4 text-center">Status</th>
-                    <th className="px-4 py-3 rounded-r-lg w-1/4">Ref Range</th>
+                    <th className="px-4 py-3 rounded-l-lg w-1/4">Marker</th>
+                    <th className="px-4 py-3 text-right w-1/5">Value</th>
+                    <th className="px-4 py-3 w-1/5 text-center">Status</th>
+                    <th className="px-4 py-3 w-1/5">Ref Range</th>
+                    <th className="px-4 py-3 rounded-r-lg w-1/5">Source</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-border)] text-[var(--color-text)]">
@@ -152,6 +154,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                     const isCritical = flag?.toLowerCase() === "critical";
                     const flagColor = isCritical ? "text-[var(--color-critical)] bg-[var(--color-critical)]/10" : isHigh ? "text-[var(--color-warning)] bg-[var(--color-warning)]/10" : isLow ? "text-orange-500 bg-orange-500/10" : "text-[var(--color-success)] bg-[var(--color-success)]/10";
                     const flagText = flag || "NORMAL";
+                    const source = getSourceForMarker(m.testName || m.marker);
 
                     return (
                       <tr key={i} className="hover:bg-[var(--color-bg)]/50 transition-colors">
@@ -174,6 +177,21 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                             ? `${m.referenceLow}–${m.referenceHigh}`
                             : m.reference_range || "-"}
                         </td>
+                        <td className="px-4 py-3 text-[var(--color-text-muted)] text-[11px]">
+                          {source ? (
+                            <a 
+                              href={source.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                              id={`ref-link-dt-${m.id || i}`}
+                            >
+                              {source.name}
+                            </a>
+                          ) : (
+                            <span className="text-[var(--color-text-faint)] text-[11px] italic">reference not available</span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
@@ -190,6 +208,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                 const isCritical = flag?.toLowerCase() === "critical";
                 const flagColor = isCritical ? "text-[var(--color-critical)] border-[var(--color-critical)] bg-[var(--color-critical)]/10" : isHigh ? "text-[var(--color-warning)] border-[var(--color-warning)] bg-[var(--color-warning)]/10" : isLow ? "text-orange-500 border-orange-500 bg-orange-500/10" : "text-[var(--color-success)] border-[var(--color-success)] bg-[var(--color-success)]/10";
                 const flagText = flag || "NORMAL";
+                const source = getSourceForMarker(m.testName || m.marker);
 
                 return (
                   <div key={i} className="bg-white/[0.02] dark:bg-white/[0.03] border border-[var(--color-border)] rounded-2xl p-4 flex flex-col gap-2">
@@ -216,6 +235,22 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                         Reference: {m.referenceLow !== null && m.referenceLow !== undefined && m.referenceHigh !== null && m.referenceHigh !== undefined
                           ? `${m.referenceLow}–${m.referenceHigh}`
                           : m.reference_range || "-"}
+                      </div>
+
+                      <div className="text-[var(--color-text-muted)] text-[11px] mt-1">
+                        Source: {source ? (
+                          <a 
+                            href={source.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-[var(--color-primary)] hover:underline font-medium inline-flex items-center gap-1"
+                            id={`ref-link-mb-${m.id || i}`}
+                          >
+                            {source.name}
+                          </a>
+                        ) : (
+                          <span className="text-[var(--color-text-faint)] text-[11px] italic">reference not available</span>
+                        )}
                       </div>
                     </div>
                     {m.interpretation && (
