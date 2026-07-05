@@ -5,3 +5,6 @@
 ## 2026-06-16 - Schwartzian transform for expensive sort keys
 **Learning:** Discovered O(N log N) timestamp parsing in `Dashboard.tsx` and `ComparativeAnalysis.tsx`. Using complex parsing functions inside a `sort` callback causes redundant execution.
 **Action:** Use a Schwartzian transform (map to objects with cached keys, sort, map back) to reduce expensive key parsing to strictly O(N).
+## 2024-07-05 - Memoization of expensive array filters in component body
+**Learning:** `LabReportsSection.tsx` had an inline `reports.filter(...)` operation that included nested iterations and `toLowerCase` string processing. This caused heavy and redundant computations on every component render, affecting UI responsiveness, especially when users interacted with input fields that triggered re-renders.
+**Action:** Always wrap expensive, derived datasets (like filtered lists involving string manipulation or nested array checks) with `useMemo` in React components to prevent redundant computations and preserve referential equality on re-renders when dependencies have not changed.
