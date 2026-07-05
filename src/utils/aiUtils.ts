@@ -107,3 +107,61 @@ function repairTruncatedJson(json: string): string {
   
   return repaired;
 }
+
+/**
+ * Parses and returns an empathetic, patient-friendly error message from any Gemini API/neural engine error.
+ */
+export function getFriendlyErrorMessage(err: any): string {
+  if (!err) return "An unexpected error occurred. Please try again in a moment.";
+  
+  const rawMsg = err.message || (typeof err === "string" ? err : "");
+  
+  if (!rawMsg) return "An unexpected error occurred. Please try again in a moment.";
+
+  // Detect prepaid credits depleted / billing errors
+  const isPrepaymentDepleted = 
+    rawMsg.toLowerCase().includes("prepayment credits are depleted") ||
+    rawMsg.toLowerCase().includes("prepayment") ||
+    rawMsg.toLowerCase().includes("credits are depleted") ||
+    rawMsg.toLowerCase().includes("billing#prepay");
+
+  if (isPrepaymentDepleted) {
+    return "Aura AI is currently under high load, or the developer's prepaid credits on Google AI Studio are depleted. Please try again later or contact support.";
+  }
+
+  // Detect 429 quota exhaustion errors
+  const isQuotaError = 
+    err.status === 429 || 
+    err.code === 429 || 
+    rawMsg.includes("429") || 
+    rawMsg.toLowerCase().includes("quota") || 
+    rawMsg.toLowerCase().includes("resource_exhausted") ||
+    rawMsg.toLowerCase().includes("exhausted");
+
+  if (isQuotaError) {
+    return "Aura AI is experiencing temporary high demand (Rate limit exceeded). Please wait a moment and try again. Your data is perfectly safe.";
+  }
+
+  // Detect permission, credentials or API key configuration errors
+  if (rawMsg.includes("API key") || rawMsg.includes("VITE_GEMINI_API_KEY") || rawMsg.includes("API_KEY")) {
+    return "Aura AI is temporarily offline (API Key registration required). Please configure VITE_GEMINI_API_KEY.";
+  }
+
+  // Handle nested inner error JSON if possible
+  try {
+    const parsed = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg;
+    if (parsed?.error?.message) {
+      const innerMsg = parsed.error.message;
+      try {
+        const innerParsed = JSON.parse(innerMsg);
+        if (innerParsed?.error?.message) {
+          return getFriendlyErrorMessage({ message: innerParsed.error.message });
+        }
+      } catch {}
+      return getFriendlyErrorMessage({ message: innerMsg });
+    }
+  } catch {}
+
+  return "I am currently having trouble connecting to my clinical brain. Please try again in a moment.";
+}
+

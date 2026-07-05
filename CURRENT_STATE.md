@@ -1,6 +1,15 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — June 09, 2026 (II)
+## Latest Update — June 10, 2026 (I)
+### Completed by: AI Studio Agent
+### Tasks Completed:
+- Implemented `getFriendlyErrorMessage` inside `src/utils/aiUtils.ts` to transform raw technical GoogleGenAI JSON errors into patient-friendly, helpful instructions (such as flagging credit depletion or rate limits).
+- Shielded the conversational brain `ChatCoach.tsx` and conversational hooks `useCoach.ts` so that users are greeted with helpful advice rather than intimidating JSON dumps of raw api exceptions when Gemini rate limits or prepaid credits are saturated.
+- Re-architected raw API safety limits in `extractMedicalReports` (`src/services/ai/gemini.ts`) to throw explicit quota issues instead of swallowing them, preventing reports from silently saving as blank with "Successfully extracted 0 lab values" when Google AI Studio limits are hit.
+- Handled thrown API errors correctly in `UploadCenter.tsx` by aborting the save operation and notifying users using helpful, high-contrast toast alerts detailing the active limits.
+- Accomplished full app verification where both `lint_applet` and `compile_applet` compiled 100% cleanly.
+
+## Previous Update — June 09, 2026 (II)
 ### Completed by: AI Studio Agent
 ### Tasks Completed:
 - Resolved a critical deployment-blocking locking discrepancy where transitive dependencies inside `package-lock.json` were out of step with the security-minded `"overrides"` specified in `package.json`. Successfully synchronized and updated locked transitive packages to satisfy key bounds (e.g., matching `protobufjs@7.6.2`, `ws@8.21.0`, and `qs@6.15.2`).

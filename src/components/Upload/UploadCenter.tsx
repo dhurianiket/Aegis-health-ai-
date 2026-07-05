@@ -312,9 +312,10 @@ export default function UploadCenter({
                 "Please ensure it is a clear medical report and try again."
               );
             }
-          } catch (extractErr) {
+          } catch (extractErr: any) {
             console.error("Extraction failed:", extractErr);
-            showToast("Failed to extract document", "error");
+            const errMsg = extractErr?.message || "Failed to extract document";
+            showToast(errMsg, "error");
             setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
             continue;
           }
@@ -580,7 +581,7 @@ export default function UploadCenter({
                            {item.status === 'error' && <AlertCircle className="w-5 h-5 text-[var(--color-critical)]" />}
                            
                            {!isProcessing && (
-                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500" aria-label="Remove file">
+                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
                                 <X className="w-4 h-4" />
                              </button>
                            )}

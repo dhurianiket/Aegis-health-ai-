@@ -79,7 +79,6 @@ export default function NotificationDropdown({
             </button>
             <button
               onClick={onClose}
-              aria-label="Close notifications"
               className="p-1 text-slate-500 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />

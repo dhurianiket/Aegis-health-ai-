@@ -106,7 +106,6 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
                     onClick={() => handleSnooze(reminder.id)}
                     className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                     title="Snooze for 14 days"
-                    aria-label="Snooze for 14 days"
                   >
                     <Clock className="w-4 h-4" />
                   </button>
@@ -114,7 +113,6 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
                     onClick={() => handleComplete(reminder.id)}
                     className="p-1.5 text-[var(--color-text-muted)] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                     title="Mark as completed"
-                    aria-label="Mark as completed"
                   >
                     <Check className="w-4 h-4" />
                   </button>

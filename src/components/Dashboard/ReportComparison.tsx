@@ -38,24 +38,17 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
       setLoading(true);
       try {
         let docA, docB;
-        // ⚡ Bolt Optimization: Run independent document fetches concurrently using Promise.allSettled
-        // This halves the network latency compared to awaiting them sequentially.
-        const [resultA, resultB] = await Promise.allSettled([
-          getDoc(doc(db, 'users', user.uid, 'documents', reportAId)),
-          getDoc(doc(db, 'users', user.uid, 'documents', reportBId))
-        ]);
-
-        if (resultA.status === 'fulfilled') {
-          docA = resultA.value;
-        } else {
-          console.error("Failed to load report A for comparison:", resultA.reason);
+        try {
+          docA = await getDoc(doc(db, 'users', user.uid, 'documents', reportAId));
+        } catch (err) {
+          console.error("Failed to load report A for comparison:", err);
           setErrorA(true);
         }
-
-        if (resultB.status === 'fulfilled') {
-          docB = resultB.value;
-        } else {
-          console.error("Failed to load report B for comparison:", resultB.reason);
+        
+        try {
+          docB = await getDoc(doc(db, 'users', user.uid, 'documents', reportBId));
+        } catch (err) {
+          console.error("Failed to load report B for comparison:", err);
           setErrorB(true);
         }
 

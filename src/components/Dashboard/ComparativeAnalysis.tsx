@@ -15,16 +15,13 @@ export default function ComparativeAnalysis({
   const latestLabs = useMemo(() => {
     // Get the most recent lab for each marker
     const latest: Record<string, LabResult> = {};
+    const sorted = [...labs].sort((a, b) => {
+      const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
+      const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
+      return timeA - timeB;
+    });
 
-    // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
-    const mappedLabs = labs.map((lab) => ({
-      lab,
-      time: parseSafeTimestamp(lab.date)?.getTime() || 0,
-    }));
-
-    mappedLabs.sort((a, b) => a.time - b.time);
-
-    mappedLabs.forEach(({ lab }) => {
+    sorted.forEach((lab) => {
       const name = lab.markerName
         ? lab.markerName.trim().toUpperCase()
         : "UNKNOWN";
@@ -37,8 +34,8 @@ export default function ComparativeAnalysis({
   if (latestLabs.length === 0) {
     return (
       <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl h-[200px] flex flex-col items-center justify-center text-muted text-sm gap-2">
-        <BarChart2 className="w-6 h-6 opacity-30 text-slate-400" />
-        <span>No comparatives available yet.</span>
+         <BarChart2 className="w-6 h-6 opacity-30 text-slate-400" />
+         <span>No comparatives available yet.</span>
       </div>
     );
   }
@@ -108,9 +105,7 @@ export default function ComparativeAnalysis({
 
               <div className="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300">
                 <span>Lower</span>
-                <span className="text-slate-400 dark:text-slate-200">
-                  Median
-                </span>
+                <span className="text-slate-400 dark:text-slate-200">Median</span>
                 <span>Upper</span>
               </div>
             </div>

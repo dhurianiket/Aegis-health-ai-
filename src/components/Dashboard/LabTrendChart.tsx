@@ -16,7 +16,7 @@ import ExportButton from "../ui/ExportButton";
 import { getDocuments } from "../../lib/firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
-import { LabResult } from "../../types/medical";
+import { LabResult, LabStatus } from "../../types/medical";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 import { ChevronDown } from "lucide-react";
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ChevronDown, ChevronUp, AlertCircle, FileDown, CheckCircle2, Loader2, Share2, Clipboard } from "lucide-react";
+import { SBARSummary } from "../../types/medical";
 import { exportToPDF } from "../../services/pdfExportService";
 
 export interface SBARPreviewProps {
