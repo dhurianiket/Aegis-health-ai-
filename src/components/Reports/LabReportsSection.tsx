@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { db } from "../../lib/firebase/config";
 import { collection, onSnapshot, query, orderBy, where } from "firebase/firestore";
 import { useProfile } from "../../context/ProfileContext";
-import { getSourceForMarker } from "../../services/sourceGroundedService";
+import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 import {
   FileText,
   Loader2,
@@ -155,6 +155,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                     const flagColor = isCritical ? "text-[var(--color-critical)] bg-[var(--color-critical)]/10" : isHigh ? "text-[var(--color-warning)] bg-[var(--color-warning)]/10" : isLow ? "text-orange-500 bg-orange-500/10" : "text-[var(--color-success)] bg-[var(--color-success)]/10";
                     const flagText = flag || "NORMAL";
                     const source = getSourceForMarker(m.testName || m.marker);
+                    const urgency = getUrgencyAndNextStep(m.testName || m.marker, flagText, m.valueCanonical ?? m.valueOriginal ?? m.value);
 
                     return (
                       <tr key={i} className="hover:bg-[var(--color-bg)]/50 transition-colors">
@@ -178,19 +179,27 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                             : m.reference_range || "-"}
                         </td>
                         <td className="px-4 py-3 text-[var(--color-text-muted)] text-[11px]">
-                          {source ? (
-                            <a 
-                              href={source.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
-                              id={`ref-link-dt-${m.id || i}`}
-                            >
-                              {source.name}
-                            </a>
-                          ) : (
-                            <span className="text-[var(--color-text-faint)] text-[11px] italic">reference not available</span>
-                          )}
+                          <div className="space-y-1">
+                            {source ? (
+                              <a 
+                                href={source.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                                id={`ref-link-dt-${m.id || i}`}
+                              >
+                                {source.name}
+                              </a>
+                            ) : (
+                              <span className="text-[var(--color-text-faint)] text-[11px] italic block">reference not available</span>
+                            )}
+                            <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                                {urgency.level} Urgency
+                              </span>
+                              <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -209,6 +218,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                 const flagColor = isCritical ? "text-[var(--color-critical)] border-[var(--color-critical)] bg-[var(--color-critical)]/10" : isHigh ? "text-[var(--color-warning)] border-[var(--color-warning)] bg-[var(--color-warning)]/10" : isLow ? "text-orange-500 border-orange-500 bg-orange-500/10" : "text-[var(--color-success)] border-[var(--color-success)] bg-[var(--color-success)]/10";
                 const flagText = flag || "NORMAL";
                 const source = getSourceForMarker(m.testName || m.marker);
+                const urgency = getUrgencyAndNextStep(m.testName || m.marker, flagText, m.valueCanonical ?? m.valueOriginal ?? m.value);
 
                 return (
                   <div key={i} className="bg-white/[0.02] dark:bg-white/[0.03] border border-[var(--color-border)] rounded-2xl p-4 flex flex-col gap-2">
@@ -252,6 +262,18 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                           <span className="text-[var(--color-text-faint)] text-[11px] italic">reference not available</span>
                         )}
                       </div>
+
+                      <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-[var(--color-text-muted)] font-medium">Urgency:</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
+                            {urgency.level}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-[var(--color-text-muted)]">
+                          <span className="font-medium">Next Step:</span> <span className="text-[var(--color-text-faint)]">{urgency.nextStep}</span>
+                        </div>
+                      </div>
                     </div>
                     {m.interpretation && (
                       <div className="text-[var(--color-text-faint)] text-[10px] mt-1 italic">
@@ -274,7 +296,9 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
   );
 }
 
+import ReportHistory from "./ReportHistory";
 import ReportComparison from "../Dashboard/ReportComparison";
+import ClinicalHandover from "./ClinicalHandover";
 
 export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { onOpenChat?: () => void; onNavigateToUpload?: () => void; }) {
   const { user } = useAuth();
@@ -282,7 +306,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
   const [reports, setReports] = useState<LabReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activeTab, setActiveTab] = useState<'list'|'trends'>('list');
+  const [activeTab, setActiveTab] = useState<'list'|'trends'|'history'|'share'>('list');
   const [filterType, setFilterType] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -355,11 +379,17 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-[var(--color-text)] mb-2">Vault & Analytics</h2>
           <div className="flex bg-[var(--color-bg)] border border-[var(--color-border)] p-1 rounded-[14px] inline-flex">
-             <button onClick={() => setActiveTab('list')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'list' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-docs" onClick={() => setActiveTab('list')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'list' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 Documents
              </button>
-             <button onClick={() => setActiveTab('trends')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'trends' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-trends" onClick={() => setActiveTab('trends')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'trends' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 Trends & Charts
+             </button>
+             <button id="tab-btn-history" onClick={() => setActiveTab('history')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+                History
+             </button>
+             <button id="tab-btn-share" onClick={() => setActiveTab('share')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'share' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+                Share With Doctor
              </button>
           </div>
         </div>
@@ -368,7 +398,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
         </button>
       </div>
 
-      {activeTab === 'list' ? (
+      {activeTab === 'list' && (
         <>
            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex flex-wrap gap-2">
@@ -434,9 +464,23 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
               )}
            </div>
         </>
-      ) : (
+      )}
+
+      {activeTab === 'trends' && (
         <div className="space-y-8">
            <LabTrendChart reports={reports} />
+        </div>
+      )}
+
+      {activeTab === 'history' && (
+        <div className="space-y-8">
+           <ReportHistory />
+        </div>
+      )}
+
+      {activeTab === 'share' && (
+        <div className="space-y-8">
+           <ClinicalHandover />
         </div>
       )}
 

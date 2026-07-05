@@ -28,7 +28,7 @@ import {
   computeAllTrends,
   formatTrendForPrompt,
 } from "../../utils/trendAnalysis";
-import { getSourceForMarker } from "../../services/sourceGroundedService";
+import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 import { LabObservation } from "../../types/health";
 
@@ -427,12 +427,13 @@ export default function Timeline() {
                               lab.status === "critical" ||
                               lab.status === "abnormal";
                             const source = getSourceForMarker(lab.marker);
+                            const urgency = getUrgencyAndNextStep(lab.marker, lab.status, lab.value);
                             return (
                               <div
                                 key={i}
-                                className={`p-4 rounded-2xl border flex items-center justify-between ${isCritical ? "bg-red-500/5 border-red-500/20" : "bg-white/5 border-white/10"}`}
+                                className={`p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${isCritical ? "bg-red-500/5 border-red-500/20" : "bg-white/5 border-white/10"}`}
                               >
-                                <div>
+                                <div className="flex-1">
                                   <p className="font-bold text-slate-200 text-sm">
                                     {lab.marker}
                                   </p>
@@ -454,8 +455,19 @@ export default function Timeline() {
                                       <span className="text-slate-600 italic">reference not available</span>
                                     )}
                                   </p>
+                                  <div className="mt-2 pt-2 border-t border-white/5 flex flex-col gap-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[9px] text-slate-400 font-medium">Urgency:</span>
+                                      <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
+                                        {urgency.level}
+                                      </span>
+                                    </div>
+                                    <p className="text-[9px] text-slate-400 leading-tight">
+                                      <span className="font-medium text-slate-300">Next Step:</span> {urgency.nextStep}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-left md:text-right shrink-0">
                                   <p
                                     className={`text-lg font-light ${lab.status === "abnormal" ? "text-amber-400" : lab.status === "critical" ? "text-red-400" : "text-emerald-400"}`}
                                   >

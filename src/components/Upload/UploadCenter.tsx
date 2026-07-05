@@ -30,7 +30,7 @@ import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
 import { MedicationStatus, LabStatus } from "../../types/medical";
 import { useToast } from "../../context/ToastContext";
-import { getSourceForMarker } from "../../services/sourceGroundedService";
+import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../lib/firebase/config";
 import { getRecaptchaToken } from "../../utils/recaptcha";
@@ -738,6 +738,7 @@ export default function UploadCenter({
                               const isLow = m.status?.toLowerCase() === 'low';
                               const isNormal = m.status?.toLowerCase() === 'normal';
                               const source = getSourceForMarker(m.marker);
+                              const urgency = getUrgencyAndNextStep(m.marker, m.status, m.value);
                               return (
                                 <tr key={i} className="hover:bg-surface/50">
                                   <td className="px-4 py-3 font-medium">{m.marker}</td>
@@ -756,22 +757,30 @@ export default function UploadCenter({
                                   </td>
                                   <td className="px-4 py-3 text-muted text-xs">{m.reference_range || '-'}</td>
                                   <td className="px-4 py-3 text-muted text-xs">
-                                     {source ? (
-                                        <a 
-                                           href={source.url} 
-                                           target="_blank" 
-                                           rel="noopener noreferrer" 
-                                           className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
-                                           id={`ref-link-up-${i}`}
-                                        >
-                                           {source.name}
-                                        </a>
-                                     ) : (
-                                        <span className="text-muted text-xs italic">reference not available</span>
-                                     )}
+                                     <div className="space-y-1">
+                                        {source ? (
+                                           <a 
+                                              href={source.url} 
+                                              target="_blank" 
+                                              rel="noopener noreferrer" 
+                                              className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                                              id={`ref-link-up-${i}`}
+                                           >
+                                              {source.name}
+                                           </a>
+                                        ) : (
+                                           <span className="text-muted text-xs italic block">reference not available</span>
+                                        )}
+                                        <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
+                                          <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                                            {urgency.level} Urgency
+                                          </span>
+                                          <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                                        </div>
+                                     </div>
                                   </td>
                                 </tr>
-                              )
+                              );
                             })}
                           </tbody>
                         </table>

@@ -1,5 +1,5 @@
 import { classifyDocument, extractLabData, generateSBAR } from "./ai/promptFramework";
-import { saveDocument, saveLabResult, getLabHistory } from "../lib/firebase/firestore";
+import { saveDocument, saveLabResult, getLabHistory, saveReportHistory } from "../lib/firebase/firestore";
 import { computeAllTrends, formatTrendForPrompt } from "../utils/trendAnalysis";
 import { getConsolidatedAlerts } from "./alertService";
 import { LabStatus } from "../types/medical";
@@ -62,6 +62,24 @@ export const executeFullUploadPipeline = async (
         });
       }
     }
+  }
+
+  // Step 2 Additive Database Write: Save report history record
+  try {
+    const validObs = (extraction.observations || []).filter((obs: any) => 
+      (obs.valueCanonical !== undefined && obs.valueCanonical !== null) || obs.numeric_value !== undefined
+    );
+    await saveReportHistory(userId, {
+      docId: docId || "unknown",
+      fileName: classification.documentType || "Uploaded Document",
+      uploadedAt: new Date().toISOString(),
+      extractedDate: collectionDate,
+      markerCount: validObs.length,
+      profileId,
+      date: collectionDate,
+    });
+  } catch (err) {
+    console.error("Failed to save report history record:", err);
   }
 
   // 4. logAuditEvent

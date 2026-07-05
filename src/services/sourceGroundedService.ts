@@ -147,3 +147,113 @@ export function getSourceForMarker(marker: string | null | undefined): MedicalSo
   
   return null;
 }
+
+export interface UrgencyInfo {
+  level: "Normal" | "Non-urgent" | "Moderate" | "High" | "Emergency";
+  nextStep: string;
+  badgeClass: string;
+}
+
+/**
+ * Computes clinical urgency level and action-oriented next steps based on lab findings.
+ */
+export function getUrgencyAndNextStep(
+  markerName: string | null | undefined,
+  status: string | null | undefined,
+  valueStr: string | null | undefined
+): UrgencyInfo {
+  const marker = (markerName || "").toLowerCase().trim();
+  const flag = (status || "").toUpperCase().trim();
+  const value = valueStr ? parseFloat(valueStr) : NaN;
+
+  // 1. Check for absolute EMERGENCY cases
+  const isEmergency = 
+    flag.includes("CRITICAL") || 
+    flag.includes("PANIC") ||
+    (marker.includes("glucose") && value > 350) ||
+    (marker.includes("potassium") && (value < 2.5 || value > 6.0)) ||
+    (marker.includes("hemoglobin") && value < 7.0);
+
+  if (isEmergency) {
+    return {
+      level: "Emergency",
+      nextStep: "Seek immediate emergency medical attention or contact your provider immediately.",
+      badgeClass: "bg-red-600 text-white border border-red-700 font-bold"
+    };
+  }
+
+  // 2. Check for HIGH urgency cases
+  const isHigh = 
+    flag.includes("HIGH") || 
+    flag.includes("LOW") || 
+    flag.includes("ABNORMAL") ||
+    (marker.includes("hba1c") && value >= 8.5) ||
+    (marker.includes("egfr") && value < 45) ||
+    (marker.includes("creatinine") && value > 2.0) ||
+    (marker.includes("tsh") && (value < 0.1 || value > 10.0)) ||
+    (marker.includes("glucose") && value > 180);
+
+  if (isHigh) {
+    // If it's elevated but not emergency, let's distinguish High vs Moderate
+    const isModerateMarkerOnly = 
+      marker.includes("cholesterol") || 
+      marker.includes("lipid") || 
+      marker.includes("triglyceride") || 
+      marker.includes("vitamin") || 
+      marker.includes("uric");
+
+    if (isModerateMarkerOnly) {
+      return {
+        level: "Moderate",
+        nextStep: "Discuss these findings with your doctor during a routine visit or within 30 days.",
+        badgeClass: "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+      };
+    }
+
+    return {
+      level: "High",
+      nextStep: "Schedule an appointment with your primary care provider to discuss these findings within 7-14 days.",
+      badgeClass: "bg-red-500/10 text-red-500 border border-red-500/20"
+    };
+  }
+
+  // 3. Check for MODERATE level
+  if (
+    flag.includes("BORDERLINE") || 
+    (marker.includes("hba1c") && value >= 5.7 && value < 8.5) ||
+    (marker.includes("glucose") && value >= 100 && value <= 180) ||
+    (marker.includes("cholesterol") && value > 200) ||
+    (marker.includes("ldl") && value > 130)
+  ) {
+    return {
+      level: "Moderate",
+      nextStep: "Discuss these results with your care provider at your next visit or within 30 days.",
+      badgeClass: "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+    };
+  }
+
+  // 4. Check for NON-URGENT deviations
+  if (flag.includes("WARNING") || flag.includes("ELEVATED")) {
+    return {
+      level: "Non-urgent",
+      nextStep: "Monitor these levels and mention them during your next routine screening.",
+      badgeClass: "bg-orange-500/10 text-orange-500 border border-orange-500/20"
+    };
+  }
+
+  // 5. NORMAL values
+  if (flag.includes("NORMAL") || flag.includes("OK") || flag.includes("NEGATIVE") || flag === "N") {
+    return {
+      level: "Normal",
+      nextStep: "Maintain standard routine wellness screening intervals.",
+      badgeClass: "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+    };
+  }
+
+  // Default Fallback
+  return {
+    level: "Normal",
+    nextStep: "Maintain routine evaluations with your physician.",
+    badgeClass: "bg-slate-500/10 text-slate-500 border border-slate-500/20"
+  };
+}
