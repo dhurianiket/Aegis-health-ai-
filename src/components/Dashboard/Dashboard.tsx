@@ -37,6 +37,7 @@ import { HeroMetric } from "./HeroMetric";
 import SkeletonLoader, { DashboardSkeleton } from "../ui/SkeletonLoader";
 import { Sparkles, MessageSquare } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
+import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 
 // Lazy-loaded components for faster initial dashboard render
 const LabTrendChart = lazy(() => import("./LabTrendChart"));
@@ -480,25 +481,53 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => (
-                  <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
-                     <div className="flex justify-between items-center mb-2">
-                        <span className="font-semibold text-sm text-[var(--color-text)]">{lab.markerName}</span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${(lab.status as any) === 'low' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>
-                           {lab.status}
-                        </span>
-                     </div>
-                     <div className="flex justify-between items-end">
-                        <div className="flex items-baseline gap-1">
-                           <span className="text-xl font-bold">{lab.value}</span>
-                           <span className="text-xs text-muted font-medium">{lab.unit}</span>
-                        </div>
-                        <span className="text-[10px] text-muted italic">
-                           Ref: {lab.referenceRange || 'N/A'}
-                        </span>
-                     </div>
-                  </div>
-                ))}
+                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => {
+                  const urgency = getUrgencyAndNextStep(lab.markerName, lab.status, lab.value !== null && lab.value !== undefined ? String(lab.value) : undefined);
+                  const source = getSourceForMarker(lab.markerName);
+
+                  return (
+                    <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
+                       <div className="flex justify-between items-start gap-2 mb-2">
+                          <span className="font-semibold text-sm text-[var(--color-text)] leading-tight">{lab.markerName}</span>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${urgency.badgeClass}`}>
+                             {urgency.level} Urgency
+                          </span>
+                       </div>
+                       <div className="flex justify-between items-baseline mb-2">
+                          <div className="flex items-baseline gap-1">
+                             <span className="text-lg font-bold text-[var(--color-text)]">{lab.value}</span>
+                             <span className="text-xs text-[var(--color-text-muted)] font-medium">{lab.unit}</span>
+                          </div>
+                          <span className="text-[10px] text-[var(--color-text-faint)] italic">
+                             Ref: {lab.referenceRange || 'N/A'}
+                          </span>
+                       </div>
+                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
+                         <div className="leading-normal">
+                           <span className="font-semibold text-[var(--color-text)] text-[11px]">Next Step: </span>
+                           <span className="text-[var(--color-text-muted)] text-[11px]">{urgency.nextStep}</span>
+                         </div>
+                         <div className="flex items-center justify-between mt-1 text-[10px] text-[var(--color-text-faint)]">
+                           <span>Source:</span>
+                           {source ? (
+                             <a 
+                               href={source.url} 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               onClick={(e) => e.stopPropagation()}
+                               className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                               id={`dashboard-ref-link-${i}`}
+                             >
+                               {source.name}
+                             </a>
+                           ) : (
+                             <span className="italic">reference not available</span>
+                           )}
+                         </div>
+                       </div>
+                    </div>
+                  );
+                })}
                 {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
