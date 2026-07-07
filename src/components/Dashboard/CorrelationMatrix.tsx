@@ -13,11 +13,18 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
   const calculateCorrelation = (x: number[], y: number[]) => {
     if (x.length !== y.length || x.length === 0) return 0;
     const n = x.length;
-    const sumX = x.reduce((a, b) => a + b, 0);
-    const sumY = y.reduce((a, b) => a + b, 0);
-    const sumXY = x.reduce((a, b, i) => a + b * y[i], 0);
-    const sumX2 = x.reduce((a, b) => a + b * b, 0);
-    const sumY2 = y.reduce((a, b) => a + b * b, 0);
+    // ⚡ Bolt: Use a single for-loop instead of 5 separate reduce calls to avoid multiple array traversals
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+
+    for (let i = 0; i < n; i++) {
+        const xi = x[i];
+        const yi = y[i];
+        sumX += xi;
+        sumY += yi;
+        sumXY += xi * yi;
+        sumX2 += xi * xi;
+        sumY2 += yi * yi;
+    }
 
     const numerator = n * sumXY - sumX * sumY;
     const denominator = Math.sqrt(

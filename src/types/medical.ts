@@ -166,3 +166,15 @@ export interface SBARSummary {
   assessment: string[];
   recommendation: string[];
 }
+
+export interface ReportHistoryEntry {
+  id?: string;
+  userId: string;
+  profileId?: string;
+  docId: string; // Foreign key referencing MedicalDocument
+  fileName: string;
+  uploadedAt: string;
+  extractedDate: string;
+  markerCount: number;
+  date: string;
+}

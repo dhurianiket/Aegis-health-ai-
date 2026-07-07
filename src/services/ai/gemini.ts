@@ -9,7 +9,7 @@ import {
   UserProfile,
 } from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON, safeGeminiCall } from "./promptFramework";
-import { safeJsonParse } from "../../utils/aiUtils";
+import { safeJsonParse, getFriendlyErrorMessage } from "../../utils/aiUtils";
 import { auth } from "../../lib/firebase/config";
 import { trackUsage } from "../usageService";
 
@@ -529,6 +529,24 @@ export async function extractMedicalReports(
       return result;
     } catch (error: any) {
       clearTimeout(timeoutId);
+      
+      const rawMsg = error?.message || "";
+      const isQuotaOrCreditsError = 
+        error?.status === 429 ||
+        error?.code === 429 ||
+        rawMsg.toLowerCase().includes("prepayment") ||
+        rawMsg.toLowerCase().includes("credits are depleted") ||
+        rawMsg.toLowerCase().includes("billing#prepay") ||
+        rawMsg.toLowerCase().includes("quota") ||
+        rawMsg.toLowerCase().includes("resource_exhausted") ||
+        rawMsg.toLowerCase().includes("exhausted") ||
+        rawMsg.includes("429");
+
+      if (isQuotaOrCreditsError) {
+        console.error("Gemini critical quota/credit depletion error during extraction:", error);
+        throw new Error(getFriendlyErrorMessage(error));
+      }
+
       if (error.name === "AbortError" || 
           error.message?.includes("timed out") ||
           error.message?.includes("AI analysis")) {

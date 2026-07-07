@@ -24,7 +24,12 @@ import {
 } from "lucide-react";
 import { useProfile } from "../../context/ProfileContext";
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+const API_KEY =
+  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
+  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+  (import.meta as any).env?.GOOGLE_MAPS_PLATFORM_KEY ||
+  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
+  "";
 
 const hasValidKey = Boolean(API_KEY) && API_KEY !== "YOUR_API_KEY" && API_KEY.trim() !== "";
 

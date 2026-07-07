@@ -171,36 +171,33 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
-    // Cache timestamps for all labs to avoid redundant parsing during sorting
-    // Using WeakMap to prevent mutating input objects and polluting the model
-    const dateCache = new WeakMap<any, Date | null>();
-    const getCachedDate = (doc: any) => {
-      if (!dateCache.has(doc)) {
-        dateCache.set(doc, parseSafeTimestamp(doc.extractedDate || doc.date));
-      }
-      return dateCache.get(doc);
-    };
-    const getT = (doc: any) => getCachedDate(doc)?.getTime() || 0;
+    const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
 
-    // Sort each marker's labs once and cache its maximum severity score
-    const markerSeverityCache = new Map();
-    Array.from(labsByMarker.keys()).forEach((markerName) => {
-      const labs = labsByMarker.get(markerName);
-      labs.sort((x: any, y: any) => getT(y) - getT(x));
-      markerSeverityCache.set(markerName, severityScore(labs[0]?.status || "normal"));
+    // Decorate-Sort-Undecorate (Schwartzian transform) to avoid redundant timestamp parsing
+    const latestLabByMarker = new Map();
+    labsByMarker.forEach((labs, markerName) => {
+      const decorated = labs.map((lab: any) => ({ lab, time: getT(lab) }));
+      // Sort descending (newest first)
+      decorated.sort((a: any, b: any) => b.time - a.time);
+      const sortedLabs = decorated.map((d: any) => d.lab);
+      labsByMarker.set(markerName, sortedLabs);
+      latestLabByMarker.set(markerName, sortedLabs[0]);
     });
 
     // Sort markers by severity of their most recent lab
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      return markerSeverityCache.get(b) - markerSeverityCache.get(a);
+      const latestA = latestLabByMarker.get(a);
+      const latestB = latestLabByMarker.get(b);
+      return severityScore(latestB.status) - severityScore(latestA.status);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {
       prompt += `- ${markerName}:\n`;
-      // Labs are already sorted newest first, so slice the first 5 and reverse to get chronological order
+      // Labs are already sorted descending, so take top 5 and reverse for chronological order
       const labs = labsByMarker.get(markerName).slice(0, 5).reverse();
       labs.forEach((lab: any) => {
-        const _parsed = getCachedDate(lab);
+        const dateStr = lab.extractedDate || lab.date;
+        const _parsed = parseSafeTimestamp(dateStr);
         const formattedDate = _parsed ? _parsed.toISOString().split("T")[0] : "Recent";
         const valStr = lab.display_value || lab.numeric_value || lab.value;
         prompt += `  * ${formattedDate}: ${valStr} ${lab.unit} (${lab.status})\n`;
