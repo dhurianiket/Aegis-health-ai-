@@ -20,6 +20,8 @@ async function startServer() {
   app.disable("x-powered-by"); // Security: Prevent broadcasting tech stack
   const PORT = 3000;
 
+  app.disable("x-powered-by");
+
   // Apply rate limiter globally
   app.use(limiter);
 
