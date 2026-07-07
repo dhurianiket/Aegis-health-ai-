@@ -55,7 +55,6 @@ export default function NotificationCenter({
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-white transition-colors hover:bg-white/5 rounded-full"
-            aria-label="Close Notifications"
           >
             <X className="w-6 h-6" />
           </button>

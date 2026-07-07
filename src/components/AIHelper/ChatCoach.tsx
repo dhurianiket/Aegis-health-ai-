@@ -15,7 +15,7 @@ import { COACH_SYSTEM_INSTRUCTION } from "../../services/ai/coachService";
 import { ChatMessage } from "../../types/ai";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import getAI from "../../lib/geminiClient";
-import { safeJsonParse } from "../../utils/aiUtils";
+import { safeJsonParse, getFriendlyErrorMessage } from "../../utils/aiUtils";
 import { trackUsage } from "../../services/usageService";
 import { getActiveMedications } from "../../services/medicationService";
 import { getUpcomingReminders } from "../../services/reminderService";
@@ -348,13 +348,13 @@ ${remindersContext}`;
         return;
       }
       console.error("Chat error:", err);
-      const errorContent = err instanceof Error ? err.message : "AI is temporarily unavailable.";
-      setError(errorContent);
+      const friendlyMsg = getFriendlyErrorMessage(err);
+      setError(friendlyMsg);
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: errorContent,
+          content: friendlyMsg,
           timestamp: new Date(),
         },
       ]);

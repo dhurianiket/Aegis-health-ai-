@@ -1,5 +1,8 @@
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
+import getAI from "../lib/geminiClient";
+import { safeGeminiCall, CORE_SYSTEM_PROMPT } from "./ai/promptFramework";
+import { safeJsonParse } from "../utils/aiUtils";
 
 /**
  * Modern PDF Export Service
@@ -222,6 +225,21 @@ export const exportToPDF = async (
   }
 };
 
+export const generateTrendNarrative = async (trendSummariesJSON: string, dateRange: string) => {
+  const ai = getAI();
+  
+  const response = await safeGeminiCall(() => ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nGenerate a trend narrative for a PDF report spanning ${dateRange}.\n\nTrends:\n${trendSummariesJSON}\n\nReturn JSON: { "narrative_paragraphs": ["..."], "overall_summary": "...", "disclaimer": "..." }` }] }],
+    config: { temperature: 0.1, responseMimeType: "application/json" }
+  }), 3, "pdf_export");
+  return safeJsonParse<any>(response.text, {
+    narrative_paragraphs: ["Analysis unavailable."],
+    overall_summary: "No summary available.",
+    disclaimer: "For informational purposes only."
+  });
+};
+
 export interface SBAROutput {
   situation: string;
   background: string;
@@ -240,7 +258,7 @@ export interface LabObservation {
   markerName?: string;
   value: number | string;
   unit?: string;
-  flag: "HIGH" | "LOW" | "CRITICAL" | string;
+  flag: 'HIGH' | 'LOW' | 'CRITICAL' | string;
   referenceRange?: string;
 }
 
@@ -254,7 +272,7 @@ export async function generateDoctorReport(params: {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
-    format: "a4",
+    format: "a4"
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -284,28 +302,23 @@ export async function generateDoctorReport(params: {
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text(`Name: ${params.profile.name || "Unknown"}`, marginLeft, y);
+  doc.text(`Name: ${params.profile.name || 'Unknown'}`, marginLeft, y);
   y += lineHeight;
-  doc.text(`Age: ${params.profile.age || "N/A"}`, marginLeft, y);
-  doc.text(`Sex: ${params.profile.sex || "N/A"}`, marginLeft + 60, y);
+  doc.text(`Age: ${params.profile.age || 'N/A'}`, marginLeft, y);
+  doc.text(`Sex: ${params.profile.sex || 'N/A'}`, marginLeft + 60, y);
   y += lineHeight;
-  doc.text(
-    `Conditions: ${params.profile.conditions?.length ? params.profile.conditions.join(", ") : "None reported"}`,
-    marginLeft,
-    y,
-  );
+  doc.text(`Conditions: ${params.profile.conditions?.length ? params.profile.conditions.join(', ') : 'None reported'}`, marginLeft, y);
   y += 12;
 
   // 3. Verbatim Disclaimer Block
-  const disclaimerText =
-    "This document was prepared by the patient using Aegis Health AI. It is a patient-generated informational summary and does NOT constitute a medical record, diagnosis, or clinical assessment. Always verify values against original laboratory reports.";
-
+  const disclaimerText = "This document was prepared by the patient using Aegis Health AI. It is a patient-generated informational summary and does NOT constitute a medical record, diagnosis, or clinical assessment. Always verify values against original laboratory reports.";
+  
   doc.setFontSize(9);
   doc.setFont("helvetica", "italic");
-
+  
   const disclaimerLines = doc.splitTextToSize(disclaimerText, contentWidth - 6);
-  const blockHeight = disclaimerLines.length * 4 + 6;
-
+  const blockHeight = (disclaimerLines.length * 4) + 6;
+  
   doc.setFillColor(245, 245, 245);
   doc.setDrawColor(200, 200, 200);
   doc.rect(marginLeft, y, contentWidth, blockHeight, "FD");
@@ -325,18 +338,14 @@ export async function generateDoctorReport(params: {
     doc.setFontSize(11);
     doc.text(title, marginLeft, y);
     y += 5;
-
+    
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-
-    const lines =
-      typeof content === "string"
-        ? doc.splitTextToSize(content, contentWidth)
-        : doc.splitTextToSize(
-            content.map((c) => `• ${c}`).join("\n"),
-            contentWidth,
-          );
-
+    
+    const lines = typeof content === 'string' 
+      ? doc.splitTextToSize(content, contentWidth) 
+      : doc.splitTextToSize(content.map(c => `• ${c}`).join('\n'), contentWidth);
+      
     for (const line of lines) {
       autoPageBreak();
       doc.text(line, marginLeft, y);
@@ -360,18 +369,18 @@ export async function generateDoctorReport(params: {
 
   const colWidths = [50, 25, 25, 30, 40];
   const colX = [
-    marginLeft,
-    marginLeft + colWidths[0],
-    marginLeft + colWidths[0] + colWidths[1],
+    marginLeft, 
+    marginLeft + colWidths[0], 
+    marginLeft + colWidths[0] + colWidths[1], 
     marginLeft + colWidths[0] + colWidths[1] + colWidths[2],
-    marginLeft + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3],
+    marginLeft + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3]
   ];
-
+  
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setFillColor(230, 230, 230);
   doc.rect(marginLeft, y, contentWidth, 8, "F");
-
+  
   doc.text("Test", colX[0] + 2, y + 5.5);
   doc.text("Value", colX[1] + 2, y + 5.5);
   doc.text("Unit", colX[2] + 2, y + 5.5);
@@ -382,40 +391,31 @@ export async function generateDoctorReport(params: {
   doc.setFontSize(9);
   if (!params.flaggedObservations || params.flaggedObservations.length === 0) {
     doc.setFont("helvetica", "normal");
-    doc.text(
-      "No highly concerning biomarkers flagged in this window.",
-      marginLeft + 2,
-      y + 4,
-    );
+    doc.text("No highly concerning biomarkers flagged in this window.", marginLeft + 2, y + 4);
     y += 10;
   } else {
     for (const obs of params.flaggedObservations) {
       autoPageBreak();
-      const isCritical = String(obs.flag).toUpperCase() === "CRITICAL";
+      const isCritical = String(obs.flag).toUpperCase() === 'CRITICAL';
       doc.setFont("helvetica", isCritical ? "bold" : "normal");
-
-      const testName = String(obs.testName || obs.markerName || "-");
-      const val = String(obs.value || "-");
-      const unit = String(obs.unit || "-");
-      const flag = String(obs.flag || "-").toUpperCase();
-      const ref = String(obs.referenceRange || "-");
-
+      
+      const testName = String(obs.testName || obs.markerName || '-');
+      const val = String(obs.value || '-');
+      const unit = String(obs.unit || '-');
+      const flag = String(obs.flag || '-').toUpperCase();
+      const ref = String(obs.referenceRange || '-');
+      
       const testLines = doc.splitTextToSize(testName, colWidths[0] - 4);
       const rowHeight = Math.max(testLines.length * 4 + 2, 8);
-
+      
       doc.text(testLines, colX[0] + 2, y + 5);
       doc.text(val, colX[1] + 2, y + 5);
       doc.text(unit, colX[2] + 2, y + 5);
       doc.text(flag, colX[3] + 2, y + 5);
       doc.text(ref, colX[4] + 2, y + 5);
-
+      
       doc.setDrawColor(220, 220, 220);
-      doc.line(
-        marginLeft,
-        y + rowHeight,
-        marginLeft + contentWidth,
-        y + rowHeight,
-      );
+      doc.line(marginLeft, y + rowHeight, marginLeft + contentWidth, y + rowHeight);
       y += rowHeight + 2;
     }
   }
@@ -431,24 +431,14 @@ export async function generateDoctorReport(params: {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   if (!params.trendSummaries || params.trendSummaries.length === 0) {
-    doc.text(
-      "Insufficient historical data to compute chronological trends.",
-      marginLeft,
-      y,
-    );
+    doc.text("Insufficient historical data to compute chronological trends.", marginLeft, y);
     y += 6;
   } else {
     for (const trend of params.trendSummaries) {
       autoPageBreak();
-      const arrow =
-        trend.direction?.toLowerCase() === "up" ||
-        trend.direction?.toLowerCase() === "worsened"
-          ? "↑"
-          : trend.direction?.toLowerCase() === "down" ||
-              trend.direction?.toLowerCase() === "improved"
-            ? "↓"
-            : "-";
-      const pct = trend.deltaPercent !== null ? `${trend.deltaPercent}%` : "";
+      const arrow = trend.direction?.toLowerCase() === 'up' || trend.direction?.toLowerCase() === 'worsened' ? '↑' : 
+                   (trend.direction?.toLowerCase() === 'down' || trend.direction?.toLowerCase() === 'improved' ? '↓' : '-');
+      const pct = trend.deltaPercent !== null ? `${trend.deltaPercent}%` : '';
       doc.text(`• [${arrow} ${pct}] ${trend.biomarker}`, marginLeft, y);
       y += 6;
     }
@@ -461,11 +451,7 @@ export async function generateDoctorReport(params: {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(
-      "Generated by Aegis Health AI — For discussion with healthcare professional.",
-      marginLeft,
-      doc.internal.pageSize.getHeight() - 10,
-    );
+    doc.text("Generated by Aegis Health AI — For discussion with healthcare professional.", marginLeft, doc.internal.pageSize.getHeight() - 10);
     // Reset colors if needed for logic
     doc.setTextColor(0, 0, 0);
   }
@@ -477,5 +463,6 @@ export async function generateDoctorReport(params: {
     }
   }
 
-  return doc.output("blob");
+  return doc.output('blob');
 }
+
