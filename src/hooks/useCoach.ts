@@ -4,6 +4,7 @@ import { getPatientContext } from "../services/ai/contextService";
 import { runSafetyCheck } from "../services/ai/safetyGuardrail";
 import { ChatMessage } from "../types/ai";
 import { UserProfile } from "../types/medical";
+import { getFriendlyErrorMessage } from "../utils/aiUtils";
 
 export function useCoach(userId: string, activeProfile: UserProfile | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -96,11 +97,9 @@ export function useCoach(userId: string, activeProfile: UserProfile | null) {
             return [...newMessages];
           });
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Coach error:", err);
-        setError(
-          "I'm having trouble connecting to my clinical brain. Please try again in a moment.",
-        );
+        setError(getFriendlyErrorMessage(err));
       } finally {
         setIsTyping(false);
       }

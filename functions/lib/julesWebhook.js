@@ -27,12 +27,7 @@ function verifySignature(payload, signature, secret) {
     const hash = match[2];
     const hmac = crypto.createHmac(algo, secret);
     const calculated = hmac.update(payload).digest("hex");
-    const calculatedBuffer = Buffer.from(calculated);
-    const hashBuffer = Buffer.from(hash);
-    if (calculatedBuffer.byteLength !== hashBuffer.byteLength) {
-        return false;
-    }
-    return crypto.timingSafeEqual(calculatedBuffer, hashBuffer);
+    return crypto.timingSafeEqual(Buffer.from(calculated), Buffer.from(hash));
 }
 /**
  * HTTP Triggered function to handle GitHub Webhooks.

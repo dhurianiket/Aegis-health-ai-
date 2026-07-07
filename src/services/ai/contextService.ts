@@ -171,22 +171,30 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
+    const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
+
+    // Decorate-Sort-Undecorate (Schwartzian transform) to avoid redundant timestamp parsing
+    const latestLabByMarker = new Map();
+    labsByMarker.forEach((labs, markerName) => {
+      const decorated = labs.map((lab: any) => ({ lab, time: getT(lab) }));
+      // Sort descending (newest first)
+      decorated.sort((a: any, b: any) => b.time - a.time);
+      const sortedLabs = decorated.map((d: any) => d.lab);
+      labsByMarker.set(markerName, sortedLabs);
+      latestLabByMarker.set(markerName, sortedLabs[0]);
+    });
+
     // Sort markers by severity of their most recent lab
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      const labsA = labsByMarker.get(a);
-      const labsB = labsByMarker.get(b);
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
+      const latestA = latestLabByMarker.get(a);
+      const latestB = latestLabByMarker.get(b);
       return severityScore(latestB.status) - severityScore(latestA.status);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {
       prompt += `- ${markerName}:\n`;
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const labs = labsByMarker.get(markerName)
-        .sort((a: any, b: any) => getT(a) - getT(b))
-        .slice(-5); // Get up to 5 most recent
+      // Labs are already sorted descending, so take top 5 and reverse for chronological order
+      const labs = labsByMarker.get(markerName).slice(0, 5).reverse();
       labs.forEach((lab: any) => {
         const dateStr = lab.extractedDate || lab.date;
         const _parsed = parseSafeTimestamp(dateStr);

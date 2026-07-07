@@ -292,10 +292,15 @@ export async function safeGeminiCall(apiCall: () => Promise<any>, retries = 3, f
                 await new Promise(resolve => setTimeout(resolve, backoff));
                 continue;
             }
-            if (isQuotaError) throw new GeminiQuotaError("Final failure: Gemini Quota exceeded after 3 attempts.");
+            
+            // Dynamic import to prevent cross-import issues in utility files
+            const { getFriendlyErrorMessage } = await import("../../utils/aiUtils");
+            const friendlyMessage = getFriendlyErrorMessage(error);
+            
+            if (isQuotaError) throw new GeminiQuotaError(friendlyMessage);
             if (error?.message?.includes("400") || error?.status === 400) throw new GeminiInputError("Invalid argument.");
             if (error?.message?.includes("504") || error?.message?.includes("deadline")) throw new GeminiTimeoutError("Deadline exceeded.");
-            throw new Error(`Gemini Call Failed: ${error?.message || 'Unknown error'}`);
+            throw new Error(friendlyMessage);
         }
     }
 }

@@ -30,6 +30,7 @@ import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
 import { MedicationStatus, LabStatus } from "../../types/medical";
 import { useToast } from "../../context/ToastContext";
+import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../lib/firebase/config";
 import { getRecaptchaToken } from "../../utils/recaptcha";
@@ -312,9 +313,10 @@ export default function UploadCenter({
                 "Please ensure it is a clear medical report and try again."
               );
             }
-          } catch (extractErr) {
+          } catch (extractErr: any) {
             console.error("Extraction failed:", extractErr);
-            showToast("Failed to extract document", "error");
+            const errMsg = extractErr?.message || "Failed to extract document";
+            showToast(errMsg, "error");
             setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
             continue;
           }
@@ -580,7 +582,7 @@ export default function UploadCenter({
                            {item.status === 'error' && <AlertCircle className="w-5 h-5 text-[var(--color-critical)]" />}
                            
                            {!isProcessing && (
-                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500" aria-label="Remove file">
+                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
                                 <X className="w-4 h-4" />
                              </button>
                            )}
@@ -723,10 +725,11 @@ export default function UploadCenter({
                         <table className="w-full text-left text-sm whitespace-normal break-words">
                           <thead className="bg-[var(--color-bg)] text-muted text-[11px] uppercase tracking-widest font-semibold border-b border-surface">
                             <tr>
-                              <th className="px-4 py-3 rounded-tl-xl">Marker</th>
-                              <th className="px-4 py-3 text-right">Value</th>
-                              <th className="px-4 py-3">Status</th>
-                              <th className="px-4 py-3 rounded-tr-xl">Range</th>
+                              <th className="px-4 py-3 rounded-tl-xl w-1/4">Marker</th>
+                              <th className="px-4 py-3 text-right w-1/5">Value</th>
+                              <th className="px-4 py-3 w-1/5">Status</th>
+                              <th className="px-4 py-3 w-1/5">Range</th>
+                              <th className="px-4 py-3 rounded-tr-xl w-1/5">Source</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-surface text-theme">
@@ -734,6 +737,8 @@ export default function UploadCenter({
                               const isHigh = m.status?.toLowerCase() === 'high' || m.status?.toLowerCase() === 'abnormal';
                               const isLow = m.status?.toLowerCase() === 'low';
                               const isNormal = m.status?.toLowerCase() === 'normal';
+                              const source = getSourceForMarker(m.marker);
+                              const urgency = getUrgencyAndNextStep(m.marker, m.status, m.value);
                               return (
                                 <tr key={i} className="hover:bg-surface/50">
                                   <td className="px-4 py-3 font-medium">{m.marker}</td>
@@ -751,8 +756,31 @@ export default function UploadCenter({
                                      </span>
                                   </td>
                                   <td className="px-4 py-3 text-muted text-xs">{m.reference_range || '-'}</td>
+                                  <td className="px-4 py-3 text-muted text-xs">
+                                     <div className="space-y-1">
+                                        {source ? (
+                                           <a 
+                                              href={source.url} 
+                                              target="_blank" 
+                                              rel="noopener noreferrer" 
+                                              className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                                              id={`ref-link-up-${i}`}
+                                           >
+                                              {source.name}
+                                           </a>
+                                        ) : (
+                                           <span className="text-muted text-xs italic block">reference not available</span>
+                                        )}
+                                        <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
+                                          <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                                            {urgency.level} Urgency
+                                          </span>
+                                          <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                                        </div>
+                                     </div>
+                                  </td>
                                 </tr>
-                              )
+                              );
                             })}
                           </tbody>
                         </table>

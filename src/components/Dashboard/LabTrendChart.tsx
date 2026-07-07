@@ -16,7 +16,7 @@ import ExportButton from "../ui/ExportButton";
 import { getDocuments } from "../../lib/firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
-import { LabResult } from "../../types/medical";
+import { LabResult, LabStatus } from "../../types/medical";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 import { ChevronDown } from "lucide-react";
 
@@ -164,9 +164,14 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         return new Date().getTime(); // Safe fallback just for sorting if missing
       };
 
-      const filtered = labResults
+      // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
+      const filteredAndMapped = labResults
         .filter((r) => r.markerName === selectedMarker)
-        .sort((a, b) => getValidTime(a) - getValidTime(b));
+        .map(r => ({
+          r,
+          time: getValidTime(r)
+        }))
+        .sort((a, b) => a.time - b.time);
 
       const now = new Date().getTime();
       let cutoff = 0;
@@ -174,12 +179,12 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       else if (timeRange === "6M") cutoff = now - 180 * 24 * 60 * 60 * 1000;
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
-      const ranged = filtered.filter((r) => {
-        const t = getValidTime(r);
-        return t >= cutoff;
+      const ranged = filteredAndMapped.filter((item) => {
+        return item.time >= cutoff;
       });
 
-      return ranged.map((r) => {
+      return ranged.map((item) => {
+        const r = item.r;
         let refMin = undefined;
         let refMax = undefined;
         const refRange = r.referenceRange || r.reference_range;
@@ -212,7 +217,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
         else if (st === 'low') flagCol = 'orange';
 
-        const safeTime = getValidTime(r);
+        const safeTime = item.time;
         return {
           timestamp: safeTime,
           date: (() => {
