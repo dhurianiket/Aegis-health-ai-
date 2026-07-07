@@ -17,25 +17,15 @@ const limiter = rateLimit({
 
 async function startServer() {
   const app = express();
-
-  // Disable x-powered-by to prevent technology stack broadcasting
-  app.disable("x-powered-by");
-
+  app.disable("x-powered-by"); // Security: Prevent broadcasting tech stack
   const PORT = 3000;
+
+  app.disable("x-powered-by");
 
   // Apply rate limiter globally
   app.use(limiter);
 
-  // Apply essential security headers
-  app.use((req, res, next) => {
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Frame-Options", "DENY");
-    res.setHeader("X-XSS-Protection", "1; mode=block");
-    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-    next();
-  });
-
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: "50mb" }));
 
   // API routes
   app.get("/api/health", (req, res) => {
@@ -45,7 +35,7 @@ async function startServer() {
   app.post("/api/generate-visit-prep", async (req, res) => {
     try {
        const prompt = req.body.prompt;
-       if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: "Valid prompt string required" });
+       if (!prompt) return res.status(400).json({ error: "No prompt provided" });
        
        const gApiKey = process.env.GEMINI_API_KEY;
        if (!gApiKey) return res.status(500).json({ error: "Gemini API key is not configured on server" });
