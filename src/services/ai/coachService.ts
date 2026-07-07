@@ -3,6 +3,7 @@ import { PatientContext } from "../../types/ai";
 import { formatContextForPrompt } from "./contextService";
 import { runSafetyCheck } from "./safetyGuardrail";
 import { CORE_SYSTEM_PROMPT } from "./promptFramework";
+import { getFriendlyErrorMessage } from "../../utils/aiUtils";
 
 export const COACH_SYSTEM_INSTRUCTION = `${CORE_SYSTEM_PROMPT}
 
@@ -173,6 +174,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       }
     }
 
+    if (!stream) {
+      throw new Error("Failed to initialize conversational stream.");
+    }
+
     return (async function* () {
       try {
         for await (const chunk of stream) {
@@ -182,13 +187,13 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         }
       } catch (streamError) {
         console.error("Stream processing error:", streamError);
-        yield "I'm having trouble connecting right now. Please try again in a moment.";
+        yield getFriendlyErrorMessage(streamError);
       }
     })();
   } catch (error) {
     console.error("Coach service initialization error:", error);
     return (async function* () {
-      yield "I'm having trouble connecting right now. Please try again in a moment.";
+      yield getFriendlyErrorMessage(error);
     })();
   }
 };

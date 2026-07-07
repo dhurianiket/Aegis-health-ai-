@@ -11,7 +11,7 @@ import {
   ChevronDown,
   Activity,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, subDays, subMonths, subYears } from "date-fns";
 import { exportToPDF } from "../../services/pdfExportService";
 
 interface ExportModalProps {
@@ -103,6 +103,7 @@ export default function ExportModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close export modal"
             className="p-2 text-slate-500 hover:text-white rounded-full hover:bg-white/5 transition-colors"
           >
             <X className="w-6 h-6" />

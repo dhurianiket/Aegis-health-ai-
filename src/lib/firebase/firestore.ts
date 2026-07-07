@@ -10,6 +10,8 @@ import {
   doc,
   getDoc,
   deleteDoc,
+  limit,
+  startAfter,
 } from "firebase/firestore";
 import { auth, db } from "./config";
 export { auth, db };
@@ -18,6 +20,7 @@ import {
   LabResult,
   Medication,
   SpecialistInsight,
+  ReportHistoryEntry,
 } from "../../types/medical";
 
 // Error handling helper as per Firebase integration instructions
@@ -120,12 +123,9 @@ export async function getDocuments(userId: string, profileId?: string) {
       q = query(q, where("profileId", "==", profileId));
     }
     const snapshot = await getDocs(q);
-    const docs = snapshot.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }) as MedicalDocument)
-      // ⚡ Bolt: Schwartzian transform to avoid O(N log N) date parsing
-      .map((doc) => ({ doc, time: new Date(doc.date || 0).getTime() }))
-      .sort((a, b) => b.time - a.time)
-      .map(({ doc }) => doc);
+    const docs = snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as MedicalDocument,
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     
     return docs;
   } catch (error) {
@@ -148,12 +148,9 @@ export async function getLabHistory(
       q = query(q, where("profileId", "==", profileId));
     }
     const snapshot = await getDocs(q);
-    const docs = snapshot.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }) as LabResult)
-      // ⚡ Bolt: Schwartzian transform to avoid O(N log N) date parsing
-      .map((doc) => ({ doc, time: new Date(doc.date || 0).getTime() }))
-      .sort((a, b) => b.time - a.time)
-      .map(({ doc }) => doc);
+    const docs = snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as LabResult,
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     
     return docs;
   } catch (error) {
@@ -283,12 +280,9 @@ export async function getHealthScores(userId: string, profileId?: string) {
       q = query(q, where("profileId", "==", profileId));
     }
     const snapshot = await getDocs(q);
-    const docs = snapshot.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }) as any)
-      // ⚡ Bolt: Schwartzian transform to avoid O(N log N) date parsing
-      .map((doc) => ({ doc, time: new Date(doc.date || 0).getTime() }))
-      .sort((a, b) => b.time - a.time)
-      .map(({ doc }) => doc);
+    const docs = snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as any,
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     
     return docs;
   } catch (error) {
@@ -431,3 +425,92 @@ export async function getFamilyRelations(userId: string) {
     handleFirestoreError(error, OperationType.LIST, pathString);
   }
 }
+
+// Phase 2: Report History & Trend Tracking (Step 2)
+export async function saveReportHistory(
+  userId: string,
+  entry: Partial<ReportHistoryEntry>
+) {
+  const pathString = `users/${userId}/reportHistory`;
+  try {
+    const docId = entry.id || `hist_${Date.now()}`;
+    const docRef = doc(db, "users", userId, "reportHistory", docId);
+    await setDoc(docRef, sanitizeData({
+      ...entry,
+      id: docId,
+      userId,
+      createdAt: serverTimestamp(),
+    }), { merge: true });
+    return docId;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, pathString);
+  }
+}
+
+export async function getReportHistory(
+  userId: string,
+  profileId?: string,
+  pageSize = 10,
+  lastDoc?: any
+) {
+  const pathString = `users/${userId}/reportHistory`;
+  try {
+    let q = query(
+      collection(db, "users", userId, "reportHistory"),
+      orderBy("uploadedAt", "desc")
+    );
+    if (profileId) {
+      q = query(q, where("profileId", "==", profileId));
+    }
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+    q = query(q, limit(pageSize));
+
+    const snapshot = await getDocs(q);
+    const history = snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as ReportHistoryEntry
+    );
+    const lastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
+    
+    return {
+      history,
+      lastVisible,
+      isFallback: false
+    };
+  } catch (error: any) {
+    // Fall back to safe in-memory sorting/pagination if the composite index is missing or query fails
+    console.warn("[Firestore getReportHistory] Paginated query failed, falling back to safe in-memory pagination.", error);
+    try {
+      let qFallback = query(collection(db, "users", userId, "reportHistory"));
+      if (profileId) {
+        qFallback = query(qFallback, where("profileId", "==", profileId));
+      }
+      const snapshot = await getDocs(qFallback);
+      const allHistory = snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as ReportHistoryEntry
+      ).sort((a, b) => new Date(b.date || b.uploadedAt || 0).getTime() - new Date(a.date || a.uploadedAt || 0).getTime());
+
+      let startIndex = 0;
+      if (lastDoc) {
+        const lastId = typeof lastDoc === 'string' ? lastDoc : (lastDoc.id || lastDoc);
+        const foundIndex = allHistory.findIndex(h => h.id === lastId);
+        if (foundIndex !== -1) {
+          startIndex = foundIndex + 1;
+        }
+      }
+
+      const paginatedHistory = allHistory.slice(startIndex, startIndex + pageSize);
+      const lastVisibleItem = paginatedHistory[paginatedHistory.length - 1] || null;
+
+      return {
+        history: paginatedHistory,
+        lastVisible: lastVisibleItem,
+        isFallback: true
+      };
+    } catch (fallbackError) {
+      handleFirestoreError(fallbackError, OperationType.LIST, pathString);
+    }
+  }
+}
+

@@ -13,8 +13,7 @@ export interface HeroMetricProps {
   previousDate: string;
 }
 
-// ⚡ Bolt: Memoize component to prevent unnecessary re-renders in the dashboard grid
-export const HeroMetric: React.FC<HeroMetricProps> = React.memo(({
+export const HeroMetric: React.FC<HeroMetricProps> = ({
   label,
   value,
   unit,
@@ -86,4 +85,4 @@ export const HeroMetric: React.FC<HeroMetricProps> = React.memo(({
       )}
     </div>
   );
-});
+};
