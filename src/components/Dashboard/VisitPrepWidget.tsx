@@ -46,8 +46,11 @@ export default function VisitPrepWidget() {
       // Read form submission
       if (!useInAppForm && formId) {
          try {
-            const formMeta = await getForm(formId);
-            const responses = await getFormResponses(formId);
+            // ⚡ Bolt Optimization: Run independent document fetches concurrently using Promise.all to reduce latency
+            const [formMeta, responses] = await Promise.all([
+               getForm(formId),
+               getFormResponses(formId)
+            ]);
             if (responses?.responses?.length > 0) {
                // Get earliest latest
                const latest = responses.responses.sort((a,b) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime())[0];
