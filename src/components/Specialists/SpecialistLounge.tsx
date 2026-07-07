@@ -1,19 +1,9 @@
 import { createPortal } from "react-dom";
-import {
-  generateSourceHash,
-  getCachedReport,
-  saveCachedReport,
-} from "../../services/cacheService";
+import { generateSourceHash, getCachedReport, saveCachedReport } from "../../services/cacheService";
 import React, { useState, useRef, useEffect } from "react";
 import { SpecialistId } from "../../types/ai";
-import {
-  getSpecialist,
-  SPECIALISTS,
-} from "../../services/ai/specialists/specialistFactory";
-import {
-  getPatientContext,
-  formatContextForPrompt,
-} from "../../services/ai/contextService";
+import { getSpecialist, SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
+import { getPatientContext, formatContextForPrompt } from "../../services/ai/contextService";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
@@ -22,42 +12,19 @@ import { db } from "../../lib/firebase/config";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  Heart,
-  Stethoscope,
-  Droplets,
-  Zap,
-  ShieldCheck,
-  ChevronRight,
-  ChevronDown,
-  TrendingUp,
-  AlertCircle,
-  Clock,
-  ExternalLink,
-  Brain,
-  Loader2,
-  CheckCircle2,
-  SlidersHorizontal,
-  Info,
-  Square,
-  ArrowUp,
-  ChevronLeft,
-} from "lucide-react";
+import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
 
 const PROMPT_VERSION = "v1.0";
 
 export default function SpecialistLounge() {
-  const [activeSpecialist, setActiveSpecialist] =
-    useState<SpecialistId>("cardiologist");
+  const [activeSpecialist, setActiveSpecialist] = useState<SpecialistId>('cardiologist');
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { contextString: globalClinicalContext } = useClinicalContext();
-
-  const [messages, setMessages] = useState<
-    { role: "user" | "assistant"; content: string; timestamp: Date }[]
-  >([]);
+  
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; timestamp: Date }[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [streamedText, setStreamedText] = useState("");
@@ -82,29 +49,19 @@ export default function SpecialistLounge() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-
+    
     async function fetchChat() {
       if (!user?.uid || !activeProfile?.id) return;
       setInitialLoading(true);
       try {
-        const chatDoc = await getDoc(
-          doc(
-            db,
-            "users",
-            user.uid,
-            "profiles",
-            activeProfile.id,
-            "specialistChats",
-            activeSpecialist,
-          ),
-        );
+        const chatDoc = await getDoc(doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist));
         if (chatDoc.exists()) {
           const data = chatDoc.data();
           if (data.messages && Array.isArray(data.messages)) {
             const parsed = data.messages.map((m: any) => ({
               role: m.role,
               content: m.content,
-              timestamp: new Date(m.createdAt),
+              timestamp: new Date(m.createdAt)
             }));
             setMessages(parsed);
           }
@@ -128,37 +85,23 @@ export default function SpecialistLounge() {
 
   const SPECIALIST_TABS = Object.values(SPECIALISTS);
 
-  const saveChatHistory = async (
-    newMessages: { role: string; content: string; timestamp: Date }[],
-  ) => {
+  const saveChatHistory = async (newMessages: { role: string, content: string, timestamp: Date }[]) => {
     if (!user?.uid || !activeProfile?.id) return;
     try {
-      const chatRef = doc(
-        db,
-        "users",
-        user.uid,
-        "profiles",
-        activeProfile.id,
-        "specialistChats",
-        activeSpecialist,
-      );
-      const serializableMessages = newMessages.map((m) => ({
+      const chatRef = doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist);
+      const serializableMessages = newMessages.map(m => ({
         role: m.role,
         content: m.content,
-        createdAt: m.timestamp.toISOString(),
+        createdAt: m.timestamp.toISOString()
       }));
-
-      await setDoc(
-        chatRef,
-        {
-          specialistId: activeSpecialist,
-          profileId: activeProfile.id,
-          userId: user.uid,
-          messages: serializableMessages,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true },
-      );
+      
+      await setDoc(chatRef, {
+        specialistId: activeSpecialist,
+        profileId: activeProfile.id,
+        userId: user.uid,
+        messages: serializableMessages,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
     } catch (err) {
       console.error("Failed to save chat history", err);
     }
@@ -167,11 +110,7 @@ export default function SpecialistLounge() {
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || !user || !activeProfile || isTyping) return;
 
-    const userMsg = {
-      role: "user" as const,
-      content: text,
-      timestamp: new Date(),
-    };
+    const userMsg = { role: "user" as const, content: text, timestamp: new Date() };
     const newMsgs = [...messages, userMsg];
     setMessages(newMsgs);
     saveChatHistory(newMsgs);
@@ -180,15 +119,11 @@ export default function SpecialistLounge() {
     setStreamedText("");
 
     const SUMMARY_TRIGGER_PHRASES = [
-      "how am i doing",
-      "what's my health status",
-      "summarize my labs",
-      "health summary",
-      "what does this mean",
-      "latest results",
+      "how am i doing", "what's my health status", "summarize my labs", 
+      "health summary", "what does this mean", "latest results"
     ];
-    const isSummaryRequest = SUMMARY_TRIGGER_PHRASES.some((phrase) =>
-      text.toLowerCase().includes(phrase),
+    const isSummaryRequest = SUMMARY_TRIGGER_PHRASES.some(phrase => 
+      text.toLowerCase().includes(phrase)
     );
 
     const controller = new AbortController();
@@ -201,7 +136,7 @@ export default function SpecialistLounge() {
 
       const specialist = getSpecialist(activeSpecialist);
       let systemPrompt = specialist.systemPrompt;
-
+      
       if (globalClinicalContext) {
         systemPrompt += `\n\n### GLOBAL CLINICAL CONTEXT\n${globalClinicalContext}`;
       }
@@ -230,33 +165,20 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 `;
       }
 
-      const historyItems = JSON.parse(
-        JSON.stringify(
-          messages.map((m) => ({
-            role: (m.role === "assistant" ? "model" : "user") as
-              | "user"
-              | "model",
-            parts: [{ text: String(m.content || "") }],
-          })),
-        ),
-      );
+      const historyItems = JSON.parse(JSON.stringify(messages.map((m) => ({
+        role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
+        parts: [{ text: String(m.content || "") }],
+      }))));
 
       // Check Cache for Specialist Summaries
       let sourceHashForCache = "";
       if (isSummaryRequest && historyItems.length === 0) {
         sourceHashForCache = await generateSourceHash(systemPrompt + text);
-        const cached = await getCachedReport(
-          user.uid,
-          activeProfile.id || "Myself",
-          `SpecialistSummary_${activeSpecialist}`,
-          sourceHashForCache,
-          PROMPT_VERSION,
-          false,
-        );
+        const cached = await getCachedReport(user.uid, activeProfile.id || "Myself", `SpecialistSummary_${activeSpecialist}`, sourceHashForCache, PROMPT_VERSION, false);
         if (cached) {
           setMessages((prev) => [
             ...prev,
-            { role: "assistant", content: cached, timestamp: new Date() },
+            { role: "assistant", content: cached, timestamp: new Date() }
           ]);
           setIsTyping(false);
           setStreamedText("");
@@ -265,14 +187,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       }
 
       let chat = ai.chats.create({
-        model: isSummaryRequest
-          ? "gemini-3.1-pro-preview"
-          : "gemini-3-flash-preview",
+        model: isSummaryRequest ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview",
         history: historyItems,
         config: {
           systemInstruction: systemPrompt,
           temperature: 0.1,
-        },
+        }
       });
 
       let stream;
@@ -280,17 +200,14 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         stream = await chat.sendMessageStream({ message: text });
       } catch (proError: any) {
         if (isSummaryRequest) {
-          console.warn(
-            "Gemini Pro stream failed, falling back to Flash:",
-            proError,
-          );
+          console.warn("Gemini Pro stream failed, falling back to Flash:", proError);
           chat = ai.chats.create({
             model: "gemini-3-flash-preview",
             history: historyItems,
             config: {
               systemInstruction: systemPrompt,
               temperature: 0.1,
-            },
+            }
           });
           stream = await chat.sendMessageStream({ message: text });
         } else {
@@ -307,21 +224,13 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       }
 
       if (!controller.signal.aborted && finalText.length > 0) {
-        const assistantMsg = {
-          role: "assistant" as const,
-          content: finalText.trim(),
-          timestamp: new Date(),
-        };
+        const assistantMsg = { role: "assistant" as const, content: finalText.trim(), timestamp: new Date() };
         const finalMsgs = [...newMsgs, assistantMsg];
         setMessages(finalMsgs);
         saveChatHistory(finalMsgs);
         setStreamedText("");
-
-        if (
-          isSummaryRequest &&
-          historyItems.length === 0 &&
-          sourceHashForCache
-        ) {
+        
+        if (isSummaryRequest && historyItems.length === 0 && sourceHashForCache) {
           await saveCachedReport(user.uid, {
             patientId: activeProfile.id || "Myself",
             reportType: `SpecialistSummary_${activeSpecialist}`,
@@ -329,7 +238,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             content: finalText.trim(),
             modelUsed: "gemini-3.1-pro-preview",
             promptVersion: PROMPT_VERSION,
-            status: "success",
+            status: "success"
           });
         }
       }
@@ -338,11 +247,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         console.error("Chat error:", err);
         setMessages((prev) => [
           ...prev,
-          {
-            role: "assistant",
-            content: "I am temporarily unavailable.",
-            timestamp: new Date(),
-          },
+          { role: "assistant", content: "I am temporarily unavailable.", timestamp: new Date() }
         ]);
       }
     } finally {
@@ -360,76 +265,58 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
   const chatAreaContent = (
     <>
       <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl flex items-center gap-4 shrink-0 transition-colors z-10">
-        <button
-          aria-label="Close Chat"
+        <button 
           className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-[var(--color-text)] transition-colors active:scale-95"
           onClick={() => setIsMobileChatOpen(false)}
         >
           <ChevronLeft className="w-6 h-6 shrink-0" />
         </button>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[var(--color-text)] text-base md:text-lg tracking-tight truncate">
-            {activeSpecProfile.displayName}
-          </div>
-          <div className="text-[13px] text-[var(--color-text-muted)] truncate font-medium">
-            Guidelines: {activeSpecProfile.guidelines.join(", ")}
-          </div>
+          <div className="font-semibold text-[var(--color-text)] text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
+          <div className="text-[13px] text-[var(--color-text-muted)] truncate font-medium">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
         </div>
         <div className="shrink-0">
-          <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center">
-            <Brain className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-          </div>
+           <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center">
+             <Brain className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+           </div>
         </div>
       </div>
-
-      <div
-        className="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto min-h-0 bg-white dark:bg-[#0A0A0A]"
+      
+      <div 
+        className="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto min-h-0 bg-white dark:bg-[#0A0A0A]" 
         ref={scrollRef}
-        style={{ WebkitOverflowScrolling: "touch" }}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {initialLoading ? (
           <div className="h-full flex flex-col items-center justify-center space-y-4">
-            <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-400 animate-spin" />
-            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-400 tracking-widest uppercase">
-              Loading Conversation
-            </p>
+             <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-400 animate-spin" />
+             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-400 tracking-widest uppercase">Loading Conversation</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center opacity-70 space-y-6 px-6">
-            <div className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-100/50 dark:border-white/5">
-              <Stethoscope className="text-slate-400 dark:text-slate-400 w-10 h-10" />
-            </div>
-            <p className="text-[15px] text-slate-500 dark:text-slate-400 text-center font-medium leading-relaxed max-w-sm">
-              Ask {activeSpecProfile.displayName} about your relevant labs,
-              conditions, or symptoms.
-            </p>
-            <div className="flex gap-2 w-full max-w-[280px]">
-              <button
-                onClick={() =>
-                  handleSendMessage(
-                    "What do my latest results mean for my " +
-                      activeSpecialist +
-                      " health?",
-                  )
-                }
-                className="w-full bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] text-white  hover:opacity-90 text-[15px] font-semibold px-4 py-3.5 rounded-[20px] transition-all active:scale-[0.98] shadow-sm"
-              >
-                Summarize my labs
-              </button>
-            </div>
+             <div className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-100/50 dark:border-white/5">
+                <Stethoscope className="text-slate-400 dark:text-slate-400 w-10 h-10"/>
+             </div>
+             <p className="text-[15px] text-slate-500 dark:text-slate-400 text-center font-medium leading-relaxed max-w-sm">
+               Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
+             </p>
+             <div className="flex gap-2 w-full max-w-[280px]">
+                <button 
+                  onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} 
+                  className="w-full bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] text-white  hover:opacity-90 text-[15px] font-semibold px-4 py-3.5 rounded-[20px] transition-all active:scale-[0.98] shadow-sm"
+                >
+                  Summarize my labs
+                </button>
+             </div>
           </div>
         ) : (
           <div className="flex-1 w-full relative min-h-0 min-h-[400px]">
-            <VirtualizedChatList
-              messages={messages.map((m: any, i) => ({
-                id: String(i),
-                role: m.role,
-                text: m.content || "",
-              }))}
+            <VirtualizedChatList 
+              messages={messages.map((m: any, i) => ({ id: String(i), role: m.role, text: m.content || "" }))} 
             />
           </div>
         )}
-
+        
         {streamedText && (
           <div className="flex justify-start pr-12 pb-2">
             <div className="max-w-[100%] rounded-[24px] rounded-bl-[8px] px-5 py-4 text-[16px] leading-[1.6] bg-slate-50 dark:bg-[#1C1C1E] text-slate-800 dark:text-slate-200 relative pb-8 shadow-sm border border-slate-100/50 dark:border-[#2C2C2E]">
@@ -440,19 +327,17 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             </div>
           </div>
         )}
-
+        
         {isTyping && !streamedText && (
           <div className="flex justify-start pr-12 pb-2">
-            <div className="bg-slate-50 dark:bg-[#1C1C1E] rounded-[24px] rounded-bl-[8px] px-5 py-4 flex items-center gap-3 shadow-sm border border-slate-100/50 dark:border-[#2C2C2E]">
-              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-              <span className="text-[14px] font-medium text-slate-500 animate-pulse">
-                Analyzing record...
-              </span>
-            </div>
+             <div className="bg-slate-50 dark:bg-[#1C1C1E] rounded-[24px] rounded-bl-[8px] px-5 py-4 flex items-center gap-3 shadow-sm border border-slate-100/50 dark:border-[#2C2C2E]">
+                <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+                <span className="text-[14px] font-medium text-slate-500 animate-pulse">Analyzing record...</span>
+             </div>
           </div>
         )}
       </div>
-
+      
       <div className="p-4 md:p-6 lg:p-6 pb-[max(env(safe-area-inset-bottom),16px)] lg:pb-6 border-t border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl shrink-0 transition-colors z-10 w-full">
         {isTyping && (
           <div className="flex justify-center mb-3">
@@ -500,64 +385,40 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             Specialist Consultations
           </h2>
           <p className="text-[var(--color-text-muted)] text-xs md:text-sm font-light">
-            Chat directly with specialized AI physicians acting on your
-            longitudinal record.
+            Chat directly with specialized AI physicians acting on your longitudinal record.
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:min-h-[600px] lg:h-[max(calc(100vh-200px),600px)]">
         {/* Sidebar */}
-        <div
-          className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block`}
-        >
-          <h3 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest px-3 mb-5">
-            Select Specialist
-          </h3>
+        <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block`}>
+          <h3 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest px-3 mb-5">Select Specialist</h3>
           <div className="flex flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
               <div
                 key={s.id}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setActiveSpecialist(s.id);
-                    setIsMobileChatOpen(true);
-                  }
-                }}
-                onClick={() => {
-                  setActiveSpecialist(s.id);
-                  setIsMobileChatOpen(true);
-                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpecialist(s.id); setIsMobileChatOpen(true); } }}
+                onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
                 className={`cursor-pointer w-full p-4 md:p-5 rounded-[24px] flex flex-col items-start gap-1 transition-all duration-300 relative overflow-hidden ${
-                  activeSpecialist === s.id
-                    ? "bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none"
-                    : "bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50"
+                  activeSpecialist === s.id 
+                  ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none' 
+                  : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50'
                 }`}
               >
                 {activeSpecialist === s.id && (
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                 )}
                 <div className="flex items-center gap-3 w-full">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? "bg-white/10" : "bg-slate-100 dark:bg-[#2C2C2E]"}`}
-                  >
-                    <Brain
-                      className={`w-5 h-5 ${activeSpecialist === s.id ? "text-white" : "text-slate-500 dark:text-slate-400"}`}
-                    />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-100 dark:bg-[#2C2C2E]'}`}>
+                    <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div
-                      className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? "text-white" : "text-slate-700 dark:text-slate-200"}`}
-                    >
-                      {s.displayName}
-                    </div>
-                    <div
-                      className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? "text-white/70" : "text-slate-500 dark:text-slate-400"}`}
-                    >
-                      {s.expertise.slice(0, 2).join(" • ")}...
+                    <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}>{s.displayName}</div>
+                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>
+                      {s.expertise.slice(0, 2).join(' • ')}...
                     </div>
                   </div>
                 </div>
@@ -567,9 +428,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </div>
 
         {/* Desktop Chat Area */}
-        <div
-          className={`hidden lg:flex lg:col-span-8 lg:rounded-[32px] lg:flex-col lg:relative lg:overflow-hidden lg:shadow-2xl lg:border lg:border-[var(--color-border)] lg:bg-[var(--color-surface)] lg:h-auto`}
-        >
+        <div className={`hidden lg:flex lg:col-span-8 lg:rounded-[32px] lg:flex-col lg:relative lg:overflow-hidden lg:shadow-2xl lg:border lg:border-[var(--color-border)] lg:bg-[var(--color-surface)] lg:h-auto`}>
           {chatAreaContent}
         </div>
       </div>
@@ -579,10 +438,9 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         {isMobileChatOpen && (
           <React.Fragment>
             {/* Create portal manually to attach it to document.body, outside app shell */}
-            {typeof window !== "undefined" &&
-              document.body &&
+            {typeof window !== 'undefined' && document.body && 
               createPortal(
-                <motion.div
+                <motion.div 
                   initial={{ opacity: 0, y: 50, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 20 }}
@@ -591,8 +449,9 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 >
                   {chatAreaContent}
                 </motion.div>,
-                document.body,
-              )}
+                document.body
+              )
+            }
           </React.Fragment>
         )}
       </AnimatePresence>

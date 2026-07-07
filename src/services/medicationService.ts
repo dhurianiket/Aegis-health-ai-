@@ -28,48 +28,44 @@ export async function checkInteractions(rxcuis: string[]): Promise<DrugInteracti
     const data = await res.json();
     
     if (data.fullInteractionTypeGroup) {
-      const interactionPromises: Promise<DrugInteraction>[] = [];
       for (const group of data.fullInteractionTypeGroup) {
         for (const type of group.fullInteractionType) {
           for (const pair of type.interactionPair) {
-            interactionPromises.push((async () => {
-              const rxcuiA = pair.interactionConcept[0].minConceptItem.rxcui;
-              const rxcuiB = pair.interactionConcept[1].minConceptItem.rxcui;
-              const drugA = pair.interactionConcept[0].minConceptItem.name;
-              const drugB = pair.interactionConcept[1].minConceptItem.name;
-              const desc = pair.description;
-              const severityRaw = pair.severity?.toLowerCase();
+            const rxcuiA = pair.interactionConcept[0].minConceptItem.rxcui;
+            const rxcuiB = pair.interactionConcept[1].minConceptItem.rxcui;
+            const drugA = pair.interactionConcept[0].minConceptItem.name;
+            const drugB = pair.interactionConcept[1].minConceptItem.name;
+            const desc = pair.description;
+            const severityRaw = pair.severity?.toLowerCase();
+            
+            let severity: 'mild' | 'moderate' | 'severe' = 'mild';
+            if (severityRaw === 'high') severity = 'severe';
+            else if (severityRaw === 'moderate') severity = 'moderate';
+            
+            const plainSummaryRaw = await explainInteraction(pair);
+            let plainSummary = "No summary available.";
+            
+            if (typeof plainSummaryRaw === 'string') {
+               plainSummary = plainSummaryRaw;
+            } else if (plainSummaryRaw && typeof plainSummaryRaw === 'object' && plainSummaryRaw.summary) {
+               plainSummary = plainSummaryRaw.summary;
+            }
 
-              let severity: 'mild' | 'moderate' | 'severe' = 'mild';
-              if (severityRaw === 'high') severity = 'severe';
-              else if (severityRaw === 'moderate') severity = 'moderate';
-
-              const plainSummaryRaw = await explainInteraction(pair);
-              let plainSummary = "No summary available.";
-
-              if (typeof plainSummaryRaw === 'string') {
-                 plainSummary = plainSummaryRaw;
-              } else if (plainSummaryRaw && typeof plainSummaryRaw === 'object' && plainSummaryRaw.summary) {
-                 plainSummary = plainSummaryRaw.summary;
-              }
-
-              return {
-                id: `${rxcuiA}-${rxcuiB}`,
-                drugA,
-                drugB,
-                rxcuiA,
-                rxcuiB,
-                severity,
-                description: desc,
-                plainSummary: plainSummary,
-                source: 'rxnorm',
-                checkedAt: new Date().toISOString()
-              };
-            })());
+            interactions.push({
+              id: `${rxcuiA}-${rxcuiB}`,
+              drugA,
+              drugB,
+              rxcuiA,
+              rxcuiB,
+              severity,
+              description: desc,
+              plainSummary: plainSummary,
+              source: 'rxnorm',
+              checkedAt: new Date().toISOString()
+            });
           }
         }
       }
-      interactions.push(...await Promise.all(interactionPromises));
     }
     return interactions;
   } catch (err) {
