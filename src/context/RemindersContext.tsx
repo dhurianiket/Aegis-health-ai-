@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useProfile } from "./ProfileContext";
+// import { getAppointments } from '../lib/firebase/firestore'; // Optional if implemented
 import { Appointment } from "../types/health";
 import { checkAppointmentsForReminders } from "../services/reminderService";
 import { HealthAlert } from "../types/alerts";
@@ -26,8 +27,8 @@ export function RemindersProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // TODO: Implement getAppointments from Firestore when ready
-      // Mocked data for now.
+      // Mocked data for now. In a real app, query appointments from Firestore:
+      // const appts = await getAppointments(user.uid, activeProfile.id);
       const appts: Appointment[] = [];
       const generatedReminders = checkAppointmentsForReminders(appts);
       setReminders(generatedReminders);

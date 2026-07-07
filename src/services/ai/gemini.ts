@@ -9,7 +9,7 @@ import {
   UserProfile,
 } from "../../types/medical";
 import { CORE_SYSTEM_PROMPT, OUTPUT_FORMAT_JSON, safeGeminiCall } from "./promptFramework";
-import { safeJsonParse } from "../../utils/aiUtils";
+import { safeJsonParse, getFriendlyErrorMessage } from "../../utils/aiUtils";
 import { auth } from "../../lib/firebase/config";
 import { trackUsage } from "../usageService";
 
@@ -210,9 +210,19 @@ export async function generateClinicalSummary(
 ): Promise<string> {
   const ai = getAI();
   
+  // Cache timestamps to avoid redundant parsing during sorting
+  // Using WeakMap to prevent mutating input objects and polluting the model
+  const dateCache = new WeakMap<any, number>();
+  const getCachedDate = (doc: any) => {
+    if (!dateCache.has(doc)) {
+      dateCache.set(doc, parseSafeTimestamp(doc.date)?.getTime() || 0);
+    }
+    return dateCache.get(doc) || 0;
+  };
+
   // Sort labs by date (newest first)
   const sortedLabs = [...labHistory].sort((a, b) => 
-    (parseSafeTimestamp(b.date)?.getTime() || 0) - (parseSafeTimestamp(a.date)?.getTime() || 0)
+    getCachedDate(b) - getCachedDate(a)
   );
 
   const age = patientData.dob
@@ -519,6 +529,24 @@ export async function extractMedicalReports(
       return result;
     } catch (error: any) {
       clearTimeout(timeoutId);
+      
+      const rawMsg = error?.message || "";
+      const isQuotaOrCreditsError = 
+        error?.status === 429 ||
+        error?.code === 429 ||
+        rawMsg.toLowerCase().includes("prepayment") ||
+        rawMsg.toLowerCase().includes("credits are depleted") ||
+        rawMsg.toLowerCase().includes("billing#prepay") ||
+        rawMsg.toLowerCase().includes("quota") ||
+        rawMsg.toLowerCase().includes("resource_exhausted") ||
+        rawMsg.toLowerCase().includes("exhausted") ||
+        rawMsg.includes("429");
+
+      if (isQuotaOrCreditsError) {
+        console.error("Gemini critical quota/credit depletion error during extraction:", error);
+        throw new Error(getFriendlyErrorMessage(error));
+      }
+
       if (error.name === "AbortError" || 
           error.message?.includes("timed out") ||
           error.message?.includes("AI analysis")) {
