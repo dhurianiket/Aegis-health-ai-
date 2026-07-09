@@ -600,7 +600,8 @@ function MainApp() {
                   </h3>
                   <button
                     onClick={() => setIsNewProfileModaOpen(false)}
-                    className="p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors"
+                    aria-label="Close profile modal"
+                    className="p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-theme"
                   >
                     <X className="w-4 h-4" />
                   </button>
