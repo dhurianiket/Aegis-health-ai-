@@ -29,7 +29,14 @@ function verifySignature(payload: string, signature: string | string[] | undefin
   const hmac = crypto.createHmac(algo, secret);
   const calculated = hmac.update(payload).digest("hex");
 
-  return crypto.timingSafeEqual(Buffer.from(calculated), Buffer.from(hash));
+  const calculatedBuffer = Buffer.from(calculated);
+  const hashBuffer = Buffer.from(hash);
+
+  if (calculatedBuffer.length !== hashBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(calculatedBuffer, hashBuffer);
 }
 
 /**

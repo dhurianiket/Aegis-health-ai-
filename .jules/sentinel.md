@@ -12,3 +12,8 @@
 **Vulnerability:** Client-side code in `CareMap.tsx` accessed environment variables using fallbacks like `globalThis.GOOGLE_MAPS_PLATFORM_KEY`, introducing a DOM clobbering vulnerability vector.
 **Learning:** Accessing variables via `globalThis` or relying on un-prefixed environment variable injections in the client allows attackers to inject malicious elements into the DOM with specific IDs, tricking the application into using compromised values.
 **Prevention:** Strictly use the framework's recommended static injection method (e.g., `import.meta.env.VITE_*` in Vite) for client-side configuration, and avoid `globalThis` or arbitrary `process.env` lookups in the browser.
+
+## 2026-07-09 - Prevent DoS Vulnerability in crypto.timingSafeEqual
+**Vulnerability:** The webhook verification function used `crypto.timingSafeEqual()` without checking if the input buffers were of identical length, introducing a Denial of Service (DoS) vulnerability vector where mismatched lengths throw a TypeError.
+**Learning:** `crypto.timingSafeEqual()` requires both input buffers to be of identical byte length. If they are not, it immediately throws an unhandled `TypeError`, which crashes the Node.js application or Cloud Function.
+**Prevention:** Always verify that input buffers are of identical length (`bufferA.length === bufferB.length`) before executing the `crypto.timingSafeEqual()` comparison. If they do not match, return false immediately.
