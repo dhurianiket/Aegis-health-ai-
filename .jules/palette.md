@@ -1,3 +1,3 @@
-## 2025-07-08 - Icon-Only Button Accessibility and Focus States
-**Learning:** The compact ExportButton relies solely on a "title" attribute for accessibility and lacks visible focus states, making it difficult for keyboard users to navigate and for screen readers to interpret correctly.
-**Action:** Always include an explicit "aria-label" and "focus-visible" styling (e.g., focus-visible:ring-2) for icon-only action buttons.
+## 2024-07-09 - Accessible Icon Buttons
+**Learning:** Found a recurring pattern where icon-only buttons (like `X` for close or remove) lack both `aria-label`s for screen readers and visible focus states for keyboard users.
+**Action:** Always ensure icon-only action buttons have descriptive `aria-label` attributes and appropriate focus classes (like `focus:outline-none focus-visible:ring-2 focus-visible:ring-current`) in this codebase.
