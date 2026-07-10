@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { logAuditEvent } from "../../lib/auditLogger";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 
 export default function ClinicalHandover() {
   const { user } = useAuth();
@@ -59,9 +60,16 @@ export default function ClinicalHandover() {
       setIsLoadingDocs(true);
       try {
         const docs = await getDocuments(user.uid, activeProfile?.id);
-        const sortedDocs = (docs || []).sort(
-          (a, b) => new Date(b.date || b.uploadedAt || 0).getTime() - new Date(a.date || a.uploadedAt || 0).getTime()
-        );
+
+        // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
+        const sortedDocs = (docs || [])
+          .map(doc => ({
+             doc,
+             time: parseSafeTimestamp(doc.date || doc.uploadedAt)?.getTime() || 0
+          }))
+          .sort((a, b) => b.time - a.time)
+          .map(item => item.doc);
+
         setDocuments(sortedDocs);
         // Default select all
         setSelectedDocIds(sortedDocs.map((d) => d.id));
@@ -235,10 +243,18 @@ export default function ClinicalHandover() {
 
     const trends: TrendSummary[] = [];
     map.forEach((values, biomarker) => {
-      values.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      if (values.length >= 2) {
-        const oldest = values[0];
-        const newest = values[values.length - 1];
+      // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
+      const sortedValues = values
+         .map(val => ({
+            val,
+            time: parseSafeTimestamp(val.date)?.getTime() || 0
+         }))
+         .sort((a, b) => a.time - b.time)
+         .map(item => item.val);
+
+      if (sortedValues.length >= 2) {
+        const oldest = sortedValues[0];
+        const newest = sortedValues[sortedValues.length - 1];
         const diff = newest.val - oldest.val;
         const deltaPercent = oldest.val !== 0 ? Math.round((diff / oldest.val) * 100) : 0;
         trends.push({
