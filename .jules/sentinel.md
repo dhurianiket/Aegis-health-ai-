@@ -17,3 +17,8 @@
 **Vulnerability:** The webhook verification function used `crypto.timingSafeEqual()` without checking if the input buffers were of identical length, introducing a Denial of Service (DoS) vulnerability vector where mismatched lengths throw a TypeError.
 **Learning:** `crypto.timingSafeEqual()` requires both input buffers to be of identical byte length. If they are not, it immediately throws an unhandled `TypeError`, which crashes the Node.js application or Cloud Function.
 **Prevention:** Always verify that input buffers are of identical length (`bufferA.length === bufferB.length`) before executing the `crypto.timingSafeEqual()` comparison. If they do not match, return false immediately.
+
+## 2026-07-10 - Enforce reasonable request limits and explicitly validate types
+**Vulnerability:** Express body parsing allowed up to 50MB of data without type checking body parameters, causing potential DoS and unexpected crashes. Also leaked internal error details on failure.
+**Learning:** The default or overly large express body limits combined with missing type validation of req.body expose the application to DoS attacks and application crash risks.
+**Prevention:** When configuring Express applications, always enforce reasonable request body limits (e.g., express.json({ limit: '1mb' })) and explicitly validate parameter types from req.body to prevent DoS vulnerabilities and unexpected crashes.
