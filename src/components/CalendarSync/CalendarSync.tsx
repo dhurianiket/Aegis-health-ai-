@@ -257,8 +257,9 @@ export default function CalendarSync() {
               </span>
               <button
                 onClick={() => fetchUpcomingEvents(token)}
-                className="p-2 bg-black/10 hover:bg-black/20 text-faint hover:text-theme rounded-xl transition-all pointer-events-auto"
+                className="p-2 bg-black/10 hover:bg-black/20 text-faint hover:text-theme rounded-xl transition-all pointer-events-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
                 title="Refresh Calendar Feed"
+                aria-label="Refresh Calendar Feed"
               >
                 <Loader2 className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
               </button>
@@ -376,8 +377,9 @@ export default function CalendarSync() {
                       <div className="flex items-center gap-2 pt-2 md:pt-0">
                         <button
                           onClick={() => handleDeleteEvent(event.id, event.summary)}
-                          className="p-2 hover:bg-red-500/10 hover:text-red-400 text-faint rounded-xl transition-all pointer-events-auto"
+                          className="p-2 hover:bg-red-500/10 hover:text-red-400 text-faint rounded-xl transition-all pointer-events-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                           title="Delete from Calendar"
+                          aria-label="Delete event from calendar"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
