@@ -5,3 +5,7 @@
 ## 2024-07-05 - Memoization of expensive array filters in component body
 **Learning:** `LabReportsSection.tsx` had an inline `reports.filter(...)` operation that included nested iterations and `toLowerCase` string processing. This caused heavy and redundant computations on every component render, affecting UI responsiveness, especially when users interacted with input fields that triggered re-renders.
 **Action:** Always wrap expensive, derived datasets (like filtered lists involving string manipulation or nested array checks) with `useMemo` in React components to prevent redundant computations and preserve referential equality on re-renders when dependencies have not changed.
+
+## 2024-05-15 - Array Sorting Optimization via Schwartzian Transform & Reversal
+**Learning:** Re-computing expensive date string parsing (like `new Date(...).getTime()`) inside a `.sort()` comparator results in O(N log N) redundant calculations, which degrades performance in list-heavy views like ReportHistory. Furthermore, sorting an array twice to get both ascending and descending order is computationally wasteful.
+**Action:** Use a Schwartzian transform (Decorate-Sort-Undecorate) to precompute expensive comparator keys before sorting. When needing an inverse sort of an already sorted array, use `.reverse()` which is O(N) instead of performing a completely new sort.
