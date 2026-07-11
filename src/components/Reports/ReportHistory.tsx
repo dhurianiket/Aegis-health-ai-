@@ -5,6 +5,7 @@ import { useProfile } from "../../context/ProfileContext";
 import { getReportHistory, getDocuments } from "../../lib/firebase/firestore";
 import { ReportHistoryEntry, MedicalDocument } from "../../types/medical";
 import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 import {
   FileText,
   Calendar,
@@ -132,17 +133,16 @@ export default function ReportHistory() {
       }
     });
 
-    // Sort chronologically (newest first)
-    return Array.from(map.values()).sort(
-      (a, b) => new Date(b.date || b.uploadedAt || 0).getTime() - new Date(a.date || a.uploadedAt || 0).getTime()
-    );
+    // Sort chronologically (newest first) with Schwartzian transform
+    return Array.from(map.values())
+      .map(report => ({ report, time: parseSafeTimestamp(report.date || report.uploadedAt)?.getTime() || 0 }))
+      .sort((a, b) => b.time - a.time)
+      .map(({ report }) => report);
   }, [historyRecords, documents]);
 
   // chronological oldest to newest for trend scanning
   const chronologicalReports = useMemo(() => {
-    return [...allReports].sort(
-      (a, b) => new Date(a.date || a.uploadedAt || 0).getTime() - new Date(b.date || b.uploadedAt || 0).getTime()
-    );
+    return [...allReports].reverse();
   }, [allReports]);
 
   // Find preceding value helper for repeated markers
