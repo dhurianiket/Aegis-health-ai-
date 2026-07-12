@@ -22,3 +22,8 @@
 **Vulnerability:** Express body parsing allowed up to 50MB of data without type checking body parameters, causing potential DoS and unexpected crashes. Also leaked internal error details on failure.
 **Learning:** The default or overly large express body limits combined with missing type validation of req.body expose the application to DoS attacks and application crash risks.
 **Prevention:** When configuring Express applications, always enforce reasonable request body limits (e.g., express.json({ limit: '1mb' })) and explicitly validate parameter types from req.body to prevent DoS vulnerabilities and unexpected crashes.
+
+## 2026-07-11 - Prevent HTTP Parameter Pollution (HPP) Vulnerabilities
+**Vulnerability:** The reCAPTCHA verification function manually constructed an `application/x-www-form-urlencoded` body without URL-encoding the dynamic parameters, introducing an HTTP Parameter Pollution vulnerability.
+**Learning:** When constructing form-urlencoded strings manually, failing to encode parameters allows attackers to inject `&` and `=` characters, potentially altering the request's logic or bypassing checks.
+**Prevention:** Always wrap user-supplied or dynamic parameters with `encodeURIComponent()` when manually constructing `application/x-www-form-urlencoded` request bodies (e.g., in `fetch` API calls).
