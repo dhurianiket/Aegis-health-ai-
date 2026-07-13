@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -93,10 +93,11 @@ export default function Timeline() {
     fetchDocs();
   }, [user, activeProfile]);
 
-  const filteredDocs =
-    filterType === "ALL"
+  const filteredDocs = useMemo(() => {
+    return filterType === "ALL"
       ? documents
       : documents.filter((d) => d.type === filterType);
+  }, [documents, filterType]);
 
   const categories = [
     { id: "ALL", label: "All Records" },
@@ -154,6 +155,21 @@ export default function Timeline() {
     }
   };
 
+  const sortedTrends = useMemo(() => {
+    return Object.values(trends).sort((a, b) => {
+      const severityMap: Record<string, number> = {
+        CRITICAL: 0,
+        HIGH: 1,
+        LOW: 2,
+        NORMAL: 3,
+      };
+      return (
+        (severityMap[a.latestFlag || "NORMAL"] ?? 4) -
+        (severityMap[b.latestFlag || "NORMAL"] ?? 4)
+      );
+    });
+  }, [trends]);
+
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -196,20 +212,7 @@ export default function Timeline() {
               Clinical Trends
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.values(trends)
-                .sort((a, b) => {
-                  const severityMap: Record<string, number> = {
-                    CRITICAL: 0,
-                    HIGH: 1,
-                    LOW: 2,
-                    NORMAL: 3,
-                  };
-                  return (
-                    (severityMap[a.latestFlag || "NORMAL"] ?? 4) -
-                    (severityMap[b.latestFlag || "NORMAL"] ?? 4)
-                  );
-                })
-                .map((trend: any, idx) => {
+              {sortedTrends.map((trend: any, idx) => {
                   const isUp = trend.direction === "increasing";
                   const isDown = trend.direction === "decreasing";
                   const arrow = isUp ? "↑" : isDown ? "↓" : "→";
