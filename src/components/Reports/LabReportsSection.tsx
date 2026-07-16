@@ -18,6 +18,7 @@ import {
   Filter
 } from "lucide-react";
 import { format } from "date-fns";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 import LabTrendChart from "../Dashboard/LabTrendChart"; // We can reuse this or copy its logic for Trends View
 
 interface LabReport {
@@ -344,8 +345,13 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
          status: "complete"
        })) as LabReport[];
        
-       docs.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
-       setReports(docs);
+       // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
+       const sortedDocs = docs
+         .map(doc => ({ doc, time: parseSafeTimestamp(doc.date || 0)?.getTime() || 0 }))
+         .sort((a, b) => b.time - a.time)
+         .map(item => item.doc);
+
+       setReports(sortedDocs);
        setIsLoading(false);
     }, (err) => {
        console.error("Error fetching reports real-time:", err);
