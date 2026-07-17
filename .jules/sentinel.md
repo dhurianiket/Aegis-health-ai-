@@ -27,3 +27,8 @@
 **Vulnerability:** The reCAPTCHA verification function manually constructed an `application/x-www-form-urlencoded` body without URL-encoding the dynamic parameters, introducing an HTTP Parameter Pollution vulnerability.
 **Learning:** When constructing form-urlencoded strings manually, failing to encode parameters allows attackers to inject `&` and `=` characters, potentially altering the request's logic or bypassing checks.
 **Prevention:** Always wrap user-supplied or dynamic parameters with `encodeURIComponent()` when manually constructing `application/x-www-form-urlencoded` request bodies (e.g., in `fetch` API calls).
+
+## 2026-07-12 - Prevent Information Leakage in Webhook Error Responses
+**Vulnerability:** The GitHub webhook handler caught errors and returned the raw `error.message` in the HTTP 500 response, potentially leaking internal stack traces or third-party API error details.
+**Learning:** Returning raw error messages from catch blocks directly to the client exposes internal implementation details and third-party API behaviors, which can aid attackers in mapping out internal architecture or exploiting other vulnerabilities.
+**Prevention:** When implementing API error handling, prevent information leakage by avoiding sending raw error responses to the client. Always map these to generic, safe error messages.
