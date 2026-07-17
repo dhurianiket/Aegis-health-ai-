@@ -9,3 +9,6 @@
 ## 2024-05-15 - Array Sorting Optimization via Schwartzian Transform & Reversal
 **Learning:** Re-computing expensive date string parsing (like `new Date(...).getTime()`) inside a `.sort()` comparator results in O(N log N) redundant calculations, which degrades performance in list-heavy views like ReportHistory. Furthermore, sorting an array twice to get both ascending and descending order is computationally wasteful.
 **Action:** Use a Schwartzian transform (Decorate-Sort-Undecorate) to precompute expensive comparator keys before sorting. When needing an inverse sort of an already sorted array, use `.reverse()` which is O(N) instead of performing a completely new sort.
+## 2025-03-09 - O(1) Preceding Marker Value Lookup in ReportHistory
+**Learning:** Calling `.find()` inside a backward-scanning `for` loop, which is inside another `.findIndex()` block, *for every marker of every report during render* leads to an O(R² * M) CPU bottleneck that blocks the main thread.
+**Action:** When calculating relative deltas or preceding values across a chronological dataset, perform a single forward pass (O(R * M)) using `useMemo` to pre-calculate all preceding values and store them in a Map. Then use an O(1) Map lookup inside the component render cycle.
