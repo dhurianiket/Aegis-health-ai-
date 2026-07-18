@@ -108,6 +108,9 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.25
+      '@types/google.maps':
+        specifier: ^3.65.2
+        version: 3.65.2
       '@types/node':
         specifier: ^22.14.0
         version: 22.20.1

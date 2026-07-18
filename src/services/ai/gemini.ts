@@ -495,8 +495,8 @@ export async function extractMedicalReports(
       clearTimeout(timeoutId);
 
       const text = response.text || "{}";
-      console.log("RAW_GEMINI:", JSON.stringify(response));
-      console.log("[Extraction] Gemini raw response:", text);
+      if (import.meta.env.DEV) console.log("RAW_GEMINI:", JSON.stringify(response));
+      if (import.meta.env.DEV) console.log("[Extraction] Gemini raw response:", text);
       const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
       
       if (result && Array.isArray(result.lab_values)) {
@@ -509,9 +509,9 @@ export async function extractMedicalReports(
       }
 
       const labs = result?.lab_values || [];
-      console.log("NORMALIZED_LABS:", labs);
+      if (import.meta.env.DEV) console.log("NORMALIZED_LABS:", labs);
 
-      console.log("[Extraction] Parsed result success:", !!result);
+      if (import.meta.env.DEV) console.log("[Extraction] Parsed result success:", !!result);
       
       // Relaxed validation: only reject if null or empty JSON
       if (!result || (Object.keys(result).length === 0) || !result.lab_values) {
