@@ -32,3 +32,8 @@
 **Vulnerability:** The GitHub webhook handler caught errors and returned the raw `error.message` in the HTTP 500 response, potentially leaking internal stack traces or third-party API error details.
 **Learning:** Returning raw error messages from catch blocks directly to the client exposes internal implementation details and third-party API behaviors, which can aid attackers in mapping out internal architecture or exploiting other vulnerabilities.
 **Prevention:** When implementing API error handling, prevent information leakage by avoiding sending raw error responses to the client. Always map these to generic, safe error messages.
+
+## 2026-07-13 - Prevent PHI Leakage in Production Logs
+**Vulnerability:** The report extraction pipeline logged the raw AI response containing sensitive patient health data (PHI/lab results) directly to the browser console using `console.log` without checking the environment.
+**Learning:** Logging sensitive data without environment guards (`if (import.meta.env.DEV)`) exposes it in production to browser extensions and shoulder-surfers, violating privacy principles.
+**Prevention:** Always wrap logging statements that handle PII or PHI within explicit environment checks (e.g., `if (import.meta.env.DEV)`) or remove them entirely to prevent production information leakage.
