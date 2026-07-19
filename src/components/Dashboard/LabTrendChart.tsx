@@ -132,16 +132,24 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
        .filter(([_, count]) => count >= 2)
        .map(([name]) => name);
     
+    // ⚡ Bolt: Schwartzian transform (Decorate-Sort-Undecorate) to optimize expensive sorting
+    // Impact: Avoids O(N log N) redundant string formatting and findIndex array scans during rendering.
     // Sort with favorites first
     const favorites = ['Hemoglobin', 'Hba1c', 'Ldl', 'Hdl', 'Uric acid', 'Crp', 'Vitamin d', 'Egfr', 'Lymphocytes'];
-    return markers.sort((a, b) => {
-       const aFav = favorites.findIndex(f => a.toLowerCase().includes(f.toLowerCase()));
-       const bFav = favorites.findIndex(f => b.toLowerCase().includes(f.toLowerCase()));
-       if (aFav !== -1 && bFav !== -1) return aFav - bFav;
-       if (aFav !== -1) return -1;
-       if (bFav !== -1) return 1;
-       return a.localeCompare(b);
-    });
+    const lowerFavs = favorites.map(f => f.toLowerCase());
+    return markers
+       .map(marker => {
+          const lower = marker.toLowerCase();
+          const favIndex = lowerFavs.findIndex(f => lower.includes(f));
+          return { marker, favIndex };
+       })
+       .sort((a, b) => {
+          if (a.favIndex !== -1 && b.favIndex !== -1) return a.favIndex - b.favIndex;
+          if (a.favIndex !== -1) return -1;
+          if (b.favIndex !== -1) return 1;
+          return a.marker.localeCompare(b.marker);
+       })
+       .map(item => item.marker);
   }, [labResults]);
 
   useEffect(() => {
