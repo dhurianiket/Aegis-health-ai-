@@ -132,24 +132,16 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
        .filter(([_, count]) => count >= 2)
        .map(([name]) => name);
     
-    // ⚡ Bolt: Schwartzian transform (Decorate-Sort-Undecorate) to optimize expensive sorting
-    // Impact: Avoids O(N log N) redundant string formatting and findIndex array scans during rendering.
     // Sort with favorites first
     const favorites = ['Hemoglobin', 'Hba1c', 'Ldl', 'Hdl', 'Uric acid', 'Crp', 'Vitamin d', 'Egfr', 'Lymphocytes'];
-    const lowerFavs = favorites.map(f => f.toLowerCase());
-    return markers
-       .map(marker => {
-          const lower = marker.toLowerCase();
-          const favIndex = lowerFavs.findIndex(f => lower.includes(f));
-          return { marker, favIndex };
-       })
-       .sort((a, b) => {
-          if (a.favIndex !== -1 && b.favIndex !== -1) return a.favIndex - b.favIndex;
-          if (a.favIndex !== -1) return -1;
-          if (b.favIndex !== -1) return 1;
-          return a.marker.localeCompare(b.marker);
-       })
-       .map(item => item.marker);
+    return markers.sort((a, b) => {
+       const aFav = favorites.findIndex(f => a.toLowerCase().includes(f.toLowerCase()));
+       const bFav = favorites.findIndex(f => b.toLowerCase().includes(f.toLowerCase()));
+       if (aFav !== -1 && bFav !== -1) return aFav - bFav;
+       if (aFav !== -1) return -1;
+       if (bFav !== -1) return 1;
+       return a.localeCompare(b);
+    });
   }, [labResults]);
 
   useEffect(() => {
@@ -172,14 +164,9 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         return new Date().getTime(); // Safe fallback just for sorting if missing
       };
 
-      // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
-      const filteredAndMapped = labResults
+      const filtered = labResults
         .filter((r) => r.markerName === selectedMarker)
-        .map(r => ({
-          r,
-          time: getValidTime(r)
-        }))
-        .sort((a, b) => a.time - b.time);
+        .sort((a, b) => getValidTime(a) - getValidTime(b));
 
       const now = new Date().getTime();
       let cutoff = 0;
@@ -187,12 +174,12 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       else if (timeRange === "6M") cutoff = now - 180 * 24 * 60 * 60 * 1000;
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
-      const ranged = filteredAndMapped.filter((item) => {
-        return item.time >= cutoff;
+      const ranged = filtered.filter((r) => {
+        const t = getValidTime(r);
+        return t >= cutoff;
       });
 
-      return ranged.map((item) => {
-        const r = item.r;
+      return ranged.map((r) => {
         let refMin = undefined;
         let refMax = undefined;
         const refRange = r.referenceRange || r.reference_range;
@@ -225,7 +212,7 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
         else if (st === 'low') flagCol = 'orange';
 
-        const safeTime = item.time;
+        const safeTime = getValidTime(r);
         return {
           timestamp: safeTime,
           date: (() => {

@@ -17,15 +17,12 @@ const limiter = rateLimit({
 
 async function startServer() {
   const app = express();
-  app.disable("x-powered-by"); // Security: Prevent broadcasting tech stack
   const PORT = 3000;
-
-  app.disable("x-powered-by");
 
   // Apply rate limiter globally
   app.use(limiter);
 
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: "50mb" }));
 
   // API routes
   app.get("/api/health", (req, res) => {
@@ -35,7 +32,7 @@ async function startServer() {
   app.post("/api/generate-visit-prep", async (req, res) => {
     try {
        const prompt = req.body.prompt;
-       if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: "Invalid or missing prompt" });
+       if (!prompt) return res.status(400).json({ error: "No prompt provided" });
        
        const gApiKey = process.env.GEMINI_API_KEY;
        if (!gApiKey) return res.status(500).json({ error: "Gemini API key is not configured on server" });
@@ -53,7 +50,7 @@ async function startServer() {
        if (!response.ok) {
            const errBody = await response.text();
            console.error("[Server Gemini API Error]:", errBody);
-           return res.status(response.status).json({ error: "Gemini generation failed" });
+           return res.status(response.status).json({ error: `Gemini generation failed: ${response.statusText}`, details: errBody });
        }
        
        const data = await response.json();
@@ -61,7 +58,7 @@ async function startServer() {
        res.json({ text });
     } catch (e: any) {
        console.error("[Server Internal Error]:", e);
-       res.status(500).json({ error: "Failed to generate report" });
+       res.status(500).json({ error: e.message || "Failed to generate report" });
     }
   });
 

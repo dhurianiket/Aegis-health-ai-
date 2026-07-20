@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -28,10 +28,7 @@ import {
   computeAllTrends,
   formatTrendForPrompt,
 } from "../../utils/trendAnalysis";
-import {
-  getSourceForMarker,
-  getUrgencyAndNextStep,
-} from "../../services/sourceGroundedService";
+import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 import { LabObservation } from "../../types/health";
 
@@ -93,11 +90,10 @@ export default function Timeline() {
     fetchDocs();
   }, [user, activeProfile]);
 
-  const filteredDocs = useMemo(() => {
-    return filterType === "ALL"
+  const filteredDocs =
+    filterType === "ALL"
       ? documents
       : documents.filter((d) => d.type === filterType);
-  }, [documents, filterType]);
 
   const categories = [
     { id: "ALL", label: "All Records" },
@@ -155,21 +151,6 @@ export default function Timeline() {
     }
   };
 
-  const sortedTrends = useMemo(() => {
-    return Object.values(trends).sort((a, b) => {
-      const severityMap: Record<string, number> = {
-        CRITICAL: 0,
-        HIGH: 1,
-        LOW: 2,
-        NORMAL: 3,
-      };
-      return (
-        (severityMap[a.latestFlag || "NORMAL"] ?? 4) -
-        (severityMap[b.latestFlag || "NORMAL"] ?? 4)
-      );
-    });
-  }, [trends]);
-
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -212,7 +193,20 @@ export default function Timeline() {
               Clinical Trends
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedTrends.map((trend: any, idx) => {
+              {Object.values(trends)
+                .sort((a, b) => {
+                  const severityMap: Record<string, number> = {
+                    CRITICAL: 0,
+                    HIGH: 1,
+                    LOW: 2,
+                    NORMAL: 3,
+                  };
+                  return (
+                    (severityMap[a.latestFlag || "NORMAL"] ?? 4) -
+                    (severityMap[b.latestFlag || "NORMAL"] ?? 4)
+                  );
+                })
+                .map((trend: any, idx) => {
                   const isUp = trend.direction === "increasing";
                   const isDown = trend.direction === "decreasing";
                   const arrow = isUp ? "↑" : isDown ? "↓" : "→";
@@ -345,12 +339,9 @@ export default function Timeline() {
                 <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4">
                   <FileText className="w-8 h-8 text-slate-500" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-                  Your health vault is empty.
-                </h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Your health vault is empty.</h3>
                 <p className="text-slate-500 text-sm max-w-sm mx-auto">
-                  Upload your first lab report to generate insights and track
-                  your trends.
+                  Upload your first lab report to generate insights and track your trends.
                 </p>
               </motion.div>
             )}
@@ -401,8 +392,7 @@ export default function Timeline() {
                 </div>
                 <button
                   onClick={() => setSelectedDoc(null)}
-                  aria-label="Close document details"
-                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -437,11 +427,7 @@ export default function Timeline() {
                               lab.status === "critical" ||
                               lab.status === "abnormal";
                             const source = getSourceForMarker(lab.marker);
-                            const urgency = getUrgencyAndNextStep(
-                              lab.marker,
-                              lab.status,
-                              lab.value,
-                            );
+                            const urgency = getUrgencyAndNextStep(lab.marker, lab.status, lab.value);
                             return (
                               <div
                                 key={i}
@@ -455,39 +441,29 @@ export default function Timeline() {
                                     Ref: {lab.reference_range || "-"}
                                   </p>
                                   <p className="text-[10px] text-slate-500 mt-0.5">
-                                    Source:{" "}
-                                    {source ? (
-                                      <a
-                                        href={source.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    Source: {source ? (
+                                      <a 
+                                        href={source.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
                                         className="text-[var(--color-primary)] hover:underline font-medium inline-flex items-center gap-1"
                                         id={`ref-link-tl-${lab.id || i}`}
                                       >
                                         {source.name}
                                       </a>
                                     ) : (
-                                      <span className="text-slate-600 italic">
-                                        reference not available
-                                      </span>
+                                      <span className="text-slate-600 italic">reference not available</span>
                                     )}
                                   </p>
                                   <div className="mt-2 pt-2 border-t border-white/5 flex flex-col gap-1">
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-[9px] text-slate-400 font-medium">
-                                        Urgency:
-                                      </span>
-                                      <span
-                                        className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase tracking-wider ${urgency.badgeClass}`}
-                                      >
+                                      <span className="text-[9px] text-slate-400 font-medium">Urgency:</span>
+                                      <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
                                         {urgency.level}
                                       </span>
                                     </div>
                                     <p className="text-[9px] text-slate-400 leading-tight">
-                                      <span className="font-medium text-slate-300">
-                                        Next Step:
-                                      </span>{" "}
-                                      {urgency.nextStep}
+                                      <span className="font-medium text-slate-300">Next Step:</span> {urgency.nextStep}
                                     </p>
                                   </div>
                                 </div>
@@ -538,42 +514,42 @@ export default function Timeline() {
                   )}
               </div>
 
-              <div className="p-6 md:p-8 border-t border-white/5 flex items-center gap-3 shrink-0 flex-wrap">
-                {selectedDoc.fileUrl && (
-                  <a
-                    href={selectedDoc.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/80 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                <div className="p-6 md:p-8 border-t border-white/5 flex items-center gap-3 shrink-0 flex-wrap">
+                  {selectedDoc.fileUrl && (
+                    <a
+                      href={selectedDoc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/80 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                    >
+                      <Download className="w-4 h-4" /> Original PDF
+                    </a>
+                  )}
+                  <button
+                    onClick={() => handleDownload(selectedDoc)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
                   >
-                    <Download className="w-4 h-4" /> Original PDF
-                  </a>
-                )}
-                <button
-                  onClick={() => handleDownload(selectedDoc)}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
-                >
-                  <Download className="w-4 h-4" /> JSON
-                </button>
-                <button
-                  onClick={() => handleShare(selectedDoc)}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
-                >
-                  <Share2 className="w-4 h-4" /> Share Info
-                </button>
-                <button
-                  onClick={() => handleDelete(selectedDoc)}
-                  disabled={isDeleting}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center disabled:opacity-50"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-4 h-4" />
-                  )}{" "}
-                  Delete
-                </button>
-              </div>
+                    <Download className="w-4 h-4" /> JSON
+                  </button>
+                  <button
+                    onClick={() => handleShare(selectedDoc)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center"
+                  >
+                    <Share2 className="w-4 h-4" /> Share Info
+                  </button>
+                  <button
+                    onClick={() => handleDelete(selectedDoc)}
+                    disabled={isDeleting}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex-1 justify-center disabled:opacity-50"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}{" "}
+                    Delete
+                  </button>
+                </div>
             </motion.div>
           </motion.div>
         )}
@@ -581,16 +557,7 @@ export default function Timeline() {
 
       <div className="pt-8 mt-12 border-t border-white/10 opacity-40 text-center">
         <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.15em]">
-          Built by{" "}
-          <a
-            href="https://aniket.aegishealthai.co.in/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate-400 hover:text-slate-300 underline decoration-slate-500 transition-colors"
-          >
-            Aniket Dhuri
-          </a>{" "}
-          · Powered by Gemini AI
+          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-300 underline decoration-slate-500 transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>
     </div>

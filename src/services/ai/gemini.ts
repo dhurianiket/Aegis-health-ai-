@@ -210,19 +210,9 @@ export async function generateClinicalSummary(
 ): Promise<string> {
   const ai = getAI();
   
-  // Cache timestamps to avoid redundant parsing during sorting
-  // Using WeakMap to prevent mutating input objects and polluting the model
-  const dateCache = new WeakMap<any, number>();
-  const getCachedDate = (doc: any) => {
-    if (!dateCache.has(doc)) {
-      dateCache.set(doc, parseSafeTimestamp(doc.date)?.getTime() || 0);
-    }
-    return dateCache.get(doc) || 0;
-  };
-
   // Sort labs by date (newest first)
   const sortedLabs = [...labHistory].sort((a, b) => 
-    getCachedDate(b) - getCachedDate(a)
+    (parseSafeTimestamp(b.date)?.getTime() || 0) - (parseSafeTimestamp(a.date)?.getTime() || 0)
   );
 
   const age = patientData.dob
@@ -495,8 +485,8 @@ export async function extractMedicalReports(
       clearTimeout(timeoutId);
 
       const text = response.text || "{}";
-      if (import.meta.env.DEV) console.log("RAW_GEMINI:", JSON.stringify(response));
-      if (import.meta.env.DEV) console.log("[Extraction] Gemini raw response:", text);
+      console.log("RAW_GEMINI:", JSON.stringify(response));
+      console.log("[Extraction] Gemini raw response:", text);
       const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
       
       if (result && Array.isArray(result.lab_values)) {
@@ -509,9 +499,9 @@ export async function extractMedicalReports(
       }
 
       const labs = result?.lab_values || [];
-      if (import.meta.env.DEV) console.log("NORMALIZED_LABS:", labs);
+      console.log("NORMALIZED_LABS:", labs);
 
-      if (import.meta.env.DEV) console.log("[Extraction] Parsed result success:", !!result);
+      console.log("[Extraction] Parsed result success:", !!result);
       
       // Relaxed validation: only reject if null or empty JSON
       if (!result || (Object.keys(result).length === 0) || !result.lab_values) {

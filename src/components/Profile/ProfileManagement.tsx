@@ -210,8 +210,7 @@ export default function ProfileManagement() {
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
-                  aria-label="Cancel creation"
-                  className="text-slate-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                  className="text-slate-400 hover:text-white"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -428,9 +427,8 @@ export default function ProfileManagement() {
 
               <button
                 onClick={() => handleEdit(p)}
-                className="p-1.5 text-slate-400 hover:text-indigo-400 bg-white/5 hover:bg-indigo-500/10 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="p-1.5 text-slate-400 hover:text-indigo-400 bg-white/5 hover:bg-indigo-500/10 rounded-lg transition-colors"
                 title="Edit Profile"
-                aria-label="Edit Profile"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
@@ -438,13 +436,8 @@ export default function ProfileManagement() {
               <button
                 onClick={() => setDeletingId(p.id)}
                 disabled={profiles.length <= 1}
-                className="p-1.5 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="p-1.5 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-white/5"
                 title={
-                  profiles.length <= 1
-                    ? "Cannot delete last profile"
-                    : "Delete Profile"
-                }
-                aria-label={
                   profiles.length <= 1
                     ? "Cannot delete last profile"
                     : "Delete Profile"

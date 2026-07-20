@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../../context/AuthContext";
 import { db } from "../../lib/firebase/config";
@@ -18,7 +18,6 @@ import {
   Filter
 } from "lucide-react";
 import { format } from "date-fns";
-import { parseSafeTimestamp } from "../../utils/dateUtils";
 import LabTrendChart from "../Dashboard/LabTrendChart"; // We can reuse this or copy its logic for Trends View
 
 interface LabReport {
@@ -345,13 +344,8 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
          status: "complete"
        })) as LabReport[];
        
-       // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) regex/parsing
-       const sortedDocs = docs
-         .map(doc => ({ doc, time: parseSafeTimestamp(doc.date || 0)?.getTime() || 0 }))
-         .sort((a, b) => b.time - a.time)
-         .map(item => item.doc);
-
-       setReports(sortedDocs);
+       docs.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+       setReports(docs);
        setIsLoading(false);
     }, (err) => {
        console.error("Error fetching reports real-time:", err);
@@ -361,8 +355,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
     return () => unsubscribe();
   }, [user, activeProfile]);
 
-  // Memoize filtered reports to prevent expensive string operations and array iterations on every render
-  const filteredReports = useMemo(() => reports.filter(r => {
+  const filteredReports = reports.filter(r => {
      if (filterType !== 'All') {
         const typeMatch = filterType === 'Lab Reports' ? r.type?.toLowerCase().includes('lab') || r.type?.toLowerCase().includes('blood') || r.type?.toLowerCase().includes('pathology')
            : filterType === 'Consultations' ? r.type?.toLowerCase().includes('consult') || r.type?.toLowerCase().includes('visit')
@@ -377,7 +370,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
         if (!hospMatch && !docMatch && !markerMatch) return false;
      }
      return true;
-  }), [reports, filterType, searchQuery]);
+  });
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-24">

@@ -92,13 +92,13 @@ const aggregateLabs = (docs: MedicalDocument[]): any[] => {
   
   const aggregatedLabs: any[] = [];
   labMap.forEach((vals, normalizedMarker) => {
-     // Optimized array sorting with Schwartzian transform
-     const sortedVals = vals
-       .map(v => ({ v, time: parseSafeTimestamp(v.date)?.getTime() || 0 }))
-       .sort((a, b) => b.time - a.time)
-       .map(item => item.v);
-     const latest = sortedVals[0];
-     const previous = sortedVals.length > 1 ? sortedVals[1] : null;
+     vals.sort((a, b) => {
+       const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
+       const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
+       return timeB - timeA;
+     });
+     const latest = vals[0];
+     const previous = vals.length > 1 ? vals[1] : null;
      let trend = 'stable';
      if (previous && !isNaN(parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''))) && !isNaN(parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, '')))) {
         const latestNum = parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''));
@@ -254,18 +254,6 @@ export default function Dashboard({
       transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
     },
   };
-
-  // ⚡ Bolt: Memoize filtered arrays to avoid O(N) recalculations on every render.
-  // Impact: Reduces CPU cycles during frequent renders (e.g., animations or data syncs).
-  const attentionLabs = useMemo(() => {
-    return keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical');
-  }, [keyLabs]);
-
-  // ⚡ Bolt: Memoize to prevent repeated string parsing (toLowerCase, trim) on every render loop.
-  // Impact: Ensures string normalization logic runs only when keyLabs changes.
-  const keyMarkersLabs = useMemo(() => {
-    return keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim()));
-  }, [keyLabs]);
 
   return (
     <motion.div
@@ -493,7 +481,7 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {attentionLabs.slice(0, 5).map((lab, i) => {
+                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => {
                   const urgency = getUrgencyAndNextStep(lab.markerName, lab.status, lab.value !== null && lab.value !== undefined ? String(lab.value) : undefined);
                   const source = getSourceForMarker(lab.markerName);
 
@@ -540,7 +528,7 @@ export default function Dashboard({
                     </div>
                   );
                 })}
-                {attentionLabs.length === 0 && (
+                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
               </div>
@@ -553,7 +541,7 @@ export default function Dashboard({
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  {keyMarkersLabs.map((lab, i) => {
+                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => {
                      const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
                      const numericValue = isNaN(valRaw) ? 0 : valRaw;
                      

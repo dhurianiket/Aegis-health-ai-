@@ -15,6 +15,15 @@ import {
   CheckCircle2,
   Brain,
   Search,
+  Sparkles,
+  Mic,
+  MicOff,
+  Filter,
+  Volume2,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Building,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { extractMedicalReports } from "../../services/ai/gemini";
@@ -23,6 +32,8 @@ import {
   saveDocument,
   saveLabResult,
   saveMedication,
+  getDocuments,
+  deleteDocumentRecord,
 } from "../../lib/firebase/firestore";
 import NoteAnalyzer from "./NoteAnalyzer";
 import { useAuth } from "../../context/AuthContext";
@@ -125,11 +136,160 @@ export default function UploadCenter({
   const { activeProfile } = useProfile();
   const { contextString } = useClinicalContext();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<"files" | "notes">("files");
+  const [activeTab, setActiveTab] = useState<"files" | "notes" | "search">("files");
   const [fileQueue, setFileQueue] = useState<FileItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
+
+  // Voice Document Search states
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [voiceHelpOpen, setVoiceHelpOpen] = useState(false);
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+
+  // Speech Recognition API
+  const SpeechRecognitionAPI = typeof window !== 'undefined' ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null;
+  const isSpeechSupported = !!SpeechRecognitionAPI;
+
+  const handleVoiceCommand = useCallback((spokenText: string) => {
+    const cleanText = spokenText.toLowerCase().trim();
+    
+    if (cleanText === "clear" || cleanText === "clear search" || cleanText === "reset" || cleanText === "reset search") {
+      setSearchQuery("");
+      showToast("Search cleared", "success");
+      return;
+    }
+    
+    if (cleanText === "show high" || cleanText === "high") {
+      setSearchQuery("high");
+      showToast("Filtering for 'high' status values", "success");
+      return;
+    }
+    if (cleanText === "show low" || cleanText === "low") {
+      setSearchQuery("low");
+      showToast("Filtering for 'low' status values", "success");
+      return;
+    }
+    if (cleanText === "show abnormal" || cleanText === "abnormal") {
+      setSearchQuery("abnormal");
+      showToast("Filtering for 'abnormal' status values", "success");
+      return;
+    }
+    if (cleanText === "show critical" || cleanText === "critical") {
+      setSearchQuery("critical");
+      showToast("Filtering for 'critical' status values", "success");
+      return;
+    }
+
+    let query = spokenText;
+    if (cleanText.startsWith("search for ")) {
+      query = spokenText.substring(11);
+    } else if (cleanText.startsWith("find ")) {
+      query = spokenText.substring(5);
+    }
+    
+    setSearchQuery(query);
+    showToast(`Searching for "${query}"`, "success");
+  }, [showToast]);
+
+  const startVoiceSearch = useCallback(() => {
+    if (!isSpeechSupported) {
+      showToast("Speech recognition is not supported in this browser.", "error");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognitionAPI();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setTranscript("");
+      };
+
+      recognition.onresult = (event: any) => {
+        const currentTranscript = Array.from(event.results)
+          .map((result: any) => result[0])
+          .map((result: any) => result.transcript)
+          .join("");
+        
+        setTranscript(currentTranscript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed') {
+          showToast("Microphone access was denied. Please allow microphone permission in your browser.", "error");
+        } else {
+          showToast(`Speech recognition error: ${event.error}`, "error");
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        setTranscript(prev => {
+          if (prev.trim()) {
+            handleVoiceCommand(prev);
+          }
+          return prev;
+        });
+      };
+
+      recognition.start();
+      (window as any)._activeRecognition = recognition;
+    } catch (e: any) {
+      console.error(e);
+      showToast("Could not start speech recognition.", "error");
+    }
+  }, [isSpeechSupported, SpeechRecognitionAPI, showToast, handleVoiceCommand]);
+
+  const stopVoiceSearch = useCallback(() => {
+    const activeRec = (window as any)._activeRecognition;
+    if (activeRec) {
+      activeRec.stop();
+    }
+    setIsListening(false);
+  }, []);
+
+  const loadSearchDocs = useCallback(async () => {
+    if (!user || !activeProfile) return;
+    setIsLoadingDocs(true);
+    try {
+      const docs = await getDocuments(user.uid, activeProfile.id);
+      setDocuments(docs || []);
+    } catch (err) {
+      console.error("Error loading documents in search:", err);
+      showToast("Failed to load your medical records.", "error");
+    } finally {
+      setIsLoadingDocs(false);
+    }
+  }, [user, activeProfile, showToast]);
+
+  const handleDeleteDoc = async (docId: string, fileName: string) => {
+    if (!user || !window.confirm(`Are you sure you want to delete ${fileName}?`)) return;
+    try {
+      await deleteDocumentRecord(user.uid, docId);
+      showToast("Document deleted successfully", "success");
+      loadSearchDocs();
+    } catch (err) {
+      console.error("Error deleting document:", err);
+      showToast("Failed to delete document", "error");
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "search") {
+      loadSearchDocs();
+    }
+  }, [activeTab, loadSearchDocs]);
+
   const [results, setResults] = useState<any[] | null>(null);
   const [confirmedLabIndices, setConfirmedLabIndices] = useState<Set<string>>(
     new Set(),
@@ -455,6 +615,35 @@ export default function UploadCenter({
     },
   } as any);
 
+  const filteredDocuments = documents.filter((docItem: any) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    
+    const matchesFileName = docItem.fileName?.toLowerCase().includes(q);
+    const matchesDocType = docItem.type?.toLowerCase().includes(q);
+    const matchesDoctor = docItem.doctorName?.toLowerCase().includes(q);
+    const matchesHospital = docItem.hospitalName?.toLowerCase().includes(q);
+    const matchesDate = docItem.date?.toLowerCase().includes(q);
+    
+    // Check inside extracted summary
+    const matchesSummary = docItem.extractedData?.summary?.toLowerCase().includes(q);
+    
+    // Check inside medications
+    const matchesMedications = docItem.extractedData?.medications?.some((m: any) => {
+      const name = typeof m === 'string' ? m : (m.name || '');
+      return name.toLowerCase().includes(q);
+    });
+
+    // Check inside lab values
+    const matchesLabs = (docItem.extractedData?.lab_values || docItem.extractedData?.observations || [])?.some((l: any) => {
+      const marker = (l.marker || l.testName || '').toLowerCase();
+      const status = (l.status || '').toLowerCase();
+      return marker.includes(q) || status.includes(q);
+    });
+
+    return matchesFileName || matchesDocType || matchesDoctor || matchesHospital || matchesDate || matchesSummary || matchesMedications || matchesLabs;
+  });
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-0 pb-24 touch-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-surface pb-6">
@@ -485,12 +674,24 @@ export default function UploadCenter({
           >
             Text
           </button>
+          <button
+            onClick={() => setActiveTab("search")}
+            className={`px-6 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-colors ${
+              activeTab === "search"
+                ? "bg-[var(--color-primary)] text-slate-900 font-bold shadow-sm"
+                : "text-muted hover:text-theme"
+            }`}
+          >
+            Voice Search
+          </button>
         </div>
       </div>
 
-      {activeTab === "notes" ? (
+      {activeTab === "notes" && (
         <NoteAnalyzer />
-      ) : (
+      )}
+
+      {activeTab === "files" && (
         <div className="flex flex-col gap-6">
           {!results && (
             <>
@@ -582,7 +783,7 @@ export default function UploadCenter({
                            {item.status === 'error' && <AlertCircle className="w-5 h-5 text-[var(--color-critical)]" />}
                            
                            {!isProcessing && (
-                             <button onClick={() => removeFileFromQueue(item.id)} aria-label="Remove file" className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
                                 <X className="w-4 h-4" />
                              </button>
                            )}
@@ -788,6 +989,355 @@ export default function UploadCenter({
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "search" && (
+        <div className="space-y-6">
+          {/* Welcome Voice Search Panel */}
+          <div className="bg-surface/30 border border-surface rounded-[24px] p-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <Mic className="w-5 h-5 text-[var(--color-primary)]" />
+                  Voice-Activated Vault Search
+                </h3>
+                <p className="text-muted text-sm mt-1">
+                  Search through all your extracted medical records, lab reports, doctor names, and summaries using secure, browser-native voice commands.
+                </p>
+              </div>
+              <button
+                onClick={() => setVoiceHelpOpen(!voiceHelpOpen)}
+                className="text-xs text-[var(--color-primary)] hover:underline font-medium shrink-0 flex items-center gap-1"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {voiceHelpOpen ? "Hide Commands" : "Show Voice Commands"}
+              </button>
+            </div>
+
+            {/* Expandable Voice Commands Guide */}
+            <AnimatePresence>
+              {voiceHelpOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden mt-4 pt-4 border-t border-[var(--color-border)]/20"
+                >
+                  <p className="text-xs font-semibold text-theme mb-2">Available Voice Commands:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                    <div className="bg-surface/50 p-2.5 rounded-xl border border-[var(--color-border)]/10">
+                      <span className="font-bold text-[var(--color-primary)]">Search:</span>
+                      <p className="text-[var(--color-text-muted)] mt-0.5">Say "Search for Cholesterol" or "Find Dr. Smith"</p>
+                    </div>
+                    <div className="bg-surface/50 p-2.5 rounded-xl border border-[var(--color-border)]/10">
+                      <span className="font-bold text-[var(--color-primary)]">Abnormal Filters:</span>
+                      <p className="text-[var(--color-text-muted)] mt-0.5">Say "Show high", "Show low", or "Show abnormal"</p>
+                    </div>
+                    <div className="bg-surface/50 p-2.5 rounded-xl border border-[var(--color-border)]/10">
+                      <span className="font-bold text-[var(--color-primary)]">Clear:</span>
+                      <p className="text-[var(--color-text-muted)] mt-0.5">Say "Reset", "Clear search", or "Reset search"</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Interactive Voice Search Bar */}
+          <div className="flex flex-col gap-3">
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+              <input
+                type="text"
+                placeholder={isSpeechSupported ? "Search by voice or typing... (Try clicking the mic and saying 'cholesterol')" : "Search by typing..."}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-surface/50 border border-surface rounded-[20px] pl-12 pr-16 py-4 text-base text-[var(--color-text)] placeholder-muted focus:outline-none focus:border-[var(--color-primary)]/50 transition-all shadow-inner"
+              />
+              
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      showToast("Search cleared", "success");
+                    }}
+                    className="p-1.5 hover:bg-surface rounded-full text-muted hover:text-theme transition-colors"
+                    title="Clear Search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                {isSpeechSupported ? (
+                  <button
+                    onClick={isListening ? stopVoiceSearch : startVoiceSearch}
+                    className={`p-3 rounded-full transition-all flex items-center justify-center relative ${
+                      isListening 
+                        ? "bg-red-500 text-white animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]" 
+                        : "bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                    }`}
+                    title={isListening ? "Stop Listening" : "Start Voice Search"}
+                  >
+                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </button>
+                ) : (
+                  <div className="p-2 text-xs text-muted italic" title="Speech Recognition not supported in this browser.">
+                    No Mic
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Active Listening / Transcribing Overlay feedback */}
+            <AnimatePresence>
+              {isListening && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="bg-red-500/10 border border-red-500/20 rounded-xl p-3.5 flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-1 items-end h-3.5">
+                      <span className="w-1 bg-red-500 animate-pulse h-2" style={{ animationDelay: "0ms" }}></span>
+                      <span className="w-1 bg-red-500 animate-pulse h-3.5" style={{ animationDelay: "150ms" }}></span>
+                      <span className="w-1 bg-red-500 animate-pulse h-3" style={{ animationDelay: "300ms" }}></span>
+                      <span className="w-1 bg-red-500 animate-pulse h-1.5" style={{ animationDelay: "450ms" }}></span>
+                    </div>
+                    <span className="text-xs font-bold text-red-500 uppercase tracking-wider animate-pulse">Listening...</span>
+                    <span className="text-sm font-medium text-theme italic truncate max-w-md">
+                      {transcript || '"Say something like Cholesterol..."'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={stopVoiceSearch}
+                    className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs font-bold hover:bg-red-600 transition-colors"
+                  >
+                    Done
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Documents Grid / Stack */}
+          {isLoadingDocs ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)] mb-4" />
+              <p className="text-sm text-muted">Retrieving your health vault documents...</p>
+            </div>
+          ) : filteredDocuments.length === 0 ? (
+            <div className="glass-card flex flex-col items-center justify-center py-16 px-6 text-center">
+              <AlertCircle className="w-12 h-12 text-muted mb-4" />
+              <h4 className="text-lg font-bold">No matching documents found</h4>
+              <p className="text-sm text-muted max-w-md mt-1">
+                {searchQuery 
+                  ? `We couldn't find any medical records matching "${searchQuery}". Try saying another command, like "Show high" or "Reset search".`
+                  : "No medical records have been uploaded for this profile yet."}
+              </p>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="mt-4 px-4 py-2 bg-surface hover:bg-surface/80 rounded-full border border-border text-xs font-semibold transition-all"
+                >
+                  Clear search filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between text-xs text-muted px-2">
+                <span className="font-semibold uppercase tracking-wider">
+                  Matches found ({filteredDocuments.length})
+                </span>
+                {searchQuery && (
+                  <span className="flex items-center gap-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-0.5 rounded-full font-medium">
+                    <Filter className="w-3 h-3" /> filter active
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                {filteredDocuments.map((docItem) => {
+                  const isExpanded = expandedDocId === docItem.id;
+                  const ext = docItem.extractedData || {};
+                  const docLabs = ext.lab_values || ext.observations || [];
+                  const docMeds = ext.medications || [];
+
+                  return (
+                    <div 
+                      key={docItem.id} 
+                      className="bg-surface/20 border border-surface hover:border-[var(--color-border)]/50 rounded-[24px] p-5 transition-all animate-fade-in"
+                    >
+                      {/* Document Header (click to expand/collapse) */}
+                      <div 
+                        onClick={() => setExpandedDocId(isExpanded ? null : docItem.id)}
+                        className="flex items-start justify-between gap-4 cursor-pointer"
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="p-3 rounded-2xl bg-surface/80 shrink-0">
+                            <FileText className="w-6 h-6 text-[var(--color-primary)]" />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-sm text-theme truncate md:max-w-xl">
+                              {docItem.fileName}
+                            </h4>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted">
+                              <span className="flex items-center gap-1 font-medium text-[var(--color-primary)] bg-[var(--color-primary)]/5 px-2 py-0.5 rounded">
+                                {docItem.type || "Medical Record"}
+                              </span>
+                              {docItem.date && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3.5 h-3.5" />
+                                  {docItem.date}
+                                </span>
+                              )}
+                              {docItem.doctorName && (
+                                <span className="flex items-center gap-1">
+                                  Dr. {docItem.doctorName}
+                                </span>
+                              )}
+                              {docItem.hospitalName && (
+                                <span className="flex items-center gap-1">
+                                  <Building className="w-3.5 h-3.5" />
+                                  {docItem.hospitalName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteDoc(docItem.id, docItem.fileName);
+                            }}
+                            className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500 transition-all"
+                            title="Delete Document"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <div className="p-1.5 hover:bg-surface rounded-full text-muted">
+                            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expanded Content View */}
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden mt-4 pt-4 border-t border-[var(--color-border)]/20 space-y-4"
+                          >
+                            {/* Summary Finding text */}
+                            {ext.summary && (
+                              <div className="bg-[var(--color-bg)] p-4 rounded-2xl">
+                                <p className="text-xs font-semibold text-theme uppercase tracking-wider mb-1">Key AI Findings:</p>
+                                <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">{ext.summary}</p>
+                              </div>
+                            )}
+
+                            {/* Medications */}
+                            {docMeds.length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold text-theme uppercase tracking-wider mb-2">Prescribed Medications:</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {docMeds.map((m: any, idx: number) => (
+                                    <span key={idx} className="px-3 py-1 bg-surface rounded-full text-xs font-semibold border border-[var(--color-border)]/15">
+                                      {typeof m === 'string' ? m : `${m.name || ''} ${m.dosage ? `- ${m.dosage}` : ''}`}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Lab Values Table */}
+                            {docLabs.length > 0 ? (
+                              <div className="overflow-x-auto rounded-2xl border border-surface">
+                                <table className="w-full text-left text-xs whitespace-normal break-words">
+                                  <thead className="bg-[var(--color-bg)] text-muted text-[10px] uppercase tracking-wider font-semibold border-b border-surface">
+                                    <tr>
+                                      <th className="px-4 py-2.5 rounded-tl-xl w-1/4">Lab Marker</th>
+                                      <th className="px-4 py-2.5 text-right w-1/5">Result Value</th>
+                                      <th className="px-4 py-2.5 w-1/5">Status</th>
+                                      <th className="px-4 py-2.5 w-1/5">Reference Range</th>
+                                      <th className="px-4 py-2.5 rounded-tr-xl w-1/5">Source Grounding</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-surface text-theme bg-surface/5">
+                                    {docLabs.map((l: any, lIdx: number) => {
+                                      const isHigh = l.status?.toLowerCase() === 'high' || l.status?.toLowerCase() === 'abnormal';
+                                      const isLow = l.status?.toLowerCase() === 'low';
+                                      const isNormal = l.status?.toLowerCase() === 'normal';
+                                      const markerName = l.marker || l.testName || '';
+                                      const source = getSourceForMarker(markerName);
+                                      const urgency = getUrgencyAndNextStep(markerName, l.status, l.value);
+
+                                      return (
+                                        <tr key={lIdx} className="hover:bg-surface/20">
+                                          <td className="px-4 py-2.5 font-medium">{markerName}</td>
+                                          <td className="px-4 py-2.5 text-right font-medium">
+                                            {l.value} <span className="text-muted text-[10px] font-normal ml-0.5">{l.unit}</span>
+                                          </td>
+                                          <td className="px-4 py-2.5">
+                                            <span className={`px-2 py-0.5 flex items-center w-fit rounded text-[9px] uppercase font-bold tracking-wider ${
+                                              isHigh ? 'bg-red-500/10 text-red-500' :
+                                              isLow ? 'bg-orange-500/10 text-orange-500' :
+                                              isNormal ? 'bg-emerald-500/10 text-emerald-500' :
+                                              'bg-slate-500/10 text-slate-500'
+                                            }`}>
+                                              {l.status || 'UNKNOWN'}
+                                            </span>
+                                          </td>
+                                          <td className="px-4 py-2.5 text-muted">{l.reference_range || l.referenceRange || '-'}</td>
+                                          <td className="px-4 py-2.5 text-muted">
+                                            <div className="space-y-1">
+                                              {source ? (
+                                                <a 
+                                                  href={source.url} 
+                                                  target="_blank" 
+                                                  rel="noopener noreferrer" 
+                                                  className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                                                  id={`ref-link-search-${lIdx}`}
+                                                >
+                                                  {source.name}
+                                                </a>
+                                              ) : (
+                                                <span className="text-muted italic block">reference not available</span>
+                                              )}
+                                              <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                                                  {urgency.level} Urgency
+                                                </span>
+                                                <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                                              </div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted italic">No extracted lab measurements found in this document.</p>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

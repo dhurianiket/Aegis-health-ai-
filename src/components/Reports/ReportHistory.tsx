@@ -5,7 +5,6 @@ import { useProfile } from "../../context/ProfileContext";
 import { getReportHistory, getDocuments } from "../../lib/firebase/firestore";
 import { ReportHistoryEntry, MedicalDocument } from "../../types/medical";
 import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
-import { parseSafeTimestamp } from "../../utils/dateUtils";
 import {
   FileText,
   Calendar,
@@ -133,57 +132,47 @@ export default function ReportHistory() {
       }
     });
 
-    // Sort chronologically (newest first) with Schwartzian transform
-    return Array.from(map.values())
-      .map(report => ({ report, time: parseSafeTimestamp(report.date || report.uploadedAt)?.getTime() || 0 }))
-      .sort((a, b) => b.time - a.time)
-      .map(({ report }) => report);
+    // Sort chronologically (newest first)
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.date || b.uploadedAt || 0).getTime() - new Date(a.date || a.uploadedAt || 0).getTime()
+    );
   }, [historyRecords, documents]);
 
   // chronological oldest to newest for trend scanning
   const chronologicalReports = useMemo(() => {
-    return [...allReports].reverse();
+    return [...allReports].sort(
+      (a, b) => new Date(a.date || a.uploadedAt || 0).getTime() - new Date(b.date || b.uploadedAt || 0).getTime()
+    );
   }, [allReports]);
 
-  // ⚡ Bolt: Pre-calculate preceding marker values using an O(R * M) single-pass forward scan
-  // Impact: Avoids O(R^2 * M) backward lookups during render, drastically reducing CPU time for large report histories.
-  const precedingValuesMap = useMemo(() => {
-    const reportMarkerMap = new Map<string, Map<string, any>>();
-    const lastSeen = new Map<string, any>();
-
-    chronologicalReports.forEach((report) => {
-      const currentReportMap = new Map<string, any>();
-      reportMarkerMap.set(report.docId, currentReportMap);
-
-      report.observations?.forEach((obs: any) => {
-        const obsName = (obs.marker || obs.testName || obs.name || "").toLowerCase().trim();
-        if (!obsName) return;
-
-        // If we've seen this marker before, that's our preceding value for the *current* report
-        if (lastSeen.has(obsName)) {
-          currentReportMap.set(obsName, lastSeen.get(obsName));
-        }
-
-        // Now update lastSeen with the current value for the *next* reports to use
-        const val = obs.valueCanonical ?? obs.numeric_value ?? obs.valueOriginal;
-        if (val !== undefined && val !== null) {
-          lastSeen.set(obsName, {
-            value: parseFloat(String(val)),
-            unit: obs.unitCanonical || obs.unitOriginal || "",
-            date: report.date,
-            reportName: report.fileName,
-          });
-        }
-      });
-    });
-
-    return reportMarkerMap;
-  }, [chronologicalReports]);
-
-  // Find preceding value helper for repeated markers (O(1) dictionary lookup)
-  const getPrecedingMarkerValue = (reportId: string, markerName: string) => {
+  // Find preceding value helper for repeated markers
+  const getPrecedingMarkerValue = (reportId: string, markerName: string, currentDateStr: string) => {
     const currentNorm = markerName.toLowerCase().trim();
-    return precedingValuesMap.get(reportId)?.get(currentNorm) || null;
+    const currentReportIndex = chronologicalReports.findIndex((r) => r.docId === reportId);
+
+    if (currentReportIndex <= 0) return null;
+
+    // Scan backwards from the preceding report index
+    for (let i = currentReportIndex - 1; i >= 0; i--) {
+      const prevReport = chronologicalReports[i];
+      const matchedObs = prevReport.observations?.find((obs: any) => {
+        const obsName = (obs.marker || obs.testName || obs.name || "").toLowerCase().trim();
+        return obsName === currentNorm;
+      });
+
+      if (matchedObs) {
+        const val = matchedObs.valueCanonical ?? matchedObs.numeric_value ?? matchedObs.valueOriginal;
+        if (val !== undefined && val !== null) {
+          return {
+            value: parseFloat(String(val)),
+            unit: matchedObs.unitCanonical || matchedObs.unitOriginal || "",
+            date: prevReport.date,
+            reportName: prevReport.fileName,
+          };
+        }
+      }
+    }
+    return null;
   };
 
   // Filter based on search query
@@ -389,7 +378,7 @@ export default function ReportHistory() {
                                 const source = getSourceForMarker(markerName);
 
                                 // Get preceding value for comparison
-                                const preceding = currentVal !== null ? getPrecedingMarkerValue(report.docId, markerName) : null;
+                                const preceding = currentVal !== null ? getPrecedingMarkerValue(report.docId, markerName, report.date) : null;
 
                                 let trendIndicator = null;
                                 if (currentVal !== null && preceding !== null && preceding.value !== null) {

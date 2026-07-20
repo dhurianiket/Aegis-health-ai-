@@ -123,14 +123,9 @@ export async function getDocuments(userId: string, profileId?: string) {
       q = query(q, where("profileId", "==", profileId));
     }
     const snapshot = await getDocs(q);
-    const rawDocs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as MedicalDocument,
-    );
-    // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) parsing
-    const docs = rawDocs
-      .map(doc => ({ doc, time: new Date(doc.date || 0).getTime() }))
-      .sort((a, b) => b.time - a.time)
-      .map(item => item.doc);
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     
     return docs;
   } catch (error) {
@@ -153,14 +148,9 @@ export async function getLabHistory(
       q = query(q, where("profileId", "==", profileId));
     }
     const snapshot = await getDocs(q);
-    const rawDocs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as LabResult,
-    );
-    // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) parsing
-    const docs = rawDocs
-      .map(doc => ({ doc, time: new Date(doc.date || 0).getTime() }))
-      .sort((a, b) => b.time - a.time)
-      .map(item => item.doc);
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     
     return docs;
   } catch (error) {
@@ -290,14 +280,9 @@ export async function getHealthScores(userId: string, profileId?: string) {
       q = query(q, where("profileId", "==", profileId));
     }
     const snapshot = await getDocs(q);
-    const rawDocs = snapshot.docs.map(
+    const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as any,
-    );
-    // ⚡ Bolt: Cache parsed timestamps using Schwartzian transform to avoid O(N log N) parsing
-    const docs = rawDocs
-      .map(doc => ({ doc, time: new Date(doc.date || 0).getTime() }))
-      .sort((a, b) => b.time - a.time)
-      .map(item => item.doc);
+    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     
     return docs;
   } catch (error) {

@@ -18,24 +18,6 @@
       href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
       rel="stylesheet"
     />
-    <script>
-      (function() {
-        var gaId = "%VITE_GA_MEASUREMENT_ID%";
-        var isProd = "%MODE%" === "production";
-
-        if (isProd && gaId && gaId.indexOf('%VITE_') === -1) {
-          var script = document.createElement('script');
-          script.async = true;
-          script.src = "https://www.googletagmanager.com/gtag/js?id=" + gaId;
-          document.head.appendChild(script);
-
-          window.dataLayer = window.dataLayer || [];
-          window.gtag = function(){window.dataLayer.push(arguments);}
-          window.gtag('js', new Date());
-          window.gtag('config', gaId);
-        }
-      })();
-    </script>
   </head>
   <body style="background-color: #0d0d0d; margin: 0; color: white;">
     <script>
