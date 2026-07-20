@@ -134,14 +134,20 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     
     // Sort with favorites first
     const favorites = ['Hemoglobin', 'Hba1c', 'Ldl', 'Hdl', 'Uric acid', 'Crp', 'Vitamin d', 'Egfr', 'Lymphocytes'];
-    return markers.sort((a, b) => {
-       const aFav = favorites.findIndex(f => a.toLowerCase().includes(f.toLowerCase()));
-       const bFav = favorites.findIndex(f => b.toLowerCase().includes(f.toLowerCase()));
-       if (aFav !== -1 && bFav !== -1) return aFav - bFav;
-       if (aFav !== -1) return -1;
-       if (bFav !== -1) return 1;
-       return a.localeCompare(b);
+
+    // ⚡ Bolt: Schwartzian transform (Decorate-Sort-Undecorate) to avoid O(N log N) string searches
+    const decoratedMarkers = markers.map(name => {
+      const lowerName = name.toLowerCase();
+      const favIndex = favorites.findIndex(f => lowerName.includes(f.toLowerCase()));
+      return { name, favIndex };
     });
+
+    return decoratedMarkers.sort((a, b) => {
+       if (a.favIndex !== -1 && b.favIndex !== -1) return a.favIndex - b.favIndex;
+       if (a.favIndex !== -1) return -1;
+       if (b.favIndex !== -1) return 1;
+       return a.name.localeCompare(b.name);
+    }).map(d => d.name);
   }, [labResults]);
 
   useEffect(() => {
@@ -161,12 +167,8 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         if (d1) return d1.getTime();
         const d2 = parseSafeTimestamp(r.fallbackDate);
         if (d2) return d2.getTime();
-        return new Date().getTime(); // Safe fallback just for sorting if missing
+        return null; // Return null so we know it was missing
       };
-
-      const filtered = labResults
-        .filter((r) => r.markerName === selectedMarker)
-        .sort((a, b) => getValidTime(a) - getValidTime(b));
 
       const now = new Date().getTime();
       let cutoff = 0;
@@ -174,12 +176,22 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
       else if (timeRange === "6M") cutoff = now - 180 * 24 * 60 * 60 * 1000;
       else if (timeRange === "1Y") cutoff = now - 365 * 24 * 60 * 60 * 1000;
 
-      const ranged = filtered.filter((r) => {
-        const t = getValidTime(r);
-        return t >= cutoff;
-      });
+      // ⚡ Bolt: Schwartzian transform to avoid O(N log N) expensive timestamp parsing
+      const decoratedResults = labResults
+        .filter((r) => r.markerName === selectedMarker)
+        .map((r) => {
+           const time = getValidTime(r);
+           return { result: r, time: time !== null ? time : now, originalTime: time };
+        });
 
-      return ranged.map((r) => {
+      const filtered = decoratedResults
+        .sort((a, b) => a.time - b.time)
+        .filter((d) => d.time >= cutoff);
+
+      return filtered.map((d) => {
+        const r = d.result;
+        const cachedTime = d.time;
+        const originalTime = d.originalTime;
         let refMin = undefined;
         let refMax = undefined;
         const refRange = r.referenceRange || r.reference_range;
@@ -212,12 +224,12 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         if (st === 'high' || st === 'abnormal' || st === 'critical') flagCol = 'red';
         else if (st === 'low') flagCol = 'orange';
 
-        const safeTime = getValidTime(r);
         return {
-          timestamp: safeTime,
+          timestamp: cachedTime,
           date: (() => {
-             const d = parseSafeTimestamp(r.actualDate || r.fallbackDate);
-             return d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recent";
+             if (originalTime === null) return "Recent";
+             const d = new Date(cachedTime);
+             return !isNaN(d.getTime()) ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recent";
           })(),
           numericValue: numericValue,
           value: numericValue,
