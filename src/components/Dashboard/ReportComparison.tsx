@@ -106,7 +106,11 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
           <h2 className="text-lg font-semibold text-[var(--color-text)]">
             Comparing <span className="font-mono text-sm text-[var(--color-primary)]">{reportADate}</span> vs <span className="font-mono text-sm text-[var(--color-primary)]">{reportBDate}</span>
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-[var(--color-bg)] rounded-full text-[var(--color-text-muted)] transition-colors">
+          <button
+            onClick={onClose}
+            aria-label="Close comparison"
+            className="p-2 hover:bg-[var(--color-bg)] rounded-full text-[var(--color-text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+          >
             <X size={20} />
           </button>
         </div>
