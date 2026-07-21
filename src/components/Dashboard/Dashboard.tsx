@@ -237,6 +237,63 @@ export default function Dashboard({
     [latestScore.systems],
   );
 
+  const abnormalLabs = useMemo(() => {
+    return keyLabs.filter(l => {
+      const status = l.status as any;
+      return status === 'high' || status === 'abnormal' || status === 'low' || status === 'critical';
+    });
+  }, [keyLabs]);
+
+  const keyMarkerLabsData = useMemo(() => {
+    const targetMarkers = ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'];
+    return keyLabs
+      .filter(l => targetMarkers.includes(l.markerName.toLowerCase().trim()))
+      .map(lab => {
+        const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
+        const numericValue = isNaN(valRaw) ? 0 : valRaw;
+
+        let prevValNum = numericValue;
+        let prevDateStr = "N/A";
+        if ((lab as any).history && (lab as any).history.length > 1) {
+            const prev = (lab as any).history[1];
+            const prevValRaw = parseFloat(String(prev.value || prev.display_value).replace(/[^0-9.-]/g, ''));
+            prevValNum = isNaN(prevValRaw) ? numericValue : prevValRaw;
+            const d = parseSafeTimestamp(prev.date);
+            if (d && !isNaN(d.getTime())) {
+                prevDateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            }
+        }
+
+        let refLow: number | undefined = undefined;
+        let refHigh: number | undefined = undefined;
+        if (lab.referenceRange) {
+            const rangeMatch = String(lab.referenceRange).match(/([0-9.]+)\s*-\s*([0-9.]+)/);
+            if (rangeMatch) {
+                refLow = parseFloat(rangeMatch[1]);
+                refHigh = parseFloat(rangeMatch[2]);
+            } else {
+                const lessMatch = String(lab.referenceRange).match(/<\s*([0-9.]+)/);
+                if (lessMatch) {
+                    refHigh = parseFloat(lessMatch[1]);
+                }
+                const greaterMatch = String(lab.referenceRange).match(/>\s*([0-9.]+)/);
+                if (greaterMatch) {
+                    refLow = parseFloat(greaterMatch[1]);
+                }
+            }
+        }
+
+        return {
+          lab,
+          numericValue,
+          prevValNum,
+          prevDateStr,
+          refLow,
+          refHigh,
+        };
+      });
+  }, [keyLabs]);
+
   const containerVariants: any = {
     hidden: { opacity: 0 },
     visible: {
@@ -481,7 +538,7 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => {
+                {abnormalLabs.slice(0, 5).map((lab, i) => {
                   const urgency = getUrgencyAndNextStep(lab.markerName, lab.status, lab.value !== null && lab.value !== undefined ? String(lab.value) : undefined);
                   const source = getSourceForMarker(lab.markerName);
 
@@ -528,7 +585,7 @@ export default function Dashboard({
                     </div>
                   );
                 })}
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
+                {abnormalLabs.length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
               </div>
@@ -541,55 +598,20 @@ export default function Dashboard({
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => {
-                     const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
-                     const numericValue = isNaN(valRaw) ? 0 : valRaw;
-                     
-                     let prevValNum = numericValue;
-                     let prevDateStr = "N/A";
-                     if ((lab as any).history && (lab as any).history.length > 1) {
-                         const prev = (lab as any).history[1];
-                         const prevValRaw = parseFloat(String(prev.value || prev.display_value).replace(/[^0-9.-]/g, ''));
-                         prevValNum = isNaN(prevValRaw) ? numericValue : prevValRaw;
-                         const d = parseSafeTimestamp(prev.date);
-                         if (d && !isNaN(d.getTime())) {
-                             prevDateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                         }
-                     }
-
-                     let refLow: number | undefined = undefined;
-                     let refHigh: number | undefined = undefined;
-                     if (lab.referenceRange) {
-                         const rangeMatch = String(lab.referenceRange).match(/([0-9.]+)\s*-\s*([0-9.]+)/);
-                         if (rangeMatch) {
-                             refLow = parseFloat(rangeMatch[1]);
-                             refHigh = parseFloat(rangeMatch[2]);
-                         } else {
-                             const lessMatch = String(lab.referenceRange).match(/<\s*([0-9.]+)/);
-                             if (lessMatch) {
-                                 refHigh = parseFloat(lessMatch[1]);
-                             }
-                             const greaterMatch = String(lab.referenceRange).match(/>\s*([0-9.]+)/);
-                             if (greaterMatch) {
-                                 refLow = parseFloat(greaterMatch[1]);
-                             }
-                         }
-                     }
-
-                     return (
+                  {keyMarkerLabsData.map((data, i) => (
                      <div key={i} className="rounded-2xl border border-surface bg-surface/50 overflow-hidden [&_>_div]:p-4">
                         <HeroMetric
-                           label={lab.markerName}
-                           value={numericValue}
-                           unit={lab.unit}
-                           status={lab.status as string}
-                           refLow={refLow}
-                           refHigh={refHigh}
-                           previousValue={prevValNum}
-                           previousDate={prevDateStr}
+                           label={data.lab.markerName}
+                           value={data.numericValue}
+                           unit={data.lab.unit}
+                           status={data.lab.status as string}
+                           refLow={data.refLow}
+                           refHigh={data.refHigh}
+                           previousValue={data.prevValNum}
+                           previousDate={data.prevDateStr}
                         />
                      </div>
-                  )})}
+                  ))}
                </div>
                <div className="mt-6 border-t border-surface pt-4 text-center">
                   <button onClick={() => window.location.hash = "reports"} className="text-xs font-semibold text-theme hover:underline">View All Trends →</button>
