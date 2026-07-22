@@ -15,11 +15,10 @@ export default function ComparativeAnalysis({
   const latestLabs = useMemo(() => {
     // Get the most recent lab for each marker
     const latest: Record<string, LabResult> = {};
-    const sorted = [...labs].sort((a, b) => {
-      const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
-      const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
-      return timeA - timeB;
-    });
+    const sorted = [...labs]
+      .map((lab) => ({ lab, time: parseSafeTimestamp(lab.date)?.getTime() || 0 }))
+      .sort((a, b) => a.time - b.time)
+      .map((item) => item.lab);
 
     sorted.forEach((lab) => {
       const name = lab.markerName
