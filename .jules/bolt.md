@@ -7,3 +7,7 @@
 ## 2025-03-09 - O(N log N) Computation Bottleneck in Arrays
 **Learning:** Found multiple instances where the expensive `parseSafeTimestamp` utility was executed repetitively inside `.sort()` comparators (`src/components/Dashboard/ComparativeAnalysis.tsx`, `src/components/Dashboard/Dashboard.tsx`, and `src/services/ai/gemini.ts`), creating an O(N log N) bottleneck parsing the exact same dates over and over.
 **Action:** When filtering or sorting data based on parsed output, use a Schwartzian transform (Decorate-Sort-Undecorate) to cache computed values (like parsed timestamps) to guarantee parsing happens exactly once per element in O(N) time before running the O(N log N) sort.
+
+## 2025-03-09 - O(N log N) Date Parsing Bottleneck in Context Service
+**Learning:** Calling `parseSafeTimestamp` directly inside a nested `.sort()` comparator for lab history in `contextService.ts` forced the expensive date-parsing logic to run `O(N log N)` times for every marker group being evaluated.
+**Action:** Use a Schwartzian transform (`Decorate-Sort-Undecorate`) or `Map` caching mechanism to compute the parsed time once per lab in an O(N) pass prior to executing the sorting algorithm.

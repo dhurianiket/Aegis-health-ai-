@@ -171,22 +171,34 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
+    // ⚡ Bolt: Schwartzian transform (Decorate-Sort-Undecorate) to avoid O(N log N) expensive date parsing
+    const decoratedLabsByMarker = new Map();
+    for (const [marker, labs] of labsByMarker.entries()) {
+      const decorated = labs.map((lab: any) => ({
+        lab,
+        time: parseSafeTimestamp(lab.extractedDate || lab.date)?.getTime() || 0
+      }));
+      decorated.sort((a: any, b: any) => b.time - a.time);
+      decoratedLabsByMarker.set(marker, decorated);
+    }
+
     // Sort markers by severity of their most recent lab
-    const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      const labsA = labsByMarker.get(a);
-      const labsB = labsByMarker.get(b);
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
+    const sortedMarkers = Array.from(decoratedLabsByMarker.keys()).sort((a, b) => {
+      const labsA = decoratedLabsByMarker.get(a);
+      const labsB = decoratedLabsByMarker.get(b);
+      const latestA = labsA[0].lab;
+      const latestB = labsB[0].lab;
       return severityScore(latestB.status) - severityScore(latestA.status);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {
       prompt += `- ${markerName}:\n`;
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const labs = labsByMarker.get(markerName)
-        .sort((a: any, b: any) => getT(a) - getT(b))
-        .slice(-5); // Get up to 5 most recent
+      const decoratedLabs = decoratedLabsByMarker.get(markerName);
+
+      const labs = decoratedLabs
+        .slice(0, 5) // Get up to 5 most recent (already sorted descending)
+        .sort((a: any, b: any) => a.time - b.time) // Re-sort chronological for prompt
+        .map((d: any) => d.lab);
       labs.forEach((lab: any) => {
         const dateStr = lab.extractedDate || lab.date;
         const _parsed = parseSafeTimestamp(dateStr);
