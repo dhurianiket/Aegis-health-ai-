@@ -57,16 +57,19 @@ export default function ComparativeAnalysis({
 
       <div className="space-y-5">
         {latestLabs.map((lab, idx) => {
-          // Synthetic percentile calculation based on normal ranges if provided
-          // Or just random for the MVP visualization
-          let percentile = Math.floor(Math.random() * 60) + 20; // 20-80
+          // Deterministic synthetic percentile calculation based on lab properties
+          const hashStr = (lab.markerName || "") + (lab.date || "");
+          const hashVal = hashStr.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          const pseudoRandom = (hashVal % 100) / 100;
+
+          let percentile = Math.floor(pseudoRandom * 60) + 20; // 20-80
           if (lab.status === LabStatus.NORMAL)
-            percentile = Math.floor(Math.random() * 40) + 50; // 50-90
+            percentile = Math.floor(pseudoRandom * 40) + 50; // 50-90
           if (
             lab.status === LabStatus.CRITICAL ||
             lab.status === LabStatus.ABNORMAL
           )
-            percentile = Math.floor(Math.random() * 20) + 80;
+            percentile = Math.floor(pseudoRandom * 20) + 80;
 
           const getStatusColor = () => {
             if (lab.status === LabStatus.CRITICAL)
