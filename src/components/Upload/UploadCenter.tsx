@@ -783,7 +783,11 @@ export default function UploadCenter({
                            {item.status === 'error' && <AlertCircle className="w-5 h-5 text-[var(--color-critical)]" />}
                            
                            {!isProcessing && (
-                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
+                             <button
+                               onClick={() => removeFileFromQueue(item.id)}
+                               aria-label={`Remove ${item.file.name} from queue`}
+                               className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                             >
                                 <X className="w-4 h-4" />
                              </button>
                            )}
@@ -1067,7 +1071,8 @@ export default function UploadCenter({
                       setSearchQuery("");
                       showToast("Search cleared", "success");
                     }}
-                    className="p-1.5 hover:bg-surface rounded-full text-muted hover:text-theme transition-colors"
+                    aria-label="Clear search"
+                    className="p-1.5 hover:bg-surface rounded-full text-muted hover:text-theme transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                     title="Clear Search"
                   >
                     <X className="w-4 h-4" />
@@ -1076,7 +1081,8 @@ export default function UploadCenter({
                 {isSpeechSupported ? (
                   <button
                     onClick={isListening ? stopVoiceSearch : startVoiceSearch}
-                    className={`p-3 rounded-full transition-all flex items-center justify-center relative ${
+                    aria-label={isListening ? "Stop Voice Search" : "Start Voice Search"}
+                    className={`p-3 rounded-full transition-all flex items-center justify-center relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${
                       isListening 
                         ? "bg-red-500 text-white animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]" 
                         : "bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
