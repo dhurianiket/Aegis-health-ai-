@@ -11,3 +11,7 @@
 ## 2025-03-09 - O(N log N) Date Parsing Bottleneck in Context Service
 **Learning:** Calling `parseSafeTimestamp` directly inside a nested `.sort()` comparator for lab history in `contextService.ts` forced the expensive date-parsing logic to run `O(N log N)` times for every marker group being evaluated.
 **Action:** Use a Schwartzian transform (`Decorate-Sort-Undecorate`) or `Map` caching mechanism to compute the parsed time once per lab in an O(N) pass prior to executing the sorting algorithm.
+
+## 2025-03-09 - O(N^2) Backward Scanning Bottleneck in Render Cycle
+**Learning:** Using backward-scanning loops (like nested `findIndex` or `for` loops backwards) inside the render cycle `.map()` (e.g., to find previous marker values in `ReportHistory.tsx`) forces O(N^2) operations on every render, severely blocking the main thread.
+**Action:** Always pre-compute relative or preceding values using a single O(N) forward pass inside a `useMemo` hook, storing the results in a nested `Map` for O(1) lookups during the render phase.

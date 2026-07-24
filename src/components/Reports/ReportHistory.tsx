@@ -145,35 +145,33 @@ export default function ReportHistory() {
     );
   }, [allReports]);
 
-  // Find preceding value helper for repeated markers
-  const getPrecedingMarkerValue = (reportId: string, markerName: string, currentDateStr: string) => {
-    const currentNorm = markerName.toLowerCase().trim();
-    const currentReportIndex = chronologicalReports.findIndex((r) => r.docId === reportId);
+  // Pre-compute preceding marker values using an O(N) forward pass (Schwartzian transform pattern)
+  // Maps reportId -> Map<markerName, precedingValueObj>
+  const precedingValuesMap = useMemo(() => {
+    const map = new Map<string, Map<string, { value: number; unit: string; date: string; reportName: string }>>();
+    const runningLatest = new Map<string, { value: number; unit: string; date: string; reportName: string }>();
 
-    if (currentReportIndex <= 0) return null;
+    for (const report of chronologicalReports) {
+      // Snapshot the running latest for this report
+      const reportPreceding = new Map(runningLatest);
+      map.set(report.docId, reportPreceding);
 
-    // Scan backwards from the preceding report index
-    for (let i = currentReportIndex - 1; i >= 0; i--) {
-      const prevReport = chronologicalReports[i];
-      const matchedObs = prevReport.observations?.find((obs: any) => {
-        const obsName = (obs.marker || obs.testName || obs.name || "").toLowerCase().trim();
-        return obsName === currentNorm;
-      });
-
-      if (matchedObs) {
-        const val = matchedObs.valueCanonical ?? matchedObs.numeric_value ?? matchedObs.valueOriginal;
-        if (val !== undefined && val !== null) {
-          return {
-            value: parseFloat(String(val)),
-            unit: matchedObs.unitCanonical || matchedObs.unitOriginal || "",
-            date: prevReport.date,
-            reportName: prevReport.fileName,
-          };
+      // Update running latest with this report's observations
+      report.observations?.forEach((obs: any) => {
+        const markerName = (obs.marker || obs.testName || obs.name || "").toLowerCase().trim();
+        const valRaw = obs.valueCanonical ?? obs.numeric_value ?? obs.valueOriginal;
+        if (markerName && valRaw !== undefined && valRaw !== null) {
+          runningLatest.set(markerName, {
+            value: parseFloat(String(valRaw)),
+            unit: obs.unitCanonical || obs.unitOriginal || "",
+            date: report.date || report.uploadedAt || new Date().toISOString(),
+            reportName: report.fileName || "Lab Report",
+          });
         }
-      }
+      });
     }
-    return null;
-  };
+    return map;
+  }, [chronologicalReports]);
 
   // Filter based on search query
   const filteredReports = useMemo(() => {
@@ -377,8 +375,8 @@ export default function ReportHistory() {
                                 const status = (obs.status || obs.flag || "NORMAL").toUpperCase();
                                 const source = getSourceForMarker(markerName);
 
-                                // Get preceding value for comparison
-                                const preceding = currentVal !== null ? getPrecedingMarkerValue(report.docId, markerName, report.date) : null;
+                                // Get preceding value for comparison via pre-computed O(1) lookup
+                                const preceding = currentVal !== null ? (precedingValuesMap.get(report.docId)?.get(markerName.toLowerCase().trim()) || null) : null;
 
                                 let trendIndicator = null;
                                 if (currentVal !== null && preceding !== null && preceding.value !== null) {
