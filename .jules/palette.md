@@ -1,3 +1,3 @@
-## 2024-05-18 - Missing ARIA Labels on Close Buttons
-**Learning:** Icon-only close buttons (like `<X size={20} />` in `ReportComparison.tsx`) often lack `aria-label` attributes and focus styles, making them inaccessible to screen readers and keyboard users.
-**Action:** Always verify that icon-only interactive elements contain `aria-label` and `focus-visible` styles when building or reviewing components.
+## 2024-05-19 - Accessible Icon-Only Modal Controls
+**Learning:** Found multiple instances where closing modals or navigating back in sub-views used icon-only buttons (like `<X />` or `<ArrowLeft />`) without an `aria-label`. This pattern was common in the `Export` and `LandingPage` components, preventing screen reader users from understanding the button's action.
+**Action:** Always verify that buttons containing only an icon have a descriptive `aria-label` (e.g., "Close modal", "Back to summary"). Additionally, ensure these interactive elements have clear focus states using utility classes like `focus:outline-none focus-visible:ring-2 focus-visible:ring-current` to support keyboard navigation.

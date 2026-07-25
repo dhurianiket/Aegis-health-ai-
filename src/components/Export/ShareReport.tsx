@@ -144,7 +144,8 @@ export default function ShareReport() {
                     </h2>
                     <button
                       onClick={() => setIsModalOpen(false)}
-                      className="text-slate-400 hover:text-white transition-colors"
+                      aria-label="Close share modal"
+                      className="text-slate-400 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-md"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -294,7 +295,8 @@ export default function ShareReport() {
                     <div className="flex items-center gap-4">
                       <button
                         onClick={() => setSummaryMarkdown("")}
-                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-slate-300"
+                        aria-label="Back to summary list"
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
                       >
                         <ArrowLeft className="w-4 h-4" />
                       </button>
@@ -316,7 +318,8 @@ export default function ShareReport() {
                       />
                       <button
                         onClick={() => setIsModalOpen(false)}
-                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-300 transition-colors"
+                        aria-label="Close summary view"
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
                       >
                         <X className="w-5 h-5" />
                       </button>

@@ -30,7 +30,8 @@ export default function LegalModal({ isOpen, onClose, type }: LegalModalProps) {
         >
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors"
+            aria-label="Close legal modal"
+            className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-full"
           >
             <X className="w-6 h-6" />
           </button>
