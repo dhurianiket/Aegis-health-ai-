@@ -14,20 +14,21 @@ export default function ComparativeAnalysis({
 }: ComparativeAnalysisProps) {
   const latestLabs = useMemo(() => {
     // Get the most recent lab for each marker
-    const latest: Record<string, LabResult> = {};
-    const sorted = [...labs]
-      .map((lab) => ({ lab, time: parseSafeTimestamp(lab.date)?.getTime() || 0 }))
-      .sort((a, b) => a.time - b.time)
-      .map((item) => item.lab);
+    const latestMap = new Map<string, { lab: LabResult; time: number }>();
 
-    sorted.forEach((lab) => {
+    labs.forEach((lab) => {
       const name = lab.markerName
         ? lab.markerName.trim().toUpperCase()
         : "UNKNOWN";
-      latest[name] = lab;
+      const time = parseSafeTimestamp(lab.date)?.getTime() || 0;
+
+      const existing = latestMap.get(name);
+      if (!existing || time >= existing.time) {
+        latestMap.set(name, { lab, time });
+      }
     });
 
-    return Object.values(latest).slice(0, 4); // Take top 4
+    return Array.from(latestMap.values()).map(item => item.lab).slice(0, 4); // Take top 4
   }, [labs]);
 
   if (latestLabs.length === 0) {
