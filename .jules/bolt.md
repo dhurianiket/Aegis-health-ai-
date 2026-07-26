@@ -16,3 +16,7 @@
 **Learning:** Using backward-scanning loops (like nested `findIndex` or `for` loops backwards) inside the render cycle `.map()` (e.g., to find previous marker values in `ReportHistory.tsx`) forces O(N^2) operations on every render, severely blocking the main thread.
 **Action:** Always pre-compute relative or preceding values using a single O(N) forward pass inside a `useMemo` hook, storing the results in a nested `Map` for O(1) lookups during the render phase.
 ## 2025-03-09 - O(N log N) Bottleneck in Dashboard\n**Learning:** ComparativeAnalysis recalculates latest labs per marker during each render using an expensive O(N log N) `sort` method. This creates main thread blocking when processing high-volume telemetry data.\n**Action:** Replaced `[...labs].sort()` with an O(N) single forward pass dict/map approach to find the latest value.
+
+## 2025-03-09 - Avoid O(N log N) sorting just to find a single max/min value
+**Learning:** Using `.sort((a, b) => ...)[0]` to find the most recent or largest item in an array is an O(N log N) operation, which introduces unnecessary overhead, especially inside React render loops or frequent hooks.
+**Action:** Always use an O(N) single forward pass (like `.reduce` or a simple loop) when you only need to extract the maximum, minimum, or latest item from an array.
