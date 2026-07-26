@@ -301,7 +301,8 @@ function CareMap() {
             />
             <button
               type="submit"
-              className="absolute right-1.5 top-1.5 bottom-1.5 aspect-square bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center transition-colors"
+              aria-label="Search locations"
+              className="absolute right-1.5 top-1.5 bottom-1.5 aspect-square bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             >
               <Search className="w-4 h-4" />
             </button>
