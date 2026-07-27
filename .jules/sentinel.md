@@ -12,3 +12,8 @@
 **Vulnerability:** Found unencoded string interpolation `body: \`secret=${secretKey}&response=${token}\`` in `functions/src/index.ts`.
 **Learning:** If user-supplied or dynamic variables contain `&` or `=`, they can prematurely terminate parameters or inject new ones, altering the intended API request payload structure.
 **Prevention:** Always wrap variables with `encodeURIComponent()` when constructing `application/x-www-form-urlencoded` request bodies manually.
+
+## 2024-05-18 - Privilege Escalation in Firestore Create Rules
+**Vulnerability:** Found `allow create, delete: if isOwner(userId) || isAdmin();` in `firestore.rules` which allowed a new user to set `role: 'admin'` upon document creation.
+**Learning:** Users creating their own document can set arbitrary fields. `update` rules handle diffs, but `create` rules need explicit checks for sensitive fields.
+**Prevention:** Always restrict sensitive fields like `role` in `create` rules using `!('role' in request.resource.data) || request.resource.data.role != 'admin'`, wrapped in explicit parentheses for proper precedence.
