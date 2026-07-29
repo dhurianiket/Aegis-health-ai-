@@ -17,3 +17,8 @@
 **Vulnerability:** Found `allow create, delete: if isOwner(userId) || isAdmin();` in `firestore.rules` which allowed a new user to set `role: 'admin'` upon document creation.
 **Learning:** Users creating their own document can set arbitrary fields. `update` rules handle diffs, but `create` rules need explicit checks for sensitive fields.
 **Prevention:** Always restrict sensitive fields like `role` in `create` rules using `!('role' in request.resource.data) || request.resource.data.role != 'admin'`, wrapped in explicit parentheses for proper precedence.
+
+## 2024-03-24 - crypto.timingSafeEqual Length Mismatch Crash & Webhook Error Leakage
+**Vulnerability:** Found `crypto.timingSafeEqual` used without length checks in `functions/src/julesWebhook.ts` and error message leakage in the catch block.
+**Learning:** `crypto.timingSafeEqual` throws an exception if buffers are of different lengths. If an attacker sends an improperly sized signature, it causes an unhandled exception. Additionally, exposing `error.message` in HTTP 500 responses leaks internal stack or state details.
+**Prevention:** Always compare buffer lengths before passing them to `timingSafeEqual`. Always return generic error messages to clients, logging the actual error internally.

@@ -27,7 +27,12 @@ function verifySignature(payload, signature, secret) {
     const hash = match[2];
     const hmac = crypto.createHmac(algo, secret);
     const calculated = hmac.update(payload).digest("hex");
-    return crypto.timingSafeEqual(Buffer.from(calculated), Buffer.from(hash));
+    const calculatedBuffer = Buffer.from(calculated);
+    const hashBuffer = Buffer.from(hash);
+    if (calculatedBuffer.length !== hashBuffer.length) {
+        return false;
+    }
+    return crypto.timingSafeEqual(calculatedBuffer, hashBuffer);
 }
 /**
  * HTTP Triggered function to handle GitHub Webhooks.
@@ -153,7 +158,7 @@ Ensure your code adheres strictly to the invariants listed in AGENTS.md.
     }
     catch (error) {
         console.error("Critical Webhook Pipeline Failure:", error);
-        res.status(500).send(`Internal Webhook Error: ${error.message}`);
+        res.status(500).send("Internal Webhook Error: Processing failed.");
     }
 });
 //# sourceMappingURL=julesWebhook.js.map
