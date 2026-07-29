@@ -217,6 +217,18 @@ export default function Dashboard({
       },
     } as HealthScore);
 
+  const abnormalLabs = useMemo(() => {
+    return keyLabs.filter(l => {
+      const s = (l.status as any);
+      return s === 'high' || s === 'abnormal' || s === 'low' || s === 'critical';
+    });
+  }, [keyLabs]);
+
+  const targetKeyMarkers = useMemo(() => {
+    const targets = ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'];
+    return keyLabs.filter(l => targets.includes(l.markerName.toLowerCase().trim()));
+  }, [keyLabs]);
+
   const radarData = useMemo(
     () => [
       { subject: "Metabolic", A: latestScore.systems.metabolic, fullMark: 100 },
@@ -481,7 +493,7 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => {
+                {abnormalLabs.slice(0, 5).map((lab, i) => {
                   const urgency = getUrgencyAndNextStep(lab.markerName, lab.status, lab.value !== null && lab.value !== undefined ? String(lab.value) : undefined);
                   const source = getSourceForMarker(lab.markerName);
 
@@ -528,7 +540,7 @@ export default function Dashboard({
                     </div>
                   );
                 })}
-                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
+                {abnormalLabs.length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
               </div>
@@ -541,7 +553,7 @@ export default function Dashboard({
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => {
+                  {targetKeyMarkers.map((lab, i) => {
                      const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
                      const numericValue = isNaN(valRaw) ? 0 : valRaw;
                      
