@@ -50,7 +50,7 @@ export default function VisitPrepWidget() {
             const responses = await getFormResponses(formId);
             if (responses?.responses?.length > 0) {
                // Get earliest latest
-               const latest = responses.responses.reduce((latestResp: any, currentResp: any) => new Date(currentResp.lastSubmittedTime).getTime() > new Date(latestResp.lastSubmittedTime).getTime() ? currentResp : latestResp);
+               const latest = responses.responses.sort((a,b) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime())[0];
                let answersText = [];
                if (latest && latest.answers) {
                   for (const [qId, answerObj] of Object.entries(latest.answers)) {
@@ -134,14 +134,14 @@ Format as a clean, highly structured Markdown document with:
 
         {/* Form selection tabs */}
         {!summary && !loading && (
-           <div className="flex gap-2 mb-4 p-1 bg-black/15 border border-white/5 rounded-2xl">
+           <div className="flex gap-2 mb-4 p-1 bg-black/15 border border-white/10 rounded-2xl">
               <button 
                  type="button"
                  onClick={() => { setUseInAppForm(true); setError(null); }}
                  className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition ${
                     useInAppForm 
                        ? 'bg-indigo-600 text-white shadow-sm' 
-                       : 'text-slate-400 hover:text-white'
+                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                  }`}
               >
                  Quick In-App Form
@@ -152,7 +152,7 @@ Format as a clean, highly structured Markdown document with:
                  className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition ${
                     !useInAppForm 
                        ? 'bg-indigo-600 text-white shadow-sm' 
-                       : 'text-slate-400 hover:text-white'
+                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                  }`}
               >
                  Sync Google Form
@@ -165,7 +165,7 @@ Format as a clean, highly structured Markdown document with:
               {useInAppForm ? (
                  <div className="space-y-3">
                     <div>
-                       <span className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
+                       <span className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2 uppercase tracking-wider">
                           Select Symptoms
                        </span>
                        <div className="grid grid-cols-2 gap-2">
@@ -183,7 +183,7 @@ Format as a clean, highly structured Markdown document with:
                                    className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl border transition-all text-left ${
                                       isSelected 
                                          ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' 
-                                         : 'bg-black/10 border-white/5 text-slate-300 hover:border-white/10'
+                                         : 'bg-black/10 border-white/10 text-slate-800 dark:text-slate-200 hover:border-white/20'
                                    }`}
                                 >
                                    <span className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] ${
@@ -199,34 +199,34 @@ Format as a clean, highly structured Markdown document with:
                     </div>
                     
                     <div>
-                       <label className="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1 uppercase tracking-wider">
                           Questions for your Doctor
                        </label>
                        <AutoSizeTextarea
                           value={questions}
                           onChange={(e: any) => setQuestions(e.target.value)}
                           placeholder="e.g., Is this dosage of Lisinopril safe to continue? When should I retest?"
-                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
                           minLines={2}
                        />
                     </div>
 
                     <div>
-                       <label className="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1 uppercase tracking-wider">
                           Additional Symptoms or Notes
                        </label>
                        <AutoSizeTextarea
                           value={onsetNotes}
                           onChange={(e: any) => setOnsetNotes(e.target.value)}
                           placeholder="e.g., Symptoms have been mostly in the evening. Slight chest tightness."
-                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
                           minLines={1}
                        />
                     </div>
                  </div>
               ) : (
                  <div className="p-3 bg-black/10 border border-white/5 rounded-2xl text-center space-y-2">
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-700 dark:text-slate-300">
                        Fetching inputs automatically from your outer Google Form responses. Ensure you submitted the form with your logged-in Google Account.
                     </p>
                     {formId && (
@@ -234,7 +234,7 @@ Format as a clean, highly structured Markdown document with:
                           href={`https://docs.google.com/forms/d/${formId}/viewform`} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-block text-xs text-indigo-400 hover:underline"
+                          className="inline-block text-xs text-indigo-400 hover:underline font-medium"
                        >
                           Open Google Form directly ↗
                        </a>

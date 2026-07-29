@@ -14,21 +14,21 @@ export default function ComparativeAnalysis({
 }: ComparativeAnalysisProps) {
   const latestLabs = useMemo(() => {
     // Get the most recent lab for each marker
-    const latestMap = new Map<string, { lab: LabResult; time: number }>();
+    const latest: Record<string, LabResult> = {};
+    const sorted = [...labs].sort((a, b) => {
+      const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
+      const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
+      return timeA - timeB;
+    });
 
-    labs.forEach((lab) => {
+    sorted.forEach((lab) => {
       const name = lab.markerName
         ? lab.markerName.trim().toUpperCase()
         : "UNKNOWN";
-      const time = parseSafeTimestamp(lab.date)?.getTime() || 0;
-
-      const existing = latestMap.get(name);
-      if (!existing || time >= existing.time) {
-        latestMap.set(name, { lab, time });
-      }
+      latest[name] = lab;
     });
 
-    return Array.from(latestMap.values()).map(item => item.lab).slice(0, 4); // Take top 4
+    return Object.values(latest).slice(0, 4); // Take top 4
   }, [labs]);
 
   if (latestLabs.length === 0) {
@@ -58,19 +58,16 @@ export default function ComparativeAnalysis({
 
       <div className="space-y-5">
         {latestLabs.map((lab, idx) => {
-          // Deterministic synthetic percentile calculation based on lab properties
-          const hashStr = (lab.markerName || "") + (lab.date || "");
-          const hashVal = hashStr.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const pseudoRandom = (hashVal % 100) / 100;
-
-          let percentile = Math.floor(pseudoRandom * 60) + 20; // 20-80
+          // Synthetic percentile calculation based on normal ranges if provided
+          // Or just random for the MVP visualization
+          let percentile = Math.floor(Math.random() * 60) + 20; // 20-80
           if (lab.status === LabStatus.NORMAL)
-            percentile = Math.floor(pseudoRandom * 40) + 50; // 50-90
+            percentile = Math.floor(Math.random() * 40) + 50; // 50-90
           if (
             lab.status === LabStatus.CRITICAL ||
             lab.status === LabStatus.ABNORMAL
           )
-            percentile = Math.floor(pseudoRandom * 20) + 80;
+            percentile = Math.floor(Math.random() * 20) + 80;
 
           const getStatusColor = () => {
             if (lab.status === LabStatus.CRITICAL)

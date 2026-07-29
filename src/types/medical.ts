@@ -87,6 +87,8 @@ export interface MedicalDocument {
   storagePath?: string;
   isProcessed: boolean;
   extractedData?: any;
+  tags?: string[];
+  suggestedTags?: string[];
   createdAt: string;
 }
 

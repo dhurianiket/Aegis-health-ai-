@@ -264,21 +264,20 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 
   const chatAreaContent = (
     <>
-      <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl flex items-center gap-4 shrink-0 transition-colors z-10">
+      <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#121214] flex items-center gap-4 shrink-0 transition-colors z-10">
         <button 
-          aria-label="Back to specialists"
-          className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-[var(--color-text)] transition-colors active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-slate-100 transition-colors active:scale-95"
           onClick={() => setIsMobileChatOpen(false)}
         >
           <ChevronLeft className="w-6 h-6 shrink-0" />
         </button>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[var(--color-text)] text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
-          <div className="text-[13px] text-[var(--color-text-muted)] truncate font-medium">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
+          <div className="font-semibold text-slate-900 dark:text-slate-100 text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
+          <div className="text-[13px] text-slate-600 dark:text-slate-300 truncate font-medium">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
         </div>
         <div className="shrink-0">
-           <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center">
-             <Brain className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center">
+             <Brain className="w-5 h-5 text-slate-600 dark:text-slate-300" />
            </div>
         </div>
       </div>
@@ -290,21 +289,21 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       >
         {initialLoading ? (
           <div className="h-full flex flex-col items-center justify-center space-y-4">
-             <Loader2 className="w-8 h-8 text-slate-400 dark:text-slate-400 animate-spin" />
-             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-400 tracking-widest uppercase">Loading Conversation</p>
+             <Loader2 className="w-8 h-8 text-slate-600 dark:text-slate-300 animate-spin" />
+             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 tracking-widest uppercase">Loading Conversation</p>
           </div>
         ) : messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center opacity-70 space-y-6 px-6">
-             <div className="w-24 h-24 rounded-full bg-slate-50 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-100/50 dark:border-white/5">
-                <Stethoscope className="text-slate-400 dark:text-slate-400 w-10 h-10"/>
+          <div className="h-full flex flex-col items-center justify-center opacity-90 space-y-6 px-6">
+             <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-200 dark:border-white/10">
+                <Stethoscope className="text-slate-600 dark:text-slate-300 w-10 h-10"/>
              </div>
-             <p className="text-[15px] text-slate-500 dark:text-slate-400 text-center font-medium leading-relaxed max-w-sm">
+             <p className="text-[15px] text-slate-700 dark:text-slate-300 text-center font-medium leading-relaxed max-w-sm">
                Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
              </p>
              <div className="flex gap-2 w-full max-w-[280px]">
                 <button 
                   onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} 
-                  className="w-full bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] text-white  hover:opacity-90 text-[15px] font-semibold px-4 py-3.5 rounded-[20px] transition-all active:scale-[0.98] shadow-sm"
+                  className="w-full bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] text-white hover:opacity-90 text-[15px] font-semibold px-4 py-3.5 rounded-[20px] transition-all active:scale-[0.98] shadow-sm"
                 >
                   Summarize my labs
                 </button>
@@ -320,31 +319,31 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         
         {streamedText && (
           <div className="flex justify-start pr-12 pb-2">
-            <div className="max-w-[100%] rounded-[24px] rounded-bl-[8px] px-5 py-4 text-[16px] leading-[1.6] bg-slate-50 dark:bg-[#1C1C1E] text-slate-800 dark:text-slate-200 relative pb-8 shadow-sm border border-slate-100/50 dark:border-[#2C2C2E]">
-              <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-400 dark:marker:text-slate-500 max-w-none">
+            <div className="max-w-[100%] rounded-[24px] rounded-bl-[8px] px-5 py-4 text-[16px] leading-[1.6] bg-slate-50 dark:bg-[#1C1C1E] text-slate-900 dark:text-slate-100 relative pb-8 shadow-sm border border-slate-200 dark:border-[#2C2C2E]">
+              <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-500 dark:marker:text-slate-400 max-w-none">
                 <ReactMarkdown>{streamedText}</ReactMarkdown>
               </div>
-              <span className="absolute bottom-5 left-6 w-2 h-2 bg-slate-400 dark:bg-slate-500 animate-pulse rounded-full" />
+              <span className="absolute bottom-5 left-6 w-2 h-2 bg-slate-500 dark:bg-slate-400 animate-pulse rounded-full" />
             </div>
           </div>
         )}
         
         {isTyping && !streamedText && (
           <div className="flex justify-start pr-12 pb-2">
-             <div className="bg-slate-50 dark:bg-[#1C1C1E] rounded-[24px] rounded-bl-[8px] px-5 py-4 flex items-center gap-3 shadow-sm border border-slate-100/50 dark:border-[#2C2C2E]">
-                <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-                <span className="text-[14px] font-medium text-slate-500 animate-pulse">Analyzing record...</span>
+             <div className="bg-slate-50 dark:bg-[#1C1C1E] rounded-[24px] rounded-bl-[8px] px-5 py-4 flex items-center gap-3 shadow-sm border border-slate-200 dark:border-[#2C2C2E]">
+                <Loader2 className="w-5 h-5 text-slate-600 dark:text-slate-300 animate-spin" />
+                <span className="text-[14px] font-medium text-slate-700 dark:text-slate-300 animate-pulse">Analyzing record...</span>
              </div>
           </div>
         )}
       </div>
       
-      <div className="p-4 md:p-6 lg:p-6 pb-[max(env(safe-area-inset-bottom),16px)] lg:pb-6 border-t border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl shrink-0 transition-colors z-10 w-full">
+      <div className="p-4 md:p-6 lg:p-6 pb-[max(env(safe-area-inset-bottom),16px)] lg:pb-6 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#121214] shrink-0 transition-colors z-10 w-full">
         {isTyping && (
           <div className="flex justify-center mb-3">
             <button
               onClick={handleAbort}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 dark:bg-[#1C1C1E] hover:bg-slate-200 dark:hover:bg-[#2C2C2E] text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 transition-colors active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 dark:bg-[#1C1C1E] hover:bg-slate-200 dark:hover:bg-[#2C2C2E] text-[11px] font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 transition-colors active:scale-95"
             >
               <Square size={10} className="fill-current" /> Stop
             </button>
@@ -356,18 +355,18 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={`Message ${activeSpecProfile.displayName}...`}
             disabled={isTyping}
-            className="w-full bg-slate-50 dark:bg-[#1C1C1E] border border-slate-200/60 dark:border-[#2C2C2E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 transition-all disabled:opacity-50 shadow-sm"
+            className="w-full bg-slate-100 dark:bg-[#1C1C1E] border border-slate-300 dark:border-[#3C3C3E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all disabled:opacity-50 shadow-sm"
           />
           <button
             type="submit"
             aria-label="Send Message"
             disabled={!inputValue.trim() || isTyping}
-            className="absolute right-2.5 top-2.5 bottom-2.5 aspect-square bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-[#2C2C2E] transition-colors active:scale-95"
+            className="absolute right-2.5 top-2.5 bottom-2.5 aspect-square bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-[#2C2C2E] transition-colors active:scale-95"
           >
             <ArrowUp size={20} className="stroke-[3px]" />
           </button>
         </form>
-        <div className="mt-3 md:mt-4 text-center text-[11px] font-medium text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1.5 w-full">
+        <div className="mt-3 md:mt-4 text-center text-[12px] font-medium text-slate-600 dark:text-slate-300 flex items-center justify-center gap-1.5 w-full">
           <Info className="w-3.5 h-3.5 shrink-0" />
           Not a substitute for professional medical advice.
         </div>
@@ -413,12 +412,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                 )}
                 <div className="flex items-center gap-3 w-full">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-100 dark:bg-[#2C2C2E]'}`}>
-                    <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-200 dark:bg-[#2C2C2E]'}`}>
+                    <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}>{s.displayName}</div>
-                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>
+                    <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>{s.displayName}</div>
+                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-slate-200' : 'text-slate-600 dark:text-slate-300'}`}>
                       {s.expertise.slice(0, 2).join(' • ')}...
                     </div>
                   </div>

@@ -1,3 +1,0 @@
-## 2024-05-19 - Accessible Icon-Only Modal Controls
-**Learning:** Found multiple instances where closing modals or navigating back in sub-views used icon-only buttons (like `<X />` or `<ArrowLeft />`) without an `aria-label`. This pattern was common in the `Export` and `LandingPage` components, preventing screen reader users from understanding the button's action.
-**Action:** Always verify that buttons containing only an icon have a descriptive `aria-label` (e.g., "Close modal", "Back to summary"). Additionally, ensure these interactive elements have clear focus states using utility classes like `focus:outline-none focus-visible:ring-2 focus-visible:ring-current` to support keyboard navigation.

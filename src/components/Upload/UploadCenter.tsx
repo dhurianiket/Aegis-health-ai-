@@ -24,6 +24,8 @@ import {
   ChevronUp,
   Calendar,
   Building,
+  Tag,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { extractMedicalReports } from "../../services/ai/gemini";
@@ -120,6 +122,86 @@ const readFileAsSafeBase64 = (file: File): Promise<{
   });
 };
 
+export function generateSuggestedTags(extracted: any, fileName: string = ""): string[] {
+  const tagsSet = new Set<string>();
+  const textToScan = [
+    fileName,
+    extracted?.type,
+    extracted?.document_type,
+    extracted?.summary,
+    extracted?.hospital_name,
+    extracted?.doctor_name,
+    ...(extracted?.lab_values || []).map((l: any) => `${l.marker || ''} ${l.testName || ''}`),
+    ...(extracted?.medications || []).map((m: any) => typeof m === 'string' ? m : `${m.name || ''}`)
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  // 1. Blood Test & Lab Reports
+  if (
+    /cbc|blood|lipid|cholesterol|hemoglobin|glucose|hba1c|thyroid|tsh|platelet|wbc|rbc|serum|creatinine|electrolytes|panel|lab|metabolic|liver|lft|kft|kidney/.test(textToScan)
+  ) {
+    tagsSet.add("Blood Test");
+    tagsSet.add("Lab Report");
+  }
+
+  // 2. MRI
+  if (/mri|magnetic resonance|brain scan|spine scan|t1-weighted|t2-weighted/.test(textToScan)) {
+    tagsSet.add("MRI");
+    tagsSet.add("Radiology");
+  }
+
+  // 3. CT Scan
+  if (/ct scan|computed tomography|axial ct|contrast ct/.test(textToScan)) {
+    tagsSet.add("CT Scan");
+    tagsSet.add("Radiology");
+  }
+
+  // 4. X-Ray
+  if (/x-ray|xray|radiograph|chest film|radiology/.test(textToScan)) {
+    tagsSet.add("X-Ray");
+    tagsSet.add("Radiology");
+  }
+
+  // 5. Ultrasound / Sonography
+  if (/ultrasound|usg|sonography|echocardiogram|echo/.test(textToScan)) {
+    tagsSet.add("Ultrasound");
+    tagsSet.add("Imaging");
+  }
+
+  // 6. Prescription / Medications
+  if (
+    (extracted?.medications && extracted.medications.length > 0) ||
+    /prescription|rx|tablet|capsule|dosage|mg|daily|pharmacy/.test(textToScan)
+  ) {
+    tagsSet.add("Prescription");
+  }
+
+  // 7. Discharge Summary
+  if (/discharge|inpatient|admission|hospital stay|discharge summary/.test(textToScan)) {
+    tagsSet.add("Discharge Summary");
+  }
+
+  // 8. Clinical Notes
+  if (/consultation|doctor note|clinical note|outpatient|chief complaint/.test(textToScan)) {
+    tagsSet.add("Clinical Notes");
+  }
+
+  // 9. Cardiology
+  if (/cardiolog|ecg|ekg|troponin|heart|blood pressure|hypertension|coronary/.test(textToScan)) {
+    tagsSet.add("Cardiology");
+  }
+
+  // 10. Endocrinology
+  if (/endocrinolog|diabetes|hba1c|insulin|thyroid|t3|t4|cortisol/.test(textToScan)) {
+    tagsSet.add("Endocrinology");
+  }
+
+  if (tagsSet.size === 0) {
+    tagsSet.add("Medical Record");
+  }
+
+  return Array.from(tagsSet);
+}
+
 interface FileItem {
   id: string;
   file: File;
@@ -150,6 +232,7 @@ export default function UploadCenter({
   const [transcript, setTranscript] = useState("");
   const [voiceHelpOpen, setVoiceHelpOpen] = useState(false);
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+  const [selectedTagFilter, setSelectedTagFilter] = useState<string>("All");
 
   // Speech Recognition API
   const SpeechRecognitionAPI = typeof window !== 'undefined' ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null;
@@ -355,6 +438,7 @@ export default function UploadCenter({
 
       for (const [extIndex, result] of results.entries()) {
         console.log('[Sync] Processing report:', result.fileName);
+        const suggestedTags = result.tags || result.suggestedTags || generateSuggestedTags(result, result.fileName);
         const docId = await saveDocument(userId, {
           fileName: result.fileName || "Document",
           type: result.document_type || "Unknown Type",
@@ -362,6 +446,8 @@ export default function UploadCenter({
           hospitalName: result.hospital_name || "Unknown",
           doctorName: result.doctor_name || "Unknown",
           extractedData: result,
+          tags: suggestedTags,
+          suggestedTags: suggestedTags,
           profileId: activeProfile?.id,
           fileUrl: result.fileUrl,
           storagePath: result.storagePath,
@@ -503,6 +589,10 @@ export default function UploadCenter({
             }));
           }
 
+          const autoTags = generateSuggestedTags(result, item.file.name);
+          result.suggestedTags = autoTags;
+          result.tags = autoTags;
+
           // Step 5: setDoc with extracted data
           const docId = await saveDocument(user.uid, {
             id: stableId,
@@ -512,6 +602,8 @@ export default function UploadCenter({
             hospitalName: result.hospital_name || "Unknown",
             doctorName: result.doctor_name || "Unknown",
             extractedData: result,
+            tags: autoTags,
+            suggestedTags: autoTags,
             profileId: activeProfile?.id,
             fileUrl: result.fileUrl,
             storagePath: result.storagePath,
@@ -616,6 +708,12 @@ export default function UploadCenter({
   } as any);
 
   const filteredDocuments = documents.filter((docItem: any) => {
+    const docTags = docItem.tags || docItem.suggestedTags || generateSuggestedTags(docItem.extractedData, docItem.fileName);
+
+    if (selectedTagFilter !== "All" && !docTags.includes(selectedTagFilter)) {
+      return false;
+    }
+
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     
@@ -624,6 +722,7 @@ export default function UploadCenter({
     const matchesDoctor = docItem.doctorName?.toLowerCase().includes(q);
     const matchesHospital = docItem.hospitalName?.toLowerCase().includes(q);
     const matchesDate = docItem.date?.toLowerCase().includes(q);
+    const matchesTags = docTags.some((t: string) => t.toLowerCase().includes(q));
     
     // Check inside extracted summary
     const matchesSummary = docItem.extractedData?.summary?.toLowerCase().includes(q);
@@ -641,7 +740,7 @@ export default function UploadCenter({
       return marker.includes(q) || status.includes(q);
     });
 
-    return matchesFileName || matchesDocType || matchesDoctor || matchesHospital || matchesDate || matchesSummary || matchesMedications || matchesLabs;
+    return matchesFileName || matchesDocType || matchesDoctor || matchesHospital || matchesDate || matchesTags || matchesSummary || matchesMedications || matchesLabs;
   });
 
   return (
@@ -783,11 +882,7 @@ export default function UploadCenter({
                            {item.status === 'error' && <AlertCircle className="w-5 h-5 text-[var(--color-critical)]" />}
                            
                            {!isProcessing && (
-                             <button
-                               onClick={() => removeFileFromQueue(item.id)}
-                               aria-label={`Remove ${item.file.name} from queue`}
-                               className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                             >
+                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
                                 <X className="w-4 h-4" />
                              </button>
                            )}
@@ -902,6 +997,22 @@ export default function UploadCenter({
                        <div>
                           <p className="text-xs text-muted font-semibold uppercase">Hospital</p>
                           <p className="font-medium text-sm mt-1">{result.hospital_name || "N/A"}</p>
+                       </div>
+                    </div>
+
+                    {/* AI Suggested Document Tags */}
+                    <div className="bg-surface/40 p-3.5 rounded-2xl border border-[var(--color-border)]/20 mb-6">
+                       <p className="text-xs font-bold text-theme uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)] animate-pulse" />
+                          AI Suggested Document Tags
+                       </p>
+                       <div className="flex flex-wrap items-center gap-2">
+                          {(result.tags || result.suggestedTags || generateSuggestedTags(result, result.fileName)).map((tag: string, tIdx: number) => (
+                             <span key={tIdx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/30">
+                                <Tag className="w-3.5 h-3.5" />
+                                {tag}
+                             </span>
+                          ))}
                        </div>
                     </div>
 
@@ -1071,8 +1182,7 @@ export default function UploadCenter({
                       setSearchQuery("");
                       showToast("Search cleared", "success");
                     }}
-                    aria-label="Clear search"
-                    className="p-1.5 hover:bg-surface rounded-full text-muted hover:text-theme transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+                    className="p-1.5 hover:bg-surface rounded-full text-muted hover:text-theme transition-colors"
                     title="Clear Search"
                   >
                     <X className="w-4 h-4" />
@@ -1081,8 +1191,7 @@ export default function UploadCenter({
                 {isSpeechSupported ? (
                   <button
                     onClick={isListening ? stopVoiceSearch : startVoiceSearch}
-                    aria-label={isListening ? "Stop Voice Search" : "Start Voice Search"}
-                    className={`p-3 rounded-full transition-all flex items-center justify-center relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${
+                    className={`p-3 rounded-full transition-all flex items-center justify-center relative ${
                       isListening 
                         ? "bg-red-500 text-white animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]" 
                         : "bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
@@ -1129,6 +1238,36 @@ export default function UploadCenter({
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Quick AI Tag Filters */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-none text-xs">
+              <span className="text-muted font-bold flex items-center gap-1 shrink-0 text-[11px] uppercase tracking-wider mr-1">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                AI Tags:
+              </span>
+              {["All", "Blood Test", "Lab Report", "Prescription", "MRI", "CT Scan", "X-Ray", "Ultrasound", "Discharge Summary", "Clinical Notes"].map((tag) => {
+                const isSelected = selectedTagFilter === tag;
+                return (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      setSelectedTagFilter(tag);
+                      if (tag !== "All") {
+                        showToast(`Filtered by AI tag: ${tag}`, "info");
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full font-semibold transition-all shrink-0 flex items-center gap-1.5 text-xs cursor-pointer ${
+                      isSelected
+                        ? "bg-[var(--color-primary)] text-slate-950 shadow-sm font-bold"
+                        : "bg-surface hover:bg-surface/80 text-muted hover:text-theme border border-[var(--color-border)]/20"
+                    }`}
+                  >
+                    {tag !== "All" && <Tag className="w-3 h-3 opacity-80" />}
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Documents Grid / Stack */}
@@ -1214,6 +1353,29 @@ export default function UploadCenter({
                                   {docItem.hospitalName}
                                 </span>
                               )}
+                            </div>
+
+                            {/* AI Suggested Tags Badges */}
+                            <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                              <span className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-wider flex items-center gap-1 mr-0.5">
+                                <Sparkles className="w-3 h-3 animate-pulse" />
+                                Tags:
+                              </span>
+                              {(docItem.tags || docItem.suggestedTags || generateSuggestedTags(docItem.extractedData, docItem.fileName)).map((tag: string, tIdx: number) => (
+                                <button
+                                  key={tIdx}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTagFilter(tag);
+                                    showToast(`Filtered by tag: ${tag}`, "info");
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/20 transition-all cursor-pointer"
+                                  title={`Click to filter by '${tag}'`}
+                                >
+                                  <Tag className="w-3 h-3" />
+                                  {tag}
+                                </button>
+                              ))}
                             </div>
                           </div>
                         </div>
