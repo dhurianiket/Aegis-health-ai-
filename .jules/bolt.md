@@ -1,0 +1,3 @@
+## 2024-05-18 - Prevent O(N) array filtering in React Render Cycle
+**Learning:** In `Dashboard.tsx`, array filtering on datasets like `keyLabs` was performed inline within the JSX render block (e.g., `keyLabs.filter(...)`). Because arrays in JavaScript are reference types and `.filter()` returns a new array on every execution, this caused redundant O(N) recalculations on every component re-render, forcing child components to re-render needlessly.
+**Action:** Extract expensive inline filtering operations (like those mapping or reducing large lists) into `useMemo` hooks (e.g., `attentionLabs = useMemo(...)`), using the source array (`keyLabs`) as the dependency. This caches the result between renders, preventing bottlenecks and maintaining reference stability.
