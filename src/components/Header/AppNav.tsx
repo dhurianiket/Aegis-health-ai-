@@ -107,6 +107,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
+                aria-current={isActive ? "page" : undefined}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors focus:outline-none relative group ${
                   isActive
                     ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
@@ -169,6 +170,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-colors focus:outline-none relative pointer-events-auto ${
                   isActive
                     ? "text-[var(--color-primary)]"

@@ -273,7 +273,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </button>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-slate-900 dark:text-slate-100 text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
-          <div className="text-[13px] text-slate-600 dark:text-slate-300 truncate font-medium">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
+          <div className="text-[13px] text-slate-800 dark:text-slate-200 truncate font-semibold">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
         </div>
         <div className="shrink-0">
            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center">
@@ -366,7 +366,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             <ArrowUp size={20} className="stroke-[3px]" />
           </button>
         </form>
-        <div className="mt-3 md:mt-4 text-center text-[12px] font-medium text-slate-600 dark:text-slate-300 flex items-center justify-center gap-1.5 w-full">
+        <div className="mt-3 md:mt-4 text-center text-[12px] font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-1.5 w-full">
           <Info className="w-3.5 h-3.5 shrink-0" />
           Not a substitute for professional medical advice.
         </div>
@@ -400,11 +400,12 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 key={s.id}
                 role="button"
                 tabIndex={0}
+                aria-selected={activeSpecialist === s.id}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpecialist(s.id); setIsMobileChatOpen(true); } }}
                 onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
                 className={`cursor-pointer w-full p-4 md:p-5 rounded-[24px] flex flex-col items-start gap-1 transition-all duration-300 relative overflow-hidden ${
                   activeSpecialist === s.id 
-                  ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none' 
+                  ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none text-white' 
                   : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50'
                 }`}
               >
