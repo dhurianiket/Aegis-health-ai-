@@ -412,7 +412,7 @@ export default function ClinicalHandover() {
                         <p className="font-semibold text-xs truncate">
                           {doc.hospitalName && doc.hospitalName !== "Unknown" ? doc.hospitalName : doc.fileName || "Lab Report"}
                         </p>
-                        <p className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 mt-0.5">
                           <Calendar className="w-3 h-3" /> {formattedDate}
                         </p>
                       </div>
@@ -461,7 +461,7 @@ export default function ClinicalHandover() {
             >
               Flagged Indicators
               {selectedFlaggedObservations.length > 0 && (
-                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                   {selectedFlaggedObservations.length}
                 </span>
               )}
@@ -476,7 +476,7 @@ export default function ClinicalHandover() {
             >
               Consolidated Trends
               {selectedTrends.length > 0 && (
-                <span className="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                <span className="bg-indigo-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                   {selectedTrends.length}
                 </span>
               )}
@@ -515,7 +515,7 @@ export default function ClinicalHandover() {
                   >
                     {/* Situation Field */}
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 block">
+                      <label className="text-xs font-bold uppercase tracking-wider text-indigo-500 block">
                         S - Situation (Current Status)
                       </label>
                       <textarea
@@ -528,7 +528,7 @@ export default function ClinicalHandover() {
 
                     {/* Background Field */}
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 block">
+                      <label className="text-xs font-bold uppercase tracking-wider text-indigo-500 block">
                         B - Background (History & Medications)
                       </label>
                       <textarea
@@ -541,7 +541,7 @@ export default function ClinicalHandover() {
 
                     {/* Assessment Lists */}
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 space-y-3">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 block">
+                      <label className="text-xs font-bold uppercase tracking-wider text-indigo-500 block">
                         A - Assessment (Abnormal findings & clinical meaning)
                       </label>
                       <div className="space-y-2">
@@ -584,7 +584,7 @@ export default function ClinicalHandover() {
 
                     {/* Recommendation Lists */}
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 space-y-3">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 block">
+                      <label className="text-xs font-bold uppercase tracking-wider text-indigo-500 block">
                         R - Recommendation (Clinical next steps & Patient Questions)
                       </label>
                       <div className="space-y-2">
@@ -668,7 +668,7 @@ export default function ClinicalHandover() {
                                   <td className="px-4 py-3 font-semibold">{obs.testName}</td>
                                   <td className="px-4 py-3 text-right font-bold">{obs.value} {obs.unit}</td>
                                   <td className="px-4 py-3 text-center">
-                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${statusClass}`}>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${statusClass}`}>
                                       {obs.flag}
                                     </span>
                                   </td>
@@ -720,12 +720,12 @@ export default function ClinicalHandover() {
                                   Trend:
                                 </span>
                                 <span
-                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                  className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                                     isUp
                                       ? "bg-red-500/10 text-red-500"
                                       : isDown
                                       ? "bg-emerald-500/10 text-emerald-500"
-                                      : "bg-slate-100 text-slate-500"
+                                      : "bg-slate-100 text-slate-300"
                                   }`}
                                 >
                                   {isUp ? "Increased" : isDown ? "Decreased" : "Stable"} ({trend.deltaPercent}%)

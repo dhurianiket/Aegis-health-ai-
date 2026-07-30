@@ -269,7 +269,7 @@ export default function CalendarSync() {
 
       {!token ? (
         <div className="p-8 border border-dashed border-white/5 bg-black/10 rounded-[32px] text-center text-xs text-muted leading-relaxed max-w-xl mx-auto space-y-4">
-          <AlertCircle className="w-8 h-8 text-slate-500 opacity-25 mx-auto" />
+          <AlertCircle className="w-8 h-8 text-slate-300 opacity-25 mx-auto" />
           <p>
             You are currently signed out of Google Calendar synchronization. Authenticate with your clinical Google Account to see, add, and organize your medical care routines natively.
           </p>
@@ -347,7 +347,7 @@ export default function CalendarSync() {
                             {event.summary}
                           </h5>
                           {isHealth && (
-                            <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 font-bold text-[8px] uppercase tracking-wider">
+                            <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 font-bold text-xs uppercase tracking-wider">
                               Health Appt
                             </span>
                           )}
@@ -406,7 +406,7 @@ export default function CalendarSync() {
 
                   <form onSubmit={handleAddEvent} className="space-y-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-muted">
+                      <label className="text-xs uppercase tracking-widest font-bold text-muted">
                         Event Title
                       </label>
                       <input
@@ -421,7 +421,7 @@ export default function CalendarSync() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-muted">
+                        <label className="text-xs uppercase tracking-widest font-bold text-muted">
                           Date
                         </label>
                         <input
@@ -433,7 +433,7 @@ export default function CalendarSync() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-muted">
+                        <label className="text-xs uppercase tracking-widest font-bold text-muted">
                           Time
                         </label>
                         <input
@@ -447,7 +447,7 @@ export default function CalendarSync() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-muted">
+                      <label className="text-xs uppercase tracking-widest font-bold text-muted">
                         Location / Clinic
                       </label>
                       <input
@@ -460,7 +460,7 @@ export default function CalendarSync() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-muted">
+                      <label className="text-xs uppercase tracking-widest font-bold text-muted">
                         Clinical Notes / Context
                       </label>
                       <textarea
@@ -492,7 +492,7 @@ export default function CalendarSync() {
               <p className="text-xs text-muted font-light leading-relaxed">
                 When you ingest physical lab PDF reports or receive follow-up notices via the Specialist Lounge AI chat, you can seamlessly add those specific medical triggers to your calendar.
               </p>
-              <div className="text-[10px] text-faint flex items-center gap-1.5 font-medium">
+              <div className="text-xs text-faint flex items-center gap-1.5 font-medium">
                 <Shield className="w-3.5 h-3.5 text-indigo-500" />
                 Data interactions follow strict sandbox limits.
               </div>

@@ -90,17 +90,17 @@ export default function AlertBanner({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span
-            className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border bg-black/20 ${styles.titleColor} border-white/10`}
+            className={`text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border bg-black/20 ${styles.titleColor} border-white/10`}
           >
             {alert.type.replace("_", " ")}
           </span>
           {alert.severity === "critical" && (
-            <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-red-400 tracking-wider">
+            <span className="flex items-center gap-1 text-xs uppercase font-bold text-red-400 tracking-wider">
               <HeartPulse className="w-3 h-3 animate-pulse" /> Urgent
             </span>
           )}
         </div>
-        <h4 className={`text-base font-bold tracking-tight text-slate-900 dark:text-white mb-1`}>
+        <h4 className={`text-base font-bold tracking-tight text-slate-50 dark:text-white critical-alert-header mb-1`}>
           {alert.title}
         </h4>
         <p className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed max-w-3xl">

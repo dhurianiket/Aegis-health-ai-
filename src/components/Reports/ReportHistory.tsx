@@ -308,7 +308,7 @@ export default function ReportHistory() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[var(--color-bg)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-[var(--color-bg)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
                           Report
                         </span>
                         <span className="text-xs text-[var(--color-text-muted)] font-medium flex items-center gap-1">
@@ -360,7 +360,7 @@ export default function ReportHistory() {
                         <div className="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
                           <table className="w-full text-left text-sm border-collapse">
                             <thead>
-                              <tr className="bg-[var(--color-bg)] text-[var(--color-text-muted)] text-[11px] uppercase tracking-wider font-semibold border-b border-[var(--color-border)]">
+                              <tr className="bg-[var(--color-bg)] text-[var(--color-text-muted)] text-xs uppercase tracking-wider font-semibold border-b border-[var(--color-border)]">
                                 <th className="px-4 py-3">Marker Name</th>
                                 <th className="px-4 py-3 text-right">Current Value</th>
                                 <th className="px-4 py-3 text-center">Status</th>
@@ -389,7 +389,7 @@ export default function ReportHistory() {
 
                                   if (Math.abs(diff) < 0.0001) {
                                     trendIndicator = (
-                                      <div className="flex items-center justify-end gap-1.5 text-slate-500">
+                                      <div className="flex items-center justify-end gap-1.5 text-slate-300">
                                         <Minus className="w-3.5 h-3.5" />
                                         <span className="text-xs font-medium">Stable</span>
                                       </div>
@@ -401,7 +401,7 @@ export default function ReportHistory() {
                                           <ArrowUp className="w-3.5 h-3.5 stroke-[3px]" />
                                           <span>{diffFormatted}</span>
                                         </div>
-                                        <span className="text-[10px] text-emerald-500/80 font-semibold bg-emerald-500/5 px-1.5 py-0.5 rounded">
+                                        <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/5 px-1.5 py-0.5 rounded">
                                           {pctFormatted}
                                         </span>
                                       </div>
@@ -413,7 +413,7 @@ export default function ReportHistory() {
                                           <ArrowDown className="w-3.5 h-3.5 stroke-[3px]" />
                                           <span>{diffFormatted}</span>
                                         </div>
-                                        <span className="text-[10px] text-sky-500/80 font-semibold bg-sky-500/5 px-1.5 py-0.5 rounded">
+                                        <span className="text-xs text-sky-500/80 font-semibold bg-sky-500/5 px-1.5 py-0.5 rounded">
                                           {pctFormatted}
                                         </span>
                                       </div>
@@ -449,14 +449,14 @@ export default function ReportHistory() {
                                       {currentVal !== null ? `${currentVal} ${unit}` : obs.display_value || obs.valueOriginal || "-"}
                                     </td>
                                     <td className="px-4 py-3.5 text-center">
-                                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusClass}`}>
+                                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${statusClass}`}>
                                         {status}
                                       </span>
                                     </td>
                                     <td className="px-4 py-3.5 text-right">
                                       {trendIndicator}
                                     </td>
-                                    <td className="px-4 py-3.5 text-[var(--color-text-muted)] text-[11px]">
+                                    <td className="px-4 py-3.5 text-[var(--color-text-muted)] text-xs">
                                       <div className="space-y-1">
                                         {source ? (
                                           <a
@@ -472,10 +472,10 @@ export default function ReportHistory() {
                                           <span className="text-[var(--color-text-faint)] italic block">not available</span>
                                         )}
                                         <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
-                                          <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                                          <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
                                             {urgency.level} Urgency
                                           </span>
-                                          <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                                          <span className="text-xs text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
                                         </div>
                                       </div>
                                     </td>

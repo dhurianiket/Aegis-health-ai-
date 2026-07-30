@@ -128,7 +128,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
             {markers.map((m) => (
               <div
                 key={m}
-                className="w-16 text-center text-[10px] font-bold text-slate-600 dark:text-slate-200 uppercase truncate px-1"
+                className="w-16 text-center text-xs font-bold text-slate-600 dark:text-slate-200 uppercase truncate px-1"
               >
                 {m}
               </div>
@@ -137,7 +137,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
 
           {markers.map((m1, i) => (
             <div key={m1} className="flex mb-2 items-center">
-              <div className="w-20 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase truncate pr-2 text-right">
+              <div className="w-20 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase truncate pr-2 text-right">
                 {m1}
               </div>
               {markers.map((m2, j) => (
@@ -149,7 +149,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: (i * markers.length + j) * 0.05 }}
-                    className={`w-full h-8 rounded flex items-center justify-center text-[10px] font-medium ${getColor(matrix[i][j])}`}
+                    className={`w-full h-8 rounded flex items-center justify-center text-xs font-medium ${getColor(matrix[i][j])}`}
                     title={`${m1} vs ${m2}: ${matrix[i][j].toFixed(2)}`}
                   >
                     {matrix[i][j] !== 0 ? matrix[i][j].toFixed(1) : "-"}

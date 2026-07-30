@@ -834,7 +834,7 @@ export default function UploadCenter({
                 >
                   🔎 Try with a Sample Report
                 </button>
-                <p className="text-xs text-gray-500 mt-4 text-center">
+                <p className="text-xs text-slate-300 mt-4 text-center">
                   This site is protected by reCAPTCHA and the Google{' '}
                   <a className="text-blue-500 hover:underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
                   <a className="text-blue-500 hover:underline" href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms of Service</a> apply.
@@ -872,7 +872,7 @@ export default function UploadCenter({
                            </div>
                            <div className="min-w-0">
                               <p className="text-sm font-semibold truncate max-w-[150px]">{item.file.name.substring(0, 20)}</p>
-                              <p className="text-[10px] text-muted">{(item.file.size / 1024 / 1024).toFixed(1)} MB</p>
+                              <p className="text-xs text-muted">{(item.file.size / 1024 / 1024).toFixed(1)} MB</p>
                            </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1039,7 +1039,7 @@ export default function UploadCenter({
                     {result.lab_values && result.lab_values.length > 0 && (
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm whitespace-normal break-words">
-                          <thead className="bg-[var(--color-bg)] text-muted text-[11px] uppercase tracking-widest font-semibold border-b border-surface">
+                          <thead className="bg-[var(--color-bg)] text-muted text-xs uppercase tracking-widest font-semibold border-b border-surface">
                             <tr>
                               <th className="px-4 py-3 rounded-tl-xl w-1/4">Marker</th>
                               <th className="px-4 py-3 text-right w-1/5">Value</th>
@@ -1062,11 +1062,11 @@ export default function UploadCenter({
                                      {m.value} <span className="text-muted text-xs font-normal ml-0.5">{m.unit}</span>
                                   </td>
                                   <td className="px-4 py-3">
-                                     <span className={`px-2 py-1 flex items-center w-fit rounded text-[10px] uppercase font-bold tracking-wider ${
+                                     <span className={`px-2 py-1 flex items-center w-fit rounded text-xs uppercase font-bold tracking-wider ${
                                         isHigh ? 'bg-red-500/10 text-red-500' :
                                         isLow ? 'bg-orange-500/10 text-orange-500' :
                                         isNormal ? 'bg-emerald-500/10 text-emerald-500' :
-                                        'bg-slate-500/10 text-slate-500'
+                                        'bg-slate-500/10 text-slate-300'
                                      }`}>
                                         {m.status || 'UNKNOWN'}
                                      </span>
@@ -1088,10 +1088,10 @@ export default function UploadCenter({
                                            <span className="text-muted text-xs italic block">reference not available</span>
                                         )}
                                         <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
-                                          <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                                          <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
                                             {urgency.level} Urgency
                                           </span>
-                                          <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                                          <span className="text-xs text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
                                         </div>
                                      </div>
                                   </td>
@@ -1241,7 +1241,7 @@ export default function UploadCenter({
 
             {/* Quick AI Tag Filters */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-none text-xs">
-              <span className="text-muted font-bold flex items-center gap-1 shrink-0 text-[11px] uppercase tracking-wider mr-1">
+              <span className="text-muted font-bold flex items-center gap-1 shrink-0 text-xs uppercase tracking-wider mr-1">
                 <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                 AI Tags:
               </span>
@@ -1357,7 +1357,7 @@ export default function UploadCenter({
 
                             {/* AI Suggested Tags Badges */}
                             <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
-                              <span className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-wider flex items-center gap-1 mr-0.5">
+                              <span className="text-xs font-bold text-[var(--color-primary)] uppercase tracking-wider flex items-center gap-1 mr-0.5">
                                 <Sparkles className="w-3 h-3 animate-pulse" />
                                 Tags:
                               </span>
@@ -1369,7 +1369,7 @@ export default function UploadCenter({
                                     setSelectedTagFilter(tag);
                                     showToast(`Filtered by tag: ${tag}`, "info");
                                   }}
-                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/20 transition-all cursor-pointer"
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/20 transition-all cursor-pointer"
                                   title={`Click to filter by '${tag}'`}
                                 >
                                   <Tag className="w-3 h-3" />
@@ -1433,7 +1433,7 @@ export default function UploadCenter({
                             {docLabs.length > 0 ? (
                               <div className="overflow-x-auto rounded-2xl border border-surface">
                                 <table className="w-full text-left text-xs whitespace-normal break-words">
-                                  <thead className="bg-[var(--color-bg)] text-muted text-[10px] uppercase tracking-wider font-semibold border-b border-surface">
+                                  <thead className="bg-[var(--color-bg)] text-muted text-xs uppercase tracking-wider font-semibold border-b border-surface">
                                     <tr>
                                       <th className="px-4 py-2.5 rounded-tl-xl w-1/4">Lab Marker</th>
                                       <th className="px-4 py-2.5 text-right w-1/5">Result Value</th>
@@ -1455,14 +1455,14 @@ export default function UploadCenter({
                                         <tr key={lIdx} className="hover:bg-surface/20">
                                           <td className="px-4 py-2.5 font-medium">{markerName}</td>
                                           <td className="px-4 py-2.5 text-right font-medium">
-                                            {l.value} <span className="text-muted text-[10px] font-normal ml-0.5">{l.unit}</span>
+                                            {l.value} <span className="text-muted text-xs font-normal ml-0.5">{l.unit}</span>
                                           </td>
                                           <td className="px-4 py-2.5">
-                                            <span className={`px-2 py-0.5 flex items-center w-fit rounded text-[9px] uppercase font-bold tracking-wider ${
+                                            <span className={`px-2 py-0.5 flex items-center w-fit rounded text-xs uppercase font-bold tracking-wider ${
                                               isHigh ? 'bg-red-500/10 text-red-500' :
                                               isLow ? 'bg-orange-500/10 text-orange-500' :
                                               isNormal ? 'bg-emerald-500/10 text-emerald-500' :
-                                              'bg-slate-500/10 text-slate-500'
+                                              'bg-slate-500/10 text-slate-300'
                                             }`}>
                                               {l.status || 'UNKNOWN'}
                                             </span>
@@ -1484,10 +1484,10 @@ export default function UploadCenter({
                                                 <span className="text-muted italic block">reference not available</span>
                                               )}
                                               <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
-                                                <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                                                <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
                                                   {urgency.level} Urgency
                                                 </span>
-                                                <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                                                <span className="text-xs text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
                                               </div>
                                             </div>
                                           </td>

@@ -59,7 +59,7 @@ export default function IntegrationsPanel({
                 <div className={`p-3 rounded-2xl ${item.color} shadow-lg`}>
                   <item.icon className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase tracking-widest">
+                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase tracking-widest">
                   {item.status}
                 </span>
               </div>
@@ -104,11 +104,11 @@ export default function IntegrationsPanel({
               </div>
               <h4 className="font-bold text-white">FHIR JSON Export</h4>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed mb-6">
+            <p className="text-xs text-slate-300 leading-relaxed mb-6">
               Standardized format used by healthcare systems like Epic and
               Cerner for seamless record transfers.
             </p>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" /> V1.0.0
               Compatible
             </div>
@@ -125,11 +125,11 @@ export default function IntegrationsPanel({
               </div>
               <h4 className="font-bold text-white">Spreadsheet (CSV)</h4>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed mb-6">
+            <p className="text-xs text-slate-300 leading-relaxed mb-6">
               Download your complete lab history and vital trends for custom
               analysis in Excel or Google Sheets.
             </p>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Formatted
               for Analysis
             </div>

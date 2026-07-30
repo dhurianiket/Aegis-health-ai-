@@ -217,18 +217,6 @@ export default function Dashboard({
       },
     } as HealthScore);
 
-  const abnormalLabs = useMemo(() => {
-    return keyLabs.filter(l => {
-      const s = (l.status as any);
-      return s === 'high' || s === 'abnormal' || s === 'low' || s === 'critical';
-    });
-  }, [keyLabs]);
-
-  const targetKeyMarkers = useMemo(() => {
-    const targets = ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'];
-    return keyLabs.filter(l => targets.includes(l.markerName.toLowerCase().trim()));
-  }, [keyLabs]);
-
   const radarData = useMemo(
     () => [
       { subject: "Metabolic", A: latestScore.systems.metabolic, fullMark: 100 },
@@ -437,7 +425,7 @@ export default function Dashboard({
             <h3 className="font-bold text-[var(--color-text)] tracking-tight">
               System Performance
             </h3>
-            <Microscope className="text-slate-500 w-5 h-5" />
+            <Microscope className="text-slate-300 w-5 h-5" />
           </div>
           <div className="h-[300px] w-full">
             <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
@@ -493,7 +481,7 @@ export default function Dashboard({
                 </h3>
               </div>
               <div className="space-y-4">
-                {abnormalLabs.slice(0, 5).map((lab, i) => {
+                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').slice(0, 5).map((lab, i) => {
                   const urgency = getUrgencyAndNextStep(lab.markerName, lab.status, lab.value !== null && lab.value !== undefined ? String(lab.value) : undefined);
                   const source = getSourceForMarker(lab.markerName);
 
@@ -501,7 +489,7 @@ export default function Dashboard({
                     <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
                        <div className="flex justify-between items-start gap-2 mb-2">
                           <span className="font-semibold text-sm text-[var(--color-text)] leading-tight">{lab.markerName}</span>
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${urgency.badgeClass}`}>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider shrink-0 ${urgency.badgeClass}`}>
                              {urgency.level} Urgency
                           </span>
                        </div>
@@ -510,16 +498,16 @@ export default function Dashboard({
                              <span className="text-lg font-bold text-[var(--color-text)]">{lab.value}</span>
                              <span className="text-xs text-[var(--color-text-muted)] font-medium">{lab.unit}</span>
                           </div>
-                          <span className="text-[10px] text-[var(--color-text-faint)] italic">
+                          <span className="text-xs text-[var(--color-text-faint)] italic">
                              Ref: {lab.referenceRange || 'N/A'}
                           </span>
                        </div>
                        <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
                          <div className="leading-normal">
-                           <span className="font-semibold text-[var(--color-text)] text-[11px]">Next Step: </span>
-                           <span className="text-[var(--color-text-muted)] text-[11px]">{urgency.nextStep}</span>
+                           <span className="font-semibold text-[var(--color-text)] text-xs">Next Step: </span>
+                           <span className="text-[var(--color-text-muted)] text-xs">{urgency.nextStep}</span>
                          </div>
-                         <div className="flex items-center justify-between mt-1 text-[10px] text-[var(--color-text-faint)]">
+                         <div className="flex items-center justify-between mt-1 text-xs text-[var(--color-text-faint)]">
                            <span>Source:</span>
                            {source ? (
                              <a 
@@ -540,7 +528,7 @@ export default function Dashboard({
                     </div>
                   );
                 })}
-                {abnormalLabs.length === 0 && (
+                {keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical').length === 0 && (
                   <p className="text-sm text-muted">All tracked markers are within normal ranges.</p>
                 )}
               </div>
@@ -553,7 +541,7 @@ export default function Dashboard({
                   <h3 className="font-bold tracking-tight uppercase text-sm">Key Markers</h3>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  {targetKeyMarkers.map((lab, i) => {
+                  {keyLabs.filter(l => ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'].includes(l.markerName.toLowerCase().trim())).map((lab, i) => {
                      const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));
                      const numericValue = isNaN(valRaw) ? 0 : valRaw;
                      
@@ -610,7 +598,7 @@ export default function Dashboard({
           </motion.div>
 
           <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
-        <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
+        <p className="text-xs text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
           Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>

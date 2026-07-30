@@ -174,12 +174,12 @@ export default function LandingPage() {
               
               <div className="relative group py-2">
                 <button className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none">
-                  Articles <span className="text-[10px]">▾</span>
+                  Articles <span className="text-xs">▾</span>
                 </button>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-[#0F2A4A] border border-white/10 rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link to="/blog-hba1c.html" className="block px-4 py-2 text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">HbA1c Blood Sugar Guide</Link>
-                  <Link to="/blog-cbc.html" className="block px-4 py-2 text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">CBC Blood Test Explainer</Link>
-                  <Link to="/engineering-playbook.html" className="block px-4 py-2 text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">Engineering Playbook</Link>
+                  <Link to="/blog-hba1c.html" className="block px-4 py-2 text-xs font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">HbA1c Blood Sugar Guide</Link>
+                  <Link to="/blog-cbc.html" className="block px-4 py-2 text-xs font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">CBC Blood Test Explainer</Link>
+                  <Link to="/engineering-playbook.html" className="block px-4 py-2 text-xs font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">Engineering Playbook</Link>
                 </div>
               </div>
             </div>
@@ -188,7 +188,7 @@ export default function LandingPage() {
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn}
-                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 items-center justify-center gap-2"
+                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 items-center justify-center gap-2"
               >
                 <Activity className="w-3 md:w-4 h-3 md:h-4" />
                 <span>UPLOAD</span>
@@ -196,7 +196,7 @@ export default function LandingPage() {
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn}
-                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-[10px] md:text-xs font-black tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               >
                 {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "GET STARTED"}
               </button>
@@ -236,7 +236,7 @@ export default function LandingPage() {
                   <Link to="/security.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">Security First</Link>
                   
                   <div className="py-2">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block mb-2">Articles & Playbooks</span>
+                    <span className="text-xs uppercase tracking-widest text-slate-400 font-extrabold block mb-2">Articles & Playbooks</span>
                     <div className="pl-4 flex flex-col gap-3">
                       <Link to="/blog-hba1c.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">HbA1c Blood Sugar Guide</Link>
                       <Link to="/blog-cbc.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">CBC Blood Test Explainer</Link>
@@ -322,7 +322,7 @@ export default function LandingPage() {
                   <div className="flex items-center gap-2 text-base">
                     {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "GET STARTED FOR FREE"}
                   </div>
-                  <span className="text-[10px] font-semibold opacity-75 mt-0.5 tracking-wider">NO CREDIT CARD REQUIRED</span>
+                  <span className="text-xs font-semibold mt-0.5 tracking-wider">NO CREDIT CARD REQUIRED</span>
                 </button>
                 <button
                   onClick={handleSignIn}
@@ -352,17 +352,17 @@ export default function LandingPage() {
                       <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-1">
                         Approved for startup support from AWS Activate, Microsoft Azure, and Google Cloud AI Builder.
                       </p>
-                      <p className="text-emerald-400/90 text-[11px] font-semibold tracking-wide">
+                      <p className="text-emerald-400/90 text-xs font-semibold tracking-wide">
                         More runway for secure healthcare AI.
                       </p>
                       <div className="flex flex-wrap gap-1.5 mt-3">
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-[10px] font-semibold text-slate-200 tracking-wide shadow-sm">
+                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
                           AWS Activate
                         </span>
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-[10px] font-semibold text-slate-200 tracking-wide shadow-sm">
+                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
                           Azure Startup Support
                         </span>
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-[10px] font-semibold text-slate-200 tracking-wide shadow-sm">
+                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
                           Google Cloud AI Builder
                         </span>
                       </div>
@@ -434,7 +434,7 @@ export default function LandingPage() {
                       <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                         <Icon className="w-6 h-6" />
                       </div>
-                      <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/5 text-slate-400 group-hover:bg-emerald-500/10 group-hover:text-emerald-400 transition-colors duration-300">
+                      <span className="text-xs uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/5 text-slate-400 group-hover:bg-emerald-500/10 group-hover:text-emerald-400 transition-colors duration-300">
                         LEARN MORE →
                       </span>
                     </div>
@@ -595,7 +595,7 @@ export default function LandingPage() {
                       <div className={`p-3 rounded-2xl bg-white/5 backdrop-blur-md ${lab.color}`}>
                         <Icon className="w-5 h-5" />
                       </div>
-                      <span className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/5 ${lab.color}`}>
+                      <span className={`text-xs uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/5 ${lab.color}`}>
                         {lab.status}
                       </span>
                     </div>
@@ -638,7 +638,7 @@ export default function LandingPage() {
                       </div>
                       <h3 className="text-sm font-bold text-white tracking-wide mb-2">{spec.title}</h3>
                       <div className="mt-auto pt-2">
-                        <span className="text-[10px] font-mono tracking-widest text-emerald-400 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 whitespace-nowrap">
+                        <span className="text-xs font-mono tracking-widest text-emerald-400 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 whitespace-nowrap">
                           {spec.guidelines}
                         </span>
                       </div>
@@ -823,7 +823,7 @@ export default function LandingPage() {
 
             <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 mb-8">
               <p className="text-xs text-slate-400 text-center uppercase tracking-widest mb-2 font-semibold">Important Medical Disclaimer (Public Beta)</p>
-              <p className="text-[11px] text-slate-500 text-center max-w-4xl mx-auto leading-relaxed">
+              <p className="text-xs text-slate-300 text-center max-w-4xl mx-auto leading-relaxed">
                 Aegis Health AI is currently in public beta. It is an informational tool and does NOT provide medical advice, diagnosis, or treatment. It does not replace professional clinical assessments. Always consult a qualified healthcare provider regarding your health data or any medical condition. If you are experiencing an urgent medical issue, contact emergency services immediately.
               </p>
             </div>
@@ -836,23 +836,23 @@ export default function LandingPage() {
                 <p className="text-sm text-slate-400 transition-colors mb-2">
                   Proudly developed in Mumbai, Maharashtra, India.
                 </p>
-                <p className="text-[10px] text-slate-400 tracking-[0.2em] font-mono mb-2">
+                <p className="text-xs text-slate-400 tracking-[0.2em] font-mono mb-2">
                   VERSION 1.7.0 / SECURE ENCRYPTION ACTIVE
                 </p>
-                <p className="text-[10px] text-slate-500 max-w-md">
+                <p className="text-xs text-slate-300 max-w-md">
                   This site uses only essential session cookies to keep you signed in. We do not use tracking or advertising cookies.
                 </p>
               </div>
 
               <div className="text-center md:text-right">
-                <p className="text-[10px] text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
+                <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
                   Powered by <span className="text-slate-200">Google Gemini & Firebase</span>
                   <Sparkles className="w-3 h-3 text-emerald-400" />
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 mt-8 mb-4 text-center">
+            <p className="text-xs text-slate-300 mt-8 mb-4 text-center">
               This site is protected by reCAPTCHA and the Google{' '}
               <a className="text-blue-500 hover:underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
               <a className="text-blue-500 hover:underline" href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms of Service</a> apply.

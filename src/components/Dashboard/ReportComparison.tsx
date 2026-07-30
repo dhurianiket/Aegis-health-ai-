@@ -132,7 +132,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
         {/* Data Grid Table */}
         <div className="flex-1 overflow-auto bg-[var(--color-bg)]">
           <table className="w-full text-left text-sm whitespace-normal break-words">
-            <thead className="sticky top-0 bg-[var(--color-surface)] text-[var(--color-text-muted)] text-[11px] uppercase tracking-widest font-semibold z-10 border-b border-[var(--color-border)] shadow-sm">
+            <thead className="sticky top-0 bg-[var(--color-surface)] text-[var(--color-text-muted)] text-xs uppercase tracking-widest font-semibold z-10 border-b border-[var(--color-border)] shadow-sm">
               <tr>
                 <th className="px-6 py-3">Test</th>
                 <th className="px-6 py-3">Panel</th>
@@ -150,7 +150,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
                   <tr key={i} className={`hover:bg-[var(--color-surface)]/50 transition-colors ${isWorsened ? 'border-l-4 border-l-amber-500 bg-amber-50/5' : 'border-l-4 border-l-transparent'}`}>
                     <td className="px-6 py-4 font-medium flex items-center gap-2">
                       {row.testName}
-                      {row.isNewInB && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">NEW</span>}
+                      {row.isNewInB && <span className="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">NEW</span>}
                     </td>
                     <td className="px-6 py-4 text-[var(--color-text-muted)]">{row.panel || '-'}</td>
                     
@@ -158,9 +158,9 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
                       {row.isNewInB ? '-' : (
                         <div className="flex items-center gap-2">
                           <span className="font-mono">{row.valueA ?? '-'}</span>
-                          <span className="text-[10px] text-[var(--color-text-muted)]">{row.unitA}</span>
+                          <span className="text-xs text-[var(--color-text-muted)]">{row.unitA}</span>
                           {row.flagA && row.flagA !== 'NORMAL' && (
-                            <span className="text-[10px] font-bold bg-slate-500/10 text-slate-500 px-1.5 rounded">{row.flagA}</span>
+                            <span className="text-xs font-bold bg-slate-500/10 text-slate-300 px-1.5 rounded">{row.flagA}</span>
                           )}
                         </div>
                       )}
@@ -170,9 +170,9 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
                       {row.isMissingInB ? '-' : (
                          <div className="flex items-center gap-2">
                            <span className="font-mono">{row.valueB ?? '-'}</span>
-                           <span className="text-[10px] text-[var(--color-text-muted)]">{row.unitB}</span>
+                           <span className="text-xs text-[var(--color-text-muted)]">{row.unitB}</span>
                            {row.flagB && row.flagB !== 'NORMAL' && (
-                             <span className={`text-[10px] font-bold px-1.5 rounded ${isWorsened ? 'bg-amber-500/10 text-amber-600' : 'bg-slate-500/10 text-slate-500'}`}>{row.flagB}</span>
+                             <span className={`text-xs font-bold px-1.5 rounded ${isWorsened ? 'bg-amber-500/10 text-amber-600' : 'bg-slate-500/10 text-slate-300'}`}>{row.flagB}</span>
                            )}
                          </div>
                       )}
@@ -180,7 +180,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
 
                     <td className="px-6 py-4 font-mono text-xs">
                       {row.deltaPercent !== null ? (
-                        <div className={`flex items-center gap-1 ${isWorsened ? 'text-amber-500' : isImproved ? 'text-green-500' : 'text-slate-500'}`}>
+                        <div className={`flex items-center gap-1 ${isWorsened ? 'text-amber-500' : isImproved ? 'text-green-500' : 'text-slate-300'}`}>
                           {row.direction === 'worsened' ? <ArrowUpRight size={14} className={row.delta! < 0 ? 'rotate-90' : ''} /> : 
                            row.direction === 'improved' ? <ArrowDownRight size={14} className={row.delta! > 0 ? '-rotate-90' : ''} /> : null}
                           <span>
@@ -188,7 +188,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-500">{row.direction === 'unchanged' ? 'Unchanged' : '-'}</span>
+                        <span className="text-slate-300">{row.direction === 'unchanged' ? 'Unchanged' : '-'}</span>
                       )}
                     </td>
                   </tr>

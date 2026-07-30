@@ -290,7 +290,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         {initialLoading ? (
           <div className="h-full flex flex-col items-center justify-center space-y-4">
              <Loader2 className="w-8 h-8 text-slate-600 dark:text-slate-300 animate-spin" />
-             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 tracking-widest uppercase">Loading Conversation</p>
+             <p className="text-xs font-bold text-slate-600 dark:text-slate-300 tracking-widest uppercase">Loading Conversation</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center opacity-90 space-y-6 px-6">
@@ -320,7 +320,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         {streamedText && (
           <div className="flex justify-start pr-12 pb-2">
             <div className="max-w-[100%] rounded-[24px] rounded-bl-[8px] px-5 py-4 text-[16px] leading-[1.6] bg-slate-50 dark:bg-[#1C1C1E] text-slate-900 dark:text-slate-100 relative pb-8 shadow-sm border border-slate-200 dark:border-[#2C2C2E]">
-              <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-500 dark:marker:text-slate-400 max-w-none">
+              <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-300 dark:marker:text-slate-400 max-w-none">
                 <ReactMarkdown>{streamedText}</ReactMarkdown>
               </div>
               <span className="absolute bottom-5 left-6 w-2 h-2 bg-slate-500 dark:bg-slate-400 animate-pulse rounded-full" />
@@ -343,7 +343,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           <div className="flex justify-center mb-3">
             <button
               onClick={handleAbort}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 dark:bg-[#1C1C1E] hover:bg-slate-200 dark:hover:bg-[#2C2C2E] text-[11px] font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 transition-colors active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 dark:bg-[#1C1C1E] hover:bg-slate-200 dark:hover:bg-[#2C2C2E] text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 transition-colors active:scale-95"
             >
               <Square size={10} className="fill-current" /> Stop
             </button>
@@ -355,7 +355,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={`Message ${activeSpecProfile.displayName}...`}
             disabled={isTyping}
-            className="w-full bg-slate-100 dark:bg-[#1C1C1E] border border-slate-300 dark:border-[#3C3C3E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all disabled:opacity-50 shadow-sm"
+            className="w-full bg-slate-100 dark:bg-[#1C1C1E] border border-slate-300 dark:border-[#3C3C3E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-300 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all disabled:opacity-50 shadow-sm"
           />
           <button
             type="submit"
@@ -393,7 +393,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:min-h-[600px] lg:h-[max(calc(100vh-200px),600px)]">
         {/* Sidebar */}
         <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block`}>
-          <h3 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest px-3 mb-5">Select Specialist</h3>
+          <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest px-3 mb-5">Select Specialist</h3>
           <div className="flex flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
               <div

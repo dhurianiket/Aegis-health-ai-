@@ -279,7 +279,7 @@ export default function ShareReport() {
                             <h3 className="font-bold text-sm text-white">
                               Generate AI Report
                             </h3>
-                            <p className="text-[10px] text-slate-400 mt-1">
+                            <p className="text-xs text-slate-400 mt-1">
                               Compile comprehensive clinical summary
                             </p>
                           </div>
@@ -336,7 +336,7 @@ export default function ShareReport() {
                         <h2 className="text-xl text-slate-600 mt-1">
                           Clinical Expert Review
                         </h2>
-                        <div className="mt-4 text-sm text-slate-500">
+                        <div className="mt-4 text-sm text-slate-300">
                           <p>
                             <strong>Patient:</strong> {activeProfile?.name}
                           </p>

@@ -219,7 +219,7 @@ export default function AdminDashboard() {
             <div className="flex flex-col">
                <div className="text-2xl font-bold text-theme">{kpi.val}</div>
                {(kpi.val === 0 || kpi.val === "0 MB" || kpi.val === "$0.00") && (
-                 <span className="text-[10px] text-muted mt-1">Waiting for data...</span>
+                 <span className="text-xs text-muted mt-1">Waiting for data...</span>
                )}
             </div>
           </div>

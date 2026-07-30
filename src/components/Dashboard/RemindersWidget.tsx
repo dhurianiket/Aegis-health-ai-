@@ -92,7 +92,7 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-sm text-[var(--color-text)]">{reminder.testName}</span>
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text-muted)]">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text-muted)]">
                       {alertStateStr}
                     </span>
                   </div>
@@ -104,17 +104,15 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
                 <div className="flex gap-2 shrink-0">
                   <button 
                     onClick={() => handleSnooze(reminder.id)}
-                    className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                    className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                     title="Snooze for 14 days"
-                    aria-label="Snooze reminder for 14 days"
                   >
                     <Clock className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => handleComplete(reminder.id)}
-                    className="p-1.5 text-[var(--color-text-muted)] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+                    className="p-1.5 text-[var(--color-text-muted)] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                     title="Mark as completed"
-                    aria-label="Mark reminder as completed"
                   >
                     <Check className="w-4 h-4" />
                   </button>

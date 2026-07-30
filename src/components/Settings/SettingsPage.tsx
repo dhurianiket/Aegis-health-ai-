@@ -239,11 +239,11 @@ export default function SettingsPage() {
         <div className="pt-12 mt-8 border-t border-[var(--color-border)] opacity-60">
           <div className="flex flex-col items-center text-center space-y-1">
             <h4 className="text-sm font-semibold text-[var(--color-text)] tracking-tight">Aegis Health AI</h4>
-            <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.2em] mb-2">Version 1.7.0</p>
+            <p className="text-xs text-[var(--color-text-faint)] font-mono uppercase tracking-[0.2em] mb-2">Version 1.7.0</p>
             <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5">
               Developed by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-[var(--color-text)] hover:text-emerald-500 underline underline-offset-2 decoration-[var(--color-text-faint)] hover:decoration-emerald-500 transition-colors">Aniket Dhuri</a> ✨
             </p>
-            <p className="text-[10px] text-[var(--color-text-faint)] font-medium">
+            <p className="text-xs text-[var(--color-text-faint)] font-medium">
               Powered by Google AI Studio & Gemini AI
             </p>
           </div>

@@ -119,7 +119,7 @@ export const MasonryLabCards: React.FC<MasonryLabCardsProps> = ({
                   style={{ height: `${item.height}px` }}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-slate-500 dark:text-slate-400 m-0" style={{ font: TITLE_FONT, lineHeight: `${TITLE_LH}px` }}>
+                    <h3 className="text-slate-300 dark:text-slate-400 m-0" style={{ font: TITLE_FONT, lineHeight: `${TITLE_LH}px` }}>
                       {item.title}
                     </h3>
                     {item.trend && (

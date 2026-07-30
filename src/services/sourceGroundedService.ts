@@ -254,6 +254,6 @@ export function getUrgencyAndNextStep(
   return {
     level: "Normal",
     nextStep: "Maintain routine evaluations with your physician.",
-    badgeClass: "bg-slate-500/10 text-slate-500 border border-slate-500/20"
+    badgeClass: "bg-slate-500/10 text-slate-300 border border-slate-500/20"
   };
 }

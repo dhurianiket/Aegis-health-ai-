@@ -155,3 +155,18 @@
 .grecaptcha-badge {
   visibility: hidden !important;
 }
+
+.critical-alert-header {
+  color: oklch(0.98 0.01 260);
+}
+
+.symptom-button-text {
+  color: #e2e8f0;
+}
+
+.prep-form-label {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  color: #f1f5f9;
+}
+

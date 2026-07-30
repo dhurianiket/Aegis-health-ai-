@@ -140,7 +140,7 @@ export default function EngineeringPlaybook() {
           </section>
 
           {/* Technical disclaimer */}
-          <footer className="mt-12 pt-6 border-t border-white/5 text-xs text-slate-500 leading-relaxed font-mono">
+          <footer className="mt-12 pt-6 border-t border-white/5 text-xs text-slate-300 leading-relaxed font-mono">
             <strong>Platform Engineering Disclaimer:</strong> This article documents technical experiments running in sandboxed development channels. The code patterns and metrics listed represent local testing results. Under no circumstances should machine learning outputs be trusted unconditionally without human review.
           </footer>
         </article>

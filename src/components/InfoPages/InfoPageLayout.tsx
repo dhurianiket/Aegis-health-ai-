@@ -113,7 +113,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                     >
                       <Link 
                         to="/blog-hba1c.html" 
-                        className={`block px-4 py-2 text-[11px] font-semibold tracking-wider transition-colors uppercase ${
+                        className={`block px-4 py-2 text-xs font-semibold tracking-wider transition-colors uppercase ${
                           isLinkActive("/blog-hba1c") ? "text-emerald-400 bg-emerald-500/5" : "text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400"
                         }`}
                       >
@@ -121,7 +121,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                       </Link>
                       <Link 
                         to="/blog-cbc.html" 
-                        className={`block px-4 py-2 text-[11px] font-semibold tracking-wider transition-colors uppercase ${
+                        className={`block px-4 py-2 text-xs font-semibold tracking-wider transition-colors uppercase ${
                           isLinkActive("/blog-cbc") ? "text-emerald-400 bg-emerald-500/5" : "text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400"
                         }`}
                       >
@@ -129,7 +129,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                       </Link>
                       <Link 
                         to="/engineering-playbook.html" 
-                        className={`block px-4 py-2 text-[11px] font-semibold tracking-wider transition-colors uppercase ${
+                        className={`block px-4 py-2 text-xs font-semibold tracking-wider transition-colors uppercase ${
                           isLinkActive("/engineering-playbook") ? "text-emerald-400 bg-emerald-500/5" : "text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400"
                         }`}
                       >
@@ -146,7 +146,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
               <button
                 onClick={handleLaunchApp}
                 disabled={isSigningIn}
-                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 items-center justify-center gap-2"
+                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 items-center justify-center gap-2"
               >
                 <Activity className="w-3 md:w-4 h-3 md:h-4" />
                 <span>LAUNCH APP</span>
@@ -154,7 +154,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
               <button
                 onClick={handleLaunchApp}
                 disabled={isSigningIn}
-                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-[10px] md:text-xs font-black tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               >
                 {isSigningIn ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -216,7 +216,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                   </Link>
                   
                   <div className="py-2">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block mb-2">
+                    <span className="text-xs uppercase tracking-widest text-slate-400 font-extrabold block mb-2">
                       Articles & Playbooks
                     </span>
                     <div className="pl-4 flex flex-col gap-3">
@@ -367,7 +367,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
           {/* Medical Disclaimer Row */}
           <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 mb-8">
             <p className="text-xs text-slate-400 text-center uppercase tracking-widest mb-2 font-semibold">Important Medical Disclaimer (Public Beta)</p>
-            <p className="text-[11px] text-slate-500 text-center max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xs text-slate-300 text-center max-w-4xl mx-auto leading-relaxed">
               Aegis Health AI is currently in public beta. It is an informational tool and does NOT provide medical advice, diagnosis, or treatment. It does not replace professional clinical assessments. Always consult a qualified healthcare provider regarding your health data or any medical condition. If you are experiencing an urgent medical issue, contact emergency services immediately.
             </p>
           </div>
@@ -381,16 +381,16 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
               <p className="text-sm text-slate-400 transition-colors mb-2">
                 Proudly developed in Dombivli West, Maharashtra, India.
               </p>
-              <p className="text-[10px] text-slate-400 tracking-[0.2em] font-mono mb-2">
+              <p className="text-xs text-slate-400 tracking-[0.2em] font-mono mb-2">
                 VERSION 1.7.0 / SECURE ENCRYPTION ACTIVE
               </p>
-              <p className="text-[10px] text-slate-500 max-w-sm">
+              <p className="text-xs text-slate-300 max-w-sm">
                 This site uses only essential session cookies to keep you signed in. We do not use tracking or advertising cookies.
               </p>
             </div>
 
             <div className="text-center md:text-right flex flex-col gap-2">
-              <p className="text-[10px] text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
+              <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
                 Powered by <span className="text-slate-200">Google Gemini & Firebase</span>
                 <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
               </p>

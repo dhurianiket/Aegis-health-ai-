@@ -262,7 +262,7 @@ export default function Medications({
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <div className="flex items-start gap-2 text-amber-500/80 text-[10px] uppercase font-bold tracking-widest leading-relaxed mb-4">
+                  <div className="flex items-start gap-2 text-amber-500/80 text-xs uppercase font-bold tracking-widest leading-relaxed mb-4">
                     <ShieldAlert className="w-4 h-4 shrink-0" />
                     <p>
                       Always discuss medication changes with your doctor before
@@ -344,14 +344,14 @@ export default function Medications({
                     <h4 className={`font-bold text-base ${textColor}`}>
                       {interaction.drugA} + {interaction.drugB}
                     </h4>
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${badgeColor}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${badgeColor}`}>
                       {badgeText}
                     </span>
                   </div>
                   <p className={`text-sm leading-relaxed mb-4 ${textColor} opacity-90`}>
                     {interaction.plainSummary || interaction.description}
                   </p>
-                  <div className={`mt-auto pt-3 border-t border-current text-[10px] uppercase tracking-widest space-y-1 ${textColor} opacity-70`}>
+                  <div className={`mt-auto pt-3 border-t border-current text-xs uppercase tracking-widest space-y-1 ${textColor} opacity-70`}>
                     <p>Source: RxNorm Drug Interaction API (NLM)</p>
                     <p>This information is for educational purposes only. Do not change medications without consulting your doctor.</p>
                   </div>
@@ -363,7 +363,7 @@ export default function Medications({
       )}
 
       <div className="pt-8 mt-12 border-t border-surface opacity-40 text-center">
-        <p className="text-[10px] text-faint font-mono uppercase tracking-[0.15em]">
+        <p className="text-xs text-faint font-mono uppercase tracking-[0.15em]">
           Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-muted hover:text-[var(--color-text)] underline decoration-faint transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>

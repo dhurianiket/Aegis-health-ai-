@@ -132,7 +132,7 @@ export default function InteractionMatrix({
             <div className="min-w-[600px] select-none p-2 bg-black/10 rounded-2xl border border-white/5">
               {/* Grid Header Row */}
               <div className="grid" style={{ gridTemplateColumns: `150px repeat(${activeMeds.length}, minmax(0, 1fr))` }}>
-                <div className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center bg-black/20 rounded-tl-xl border-b border-white/5">
+                <div className="p-3 text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center bg-black/20 rounded-tl-xl border-b border-white/5">
                   Regimen
                 </div>
                 {activeMeds.map((m) => (
@@ -214,7 +214,7 @@ export default function InteractionMatrix({
                           <div className="flex flex-col items-center gap-1 justify-center">
                             <span className={`w-3 h-3 rounded-full flex items-center justify-center border border-white/10 ${dotColor}`} />
                             {inter && (
-                              <span className="text-[9px] font-bold text-[10px] scale-90 whitespace-nowrap px-1 rounded bg-black/30 dark:text-slate-300">
+                              <span className="text-xs font-bold text-xs scale-90 whitespace-nowrap px-1 rounded bg-black/30 dark:text-slate-300">
                                 {inter.severity === "severe" ? "severe" : inter.severity === "moderate" ? "moderate" : "mild"}
                               </span>
                             )}
@@ -228,7 +228,7 @@ export default function InteractionMatrix({
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-[10px] text-faint font-semibold uppercase tracking-wider">
+          <div className="mt-4 flex items-center gap-2 text-xs text-faint font-semibold uppercase tracking-wider">
             <Info className="w-3.5 h-3.5 text-indigo-400" />
             Tip: Click on any colored tile intersection to view complete biological interaction summaries.
           </div>
@@ -259,14 +259,14 @@ export default function InteractionMatrix({
             {/* Drug Header cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="p-4 bg-black/15 border border-white/5 rounded-2xl">
-                <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Medication A</span>
+                <span className="text-xs text-indigo-400 font-bold uppercase tracking-wider">Medication A</span>
                 <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{selectedPair.medA.genericName}</h4>
-                <div className="text-xs text-slate-500 font-medium mt-1">Dose: {selectedPair.medA.dosage || "Not set"} · Frequency: {selectedPair.medA.frequency || "Not set"}</div>
+                <div className="text-xs text-slate-300 font-medium mt-1">Dose: {selectedPair.medA.dosage || "Not set"} · Frequency: {selectedPair.medA.frequency || "Not set"}</div>
               </div>
               <div className="p-4 bg-black/15 border border-white/5 rounded-2xl">
-                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Medication B</span>
+                <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Medication B</span>
                 <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{selectedPair.medB.genericName}</h4>
-                <div className="text-xs text-slate-500 font-medium mt-1">Dose: {selectedPair.medB.dosage || "Not set"} · Frequency: {selectedPair.medB.frequency || "Not set"}</div>
+                <div className="text-xs text-slate-300 font-medium mt-1">Dose: {selectedPair.medB.dosage || "Not set"} · Frequency: {selectedPair.medB.frequency || "Not set"}</div>
               </div>
             </div>
 
@@ -276,7 +276,7 @@ export default function InteractionMatrix({
                   <h5 className="text-base font-bold text-theme">
                     Interaction Detected: {(selectedPair.interaction.drugA)} and {(selectedPair.interaction.drugB)}
                   </h5>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
                     selectedPair.interaction.severity === "severe"
                       ? "bg-red-500/10 text-red-400 border-red-500/25"
                       : selectedPair.interaction.severity === "moderate"
@@ -289,7 +289,7 @@ export default function InteractionMatrix({
 
                 <div className="p-5 bg-black/20 rounded-2xl border border-white/5 space-y-4">
                   <div>
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 block mb-1">
+                    <span className="text-xs uppercase tracking-widest font-bold text-slate-300 block mb-1">
                       RxNorm DB Information
                     </span>
                     <p className="text-sm text-theme leading-relaxed">
@@ -299,7 +299,7 @@ export default function InteractionMatrix({
 
                   {selectedPair.interaction.plainSummary && (
                     <div className="pt-4 border-t border-white/5">
-                      <span className="text-[10px] uppercase tracking-widest font-bold text-indigo-400 flex items-center gap-1.5 mb-1.5">
+                      <span className="text-xs uppercase tracking-widest font-bold text-indigo-400 flex items-center gap-1.5 mb-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                         Clinical Narrative by Aura AI
                       </span>

@@ -253,7 +253,7 @@ export default function ProfileManagement() {
             }`}
           >
             {activeProfile?.id === p.id && (
-              <div className="absolute top-3 pl-3 text-[10px] font-bold tracking-widest text-indigo-400 uppercase">
+              <div className="absolute top-3 pl-3 text-xs font-bold tracking-widest text-indigo-400 uppercase">
                 Active Profile
               </div>
             )}
@@ -336,7 +336,7 @@ export default function ProfileManagement() {
                       className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
                       placeholder="e.g. 1FAIpQLScX..."
                     />
-                    <p className="text-[10px] text-slate-500 mt-1">If provided, AI will fetch your form responses as clinical context.</p>
+                    <p className="text-xs text-slate-300 mt-1">If provided, AI will fetch your form responses as clinical context.</p>
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Clinical Notes</label>
@@ -381,8 +381,8 @@ export default function ProfileManagement() {
                   
                   <div className="flex flex-col gap-2 mt-3">
                      <div className="flex items-center gap-4 text-xs text-slate-300">
-                        {p.dob && <div><span className="text-slate-500">DOB:</span> {p.dob}</div>}
-                        {p.bloodType && <div><span className="text-slate-500">Type:</span> <span className="font-bold text-red-400">{p.bloodType}</span></div>}
+                        {p.dob && <div><span className="text-slate-300">DOB:</span> {p.dob}</div>}
+                        {p.bloodType && <div><span className="text-slate-300">Type:</span> <span className="font-bold text-red-400">{p.bloodType}</span></div>}
                      </div>
                      
                      {p.googleFormId && (
@@ -398,10 +398,10 @@ export default function ProfileManagement() {
                            {p.weight && p.height ? (
                               <div className="flex items-center gap-2">
                                  <span className="text-sm font-bold text-white">{calculateBMI(p.weight, p.height)}</span>
-                                 <span className="text-[10px] uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">{getBMICategory(Number(calculateBMI(p.weight, p.height)))}</span>
+                                 <span className="text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">{getBMICategory(Number(calculateBMI(p.weight, p.height)))}</span>
                               </div>
                            ) : (
-                              <div className="text-[10px] text-slate-500">Add height and weight to calculate BMI</div>
+                              <div className="text-xs text-slate-300">Add height and weight to calculate BMI</div>
                            )}
                         </div>
                      </div>
@@ -503,7 +503,7 @@ export default function ProfileManagement() {
         )}
       </AnimatePresence>
       
-      <div className="text-center text-slate-500 text-xs mt-12 pb-8">
+      <div className="text-center text-slate-300 text-xs mt-12 pb-8">
         Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 underline decoration-slate-600 transition-colors">Aniket Dhuri</a> • Version {version}
       </div>
     </div>

@@ -65,7 +65,7 @@ export default function NotificationDropdown({
               Notifications
             </h3>
             {unreadCount > 0 && (
-              <span className="bg-indigo-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+              <span className="bg-indigo-500 text-white text-xs font-black px-2 py-0.5 rounded-full uppercase">
                 {unreadCount} New
               </span>
             )}
@@ -73,13 +73,13 @@ export default function NotificationDropdown({
           <div className="flex items-center gap-2">
             <button
               onClick={markAllAsRead}
-              className="text-[10px] font-bold text-slate-400 hover:text-indigo-400 uppercase tracking-widest transition-colors"
+              className="text-xs font-bold text-slate-400 hover:text-indigo-400 uppercase tracking-widest transition-colors"
             >
               Mark all read
             </button>
             <button
               onClick={onClose}
-              className="p-1 text-slate-500 hover:text-white transition-colors"
+              className="p-1 text-slate-300 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -102,7 +102,7 @@ export default function NotificationDropdown({
               className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
                 activeCategory === cat
                   ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
-                  : "bg-white/5 text-slate-500 border-transparent hover:border-white/10 hover:text-slate-300"
+                  : "bg-white/5 text-slate-300 border-transparent hover:border-white/10 hover:text-slate-300"
               } capitalize flex items-center gap-2`}
             >
               {getCategoryIcon(cat)}
@@ -125,7 +125,7 @@ export default function NotificationDropdown({
                 <Bell className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-slate-400 font-bold">All clear!</p>
-              <p className="text-slate-500 text-xs mt-1">
+              <p className="text-slate-300 text-xs mt-1">
                 No notifications in this category.
               </p>
             </motion.div>
@@ -168,14 +168,14 @@ export default function NotificationDropdown({
                     >
                       {alert.title}
                     </p>
-                    <span className="text-[10px] font-medium text-slate-500 whitespace-nowrap pt-0.5">
+                    <span className="text-xs font-medium text-slate-300 whitespace-nowrap pt-0.5">
                       {new Date(alert.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
                     {alert.description}
                   </p>
 
@@ -185,13 +185,13 @@ export default function NotificationDropdown({
                         alert.actionUrl &&
                         window.open(alert.actionUrl, "_blank")
                       }
-                      className="text-[10px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1"
+                      className="text-xs font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1"
                     >
                       View Details <ChevronRight className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => dismissAlert(alert.id)}
-                      className="text-[10px] font-black text-slate-600 hover:text-red-400 uppercase tracking-widest"
+                      className="text-xs font-black text-slate-600 hover:text-red-400 uppercase tracking-widest"
                     >
                       Dismiss
                     </button>

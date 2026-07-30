@@ -55,7 +55,7 @@ export const ConditionTile: React.FC<ConditionTileProps> = ({
       <div className="flex justify-between items-center w-full">
         <span className="label-caps">{condition}</span>
         <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${getStatusColor()}`}
+          className={`px-2 py-0.5 rounded-full text-xs font-bold tracking-wider ${getStatusColor()}`}
         >
           {status}
         </span>
@@ -89,7 +89,7 @@ export const ConditionTile: React.FC<ConditionTileProps> = ({
       </div>
 
       <div className="mt-auto pt-4 border-t border-[var(--color-border)]">
-        <span className="text-[var(--color-text-faint)] text-[11px]">
+        <span className="text-[var(--color-text-faint)] text-xs">
           Last updated {lastTested}
         </span>
       </div>

@@ -101,15 +101,15 @@ export default function BlogHbA1c() {
                 {tableData.map((row, idx) => (
                   <div key={idx} className={`border rounded-2xl p-5 space-y-3 whitespace-normal break-words ${row.cardColor}`}>
                     <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Level Threshold</span>
+                      <span className="text-xs uppercase font-bold tracking-widest text-slate-400">Level Threshold</span>
                       <span className="font-mono font-extrabold text-white">{row.range}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block mb-0.5">Classification</span>
+                      <span className="text-xs uppercase font-bold tracking-widest text-slate-400 block mb-0.5">Classification</span>
                       <span className={row.categoryColor}>{row.category}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block mb-1">Human Explanation</span>
+                      <span className="text-xs uppercase font-bold tracking-widest text-slate-400 block mb-1">Human Explanation</span>
                       <p className="text-xs text-slate-300 leading-relaxed font-sans">{row.meaning}</p>
                     </div>
                   </div>
@@ -167,7 +167,7 @@ export default function BlogHbA1c() {
           </section>
 
           {/* Disclaimer section */}
-          <footer className="mt-12 pt-6 border-t border-red-500/20 text-xs text-slate-500 leading-relaxed font-sans relative">
+          <footer className="mt-12 pt-6 border-t border-red-500/20 text-xs text-slate-300 leading-relaxed font-sans relative">
             <div className="flex gap-2 items-start bg-red-500/5 border border-red-500/10 rounded-xl p-4">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
               <p>

@@ -10,7 +10,7 @@ export default function TermsOfService() {
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
         </Link>
         <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
-        <p className="text-sm text-slate-500">Last Updated: May 17, 2026</p>
+        <p className="text-sm text-slate-300">Last Updated: May 17, 2026</p>
 
         <div className="space-y-6 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
           <section>

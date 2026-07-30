@@ -353,7 +353,7 @@ function MainApp() {
                 <span className="text-xs font-semibold text-theme tracking-wide truncate max-w-[80px] sm:max-w-none">
                   {activeProfile.name?.split(' ')[0] || 'User'}
                 </span>
-                <span className="hidden sm:inline text-[10px] text-muted ml-0.5 uppercase tracking-widest">
+                <span className="hidden sm:inline text-xs text-muted ml-0.5 uppercase tracking-widest">
                   (Active)
                 </span>
               </div>

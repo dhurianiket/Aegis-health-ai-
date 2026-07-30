@@ -176,7 +176,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 }`}
               >
                 <tab.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium leading-none">
+                <span className="text-xs font-medium leading-none">
                   {tab.label}
                 </span>
                 {tab.id === "more" && needsProfileUpdate && (
@@ -206,7 +206,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
               Settings
             </span>
             {needsProfileUpdate && (
-              <div className="absolute top-3 right-3 bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase">
+              <div className="absolute top-3 right-3 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold uppercase">
                 Update
               </div>
             )}

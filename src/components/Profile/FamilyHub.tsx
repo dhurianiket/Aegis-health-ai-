@@ -178,7 +178,7 @@ export default function FamilyHub() {
               </div>
 
               <div className="bg-white/5 border border-white/10 rounded-[32px] p-8">
-                <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">
+                <h4 className="text-xs font-black text-slate-300 uppercase tracking-widest mb-6">
                   Security Invariants
                 </h4>
                 <div className="space-y-4">
@@ -203,10 +203,10 @@ export default function FamilyHub() {
             {/* Right Column: Connection List */}
             <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center justify-between px-4">
-                <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                <h4 className="text-xs font-black text-slate-300 uppercase tracking-widest">
                   Active Connections
                 </h4>
-                <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-slate-400 font-bold uppercase tracking-widest">
                   {relations.length} Active Links
                 </div>
               </div>
@@ -237,12 +237,12 @@ export default function FamilyHub() {
                           {rel.relatedEmail}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+                          <span className="text-xs text-slate-300 uppercase font-bold tracking-widest">
                             {rel.relationType}
                           </span>
                           <span className="w-1 h-1 rounded-full bg-slate-700" />
                           <span
-                            className={`text-[10px] font-black uppercase tracking-widest ${
+                            className={`text-xs font-black uppercase tracking-widest ${
                               rel.status === "active"
                                 ? "text-emerald-500"
                                 : "text-amber-500"
@@ -257,15 +257,15 @@ export default function FamilyHub() {
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       {rel.status === "active" ? (
                         <>
-                          <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                          <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                             Revoke
                           </button>
-                          <button className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-indigo-500/20">
+                          <button className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-indigo-500/20">
                             Edit Access
                           </button>
                         </>
                       ) : (
-                        <button className="px-4 py-2 bg-white/5 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                        <button className="px-4 py-2 bg-white/5 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                           Cancel Request
                         </button>
                       )}
@@ -276,12 +276,12 @@ export default function FamilyHub() {
                 {relations.length === 0 && (
                   <div className="text-center py-24 bg-white/5 border border-dashed border-white/10 rounded-[40px]">
                     <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-8 h-8 text-slate-500" />
+                      <Users className="w-8 h-8 text-slate-300" />
                     </div>
                     <h5 className="text-slate-300 font-bold">
                       No Active Family Links
                     </h5>
-                    <p className="text-xs text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                    <p className="text-xs text-slate-300 mt-2 max-w-sm mx-auto leading-relaxed">
                       Share access to manage chronic conditions together or
                       compare genetic lab markers.
                     </p>
@@ -345,7 +345,7 @@ export default function FamilyHub() {
                     className="bg-white/5 border border-white/10 rounded-[32px] p-8 flex flex-col h-full"
                   >
                     <div className="flex items-center justify-between mb-6">
-                      <div className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] text-indigo-400 font-black uppercase tracking-widest">
+                      <div className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-xs text-indigo-400 font-black uppercase tracking-widest">
                         Analysis Complete
                       </div>
                       <Dna className="w-5 h-5 text-indigo-400/50" />
@@ -360,7 +360,7 @@ export default function FamilyHub() {
 
                     <div className="space-y-4 mb-6">
                       <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-slate-500 uppercase tracking-widest">
+                        <span className="text-slate-300 uppercase tracking-widest">
                           Hereditary Risk
                         </span>
                         <span className="text-indigo-400">
@@ -377,7 +377,7 @@ export default function FamilyHub() {
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
+                      <span className="text-xs font-black text-slate-300 uppercase tracking-widest block mb-2">
                         Preventive Route
                       </span>
                       {risk.recommendations.map((rec, j) => (

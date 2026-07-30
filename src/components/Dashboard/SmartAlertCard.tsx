@@ -78,7 +78,7 @@ export const SmartAlertCard: React.FC<SmartAlertCardProps> = ({
         </p>
 
         <div className="flex items-center justify-between mt-2">
-          <span className="text-[11px] text-[var(--color-text-faint)] uppercase tracking-wider">
+          <span className="text-xs text-[var(--color-text-faint)] uppercase tracking-wider">
             {source}
           </span>
           <button

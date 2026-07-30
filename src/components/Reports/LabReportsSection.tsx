@@ -86,7 +86,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface text-muted border border-border mt-0.5">
+               <span className="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-surface text-muted border border-border mt-0.5">
                   {docType}
                </span>
                <span className="text-xs text-muted font-medium mt-0.5">{dateText}</span>
@@ -137,7 +137,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
           >
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-normal break-words">
-                <thead className="bg-[var(--color-bg)] text-[var(--color-text-muted)] text-[11px] uppercase tracking-widest font-semibold">
+                <thead className="bg-[var(--color-bg)] text-[var(--color-text-muted)] text-xs uppercase tracking-widest font-semibold">
                   <tr>
                     <th className="px-4 py-3 rounded-l-lg w-1/4">Marker</th>
                     <th className="px-4 py-3 text-right w-1/5">Value</th>
@@ -164,21 +164,21 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
                           {m.valueCanonical ?? m.valueOriginal ?? m.value}{" "}
-                          <span className="text-[var(--color-text-muted)] text-[10px] font-normal ml-0.5">
+                          <span className="text-[var(--color-text-muted)] text-xs font-normal ml-0.5">
                             {m.unitCanonical || m.unit}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${flagColor}`}>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${flagColor}`}>
                             {flagText}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-[var(--color-text-muted)] text-[11px]">
+                        <td className="px-4 py-3 text-[var(--color-text-muted)] text-xs">
                           {m.referenceLow !== null && m.referenceLow !== undefined && m.referenceHigh !== null && m.referenceHigh !== undefined
                             ? `${m.referenceLow}–${m.referenceHigh}`
                             : m.reference_range || "-"}
                         </td>
-                        <td className="px-4 py-3 text-[var(--color-text-muted)] text-[11px]">
+                        <td className="px-4 py-3 text-[var(--color-text-muted)] text-xs">
                           <div className="space-y-1">
                             {source ? (
                               <a 
@@ -191,13 +191,13 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                                 {source.name}
                               </a>
                             ) : (
-                              <span className="text-[var(--color-text-faint)] text-[11px] italic block">reference not available</span>
+                              <span className="text-[var(--color-text-faint)] text-xs italic block">reference not available</span>
                             )}
                             <div className="flex flex-col gap-0.5 mt-1 pt-1 border-t border-[var(--color-border)]/20">
-                              <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider w-fit ${urgency.badgeClass}`}>
                                 {urgency.level} Urgency
                               </span>
-                              <span className="text-[10px] text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
+                              <span className="text-xs text-[var(--color-text-faint)] leading-tight">{urgency.nextStep}</span>
                             </div>
                           </div>
                         </td>
@@ -226,7 +226,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                       <h4 className="font-semibold text-[var(--color-text)] text-sm leading-5 whitespace-normal break-words">
                         {m.testName || m.marker}
                       </h4>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border shrink-0 ${flagColor}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider border shrink-0 ${flagColor}`}>
                         {flagText}
                       </span>
                     </div>
@@ -241,13 +241,13 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                         )}
                       </div>
                       
-                      <div className="text-[var(--color-text-muted)] text-[11px]">
+                      <div className="text-[var(--color-text-muted)] text-xs">
                         Reference: {m.referenceLow !== null && m.referenceLow !== undefined && m.referenceHigh !== null && m.referenceHigh !== undefined
                           ? `${m.referenceLow}–${m.referenceHigh}`
                           : m.reference_range || "-"}
                       </div>
 
-                      <div className="text-[var(--color-text-muted)] text-[11px] mt-1">
+                      <div className="text-[var(--color-text-muted)] text-xs mt-1">
                         Source: {source ? (
                           <a 
                             href={source.url} 
@@ -259,24 +259,24 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
                             {source.name}
                           </a>
                         ) : (
-                          <span className="text-[var(--color-text-faint)] text-[11px] italic">reference not available</span>
+                          <span className="text-[var(--color-text-faint)] text-xs italic">reference not available</span>
                         )}
                       </div>
 
                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-[var(--color-text-muted)] font-medium">Urgency:</span>
-                          <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
+                          <span className="text-xs text-[var(--color-text-muted)] font-medium">Urgency:</span>
+                          <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
                             {urgency.level}
                           </span>
                         </div>
-                        <div className="text-[10px] text-[var(--color-text-muted)]">
+                        <div className="text-xs text-[var(--color-text-muted)]">
                           <span className="font-medium">Next Step:</span> <span className="text-[var(--color-text-faint)]">{urgency.nextStep}</span>
                         </div>
                       </div>
                     </div>
                     {m.interpretation && (
-                      <div className="text-[var(--color-text-faint)] text-[10px] mt-1 italic">
+                      <div className="text-[var(--color-text-faint)] text-xs mt-1 italic">
                         {m.interpretation}
                       </div>
                     )}
@@ -485,7 +485,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
       )}
 
       <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
-        <p className="text-[10px] text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
+        <p className="text-xs text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
           Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>

@@ -114,22 +114,22 @@ export default function BlogCBC() {
                 {componentsData.map((row, idx) => (
                   <div key={idx} className={`border rounded-2xl p-5 space-y-3 whitespace-normal break-words ${row.color}`}>
                     <div className="border-b border-white/5 pb-2">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-[#0A192F] bg-emerald-400 px-2 py-0.5 rounded-full font-mono inline-block mb-1">
+                      <span className="text-xs uppercase font-bold tracking-widest text-[#0A192F] bg-emerald-400 px-2 py-0.5 rounded-full font-mono inline-block mb-1">
                         Marker
                       </span>
                       <h4 className="text-white font-bold text-base">{row.name}</h4>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block mb-0.5">Biological Function</span>
+                      <span className="text-xs uppercase font-bold tracking-widest text-slate-400 block mb-0.5">Biological Function</span>
                       <p className="text-xs text-slate-300 leading-relaxed font-sans">{row.desc}</p>
                     </div>
                     <div className="grid grid-cols-1 gap-3 pt-2">
                       <div className="bg-[#0A192F]/50 p-3 rounded-lg border border-white/5">
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-amber-400 block mb-0.5">If levels are low</span>
+                        <span className="text-xs uppercase font-bold tracking-widest text-amber-400 block mb-0.5">If levels are low</span>
                         <p className="text-xs text-slate-300 leading-relaxed">{row.low}</p>
                       </div>
                       <div className="bg-[#0A192F]/50 p-3 rounded-lg border border-white/5">
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-cyan-400 block mb-0.5">If levels are high</span>
+                        <span className="text-xs uppercase font-bold tracking-widest text-cyan-400 block mb-0.5">If levels are high</span>
                         <p className="text-xs text-slate-300 leading-relaxed">{row.high}</p>
                       </div>
                     </div>
@@ -191,7 +191,7 @@ export default function BlogCBC() {
           </section>
 
           {/* Medical Disclaimer */}
-          <footer className="mt-12 pt-6 border-t border-red-500/20 text-xs text-slate-500 leading-relaxed font-sans relative">
+          <footer className="mt-12 pt-6 border-t border-red-500/20 text-xs text-slate-300 leading-relaxed font-sans relative">
             <div className="flex gap-2 items-start bg-red-500/5 border border-red-500/10 rounded-xl p-4">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
               <p>

@@ -132,7 +132,7 @@ export default function CycleTrackingWidget({ userProfile }: { userProfile?: Use
            )}
          </div>
          {logSuccess && (
-           <div className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider bg-emerald-500/10 px-3 py-1.5 rounded-full animate-pulse">
+           <div className="text-xs font-bold text-emerald-500 uppercase tracking-wider bg-emerald-500/10 px-3 py-1.5 rounded-full animate-pulse">
              {logSuccess}
            </div>
          )}
@@ -182,7 +182,7 @@ export default function CycleTrackingWidget({ userProfile }: { userProfile?: Use
                  <button
                    key={sym}
                    onClick={() => toggleSymptom(sym)}
-                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${selectedSymptoms.includes(sym) ? 'bg-[var(--color-text)] text-[var(--color-bg)]' : 'bg-transparent border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-slate-300 dark:hover:border-slate-600'}`}
+                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${selectedSymptoms.includes(sym) ? 'bg-indigo-600 text-white font-semibold' : 'bg-black/20 border border-[var(--color-border)] text-slate-200 dark:text-slate-200 hover:text-white hover:border-slate-300 dark:hover:border-slate-600 symptom-button-text'}`}
                  >
                    {sym}
                  </button>

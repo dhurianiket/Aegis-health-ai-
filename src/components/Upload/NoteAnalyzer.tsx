@@ -156,11 +156,11 @@ export default function NoteAnalyzer() {
                   <h4 className="text-[var(--color-text)] font-bold text-lg">
                     Analysis Summary
                   </h4>
-                  <p className="text-[var(--color-primary)] text-sm font-medium mt-1 uppercase tracking-wider text-[10px]">
+                  <p className="text-[var(--color-primary)] text-sm font-medium mt-1 uppercase tracking-wider text-xs">
                     AI-Synthesized Context
                   </p>
                 </div>
-                <div className="px-3 py-1 bg-[var(--color-success)]/20 border border-[var(--color-success)]/20 rounded-full text-[var(--color-success)] text-[10px] font-black uppercase tracking-widest">
+                <div className="px-3 py-1 bg-[var(--color-success)]/20 border border-[var(--color-success)]/20 rounded-full text-[var(--color-success)] text-xs font-black uppercase tracking-widest">
                   Processed
                 </div>
               </div>
@@ -178,7 +178,7 @@ export default function NoteAnalyzer() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
                   <Activity className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                  <span className="text-xs font-black uppercase tracking-[0.2em]">
                     Clinical Findings
                   </span>
                 </div>
@@ -212,7 +212,7 @@ export default function NoteAnalyzer() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
                   <Pill className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                  <span className="text-xs font-black uppercase tracking-[0.2em]">
                     Pharmacology
                   </span>
                 </div>
@@ -225,7 +225,7 @@ export default function NoteAnalyzer() {
                       <div className="text-[var(--color-primary)] text-xs font-bold">
                         {m.name}
                       </div>
-                      <div className="text-[10px] text-[var(--color-text-muted)] mt-1 uppercase tracking-wider font-bold">
+                      <div className="text-xs text-[var(--color-text-muted)] mt-1 uppercase tracking-wider font-bold">
                         {m.dosage} • {m.frequency}
                       </div>
                     </div>
@@ -242,7 +242,7 @@ export default function NoteAnalyzer() {
               <div className="space-y-4 md:col-span-2">
                 <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
                   <Calendar className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                  <span className="text-xs font-black uppercase tracking-[0.2em]">
                     Suggested Follow-ups
                   </span>
                 </div>
@@ -256,11 +256,11 @@ export default function NoteAnalyzer() {
                         <div className="text-[var(--color-success)] text-xs font-bold">
                           {a.specialist}
                         </div>
-                        <div className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
+                        <div className="text-xs text-[var(--color-text-muted)] mt-0.5">
                           {a.purpose}
                         </div>
                       </div>
-                      <div className="text-[10px] font-bold text-[var(--color-success)] uppercase tracking-widest">
+                      <div className="text-xs font-bold text-[var(--color-success)] uppercase tracking-widest">
                         {a.timeframe}
                       </div>
                     </div>

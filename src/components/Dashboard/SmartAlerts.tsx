@@ -41,7 +41,7 @@ export default function SmartAlerts({ labs }: { labs?: any[] }) {
         <h3 className="text-lg font-bold text-[var(--color-text)] tracking-tight">
           Priority Alerts
         </h3>
-        <span className="bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+        <span className="bg-indigo-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
           {visibleAlerts.length}
         </span>
       </div>

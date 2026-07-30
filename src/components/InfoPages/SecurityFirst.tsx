@@ -134,18 +134,18 @@ export default function SecurityFirst() {
           {/* Graphics Sidebar */}
           <div className="lg:col-span-5">
             <div className="bg-[#0F2A4A] border border-white/10 rounded-2xl p-8 space-y-4 relative">
-              <span className="text-[10px] uppercase tracking-widest font-mono text-slate-400 block mb-2">🇮🇳 DPDP SAFETY REGISTER</span>
+              <span className="text-xs uppercase tracking-widest font-mono text-slate-400 block mb-2">🇮🇳 DPDP SAFETY REGISTER</span>
               <div className="bg-[#0A192F] p-4 rounded-xl border border-white/5 flex justify-between items-center">
                 <span className="text-xs font-semibold text-white uppercase tracking-wider">Active Consent</span>
-                <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full font-mono">STATUS: OPT-IN</span>
+                <span className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full font-mono">STATUS: OPT-IN</span>
               </div>
               <div className="bg-[#0A192F] p-4 rounded-xl border border-white/5 flex justify-between items-center">
                 <span className="text-xs font-semibold text-white uppercase tracking-wider">Instant Purging</span>
-                <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full font-mono">STATUS: AVAILABLE</span>
+                <span className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full font-mono">STATUS: AVAILABLE</span>
               </div>
               <div className="bg-[#0A192F] p-4 rounded-xl border border-white/5 flex justify-between items-center">
                 <span className="text-xs font-semibold text-white uppercase tracking-wider">Minimization</span>
-                <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full font-mono">STATUS: ENFORCED</span>
+                <span className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full font-mono">STATUS: ENFORCED</span>
               </div>
             </div>
           </div>

@@ -74,7 +74,7 @@ export default function NotificationCenter({
                 <p className="text-slate-400 font-medium tracking-tight">
                   You're all caught up!
                 </p>
-                <p className="text-slate-500 text-sm mt-1">
+                <p className="text-slate-300 text-sm mt-1">
                   No new notifications.
                 </p>
               </motion.div>

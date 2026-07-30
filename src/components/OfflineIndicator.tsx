@@ -48,7 +48,7 @@ export default function OfflineIndicator() {
                 <span className="text-sm font-bold tracking-tight">
                   Offline Mode
                 </span>
-                <span className="text-[10px] uppercase font-black tracking-widest opacity-70">
+                <span className="text-xs uppercase font-black tracking-widest opacity-70">
                   Accessing cached data
                 </span>
               </div>

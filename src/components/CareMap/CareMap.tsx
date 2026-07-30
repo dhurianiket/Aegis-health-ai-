@@ -80,7 +80,7 @@ export default function CareMapContainer() {
             <li>Add <code className="bg-slate-800 text-slate-100 px-1.5 py-0.5 rounded font-mono">GOOGLE_MAPS_PLATFORM_KEY</code> as the secret key.</li>
             <li>Paste your secret token as the value and press <kbd className="bg-slate-800 text-slate-100 px-1 py-0.5 rounded font-mono">Enter</kbd>.</li>
           </ol>
-          <div className="text-[10px] text-faint border-t border-white/5 pt-3 leading-relaxed">
+          <div className="text-xs text-faint border-t border-white/5 pt-3 leading-relaxed">
             The application executes instant developer updates, propagating your environment secrets without needing a browser reload.
           </div>
         </div>
@@ -321,7 +321,7 @@ function CareMap() {
                   });
                 }
               }}
-              className="text-[10px] underline hover:text-indigo-300 pointer-events-auto"
+              className="text-xs underline hover:text-indigo-300 pointer-events-auto"
             >
               Recenter
             </button>
@@ -355,7 +355,7 @@ function CareMap() {
           <div className="bg-surface border-2 border-indigo-500 p-6 rounded-[28px] shadow-xl space-y-4 relative">
             <div className="flex items-start justify-between">
               <div>
-                <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 font-bold text-[9px] uppercase tracking-wider block w-fit mb-1.5">
+                <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 font-bold text-xs uppercase tracking-wider block w-fit mb-1.5">
                   SELECTED PROVIDER
                 </span>
                 <h4 className="font-bold text-base text-slate-900 dark:text-white leading-tight">
@@ -378,7 +378,7 @@ function CareMap() {
             {activeRoute && (
               <div className="p-4 bg-indigo-500/10 border border-indigo-500/25 rounded-2xl flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <div className="text-[10px] text-indigo-400 uppercase tracking-widest font-extrabold">
+                  <div className="text-xs text-indigo-400 uppercase tracking-widest font-extrabold">
                     ESTIMATED ROUTE DISTANCE
                   </div>
                   <div className="text-sm font-bold text-theme">
@@ -402,7 +402,7 @@ function CareMap() {
 
         {/* Places List View */}
         <div className="bg-surface border border-surface rounded-[28px] shadow-xl p-4 flex-1 flex flex-col min-h-[250px] lg:min-h-0 lg:max-h-[350px] overflow-hidden">
-          <div className="text-[10px] uppercase font-bold text-faint tracking-wider mb-3 px-2">
+          <div className="text-xs uppercase font-bold text-faint tracking-wider mb-3 px-2">
             Nearby Facilities ({places.length})
           </div>
 
@@ -413,7 +413,7 @@ function CareMap() {
             </div>
           ) : places.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-              <AlertCircle className="w-8 h-8 text-slate-500 opacity-35 mb-2" />
+              <AlertCircle className="w-8 h-8 text-slate-300 opacity-35 mb-2" />
               <span className="text-xs text-muted">No medical providers detected near this area.</span>
             </div>
           ) : (
@@ -432,12 +432,12 @@ function CareMap() {
                     <h5 className="font-bold text-xs truncate text-[var(--color-text)]">
                       {place.name}
                     </h5>
-                    <p className="text-[10px] text-muted truncate mt-0.5 font-light">
+                    <p className="text-xs text-muted truncate mt-0.5 font-light">
                       {place.address}
                     </p>
                   </div>
 
-                  <span className="p-1 px-2.5 bg-black/15 group-hover:bg-black/20 text-[9px] font-bold tracking-wider rounded-full uppercase text-indigo-400 shrink-0">
+                  <span className="p-1 px-2.5 bg-black/15 group-hover:bg-black/20 text-xs font-bold tracking-wider rounded-full uppercase text-indigo-400 shrink-0">
                     Route
                   </span>
                 </button>
@@ -462,7 +462,7 @@ function CareMap() {
             {/* User markerpin */}
             <AdvancedMarker position={mapCenter} title="Your Location">
               <Pin background="#e11d48" glyphColor="#fff" borderColor="#e11d48">
-                <span className="text-[10px] font-bold">You</span>
+                <span className="text-xs font-bold">You</span>
               </Pin>
             </AdvancedMarker>
 

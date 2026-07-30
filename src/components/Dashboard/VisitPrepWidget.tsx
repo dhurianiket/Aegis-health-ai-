@@ -141,7 +141,7 @@ Format as a clean, highly structured Markdown document with:
                  className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition ${
                     useInAppForm 
                        ? 'bg-indigo-600 text-white shadow-sm' 
-                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                       : 'text-slate-200 hover:text-white'
                  }`}
               >
                  Quick In-App Form
@@ -151,8 +151,8 @@ Format as a clean, highly structured Markdown document with:
                  onClick={() => { setUseInAppForm(false); setError(null); }}
                  className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition ${
                     !useInAppForm 
-                       ? 'bg-indigo-600 text-white shadow-sm' 
-                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                       ? 'bg-indigo-600 text-white shadow-sm font-semibold' 
+                       : 'text-slate-200 hover:text-white'
                  }`}
               >
                  Sync Google Form
@@ -165,9 +165,9 @@ Format as a clean, highly structured Markdown document with:
               {useInAppForm ? (
                  <div className="space-y-3">
                     <div>
-                       <span className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2 uppercase tracking-wider">
+                       <label className="block text-sm font-medium text-slate-200 dark:text-slate-100 prep-form-label mb-2 uppercase tracking-wider">
                           Select Symptoms
-                       </span>
+                       </label>
                        <div className="grid grid-cols-2 gap-2">
                           {SYMPTOMS_LIST.map((symptom) => {
                              const isSelected = selectedSymptoms.includes(symptom);
@@ -182,16 +182,16 @@ Format as a clean, highly structured Markdown document with:
                                    }}
                                    className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl border transition-all text-left ${
                                       isSelected 
-                                         ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' 
-                                         : 'bg-black/10 border-white/10 text-slate-800 dark:text-slate-200 hover:border-white/20'
+                                         ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300 font-semibold' 
+                                         : 'bg-black/20 border-white/15 text-slate-200 dark:text-slate-200 hover:border-white/30 symptom-button-text'
                                    }`}
                                 >
-                                   <span className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] ${
-                                      isSelected ? 'bg-indigo-500 border-indigo-400 text-slate-900' : 'border-slate-500'
+                                   <span className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-xs ${
+                                      isSelected ? 'bg-indigo-500 border-indigo-400 text-white' : 'border-slate-400'
                                    }`}>
                                       {isSelected && "✓"}
                                    </span>
-                                   {symptom}
+                                   <span className="symptom-button-text text-slate-200">{symptom}</span>
                                 </button>
                              );
                           })}
@@ -199,27 +199,27 @@ Format as a clean, highly structured Markdown document with:
                     </div>
                     
                     <div>
-                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1 uppercase tracking-wider">
+                       <label className="block text-sm font-medium text-slate-200 dark:text-slate-100 prep-form-label mb-1 uppercase tracking-wider">
                           Questions for your Doctor
                        </label>
                        <AutoSizeTextarea
                           value={questions}
                           onChange={(e: any) => setQuestions(e.target.value)}
                           placeholder="e.g., Is this dosage of Lisinopril safe to continue? When should I retest?"
-                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-300 dark:placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
                           minLines={2}
                        />
                     </div>
 
                     <div>
-                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1 uppercase tracking-wider">
+                       <label className="block text-sm font-medium text-slate-200 dark:text-slate-100 prep-form-label mb-1 uppercase tracking-wider">
                           Additional Symptoms or Notes
                        </label>
                        <AutoSizeTextarea
                           value={onsetNotes}
                           onChange={(e: any) => setOnsetNotes(e.target.value)}
                           placeholder="e.g., Symptoms have been mostly in the evening. Slight chest tightness."
-                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                          className="w-full bg-black/15 border border-white/10 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-300 dark:placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
                           minLines={1}
                        />
                     </div>

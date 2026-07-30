@@ -51,11 +51,11 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               />
             ))}
           </div>
-          <span className="text-[10px] text-teal-400/30 uppercase tracking-[0.2em] font-medium">Initializing neural link...</span>
+          <span className="text-xs text-teal-300 uppercase tracking-[0.2em] font-medium">Initializing neural link...</span>
         </div>
       </div>
 
-      <div className="fixed bottom-12 text-slate-600 text-[10px] uppercase tracking-[0.2em] font-medium animate-pulse">
+      <div className="fixed bottom-12 text-slate-600 text-xs uppercase tracking-[0.2em] font-medium animate-pulse">
         Encrypted Session Active
       </div>
     </div>

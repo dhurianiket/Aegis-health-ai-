@@ -170,7 +170,7 @@ export default function Timeline() {
               key={cat.id}
               onClick={() => setFilterType(cat.id)}
               aria-label={cat.label}
-              className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all snap-start ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all snap-start ${
                 filterType === cat.id
                   ? "bg-indigo-600 text-white shadow-lg"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:hover:bg-white/5"
@@ -290,7 +290,7 @@ export default function Timeline() {
                     >
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6">
                         <div className="space-y-2 md:space-y-3 flex-1">
-                          <p className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">
+                          <p className="text-xs md:text-xs font-bold text-slate-300 uppercase tracking-[0.2em] mb-1">
                             {new Date(doc.date).toLocaleDateString("en-US", {
                               month: "short",
                               day: "2-digit",
@@ -301,7 +301,7 @@ export default function Timeline() {
                             {doc.type.replace("_", " ")}
                           </h4>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] md:text-xs font-semibold text-indigo-400 italic opacity-80">
+                            <span className="text-xs md:text-xs font-semibold text-indigo-400 italic opacity-80">
                               {doc.hospitalName || "Independent Provider"}
                             </span>
                           </div>
@@ -316,11 +316,11 @@ export default function Timeline() {
 
                       <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex gap-2">
-                          <span className="px-3 py-1 bg-white/5 text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest border border-white/5 rounded-full whitespace-nowrap">
+                          <span className="px-3 py-1 bg-white/5 text-xs md:text-xs font-bold text-slate-300 uppercase tracking-widest border border-white/5 rounded-full whitespace-nowrap">
                             {doc.type}
                           </span>
                         </div>
-                        <div className="md:ml-auto flex items-center gap-2 text-indigo-400 font-bold text-[9px] md:text-[10px] uppercase tracking-widest group-hover/card:underline">
+                        <div className="md:ml-auto flex items-center gap-2 text-indigo-400 font-bold text-xs md:text-xs uppercase tracking-widest group-hover/card:underline">
                           Digitized Record{" "}
                           <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4" />
                         </div>
@@ -337,10 +337,10 @@ export default function Timeline() {
                 className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10 flex flex-col items-center justify-center p-6"
               >
                 <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4">
-                  <FileText className="w-8 h-8 text-slate-500" />
+                  <FileText className="w-8 h-8 text-slate-300" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Your health vault is empty.</h3>
-                <p className="text-slate-500 text-sm max-w-sm mx-auto">
+                <p className="text-slate-300 text-sm max-w-sm mx-auto">
                   Upload your first lab report to generate insights and track your trends.
                 </p>
               </motion.div>
@@ -401,7 +401,7 @@ export default function Timeline() {
               <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-8">
                 {selectedDoc.extractedData?.findings ? (
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
                       Clinical Findings
                     </h4>
                     <div className="p-5 bg-white/5 rounded-2xl border border-white/10 text-slate-300 font-light text-sm whitespace-pre-wrap leading-relaxed">
@@ -409,7 +409,7 @@ export default function Timeline() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-slate-500 text-sm italic">
+                  <p className="text-slate-300 text-sm italic">
                     No extracted findings available.
                   </p>
                 )}
@@ -417,7 +417,7 @@ export default function Timeline() {
                 {selectedDoc.extractedData?.lab_values &&
                   selectedDoc.extractedData.lab_values.length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
                         Lab Results
                       </h4>
                       <div className="grid gap-3">
@@ -437,10 +437,10 @@ export default function Timeline() {
                                   <p className="font-bold text-slate-200 text-sm">
                                     {lab.marker}
                                   </p>
-                                  <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">
+                                  <p className="text-xs text-slate-300 font-bold uppercase mt-1">
                                     Ref: {lab.reference_range || "-"}
                                   </p>
-                                  <p className="text-[10px] text-slate-500 mt-0.5">
+                                  <p className="text-xs text-slate-300 mt-0.5">
                                     Source: {source ? (
                                       <a 
                                         href={source.url} 
@@ -457,12 +457,12 @@ export default function Timeline() {
                                   </p>
                                   <div className="mt-2 pt-2 border-t border-white/5 flex flex-col gap-1">
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-[9px] text-slate-400 font-medium">Urgency:</span>
-                                      <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
+                                      <span className="text-xs text-slate-400 font-medium">Urgency:</span>
+                                      <span className={`px-1.5 py-0.2 rounded text-xs font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
                                         {urgency.level}
                                       </span>
                                     </div>
-                                    <p className="text-[9px] text-slate-400 leading-tight">
+                                    <p className="text-xs text-slate-400 leading-tight">
                                       <span className="font-medium text-slate-300">Next Step:</span> {urgency.nextStep}
                                     </p>
                                   </div>
@@ -488,7 +488,7 @@ export default function Timeline() {
                 {selectedDoc.extractedData?.medications &&
                   selectedDoc.extractedData.medications.length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                      <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
                         Medications
                       </h4>
                       <div className="grid gap-3">
@@ -556,7 +556,7 @@ export default function Timeline() {
       </AnimatePresence>
 
       <div className="pt-8 mt-12 border-t border-white/10 opacity-40 text-center">
-        <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.15em]">
+        <p className="text-xs text-slate-300 font-mono uppercase tracking-[0.15em]">
           Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-300 underline decoration-slate-500 transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>

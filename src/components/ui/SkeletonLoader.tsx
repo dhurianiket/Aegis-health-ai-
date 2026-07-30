@@ -59,7 +59,7 @@ export function DashboardSkeleton() {
         <SkeletonLoader className="lg:col-span-2 h-96" />
         <SkeletonLoader className="h-96" />
       </div>
-      <p className="text-center text-slate-500 text-xs font-medium animate-pulse py-4">
+      <p className="text-center text-slate-300 text-xs font-medium animate-pulse py-4">
         Synthesizing health telemetry...
       </p>
     </div>
@@ -85,7 +85,7 @@ export function TimelineSkeleton() {
           </div>
         ))}
       </div>
-      <p className="text-center text-slate-500 text-xs font-medium animate-pulse py-4">
+      <p className="text-center text-slate-300 text-xs font-medium animate-pulse py-4">
         Reconstructing clinical narrative...
       </p>
     </div>
@@ -99,7 +99,7 @@ export function SpecialistsSkeleton() {
         <SkeletonLoader count={3} className="h-64 rounded-[40px]" />
       </div>
       <SkeletonLoader className="h-96 rounded-[40px]" />
-      <p className="text-center text-slate-500 text-xs font-medium animate-pulse py-4">
+      <p className="text-center text-slate-300 text-xs font-medium animate-pulse py-4">
         Connecting with specialist intelligence...
       </p>
     </div>
