@@ -51,36 +51,53 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
     return () => observer.disconnect();
   }, [messageWidth]);
 
-  // Pre-calculate heights synchronously
+  // Pre-calculate heights synchronously with accurate Markdown line-break awareness
   const messageHeights = useMemo(() => {
     if (!containerWidth) return [];
     
     return messages.map((msg) => {
-      const font = msg.role === 'user' ? USER_FONT : AI_FONT;
-      const prepared = prepareText(msg.text, font);
-      // Let's assume message bubbles take 80% of width maximum
-      const bubbleWidth = containerWidth * 0.8 - 48; // minus padding
-      const textHeight = measureHeight(prepared, bubbleWidth, lineHeight);
+      const isUser = msg.role === 'user';
+      const bubbleWidth = Math.max(containerWidth * 0.8 - 48, 200);
       
-      // If of assistant/AI role, add extra safe padding to account for Markdown tags rendering (prose paragraphs, margins, etc.)
-      const isAI = msg.role !== 'user';
-      const extraPadding = isAI ? 40 : 0;
-      
-      return textHeight + MSG_PADDING + extraPadding;
+      if (isUser) {
+        const prepared = prepareText(msg.text, USER_FONT);
+        const textHeight = measureHeight(prepared, bubbleWidth, lineHeight);
+        return Math.max(textHeight + MSG_PADDING + 16, 60);
+      } else {
+        // AI / Specialist message with multi-line Markdown formatting
+        const rawLines = msg.text.split('\n');
+        let totalContentHeight = 0;
+        
+        rawLines.forEach((line) => {
+          const trimmed = line.trim();
+          if (!trimmed) {
+            totalContentHeight += 12; // Paragraph spacing
+            return;
+          }
+          
+          const isHeader = trimmed.startsWith('#');
+          const isListItem = trimmed.startsWith('-') || trimmed.startsWith('*') || /^\d+\./.test(trimmed);
+          
+          const font = isHeader ? '700 16px Inter, sans-serif' : AI_FONT;
+          const lineLh = isHeader ? 28 : lineHeight;
+          const prepared = prepareText(trimmed, font);
+          const lineH = measureHeight(prepared, bubbleWidth, lineLh);
+          
+          totalContentHeight += lineH + (isHeader ? 16 : isListItem ? 6 : 4);
+        });
+        
+        return Math.max(totalContentHeight + MSG_PADDING + 48, 80);
+      }
     });
   }, [messages, containerWidth, lineHeight]);
 
-  // Use the listRef if needed for scrolling later
-  // Note: v2 dynamically manages rowHeights through the itemSize or rowHeight functions natively
-  
   const getItemSize = (index: number) => {
-    return messageHeights[index] || 60; // default safe fallback
+    return messageHeights[index] || 80; // safe default fallback
   };
 
   // Scroll to bottom whenever messages are retrieved or updated
   useEffect(() => {
     if (listRef.current && messages.length > 0) {
-      // scroll to the last message inside the virtualized view
       listRef.current.scrollToItem(messages.length - 1, 'end');
     }
   }, [messages, messageHeights]);
@@ -88,26 +105,35 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
   const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
     const msg = messages[index];
     const isUser = msg.role === 'user';
-    const font = isUser ? USER_FONT : AI_FONT;
     
     return (
-      <div style={{ ...style, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div style={{ ...style, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '8px', paddingBottom: '8px' }}>
         <div 
-          className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} px-4 py-2`}
+          className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} px-2 md:px-4`}
         >
           <div 
-            className={`max-w-[80%] px-6 py-4 rounded-2xl ${
+            className={`max-w-[88%] md:max-w-[80%] px-5 py-4 rounded-2xl shadow-sm border ${
               isUser 
-                ? 'bg-blue-600 text-white dark:bg-blue-500' 
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100'
+                ? 'bg-blue-600 dark:bg-blue-500 text-white border-transparent' 
+                : 'bg-slate-50 dark:bg-[#1C1C1E] text-slate-900 dark:text-slate-100 border-slate-200 dark:border-[#2C2C2E]'
             }`}
-            style={isUser ? { font: font, lineHeight: `${lineHeight}px` } : { lineHeight: `${lineHeight}px` }}
           >
             {isUser ? (
-              msg.text
+              <p className="whitespace-pre-wrap text-[15px] font-medium leading-[1.6]">{msg.text}</p>
             ) : (
-              <div className="prose prose-sm dark:prose-invert max-w-none text-slate-800 dark:text-slate-100 leading-[1.6]">
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              <div className="prose prose-sm dark:prose-invert max-w-none text-slate-900 dark:text-slate-100 font-medium leading-[1.6]">
+                <ReactMarkdown 
+                  components={{
+                    strong: ({node, ...props}) => <strong className="text-indigo-600 dark:text-indigo-400 font-semibold" {...props} />,
+                    p: ({node, ...props}) => <p className="mb-3 last:mb-0 text-slate-900 dark:text-slate-100 leading-[1.6]" {...props} />,
+                    li: ({node, ...props}) => <li className="text-slate-900 dark:text-slate-100 my-1" {...props} />,
+                    h1: ({node, ...props}) => <h1 className="text-slate-900 dark:text-slate-100 font-bold text-lg mb-2 mt-4 first:mt-0" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="text-slate-900 dark:text-slate-100 font-bold text-base mb-2 mt-3 first:mt-0" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-slate-900 dark:text-slate-100 font-bold text-sm mb-1 mt-3 first:mt-0" {...props} />
+                  }}
+                >
+                  {msg.text}
+                </ReactMarkdown>
               </div>
             )}
           </div>

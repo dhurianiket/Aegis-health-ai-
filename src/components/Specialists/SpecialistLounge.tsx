@@ -310,7 +310,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
              </div>
           </div>
         ) : (
-          <div className="flex-1 w-full relative min-h-0 min-h-[400px]">
+          <div className="flex-1 w-full relative min-h-[450px] h-full flex flex-col">
             <VirtualizedChatList 
               messages={messages.map((m: any, i) => ({ id: String(i), role: m.role, text: m.content || "" }))} 
             />
