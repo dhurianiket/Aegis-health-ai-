@@ -990,7 +990,7 @@ export default function UploadCenter({
                            {item.status === 'error' && <AlertCircle className="w-5 h-5 text-[var(--color-critical)]" />}
                            
                            {!isProcessing && (
-                             <button onClick={() => removeFileFromQueue(item.id)} className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
+                             <button onClick={() => removeFileFromQueue(item.id)} aria-label="Remove file" className="p-2 hover:bg-red-500/10 rounded-full text-muted hover:text-red-500">
                                 <X className="w-4 h-4" />
                              </button>
                            )}
