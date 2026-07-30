@@ -367,28 +367,68 @@ Generate the summary strictly following the plain text format above.
   }
 }
 
+export {
+  UnifiedLabValueSchema,
+  UnifiedPrescriptionSchema,
+  UnifiedExtractionResultSchema,
+  type UnifiedLabValue,
+  type UnifiedPrescription,
+  type UnifiedExtractionResult,
+} from "./promptFramework";
+
 export interface ExtractedReportResponse {
   document_type: string;
+  documentType?: string;
   date: string;
+  extractedDate?: string;
   hospital_name: string | null;
+  hospitalName?: string | null;
   doctor_name: string | null;
+  doctorName?: string | null;
   lab_values: {
-    date: string;
-    marker: string;
+    date?: string;
+    marker?: string;
+    testName?: string;
     value: string;
     unit: string;
-    reference_range: string | null;
-    status: string;
+    reference_range?: string | null;
+    referenceRange?: string | null;
+    status?: string;
+    flag?: string;
+    confidence?: number;
   }[];
-  findings: string | null;
+  labResults?: {
+    testName: string;
+    value: string;
+    numericValue?: number | null;
+    unit: string;
+    referenceRange?: string | null;
+    flag?: string;
+    confidence?: number;
+  }[];
+  findings?: string | null;
+  summary?: string | null;
   medications: {
-    date: string;
-    name: string;
+    date?: string;
+    name?: string;
+    medicationName?: string;
     dosage: string;
     frequency: string;
-    purpose: string;
+    purpose?: string;
+    instructions?: string;
+    confidence?: number;
   }[];
-  follow_up_date: string | null;
+  prescriptions?: {
+    medicationName: string;
+    dosage: string;
+    frequency: string;
+    route?: string | null;
+    duration?: string | null;
+    instructions?: string | null;
+    confidence?: number;
+  }[];
+  follow_up_date?: string | null;
+  overallConfidence?: number;
   url?: string;
   id?: string;
 }
@@ -398,15 +438,19 @@ export async function extractMedicalReports(
   clinicalContext?: string
 ): Promise<ExtractedReportResponse | null> {
     const prompt = `
-    Extract the following information from this medical report (image or PDF).
-    Extract the information into a single structured JSON format.
-    
+    Extract clinical information from this medical report (image or PDF).
+    Supports:
+    1. Multi-column laboratory result charts (Test Name, Result/Value, Unit, Reference Range, Flag).
+    2. Handwritten or typed doctor prescriptions (Medication Name, Dosage, Frequency, Duration, Instructions).
+    3. Physical diagnostic documents (Radiology reports, Discharge summaries, ECG/Echo notes).
+
     ${clinicalContext ? `The patient has provided the following clinical context that might help you identify their age, baseline, or symptoms while reading the report:\n${clinicalContext}\n` : ''}
-    CRITICAL: 
-    - Output ONLY valid JSON.
-    - Be concise. 
-    - If the source text has long repeating phrases or redundant boilerplate (like "Spectrophotometry" repeated 100 times), ignore the repetitions and just extract the core value.
-    - Even if the document quality is poor, extract whatever data is visible. Return partial results rather than failing. For any field you cannot read, use null.
+    
+    CRITICAL INSTRUCTIONS:
+    - Output ONLY valid JSON conforming to the schema below.
+    - Extract exact test names, values, units, reference ranges, flags (LOW, NORMAL, HIGH, CRITICAL, ABNORMAL, UNKNOWN), and confidence scores (0.0 to 1.0).
+    - For handwritten prescriptions, transcribe doctor notes accurately.
+    - If document quality is poor, extract whatever data is visible. Return partial results rather than failing.
   `;
 
     const ai = getAI();
@@ -442,9 +486,15 @@ export async function extractMedicalReports(
             type: Type.OBJECT,
             properties: {
               document_type: { type: Type.STRING },
+              documentType: { type: Type.STRING },
               date: { type: Type.STRING },
+              extractedDate: { type: Type.STRING },
               hospital_name: { type: Type.STRING },
+              hospitalName: { type: Type.STRING },
               doctor_name: { type: Type.STRING },
+              doctorName: { type: Type.STRING },
+              summary: { type: Type.STRING },
+              overallConfidence: { type: Type.NUMBER },
               lab_values: {
                 type: Type.ARRAY,
                 items: {
@@ -452,12 +502,16 @@ export async function extractMedicalReports(
                   properties: {
                     date: { type: Type.STRING },
                     marker: { type: Type.STRING },
+                    testName: { type: Type.STRING },
                     value: { type: Type.STRING },
                     unit: { type: Type.STRING },
                     reference_range: { type: Type.STRING },
-                    status: { type: Type.STRING }
+                    referenceRange: { type: Type.STRING },
+                    status: { type: Type.STRING },
+                    flag: { type: Type.STRING },
+                    confidence: { type: Type.NUMBER }
                   },
-                  required: ["marker", "value"]
+                  required: ["value"]
                 }
               },
               findings: { type: Type.STRING },
@@ -468,16 +522,18 @@ export async function extractMedicalReports(
                   properties: {
                     date: { type: Type.STRING },
                     name: { type: Type.STRING },
+                    medicationName: { type: Type.STRING },
                     dosage: { type: Type.STRING },
                     frequency: { type: Type.STRING },
-                    purpose: { type: Type.STRING }
-                  },
-                  required: ["name"]
+                    purpose: { type: Type.STRING },
+                    instructions: { type: Type.STRING },
+                    confidence: { type: Type.NUMBER }
+                  }
                 }
               },
               follow_up_date: { type: Type.STRING }
             },
-            required: ["document_type", "date", "lab_values"]
+            required: ["date"]
           }
         },
       }), 3, "pdf_extraction");
@@ -489,13 +545,67 @@ export async function extractMedicalReports(
       console.log("[Extraction] Gemini raw response:", text);
       const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
       
-      if (result && Array.isArray(result.lab_values)) {
-        result.lab_values = result.lab_values.map((lab: any) => ({
-          ...lab,
-          unit: lab.unit || "",
-          reference_range: lab.reference_range || "",
-          status: lab.status || "unknown"
-        }));
+      if (result) {
+        // Map fields to ensure both traditional and unified properties exist
+        const docType = result.documentType || result.document_type || "lab_report";
+        result.document_type = docType;
+        result.documentType = docType;
+
+        if (Array.isArray(result.lab_values)) {
+          result.lab_values = result.lab_values.map((lab: any) => {
+            const testName = lab.testName || lab.marker || "Unknown Test";
+            const flag = (lab.flag || lab.status || "NORMAL").toUpperCase();
+            const refRange = lab.referenceRange || lab.reference_range || "";
+            return {
+              ...lab,
+              marker: testName,
+              testName,
+              unit: lab.unit || "",
+              reference_range: refRange,
+              referenceRange: refRange,
+              status: flag,
+              flag,
+              confidence: typeof lab.confidence === "number" ? lab.confidence : 0.9
+            };
+          });
+
+          result.labResults = result.lab_values.map(l => ({
+            testName: l.testName || l.marker || "",
+            value: l.value || "",
+            unit: l.unit || "",
+            referenceRange: l.referenceRange || l.reference_range || "",
+            flag: l.flag || l.status || "NORMAL",
+            confidence: l.confidence || 0.9
+          }));
+        } else {
+          result.lab_values = [];
+          result.labResults = [];
+        }
+
+        if (Array.isArray(result.medications)) {
+          result.medications = result.medications.map((m: any) => {
+            const medName = m.medicationName || m.name || "Unknown Medication";
+            return {
+              ...m,
+              name: medName,
+              medicationName: medName,
+              dosage: m.dosage || "",
+              frequency: m.frequency || "",
+              confidence: typeof m.confidence === "number" ? m.confidence : 0.9
+            };
+          });
+
+          result.prescriptions = result.medications.map(m => ({
+            medicationName: m.medicationName || m.name || "",
+            dosage: m.dosage || "",
+            frequency: m.frequency || "",
+            instructions: m.instructions || m.purpose || "",
+            confidence: m.confidence || 0.9
+          }));
+        } else {
+          result.medications = [];
+          result.prescriptions = [];
+        }
       }
 
       const labs = result?.lab_values || [];
@@ -503,17 +613,18 @@ export async function extractMedicalReports(
 
       console.log("[Extraction] Parsed result success:", !!result);
       
-      // Relaxed validation: only reject if null or empty JSON
       if (!result || (Object.keys(result).length === 0) || !result.lab_values) {
           console.warn("[Extraction] AI returned an empty or invalid response result, but we'll try to provide a skeleton.");
           return {
             lab_values: [],
+            labResults: [],
             document_type: "Unknown",
+            documentType: "Unknown",
             date: new Date().toISOString(),
             url: "", id: "",
             hospital_name: null, doctor_name: null,
             findings: "Extraction resulted in no data.",
-            medications: [], follow_up_date: null
+            medications: [], prescriptions: [], follow_up_date: null
           };
       }
       return result;

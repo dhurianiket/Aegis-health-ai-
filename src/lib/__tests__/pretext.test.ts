@@ -1,7 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { prepareText, measureHeight, measureWidth, measureLines } from '../pretext';
 
 describe('pretext utilities', () => {
+  beforeAll(() => {
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+      font: '',
+      measureText: (text: string) => ({
+        width: text.length * 8,
+      }),
+    }) as any;
+  });
+
   it('should prepare text without throwing', () => {
     const prepared = prepareText('Hello world', '400 16px Inter, sans-serif');
     expect(prepared).toBeDefined();

@@ -257,3 +257,113 @@ export function getUrgencyAndNextStep(
     badgeClass: "bg-slate-500/10 text-slate-300 border border-slate-500/20"
   };
 }
+
+/* ==========================================================================
+   MILESTONE 2: MEDICAL CONSENSUS GROUNDED AI CLINICAL GUIDELINES
+   ========================================================================== */
+
+export interface ClinicalGuideline {
+  id: string; // e.g. "acc_aha_2024", "ada_2025", "kdigo_2024", "esc_2025"
+  code: string; // Short code: "ACC/AHA 2024"
+  title: string; // Full official title
+  organization: "ACC/AHA" | "ADA" | "KDIGO" | "ESC";
+  year: number;
+  url: string;
+  evidenceLevel: string; // e.g. "Class I (Level A)", "Grade A"
+  keyTopics: string[];
+  summary: string;
+}
+
+export const CLINICAL_GUIDELINES: Record<string, ClinicalGuideline> = {
+  acc_aha_2024: {
+    id: "acc_aha_2024",
+    code: "ACC/AHA 2024",
+    title: "2024 ACC/AHA Clinical Practice Guidelines for High Blood Pressure and Lipid Management",
+    organization: "ACC/AHA",
+    year: 2024,
+    url: "https://www.acc.org/Guidelines/Guidelines-Clinical-Topics/High-Blood-Pressure",
+    evidenceLevel: "Class I (Level A)",
+    keyTopics: ["hypertension", "blood pressure", "bp", "cholesterol", "ldl", "hdl", "lipid", "statin", "ascvd", "triglycerides", "lipid management"],
+    summary: "Recommends BP target < 130/80 mmHg and high-intensity statins for high ASCVD risk with LDL target < 70 mg/dL (< 55 mg/dL for secondary prevention)."
+  },
+  ada_2025: {
+    id: "ada_2025",
+    code: "ADA 2025",
+    title: "American Diabetes Association Standards of Care in Diabetes — 2025",
+    organization: "ADA",
+    year: 2025,
+    url: "https://diabetesjournals.org/care/pages/standards_of_care",
+    evidenceLevel: "Grade A",
+    keyTopics: ["hba1c", "a1c", "glucose", "diabetes", "fasting glucose", "insulin", "metformin", "sglt2", "glp-1", "time-in-range", "cgm"],
+    summary: "Recommends glycemic target HbA1c < 7.0% for most adults, early SGLT2i or GLP-1 RA therapy for T2D with CKD or ASCVD."
+  },
+  kdigo_2024: {
+    id: "kdigo_2024",
+    code: "KDIGO 2024",
+    title: "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+    organization: "KDIGO",
+    year: 2024,
+    url: "https://kdigo.org/guidelines/ckd-evaluation-management/",
+    evidenceLevel: "Grade 1A",
+    keyTopics: ["egfr", "creatinine", "kidney", "ckd", "albumin", "uacr", "proteinuria", "potassium", "hyperkalemia", "ras inhibition", "acei", "arb"],
+    summary: "Recommends RAS inhibitor (ACEi/ARB) plus SGLT2 inhibitor for patients with eGFR < 60 mL/min/1.73m² or UACR ≥ 30 mg/g to delay CKD progression."
+  },
+  esc_2025: {
+    id: "esc_2025",
+    code: "ESC 2025",
+    title: "ESC 2025 Guidelines for Management of Cardiovascular Diseases & Heart Failure",
+    organization: "ESC",
+    year: 2025,
+    url: "https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines",
+    evidenceLevel: "Class I (Level A)",
+    keyTopics: ["heart failure", "hfref", "hfpef", "lvef", "atrial fibrillation", "afib", "troponin", "nt-probnp", "doac", "arni", "quadruple therapy"],
+    summary: "Mandates 4-pillar foundation therapy (ARNI/ACEi + Beta-blocker + MRA + SGLT2i) for HFrEF and DOACs over VKAs for AF stroke prevention."
+  }
+};
+
+/**
+ * Searches the guideline database for matching guidelines based on prompt text, biomarkers, and active specialist ID.
+ */
+export function lookupRelevantGuidelines(text: string, specialistId?: string): ClinicalGuideline[] {
+  const query = (text || "").toLowerCase();
+  const matched = new Set<ClinicalGuideline>();
+
+  if (specialistId === "cardiologist") {
+    matched.add(CLINICAL_GUIDELINES.acc_aha_2024);
+    matched.add(CLINICAL_GUIDELINES.esc_2025);
+  } else if (specialistId === "endocrinologist") {
+    matched.add(CLINICAL_GUIDELINES.ada_2025);
+  } else if (specialistId === "nephrologist") {
+    matched.add(CLINICAL_GUIDELINES.kdigo_2024);
+  }
+
+  Object.values(CLINICAL_GUIDELINES).forEach((guideline) => {
+    if (guideline.keyTopics.some((topic) => query.includes(topic))) {
+      matched.add(guideline);
+    }
+  });
+
+  return Array.from(matched);
+}
+
+/**
+ * Generates prompt augmentation block to be injected into specialist system instructions.
+ */
+export function buildGuidelinePromptAugmentation(guidelines: ClinicalGuideline[]): string {
+  if (!guidelines || guidelines.length === 0) return "";
+
+  let prompt = `\n\n### VERIFIED CLINICAL CONSENSUS GUIDELINES GROUNDING\n`;
+  prompt += `You must ground your clinical insights, target thresholds, and therapeutic options in the following verified guidelines:\n\n`;
+
+  guidelines.forEach((g) => {
+    prompt += `- **${g.code}** (${g.title}): ${g.summary} [Evidence: ${g.evidenceLevel}]\n`;
+  });
+
+  prompt += `\n### CITATION MANDATE\n`;
+  prompt += `Whenever you mention blood pressure targets, cholesterol goals, glycemic control, kidney function management, or drug recommendations, you MUST insert a formatted citation link using this EXACT syntax: \`[${guidelines[0]?.code}](cite:${guidelines[0]?.id})\` (e.g., \`[ACC/AHA 2024](cite:acc_aha_2024)\` or \`[ADA 2025](cite:ada_2025)\` or \`[KDIGO 2024](cite:kdigo_2024)\` or \`[ESC 2025](cite:esc_2025)\`).\n`;
+  prompt += `Do NOT invent fake guidelines. Rely strictly on verified consensus guidelines.\n`;
+
+  return prompt;
+}
+
+

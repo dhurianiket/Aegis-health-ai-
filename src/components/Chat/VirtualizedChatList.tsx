@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { List, ListImperativeAPI } from 'react-window';
 import { prepareText, measureHeight } from '../../lib/pretext';
 import ReactMarkdown from 'react-markdown';
+import { renderCitationLink } from '../Common/CitationBadge';
 
 export interface ChatMessage {
   id: string;
@@ -85,7 +86,11 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
           const prepared = prepareText(trimmed, font);
           const lineH = measureHeight(prepared, bubbleWidth, lineLh);
           
-          totalContentHeight += lineH + (isHeader ? 16 : isListItem ? 6 : 4);
+          // Account for citation badge pill heights in line height calculations
+          const citationCount = (trimmed.match(/cite:[a-z0-9_]+/gi) || trimmed.match(/\[(ACC\/AHA|ADA|KDIGO|ESC)[^\]]*\]/gi) || []).length;
+          const citationHeight = citationCount * 16;
+
+          totalContentHeight += lineH + (isHeader ? 16 : isListItem ? 6 : 4) + citationHeight;
         });
         
         return Math.max(totalContentHeight + MSG_PADDING + 48, 80);
@@ -136,6 +141,7 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
               <div className="prose prose-sm dark:prose-invert max-w-none text-slate-900 dark:text-slate-100 font-medium leading-[1.6]">
                 <ReactMarkdown 
                   components={{
+                    a: renderCitationLink,
                     strong: ({node, ...props}) => <strong className="text-indigo-600 dark:text-indigo-400 font-semibold" {...props} />,
                     p: ({node, ...props}) => <p className="mb-3 last:mb-0 text-slate-900 dark:text-slate-100 leading-[1.6]" {...props} />,
                     li: ({node, ...props}) => <li className="text-slate-900 dark:text-slate-100 my-1" {...props} />,

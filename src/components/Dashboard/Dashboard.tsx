@@ -166,13 +166,11 @@ export default function Dashboard({
           getDocuments(user.uid, activeProfile?.id),
         ]);
         
-        let docsError = false;
         if (scoresResult.status === 'rejected') console.error("Failed to fetch scores:", scoresResult.reason);
         if (insightsResult.status === 'rejected') console.error("Failed to fetch insights:", insightsResult.reason);
-        if (documentsResult.status === 'rejected') {
-           console.error("Failed to load this report:", documentsResult.reason);
-           docsError = true;
-        }
+        if (documentsResult.status === 'rejected') console.error("Failed to load documents:", documentsResult.reason);
+        
+        const allFailed = scoresResult.status === 'rejected' && insightsResult.status === 'rejected' && documentsResult.status === 'rejected';
         
         const scores = scoresResult.status === 'fulfilled' ? scoresResult.value : [];
         const insights = insightsResult.status === 'fulfilled' ? insightsResult.value : [];
@@ -185,7 +183,7 @@ export default function Dashboard({
           setHealthScores((scores as HealthScore[]) || []);
           setLatestInsights((insights as SpecialistInsight[]) || []);
           setKeyLabs(aggregatedLabs);
-          setError(docsError ? "Failed to load this report. Tap to retry." : null);
+          setError(allFailed ? "Failed to load health telemetry. Please check your connection." : null);
         }
       } catch (err) {
         console.error("Dashboard fetch failed:", err);

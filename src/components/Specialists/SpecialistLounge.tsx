@@ -1,5 +1,10 @@
 import { createPortal } from "react-dom";
 import { generateSourceHash, getCachedReport, saveCachedReport } from "../../services/cacheService";
+import { 
+  lookupRelevantGuidelines, 
+  buildGuidelinePromptAugmentation
+} from "../../services/sourceGroundedService";
+import { renderCitationLink } from "../Common/CitationBadge";
 import React, { useState, useRef, useEffect } from "react";
 import { SpecialistId } from "../../types/ai";
 import { getSpecialist, SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
@@ -143,6 +148,16 @@ export default function SpecialistLounge() {
         systemPrompt += `\n\n### GLOBAL CLINICAL CONTEXT\n${globalClinicalContext}`;
       }
       systemPrompt += `\n\n### PATIENT CONTEXT\n${context}`;
+
+      // Ground specialist guidance in Clinical Consensus Guidelines (ACC/AHA 2024, ADA 2025, KDIGO 2024, ESC 2025)
+      const relevantGuidelines = lookupRelevantGuidelines(
+        text + " " + (globalClinicalContext || "") + " " + context,
+        activeSpecialist
+      );
+      const guidelinePrompt = buildGuidelinePromptAugmentation(relevantGuidelines);
+      if (guidelinePrompt) {
+        systemPrompt += guidelinePrompt;
+      }
 
       if (isSummaryRequest) {
         systemPrompt += `
@@ -323,7 +338,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           <div className="flex justify-start pr-12 pb-2">
             <div className="max-w-[100%] rounded-[24px] rounded-bl-[8px] px-5 py-4 text-[16px] leading-[1.6] bg-slate-50 dark:bg-[#1C1C1E] text-slate-900 dark:text-slate-100 relative pb-8 shadow-sm border border-slate-200 dark:border-[#2C2C2E]">
               <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:leading-[1.6] prose-li:my-1 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0 font-medium marker:text-slate-300 dark:marker:text-slate-400 max-w-none">
-                <ReactMarkdown>{streamedText}</ReactMarkdown>
+                <ReactMarkdown components={{ a: renderCitationLink }}>{streamedText}</ReactMarkdown>
               </div>
               <span className="absolute bottom-5 left-6 w-2 h-2 bg-slate-500 dark:bg-slate-400 animate-pulse rounded-full" />
             </div>

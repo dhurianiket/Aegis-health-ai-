@@ -9,12 +9,15 @@ import { getActiveMedications, getInteractions, saveMedication, lookupRxCUI } fr
 import { Medication, DrugInteraction } from "../../types/health";
 import InteractionMatrix from "./InteractionMatrix";
 
+import { useClinicalContext } from "../../hooks/useClinicalContext";
+
 export default function Medications({
   onOpenChat,
 }: {
   onOpenChat?: () => void;
 }) {
   const { user } = useAuth();
+  const { labBiomarkers, drugLabContraindications } = useClinicalContext();
 
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -307,6 +310,8 @@ export default function Medications({
         <InteractionMatrix 
           medications={meds} 
           interactions={interactions} 
+          labBiomarkers={labBiomarkers}
+          drugLabContraindications={drugLabContraindications}
           onOpenChat={onOpenChat} 
         />
       </div>

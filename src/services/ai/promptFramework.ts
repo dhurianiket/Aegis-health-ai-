@@ -538,3 +538,43 @@ export async function extractLabData(
 
   throw new Error("Unexpected end of extraction loop.");
 }
+
+/**
+ * Unified Zod Schemas for Multimodal Direct Image & Photo Extraction
+ * (Lab reports, handwritten doctor prescriptions, physical diagnostic documents)
+ */
+export const UnifiedLabValueSchema = z.object({
+  testName: z.string(),
+  value: z.string(),
+  numericValue: z.number().nullable().optional(),
+  unit: z.string().default(""),
+  referenceRange: z.string().nullable().optional(),
+  flag: z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL", "ABNORMAL", "UNKNOWN"]).default("NORMAL"),
+  confidence: z.number().min(0).max(1).default(0.9),
+});
+
+export const UnifiedPrescriptionSchema = z.object({
+  medicationName: z.string(),
+  dosage: z.string(),
+  frequency: z.string(),
+  route: z.string().nullable().optional(),
+  duration: z.string().nullable().optional(),
+  instructions: z.string().nullable().optional(),
+  confidence: z.number().min(0).max(1).default(0.9),
+});
+
+export const UnifiedExtractionResultSchema = z.object({
+  documentType: z.enum(["lab_report", "prescription", "diagnostic_document", "other"]).default("other"),
+  extractedDate: z.string().nullable().optional(),
+  hospitalName: z.string().nullable().optional(),
+  doctorName: z.string().nullable().optional(),
+  labResults: z.array(UnifiedLabValueSchema).default([]),
+  prescriptions: z.array(UnifiedPrescriptionSchema).default([]),
+  summary: z.string().nullable().optional(),
+  overallConfidence: z.number().min(0).max(1).default(1.0),
+});
+
+export type UnifiedLabValue = z.infer<typeof UnifiedLabValueSchema>;
+export type UnifiedPrescription = z.infer<typeof UnifiedPrescriptionSchema>;
+export type UnifiedExtractionResult = z.infer<typeof UnifiedExtractionResultSchema>;
+

@@ -7,11 +7,14 @@ import { getForm, getFormResponses } from '../services/googleFormsService';
 import { db } from '../lib/firebase/config';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 
+import { evaluateDrugLabContraindications, LabBiomarker, DrugLabContraindication } from '../services/drugLabEngine';
+
 export function useClinicalContext() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   
   const [medications, setMedications] = useState<any[]>([]);
+  const [labBiomarkers, setLabBiomarkers] = useState<LabBiomarker[]>([]);
   const [formResponsesText, setFormResponsesText] = useState<string>("");
   const [medsLoading, setMedsLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(true);
@@ -50,7 +53,57 @@ export function useClinicalContext() {
     return () => unsubscribe();
   }, [user]);
 
-  // 2. Load Google Form Intake data
+  // 2. Listen for real-time lab document updates (AGENTS.md Rule 3)
+  useEffect(() => {
+    if (!user) {
+      setLabBiomarkers([]);
+      return;
+    }
+
+    const docQuery = query(
+      collection(db, 'users', user.uid, 'documents'),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(docQuery, (snapshot) => {
+      const extractedLabs: LabBiomarker[] = [];
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data();
+        const extracted = data.extractedData || data;
+        const obs = extracted.lab_values || extracted.observations || extracted.labResults || [];
+        if (Array.isArray(obs)) {
+          obs.forEach((l: any) => {
+            const testName = l.testName || l.marker || l.markerName || "";
+            if (testName) {
+              extractedLabs.push({
+                id: l.id || docSnap.id,
+                testName,
+                marker: testName,
+                value: String(l.value || l.display_value || l.numeric_value || ""),
+                numericValue: typeof l.numericValue === "number" ? l.numericValue : (typeof l.numeric_value === "number" ? l.numeric_value : null),
+                unit: l.unit || l.unitOriginal || "",
+                referenceRange: l.referenceRange || l.reference_range || "",
+                flag: l.flag || l.status || "NORMAL",
+                date: l.date || data.createdAt || data.date,
+              });
+            }
+          });
+        }
+      });
+      setLabBiomarkers(extractedLabs);
+    }, (err) => {
+      console.warn("[useClinicalContext] Document lab onSnapshot listener warning:", err);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // 3. Evaluate real-time drug-lab contraindications
+  const drugLabContraindications = useMemo(() => {
+    return evaluateDrugLabContraindications(medications, labBiomarkers);
+  }, [medications, labBiomarkers]);
+
+  // 4. Load Google Form Intake data
   useEffect(() => {
     let isMounted = true;
     async function loadFormResponses() {
@@ -131,17 +184,29 @@ export function useClinicalContext() {
       ctx += `Active medications: None recorded.\n`;
     }
     
+    if (labBiomarkers.length > 0) {
+      const labList = labBiomarkers.map(b => `${b.testName}: ${b.value} ${b.unit || ''} [${b.flag || 'NORMAL'}]`).slice(0, 10).join(', ');
+      ctx += `Recent Lab Biomarkers: ${labList}.\n`;
+    }
+
+    if (drugLabContraindications.length > 0) {
+      const contraList = drugLabContraindications.map(c => `[${c.severity.toUpperCase()}] ${c.title}: ${c.plainSummary}`).join('; ');
+      ctx += `Clinical Contraindication Alerts: ${contraList}.\n`;
+    }
+
     if (formResponsesText) {
       ctx += formResponsesText;
     }
     
     return ctx.trim();
-  }, [activeProfile, medications, bmi, formResponsesText]);
+  }, [activeProfile, medications, labBiomarkers, drugLabContraindications, bmi, formResponsesText]);
 
   return {
     contextString,
     profile: activeProfile,
     medications,
+    labBiomarkers,
+    drugLabContraindications,
     bmi,
     loading,
     error

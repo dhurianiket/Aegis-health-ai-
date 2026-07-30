@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, waitFor } from "@testing-library/react";
 import React from "react";
+import { MemoryRouter } from "react-router-dom";
 import App from "../App";
 import * as authCtx from "../context/AuthContext";
 import * as profileCtx from "../context/ProfileContext";
@@ -41,7 +42,11 @@ describe("App Critical Flow (Smoke)", () => {
       setActiveProfile: vi.fn(),
     });
 
-    const { getAllByText } = render(<App />);
+    const { getAllByText } = render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <App />
+      </MemoryRouter>
+    );
     
     await waitFor(() => {
       expect(getAllByText(/Secure Storage/i).length).toBeGreaterThan(0);

@@ -1,10 +1,18 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import Dashboard from '../src/components/Dashboard/Dashboard';
 import { AuthContext } from '../src/context/AuthContext';
 import { ProfileContext } from '../src/context/ProfileContext';
 import { getHealthScores, getLatestInsights, getDocuments } from '../src/lib/firebase/firestore';
+
+beforeAll(() => {
+  global.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});
 
 // Mock the Firestore calls
 vi.mock('../src/lib/firebase/firestore', () => ({
@@ -84,7 +92,7 @@ describe('Dashboard + Auth Integration', () => {
 
     // Wait for the asynchronous effects to process
     await waitFor(() => {
-      const elements = screen.queryAllByText('99');
+      const elements = screen.queryAllByText(/99/);
       expect(elements.length).toBeGreaterThan(0);
     });
   });

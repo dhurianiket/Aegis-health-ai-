@@ -13,3 +13,9 @@ firebase-applet-config.json
 firebase-blueprint.json
 pwd.txt
 firebase-adminsdk.json
+
+# Internal agent logs & editor configs
+.agents/
+.antigravity/
+.vscode/
+ORIGINAL_REQUEST.md

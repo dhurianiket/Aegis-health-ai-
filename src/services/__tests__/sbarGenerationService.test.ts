@@ -17,6 +17,26 @@ vi.mock("../../lib/geminiClient", () => {
   };
 });
 
+vi.mock("../ai/contextService", () => ({
+  getPatientContext: vi.fn().mockResolvedValue({
+    profile: { name: "John Doe", dob: "1980-01-01", gender: "Male" },
+    labHistory: [],
+    medications: [],
+    recentInsights: [],
+    alerts: [],
+    reportedSymptoms: [],
+    knownConditions: ["Hypertension"],
+    demographics: { age: "44 years", gender: "Male" },
+  }),
+  formatContextForPrompt: vi.fn().mockReturnValue("PATIENT PROFILE: John Doe"),
+}));
+
+vi.mock("../cacheService", () => ({
+  generateSourceHash: vi.fn().mockResolvedValue("mock-hash"),
+  getCachedReport: vi.fn().mockResolvedValue(null),
+  saveCachedReport: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe("SBARGenerationService", () => {
   const mockProfile: any = {
     name: "John Doe",
@@ -54,7 +74,7 @@ describe("SBARGenerationService", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const getAI = (await import("../../lib/geminiClient")).getAI;
     const mockInstance = getAI();
-    vi.mocked(mockInstance.models.generateContent).mockRejectedValueOnce(
+    vi.mocked(mockInstance.models.generateContent).mockRejectedValue(
       new Error("AI Failure")
     );
 

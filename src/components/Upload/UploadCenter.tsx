@@ -26,6 +26,7 @@ import {
   Building,
   Tag,
   Plus,
+  Camera,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { extractMedicalReports } from "../../services/ai/gemini";
@@ -69,14 +70,81 @@ const getMimeType = (file: File): string => {
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-const readFileAsSafeBase64 = (file: File): Promise<{
+/**
+ * Compresses images > 4MB using HTML5 Canvas
+ */
+const compressImageIfNeeded = (file: File): Promise<File> => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith("image/") || file.size <= 4 * 1024 * 1024) {
+      resolve(file);
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement("canvas");
+      let width = img.width;
+      let height = img.height;
+      const maxDim = 2048;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        },
+        "image/jpeg",
+        0.85
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
+};
+
+const readFileAsSafeBase64 = async (file: File): Promise<{
   base64Data: string;
   mimeType: string;
 }> => {
-  return new Promise((resolve, reject) => {
-    const mimeType = getMimeType(file);
+  let fileToRead = file;
+  if (file.type.startsWith("image/") && file.size > 4 * 1024 * 1024) {
+    try {
+      fileToRead = await compressImageIfNeeded(file);
+    } catch (e) {
+      console.warn("Failed to compress image before reading:", e);
+    }
+  }
 
-    if (file.size > 4 * 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    const mimeType = getMimeType(fileToRead);
+
+    if (fileToRead.size > 4 * 1024 * 1024) {
       reject(new Error("File too large. Maximum 4MB per file."));
       return;
     }
@@ -103,7 +171,7 @@ const readFileAsSafeBase64 = (file: File): Promise<{
         .replace(/\s/g, "")
         .replace(/\r?\n/g, "");
 
-      if (import.meta.env.DEV) console.log("[Upload Stage 1] File size:", file.size, "bytes");
+      if (import.meta.env.DEV) console.log("[Upload Stage 1] File size:", fileToRead.size, "bytes");
       console.log("[Upload Stage 1] Base64 start:", base64Data.substring(0, 100));
       console.log("[Safari Upload] MIME:", mimeType);
       console.log("[Safari Upload] Base64 length:", base64Data.length);
@@ -118,7 +186,7 @@ const readFileAsSafeBase64 = (file: File): Promise<{
       reject(new Error("Could not read file - hardware or browser error"));
     };
 
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(fileToRead);
   });
 };
 
@@ -674,16 +742,27 @@ export default function UploadCenter({
     }
   };
 
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
     
-    // Add file size check (max 4MB)
-    const validFiles = [];
+    // Add file size check (max 4MB) with auto-compression for photo payloads
+    const validFiles: File[] = [];
     for (const file of acceptedFiles) {
-      if (file.size > 4 * 1024 * 1024) {
+      let fileToUse = file;
+      if (file.type.startsWith("image/") && file.size > 4 * 1024 * 1024) {
+        try {
+          fileToUse = await compressImageIfNeeded(file);
+        } catch (err) {
+          console.warn("[UploadCenter] Compression failed, proceeding with original:", err);
+        }
+      }
+
+      if (fileToUse.size > 4 * 1024 * 1024) {
         showToast(`File too large: ${file.name} (Max 4MB)`, "error");
       } else {
-        validFiles.push(file);
+        validFiles.push(fileToUse);
       }
     }
     
@@ -697,6 +776,14 @@ export default function UploadCenter({
     }));
     setFileQueue((prev) => [...prev, ...newFiles]);
   }, [showToast]);
+
+  const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      await onDrop(Array.from(files));
+    }
+    if (e.target) e.target.value = "";
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -796,13 +883,21 @@ export default function UploadCenter({
             <>
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-[32px] p-16 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                className={`border-2 border-dashed rounded-[32px] p-12 flex flex-col items-center justify-center cursor-pointer transition-all ${
                   isDragActive
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 scale-[1.01]"
                     : "border-surface bg-surface/30 hover:bg-surface/50"
                 }`}
               >
                 <input {...getInputProps()} aria-label="Upload medical records or patient data" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  ref={cameraInputRef}
+                  className="hidden"
+                  onChange={handleCameraCapture}
+                />
                 <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mb-6">
                   {isDragActive ? (
                     <Clock className="w-8 h-8 text-[var(--color-primary)] animate-pulse" />
@@ -814,11 +909,24 @@ export default function UploadCenter({
                   )}
                 </div>
                 <h3 className="section-title mb-2">
-                  {isDragActive ? "Drop files here" : "Upload Reports"}
+                  {isDragActive ? "Drop files here" : "Upload Reports or Take Photo"}
                 </h3>
                 <p className="text-muted text-sm mb-6 max-w-sm text-center">
-                  Drag PDFs or images here, or click to browse. Multiple selection supported.
+                  Drag PDFs or images here, or click to browse. Take a photo directly on mobile devices.
                 </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      cameraInputRef.current?.click();
+                    }}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-full shadow transition-all inline-flex items-center gap-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Take Photo of Report
+                  </button>
+                </div>
               </div>
 
               <div className="flex flex-col items-center justify-center gap-4 mt-2">
