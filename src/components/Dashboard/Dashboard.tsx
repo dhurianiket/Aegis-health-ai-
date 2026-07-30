@@ -337,44 +337,44 @@ export default function Dashboard({
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         <motion.div
-          whileHover={{ y: -4, backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-md dark:shadow-2xl flex items-center gap-6"
+          whileHover={{ y: -4 }}
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-6"
         >
-          <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0">
             <ShieldCheck className="w-8 h-8" />
           </div>
           <div>
-            <p className="text-[var(--color-text-muted)] text-xs font-bold uppercase tracking-widest mb-1">
+            <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider mb-1">
               Health Index
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-light text-[var(--color-text)]">
+              <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
                 {latestScore.overall}
-                <span className="text-sm opacity-70 ml-1">/100</span>
+                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 ml-1">/100</span>
               </span>
-              <span className="text-emerald-400 text-xs font-bold flex items-center">
-                <TrendingUp className="w-3 h-3 mr-1" /> +4%
+              <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center">
+                <TrendingUp className="w-3.5 h-3.5 mr-1" /> +4%
               </span>
             </div>
           </div>
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -4, backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-md dark:shadow-2xl flex items-center gap-6"
+          whileHover={{ y: -4 }}
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-6"
         >
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
             <Zap className="w-8 h-8" />
           </div>
           <div>
-            <p className="text-[var(--color-text-muted)] text-xs font-bold uppercase tracking-widest mb-1">
+            <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider mb-1">
               Metabolic
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-light text-[var(--color-text)]">
+              <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
                 {latestScore.systems.metabolic}
               </span>
-              <span className="text-emerald-400 text-xs font-bold">
+              <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">
                 {latestScore.systems.metabolic > 80
                   ? "Optimal"
                   : latestScore.systems.metabolic > 60
@@ -386,23 +386,23 @@ export default function Dashboard({
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -4, backgroundColor: "rgba(255, 255, 255, 0.04)" }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-md dark:shadow-2xl flex items-center gap-6"
+          whileHover={{ y: -4 }}
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-6"
         >
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
             <Droplets className="w-8 h-8" />
           </div>
           <div>
-            <p className="text-[var(--color-text-muted)] text-xs font-bold uppercase tracking-widest mb-1">
+            <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider mb-1">
               Blood Quality
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-light text-[var(--color-text)]">
+              <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
                 {latestScore.systems.blood}
               </span>
-              <span className="text-amber-400 text-xs font-bold flex items-center">
+              <span className="text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center">
                 {latestScore.systems.blood < 70 && (
-                  <AlertTriangle className="w-3 h-3 mr-1" />
+                  <AlertTriangle className="w-3.5 h-3.5 mr-1" />
                 )}
                 {latestScore.systems.blood > 80
                   ? "Optimal"
@@ -495,19 +495,19 @@ export default function Dashboard({
                        </div>
                        <div className="flex justify-between items-baseline mb-2">
                           <div className="flex items-baseline gap-1">
-                             <span className="text-lg font-bold text-[var(--color-text)]">{lab.value}</span>
-                             <span className="text-xs text-[var(--color-text-muted)] font-medium">{lab.unit}</span>
+                             <span className="text-xl font-extrabold text-[var(--color-text)]">{lab.value}</span>
+                             <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{lab.unit}</span>
                           </div>
-                          <span className="text-xs text-[var(--color-text-faint)] italic">
+                          <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">
                              Ref: {lab.referenceRange || 'N/A'}
                           </span>
                        </div>
-                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
-                         <div className="leading-normal">
-                           <span className="font-semibold text-[var(--color-text)] text-xs">Next Step: </span>
-                           <span className="text-[var(--color-text-muted)] text-xs">{urgency.nextStep}</span>
+                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs text-slate-700 dark:text-slate-200 font-medium">
+                         <div className="leading-relaxed">
+                           <span className="font-bold text-[var(--color-text)] text-xs">Next Step: </span>
+                           <span className="text-slate-800 dark:text-slate-200 text-xs font-medium">{urgency.nextStep}</span>
                          </div>
-                         <div className="flex items-center justify-between mt-1 text-xs text-[var(--color-text-faint)]">
+                         <div className="flex items-center justify-between mt-1 text-xs text-slate-600 dark:text-slate-300 font-medium">
                            <span>Source:</span>
                            {source ? (
                              <a 
@@ -515,13 +515,13 @@ export default function Dashboard({
                                target="_blank" 
                                rel="noopener noreferrer" 
                                onClick={(e) => e.stopPropagation()}
-                               className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-medium"
+                               className="text-[var(--color-primary)] hover:underline inline-flex items-center gap-1 font-bold"
                                id={`dashboard-ref-link-${i}`}
                              >
                                {source.name}
                              </a>
                            ) : (
-                             <span className="italic">reference not available</span>
+                             <span className="italic text-slate-500 dark:text-slate-400">reference not available</span>
                            )}
                          </div>
                        </div>

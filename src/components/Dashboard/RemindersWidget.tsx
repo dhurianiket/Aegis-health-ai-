@@ -91,12 +91,12 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-sm text-[var(--color-text)]">{reminder.testName}</span>
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text-muted)]">
+                    <span className="font-bold text-sm text-[var(--color-text)]">{reminder.testName}</span>
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/60 dark:border-white/10 shrink-0">
                       {alertStateStr}
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                  <p className="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
                     {reminder.reason}
                   </p>
                 </div>

@@ -83,7 +83,7 @@ export default function ComparativeAnalysis({
                 <span className="text-sm font-bold text-slate-900 dark:text-gray-100">
                   {lab.markerName}
                 </span>
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
                   {lab.value} {lab.unit}
                 </span>
               </div>
@@ -103,9 +103,9 @@ export default function ComparativeAnalysis({
                 <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/20"></div>
               </div>
 
-              <div className="flex justify-between mt-1 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+              <div className="flex justify-between mt-1.5 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
                 <span>Lower</span>
-                <span className="text-slate-800 dark:text-slate-100">Median</span>
+                <span className="text-slate-900 dark:text-white font-extrabold">Median</span>
                 <span>Upper</span>
               </div>
             </div>

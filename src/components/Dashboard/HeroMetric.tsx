@@ -48,28 +48,28 @@ export const HeroMetric: React.FC<HeroMetricProps> = ({
   }, [value, previousValue]);
 
   return (
-    <div className="flex flex-col gap-2 p-6">
-      <h3 className="label-caps">{label}</h3>
+    <div className="flex flex-col gap-2 p-5 bg-white dark:bg-[#121214] rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm transition-all hover:border-teal-500/30">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">{label}</h3>
 
       <div className="flex items-baseline gap-2">
         <motion.span
-          className={`hero-number tabular-nums ${isCritical ? "text-[var(--color-critical)]" : "text-[var(--color-primary)]"}`}
+          className={`text-3xl font-extrabold tracking-tight tabular-nums ${isCritical ? "text-rose-600 dark:text-rose-400" : "text-teal-600 dark:text-teal-400"}`}
         >
           {displayValue.toFixed(1)}
         </motion.span>
-        <span className="text-muted">{unit}</span>
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{unit}</span>
       </div>
 
       {(refLow !== undefined || refHigh !== undefined) && (
-        <div className="text-xs text-faint mb-2">
-          Ref: {refLow !== undefined ? refLow : ''}–{refHigh !== undefined ? refHigh : ''}
+        <div className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+          Ref: <span className="font-semibold text-slate-800 dark:text-slate-200">{refLow !== undefined ? refLow : ''}–{refHigh !== undefined ? refHigh : ''}</span>
         </div>
       )}
 
       {delta !== 0 && (
-        <div className="flex items-center gap-1 mt-1 text-sm">
+        <div className="flex items-center gap-1 mt-1 text-xs font-semibold">
           <span
-            className={`inline-flex items-center font-medium ${isHigher && isCritical ? "text-[var(--color-critical)]" : !isHigher && isCritical ? "text-[var(--color-critical)]" : isHigher ? "text-[var(--color-warning)]" : "text-[var(--color-success)]"}`}
+            className={`inline-flex items-center ${isHigher && isCritical ? "text-rose-600 dark:text-rose-400" : !isHigher && isCritical ? "text-rose-600 dark:text-rose-400" : isHigher ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}
           >
             {isHigher ? (
               <ArrowUp size={14} className="mr-0.5" />
@@ -78,8 +78,8 @@ export const HeroMetric: React.FC<HeroMetricProps> = ({
             )}
             {Math.abs(delta).toFixed(1)}
           </span>
-          <span className="text-muted">
-            from {previousValue} on {previousDate}
+          <span className="text-slate-600 dark:text-slate-300 font-medium">
+            vs {previousValue} ({previousDate})
           </span>
         </div>
       )}

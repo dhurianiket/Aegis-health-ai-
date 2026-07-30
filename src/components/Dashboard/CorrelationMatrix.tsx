@@ -98,11 +98,11 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
   }
 
   const getColor = (val: number) => {
-    if (val > 0.7) return "bg-indigo-600 text-white font-bold";
-    if (val > 0.3) return "bg-indigo-500/80 text-white font-semibold";
-    if (val > -0.3) return "bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium";
-    if (val > -0.7) return "bg-amber-500/80 text-white font-semibold";
-    return "bg-amber-600 text-white font-bold";
+    if (val > 0.7) return "bg-indigo-600 dark:bg-indigo-500 text-white font-extrabold shadow-sm";
+    if (val > 0.3) return "bg-indigo-500/90 text-white font-bold";
+    if (val > -0.3) return "bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold border border-slate-300/60 dark:border-white/10";
+    if (val > -0.7) return "bg-amber-500/90 text-white font-bold";
+    return "bg-amber-600 dark:bg-amber-500 text-white font-extrabold shadow-sm";
   };
 
   return (
@@ -115,7 +115,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
           <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100 tracking-tight">
             Biomarker Correlation
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">
+          <p className="text-xs text-slate-700 dark:text-slate-200 font-semibold mt-0.5">
             Statistical relationships between labs
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
             {markers.map((m) => (
               <div
                 key={m}
-                className="w-16 text-center text-xs font-bold text-slate-800 dark:text-slate-100 uppercase truncate px-1"
+                className="w-16 text-center text-xs font-bold text-slate-900 dark:text-slate-100 uppercase truncate px-1 tracking-wider"
               >
                 {m}
               </div>
@@ -137,7 +137,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
 
           {markers.map((m1, i) => (
             <div key={m1} className="flex mb-2 items-center">
-              <div className="w-20 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase truncate pr-2 text-right">
+              <div className="w-20 text-xs font-bold text-slate-900 dark:text-slate-100 uppercase truncate pr-2 text-right tracking-wider">
                 {m1}
               </div>
               {markers.map((m2, j) => (
@@ -149,7 +149,7 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: (i * markers.length + j) * 0.05 }}
-                    className={`w-full h-8 rounded flex items-center justify-center text-xs ${getColor(matrix[i][j])}`}
+                    className={`w-full h-8 rounded-lg flex items-center justify-center text-xs ${getColor(matrix[i][j])}`}
                     title={`${m1} vs ${m2}: ${matrix[i][j].toFixed(2)}`}
                   >
                     {matrix[i][j] !== 0 ? matrix[i][j].toFixed(1) : "-"}
@@ -161,12 +161,12 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-start gap-2 bg-slate-100 dark:bg-slate-900/60 p-3.5 rounded-xl border border-black/5 dark:border-white/5">
+      <div className="mt-4 flex items-start gap-2 bg-slate-100 dark:bg-slate-900/80 p-3.5 rounded-xl border border-slate-200/80 dark:border-white/10">
         <Info className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
-        <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-          Values near <span className="text-indigo-600 dark:text-indigo-400 font-bold">1.0</span>{" "}
+        <p className="text-xs text-slate-800 dark:text-slate-200 font-semibold leading-relaxed">
+          Values near <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">1.0</span>{" "}
           indicate markers rise together. Values near{" "}
-          <span className="text-amber-600 dark:text-amber-400 font-bold">-1.0</span> indicate an
+          <span className="text-amber-600 dark:text-amber-400 font-extrabold">-1.0</span> indicate an
           inverse relationship.
         </p>
       </div>

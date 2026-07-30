@@ -75,7 +75,7 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
           <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100 tracking-tight">
             Key Biomarkers
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">
+          <p className="text-xs text-slate-700 dark:text-slate-200 font-semibold mt-0.5">
             Recent trajectory overview
           </p>
         </div>
@@ -99,14 +99,14 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5"
+              className="bg-slate-100 dark:bg-slate-900/80 rounded-2xl p-4 border border-slate-200/80 dark:border-white/10 shadow-sm"
             >
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest truncate">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider truncate">
                 {item.name}
               </h4>
               <div className="flex items-end justify-between mt-2">
                 <span
-                  className={`text-xl font-light tracking-tight ${isCritical ? "text-amber-600 dark:text-amber-400 font-bold" : "text-slate-900 dark:text-white"}`}
+                  className={`text-2xl font-extrabold tracking-tight ${isCritical ? "text-amber-600 dark:text-amber-400" : "text-slate-900 dark:text-white"}`}
                 >
                   {item.latest.value}
                 </span>
