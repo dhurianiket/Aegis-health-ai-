@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from "react";
 import {
   User,
   signInWithPopup,
@@ -221,8 +221,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const value = useMemo(
+    () => ({ user, loading, isSigningIn, authResolved, signIn, logOut }),
+    [user, loading, isSigningIn, authResolved]
+  );
+
   return (
-    <AuthContext.Provider value={{ user, loading, isSigningIn, authResolved, signIn, logOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

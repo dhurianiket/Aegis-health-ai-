@@ -160,18 +160,21 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const value = React.useMemo(
+    () => ({
+      profiles,
+      activeProfile,
+      setActiveProfile,
+      createProfile,
+      updateProfile,
+      deleteProfile,
+      isLoading,
+    }),
+    [profiles, activeProfile, isLoading]
+  );
+
   return (
-    <ProfileContext.Provider
-      value={{
-        profiles,
-        activeProfile,
-        setActiveProfile,
-        createProfile,
-        updateProfile,
-        deleteProfile,
-        isLoading,
-      }}
-    >
+    <ProfileContext.Provider value={value}>
       {children}
     </ProfileContext.Provider>
   );

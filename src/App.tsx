@@ -50,7 +50,6 @@ const IntegrationsPanel = lazy(
 );
 const SharedProfile = lazy(() => import("./components/Export/SharedProfile"));
 
-import { generateSBAR } from "./services/sbarGenerationService";
 import { validateProfileName } from "./lib/validation";
 import { logger } from "./lib/logger";
 import { getDocuments } from "./lib/firebase/firestore";
@@ -137,6 +136,7 @@ function MainApp() {
                 observations.push(...doc.extractedData.lab_values);
               }
             });
+            const { generateSBAR } = await import("./services/sbarGenerationService");
             const meds = activeProfile.medications || [];
             const data = await generateSBAR(
               user.uid,

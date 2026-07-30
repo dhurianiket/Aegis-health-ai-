@@ -111,6 +111,16 @@ export default function ConsentScreen({
     return () => { isMounted = false; };
   }, [userId, onConsentChecked]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && onClose) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const handleNext = async () => {
     if (step < steps.length - 1) {
       setStep((prev) => prev + 1);
