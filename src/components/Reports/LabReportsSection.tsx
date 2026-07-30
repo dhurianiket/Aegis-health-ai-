@@ -403,7 +403,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex flex-wrap gap-2">
                  {['All', 'Lab Reports', 'Consultations', 'Other'].map(f => (
-                    <button key={f} onClick={() => setFilterType(f)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filterType === f ? 'bg-primary text-slate-900 font-bold' : 'bg-surface text-muted hover:bg-border/50 border border-border'}`}>
+                    <button key={f} onClick={() => setFilterType(f)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filterType === f ? 'bg-primary text-white dark:text-slate-950 font-bold' : 'bg-surface text-muted hover:bg-border/50 border border-border'}`}>
                        {f}
                     </button>
                  ))}

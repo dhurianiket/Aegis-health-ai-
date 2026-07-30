@@ -354,8 +354,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={`Message ${activeSpecProfile.displayName}...`}
-            disabled={isTyping}
-            className="w-full bg-slate-100 dark:bg-[#1C1C1E] border border-slate-300 dark:border-[#3C3C3E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-300 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all disabled:opacity-50 shadow-sm"
+            className="w-full bg-slate-100 dark:bg-[#1C1C1E] border border-slate-300 dark:border-[#3C3C3E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all disabled:opacity-50 shadow-sm"
           />
           <button
             type="submit"

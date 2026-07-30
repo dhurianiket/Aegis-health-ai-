@@ -425,7 +425,7 @@ export default function Dashboard({
             <h3 className="font-bold text-[var(--color-text)] tracking-tight">
               System Performance
             </h3>
-            <Microscope className="text-slate-300 w-5 h-5" />
+            <Microscope className="text-[var(--color-primary)] w-5 h-5" />
           </div>
           <div className="h-[300px] w-full">
             <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
@@ -597,9 +597,9 @@ export default function Dashboard({
             </div>
           </motion.div>
 
-          <div className="pt-8 mt-12 border-t border-[var(--color-border)] opacity-40 text-center">
-        <p className="text-xs text-[var(--color-text-faint)] font-mono uppercase tracking-[0.15em]">
-          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline decoration-[var(--color-text-faint)] transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
+          <div className="pt-8 mt-12 border-t border-[var(--color-border)] text-center">
+        <p className="text-xs text-[var(--color-text-muted)] font-mono uppercase tracking-[0.15em] font-medium">
+          Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:text-[var(--color-text)] underline transition-colors font-bold">Aniket Dhuri</a> · Powered by Gemini AI
         </p>
       </div>
         </div>

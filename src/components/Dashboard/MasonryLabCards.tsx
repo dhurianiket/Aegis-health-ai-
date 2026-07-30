@@ -119,12 +119,12 @@ export const MasonryLabCards: React.FC<MasonryLabCardsProps> = ({
                   style={{ height: `${item.height}px` }}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-slate-300 dark:text-slate-400 m-0" style={{ font: TITLE_FONT, lineHeight: `${TITLE_LH}px` }}>
+                    <h3 className="text-slate-700 dark:text-slate-300 font-semibold m-0" style={{ font: TITLE_FONT, lineHeight: `${TITLE_LH}px` }}>
                       {item.title}
                     </h3>
                     {item.trend && (
-                      <span className={`text-sm font-medium ${
-                        item.trend === 'up' ? 'text-red-500' : item.trend === 'down' ? 'text-emerald-500' : 'text-slate-400'
+                      <span className={`text-sm font-bold ${
+                        item.trend === 'up' ? 'text-red-600 dark:text-red-400' : item.trend === 'down' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'
                       }`}>
                         {item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : '→'}
                       </span>

@@ -50,7 +50,7 @@ export default function ComparativeAnalysis({
           <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100 tracking-tight">
             Percentile Ranking
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">
             Your values compared to healthy peers
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function ComparativeAnalysis({
                 <span className="text-sm font-bold text-slate-900 dark:text-gray-100">
                   {lab.markerName}
                 </span>
-                <span className="text-xs font-medium text-slate-400">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   {lab.value} {lab.unit}
                 </span>
               </div>
@@ -103,9 +103,9 @@ export default function ComparativeAnalysis({
                 <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/20"></div>
               </div>
 
-              <div className="flex justify-between mt-1 text-xs font-bold uppercase tracking-wider text-slate-300 dark:text-slate-300">
+              <div className="flex justify-between mt-1 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                 <span>Lower</span>
-                <span className="text-slate-400 dark:text-slate-200">Median</span>
+                <span className="text-slate-800 dark:text-slate-100">Median</span>
                 <span>Upper</span>
               </div>
             </div>

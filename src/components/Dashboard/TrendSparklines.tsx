@@ -75,7 +75,7 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
           <h3 className="text-lg font-bold text-slate-900 dark:text-gray-100 tracking-tight">
             Key Biomarkers
           </h3>
-          <p className="text-xs text-slate-300 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">
             Recent trajectory overview
           </p>
         </div>
@@ -101,18 +101,18 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
               transition={{ delay: idx * 0.1 }}
               className="bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5"
             >
-              <h4 className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest truncate">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest truncate">
                 {item.name}
               </h4>
               <div className="flex items-end justify-between mt-2">
                 <span
-                  className={`text-xl font-light tracking-tight ${isCritical ? "text-amber-500 dark:text-amber-400" : "text-slate-900 dark:text-white"}`}
+                  className={`text-xl font-light tracking-tight ${isCritical ? "text-amber-600 dark:text-amber-400 font-bold" : "text-slate-900 dark:text-white"}`}
                 >
                   {item.latest.value}
                 </span>
                 {item.previous && (
                   <div
-                    className={`flex items-center text-xs font-bold ${isUp ? "text-red-400" : isDown ? "text-emerald-400" : "text-slate-300"}`}
+                    className={`flex items-center text-xs font-bold ${isUp ? "text-red-600 dark:text-red-400" : isDown ? "text-emerald-600 dark:text-emerald-400" : "text-slate-600 dark:text-slate-400"}`}
                   >
                     {isUp ? (
                       <TrendingUp className="w-3 h-3 mr-0.5" />

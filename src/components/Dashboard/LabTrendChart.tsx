@@ -353,14 +353,14 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                   
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                    tick={{ fill: "var(--color-text)", fontSize: 12, opacity: 0.9, fontWeight: 500 }}
                     tickLine={false} 
                     axisLine={false} 
                     dy={10}
                   />
                   
                   <YAxis 
-                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                    tick={{ fill: "var(--color-text)", fontSize: 12, opacity: 0.9, fontWeight: 500 }}
                     tickLine={false} 
                     axisLine={false} 
                     dx={-10}
