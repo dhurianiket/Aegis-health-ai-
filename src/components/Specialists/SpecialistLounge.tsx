@@ -416,8 +416,8 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                     <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>{s.displayName}</div>
-                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-slate-200' : 'text-slate-600 dark:text-slate-300'}`}>
+                    <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-[var(--color-text)] dark:text-slate-100'}`}>{s.displayName}</div>
+                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-slate-200' : 'text-[var(--color-text-muted)] dark:text-slate-300'}`}>
                       {s.expertise.slice(0, 2).join(' • ')}...
                     </div>
                   </div>
