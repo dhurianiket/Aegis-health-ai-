@@ -115,26 +115,30 @@ export const MasonryLabCards: React.FC<MasonryLabCardsProps> = ({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: item.index * 0.05, ease: "easeOut" }}
-                  className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col"
+                  className="bg-white dark:bg-[#121214] rounded-[20px] p-5 shadow-sm border border-slate-200/80 dark:border-white/10 flex flex-col hover:-translate-y-1 hover:shadow-md hover:border-teal-500/30 transition-all duration-200 cursor-pointer group"
                   style={{ height: `${item.height}px` }}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-slate-700 dark:text-slate-300 font-semibold m-0" style={{ font: TITLE_FONT, lineHeight: `${TITLE_LH}px` }}>
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <h3 className="text-slate-800 dark:text-slate-200 font-semibold m-0 tracking-tight group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors" style={{ font: TITLE_FONT, lineHeight: `${TITLE_LH}px` }}>
                       {item.title}
                     </h3>
                     {item.trend && (
-                      <span className={`text-sm font-bold ${
-                        item.trend === 'up' ? 'text-red-600 dark:text-red-400' : item.trend === 'down' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${
+                        item.trend === 'up' 
+                          ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-900/40' 
+                          : item.trend === 'down' 
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/40' 
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
-                        {item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : '→'}
+                        {item.trend === 'up' ? '↑ High' : item.trend === 'down' ? '↓ Low' : '→ Stable'}
                       </span>
                     )}
                   </div>
-                  <div className="text-slate-900 dark:text-white mb-2" style={{ font: VALUE_FONT, lineHeight: `${VALUE_LH}px` }}>
+                  <div className="text-slate-900 dark:text-white font-bold mb-2 tracking-tight" style={{ font: VALUE_FONT, lineHeight: `${VALUE_LH}px` }}>
                     {item.value}
                   </div>
                   {item.note && (
-                    <div className="text-slate-600 dark:text-slate-400 mt-auto" style={{ font: NOTE_FONT, lineHeight: `${NOTE_LH}px` }}>
+                    <div className="text-slate-600 dark:text-slate-400 font-medium text-xs mt-auto pt-2 border-t border-slate-100 dark:border-white/5" style={{ font: NOTE_FONT, lineHeight: `${NOTE_LH}px` }}>
                       {item.note}
                     </div>
                   )}

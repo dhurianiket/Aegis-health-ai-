@@ -118,7 +118,21 @@
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     backdrop-filter: blur(24px);
-    @apply rounded-[24px];
+    -webkit-backdrop-filter: blur(24px);
+    @apply rounded-[24px] transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-500/30;
+  }
+
+  .glow-teal {
+    box-shadow: 0 0 25px -5px rgba(45, 212, 191, 0.25);
+  }
+
+  .smooth-transition {
+    @apply transition-all duration-200;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .hero-number {
@@ -130,12 +144,12 @@
   .label-caps {
     font-size: 0.75rem;
     color: var(--color-text-muted);
-    @apply uppercase tracking-widest font-medium;
+    @apply uppercase tracking-widest font-semibold;
   }
 
   .section-title {
     font-size: clamp(1.125rem, 2vw, 1.5rem);
-    @apply font-semibold;
+    @apply font-bold tracking-tight text-[var(--color-text)];
   }
 
   .scrollbar-none::-webkit-scrollbar {

@@ -245,7 +245,7 @@ Format as a clean, highly structured Markdown document with:
               <button 
                  type="button"
                  onClick={generatePrep}
-                 className="w-full bg-[var(--color-primary)] hover:opacity-90 text-slate-900 font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 mt-2"
+                 className="w-full bg-[var(--color-primary)] hover:opacity-95 text-white dark:text-slate-950 font-bold py-3 rounded-2xl transition-all duration-200 active:scale-[0.98] shadow-md shadow-teal-500/20 flex items-center justify-center gap-2 mt-3 cursor-pointer"
               >
                  <FileDown className="w-4 h-4" />
                  Generate Prep Document

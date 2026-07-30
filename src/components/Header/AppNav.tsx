@@ -108,22 +108,22 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] transition-colors focus:outline-none relative group ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] transition-all duration-200 focus:outline-none relative group cursor-pointer ${
                   isActive
-                    ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                    : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                    ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)] font-semibold shadow-sm shadow-[var(--color-primary)]/10"
+                    : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] font-medium"
                 }`}
               >
                 <tab.icon
                   size={20}
                   strokeWidth={isActive ? 2.5 : 2}
-                  className="shrink-0"
+                  className="shrink-0 transition-transform duration-200 group-hover:scale-110"
                 />
-                <span className="font-medium text-sm">{tab.label}</span>
+                <span className="text-sm tracking-tight">{tab.label}</span>
                 {isActive && (
                   <motion.div
                     layoutId="desktop-nav-indicator"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[var(--color-primary)] rounded-full"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3.5px] h-6 bg-[var(--color-primary)] rounded-full shadow-sm shadow-[var(--color-primary)]/50"
                     transition={{ type: "spring", stiffness: 400, damping: 35 }}
                   />
                 )}
