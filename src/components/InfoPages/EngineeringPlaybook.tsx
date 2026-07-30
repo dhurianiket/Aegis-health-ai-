@@ -124,7 +124,7 @@ export default function EngineeringPlaybook() {
                 <strong className="text-white font-sans">Groq (Llama-4-Scout):</strong> Reserved for high-speed reactive loops and formatting, featuring a resilient 30K TPM limit.
               </li>
               <li>
-                <strong className="text-white font-sans">Google AI Studio (Gemini 2.5 Flash):</strong> Excellent for parsing long documents and performing web research using Google Search grounding.
+                <strong className="text-white font-sans">Google AI Studio (Gemini 3.6 Flash & 3.1 Pro):</strong> Excellent for parsing long documents, complex clinical reasoning, and performing web research using Google Search grounding.
               </li>
               <li>
                 <strong className="text-white font-sans">Cerebras (Llama-3.3-70B):</strong> Reserved for small-input tool processing, boasting speeds of up to 1,500 tokens/sec.

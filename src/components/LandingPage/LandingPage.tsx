@@ -293,7 +293,7 @@ export default function LandingPage() {
                   <Sparkles className="w-4 h-4 text-emerald-400" />
                 </div>
                 <span>
-                  Powered by <strong>Google Gemini 2.5</strong> for advanced clinical reasoning and instant lab report extraction.
+                  Powered by <strong>Google Gemini 3.6 Flash & 3.1 Pro</strong> for advanced clinical reasoning and instant lab report extraction.
                 </span>
               </motion.div>
 

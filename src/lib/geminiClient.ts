@@ -23,10 +23,11 @@ export function getAI(): GoogleGenAI {
       // Pre-map deprecated/unstable models to stable highly-available ones
       if (
         params.model === "gemini-3-flash-preview" || 
+        params.model === "gemini-3.5-flash" || 
         params.model === "gemini-2.0-flash" || 
         params.model === "gemini-1.5-flash"
       ) {
-        params.model = "gemini-3.5-flash";
+        params.model = "gemini-3.6-flash";
       } else if (params.model === "gemini-1.5-pro") {
         params.model = "gemini-3.1-pro-preview";
       }
@@ -43,9 +44,9 @@ export function getAI(): GoogleGenAI {
           errorMsg.toLowerCase().includes("demand") || 
           errorMsg.toLowerCase().includes("unavailable");
 
-        if (isUnavailable && params.model !== "gemini-3.5-flash") {
-          console.warn(`[Gemini Interceptor] Model "${originalModel}" (mapped to "${params.model}") was unavailable (503/high-demand). Retrying with "gemini-3.5-flash"...`);
-          params.model = "gemini-3.5-flash";
+        if (isUnavailable && params.model !== "gemini-3.6-flash") {
+          console.warn(`[Gemini Interceptor] Model "${originalModel}" (mapped to "${params.model}") was unavailable (503/high-demand). Retrying with "gemini-3.6-flash"...`);
+          params.model = "gemini-3.6-flash";
           return await originalGenerateContent(params);
         }
         throw err;
@@ -60,10 +61,11 @@ export function getAI(): GoogleGenAI {
       const originalModel = params.model;
       if (
         params.model === "gemini-3-flash-preview" || 
+        params.model === "gemini-3.5-flash" || 
         params.model === "gemini-2.0-flash" || 
         params.model === "gemini-1.5-flash"
       ) {
-        params.model = "gemini-3.5-flash";
+        params.model = "gemini-3.6-flash";
       } else if (params.model === "gemini-1.5-pro") {
         params.model = "gemini-3.1-pro-preview";
       }
@@ -80,9 +82,9 @@ export function getAI(): GoogleGenAI {
           errorMsg.toLowerCase().includes("demand") || 
           errorMsg.toLowerCase().includes("unavailable");
 
-        if (isUnavailable && params.model !== "gemini-3.5-flash") {
-          console.warn(`[Gemini Interceptor] Stream Model "${originalModel}" (mapped to "${params.model}") was unavailable (503/high-demand). Retrying with "gemini-3.5-flash"...`);
-          params.model = "gemini-3.5-flash";
+        if (isUnavailable && params.model !== "gemini-3.6-flash") {
+          console.warn(`[Gemini Interceptor] Stream Model "${originalModel}" (mapped to "${params.model}") was unavailable (503/high-demand). Retrying with "gemini-3.6-flash"...`);
+          params.model = "gemini-3.6-flash";
           return await originalGenerateContentStream(params);
         }
         throw err;
