@@ -53,23 +53,25 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
 
   // Pre-calculate heights synchronously with accurate Markdown line-break awareness
   const messageHeights = useMemo(() => {
-    if (!containerWidth) return [];
+    if (!containerWidth || !Array.isArray(messages)) return [];
     
     return messages.map((msg) => {
+      if (!msg) return 60;
       const isUser = msg.role === 'user';
-      const bubbleWidth = Math.max(containerWidth * 0.8 - 48, 200);
+      const text = (msg.text || '').toString();
+      const bubbleWidth = Math.max(containerWidth * 0.8 - 48, 180);
       
       if (isUser) {
-        const prepared = prepareText(msg.text, USER_FONT);
+        const prepared = prepareText(text, USER_FONT);
         const textHeight = measureHeight(prepared, bubbleWidth, lineHeight);
         return Math.max(textHeight + MSG_PADDING + 16, 60);
       } else {
         // AI / Specialist message with multi-line Markdown formatting
-        const rawLines = msg.text.split('\n');
+        const rawLines = text.split('\n');
         let totalContentHeight = 0;
         
         rawLines.forEach((line) => {
-          const trimmed = line.trim();
+          const trimmed = (line || '').trim();
           if (!trimmed) {
             totalContentHeight += 12; // Paragraph spacing
             return;
@@ -97,14 +99,21 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
 
   // Scroll to bottom whenever messages are retrieved or updated
   useEffect(() => {
-    if (listRef.current && messages.length > 0) {
-      listRef.current.scrollToItem(messages.length - 1, 'end');
+    if (listRef.current && Array.isArray(messages) && messages.length > 0) {
+      try {
+        listRef.current.scrollToItem(messages.length - 1, 'end');
+      } catch (e) {
+        // Ignore scroll bounds exception if list is re-indexing
+      }
     }
   }, [messages, messageHeights]);
 
   const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
     const msg = messages[index];
+    if (!msg) return <div style={style} />;
+
     const isUser = msg.role === 'user';
+    const text = (msg.text || '').toString();
     
     return (
       <div style={{ ...style, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '8px', paddingBottom: '8px' }}>
@@ -119,7 +128,7 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
             }`}
           >
             {isUser ? (
-              <p className="whitespace-pre-wrap text-[15px] font-medium leading-[1.6]">{msg.text}</p>
+              <p className="whitespace-pre-wrap text-[15px] font-medium leading-[1.6]">{text}</p>
             ) : (
               <div className="prose prose-sm dark:prose-invert max-w-none text-slate-900 dark:text-slate-100 font-medium leading-[1.6]">
                 <ReactMarkdown 
@@ -132,7 +141,7 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
                     h3: ({node, ...props}) => <h3 className="text-slate-900 dark:text-slate-100 font-bold text-sm mb-1 mt-3 first:mt-0" {...props} />
                   }}
                 >
-                  {msg.text}
+                  {text}
                 </ReactMarkdown>
               </div>
             )}
@@ -143,8 +152,8 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
   };
 
   return (
-    <div ref={containerRef} className={`w-full h-full flex flex-col ${className}`}>
-      {containerWidth > 0 && containerHeight > 0 && (
+    <div ref={containerRef} className={`w-full h-full min-h-[300px] flex flex-col ${className}`}>
+      {containerWidth > 0 && containerHeight > 0 && Array.isArray(messages) && messages.length > 0 && (
         <List
           listRef={listRef}
           style={{ width: containerWidth, height: containerHeight }}

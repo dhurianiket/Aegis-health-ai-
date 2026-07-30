@@ -58,11 +58,13 @@ export default function SpecialistLounge() {
         if (chatDoc.exists()) {
           const data = chatDoc.data();
           if (data.messages && Array.isArray(data.messages)) {
-            const parsed = data.messages.map((m: any) => ({
-              role: m.role,
-              content: m.content,
-              timestamp: new Date(m.createdAt)
-            }));
+            const parsed = data.messages
+              .filter((m: any) => m && typeof m === 'object')
+              .map((m: any) => ({
+                role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+                content: (m.content || m.text || '').toString(),
+                timestamp: m.createdAt ? new Date(m.createdAt) : new Date()
+              }));
             setMessages(parsed);
           }
         }
