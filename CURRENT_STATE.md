@@ -1,6 +1,14 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — July 30, 2026 (II)
+## Latest Update — July 30, 2026 (III)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Specialist Lounge Chat Readability & Height Fix**:
+  - Re-architected `VirtualizedChatList.tsx` row height calculation to split multi-line Markdown text, measure headings, paragraphs, and list items dynamically. This eliminates row height underestimation where long specialist responses were previously clipped or hidden behind subsequent rows.
+  - Enhanced explicit Markdown component styling (`ReactMarkdown`) with crisp high-contrast colors (`text-slate-900 dark:text-slate-100 font-medium`), bold indigo highlight accents, and structured paragraph margins.
+  - Verified compilation with `tsc --noEmit` and `vite build`, committed (`dcbb2f2`), and pushed to `main` on GitHub.
+
+## Previous Update — July 30, 2026 (II)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Security Audit & Automated Vulnerability Remediation**:
