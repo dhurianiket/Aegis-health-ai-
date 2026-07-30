@@ -395,35 +395,34 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         {/* Sidebar */}
         <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block`}>
           <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest px-3 mb-5">Select Specialist</h3>
-          <div className="flex flex-col gap-2">
+          <div role="list" className="flex flex-col gap-2">
             {SPECIALIST_TABS.map((s) => (
-              <div
-                key={s.id}
-                role="button"
-                tabIndex={0}
-                aria-selected={activeSpecialist === s.id}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpecialist(s.id); setIsMobileChatOpen(true); } }}
-                onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
-                className={`cursor-pointer w-full p-4 md:p-5 rounded-[24px] flex flex-col items-start gap-1 transition-all duration-300 relative overflow-hidden ${
-                  activeSpecialist === s.id 
-                  ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none text-white' 
-                  : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50'
-                }`}
-              >
-                {activeSpecialist === s.id && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-                )}
-                <div className="flex items-center gap-3 w-full">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-200 dark:bg-[#2C2C2E]'}`}>
-                    <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-[var(--color-text)] dark:text-slate-100'}`}>{s.displayName}</div>
-                    <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-slate-200' : 'text-[var(--color-text-muted)] dark:text-slate-300'}`}>
-                      {s.expertise.slice(0, 2).join(' • ')}...
+              <div key={s.id} role="listitem" className="w-full">
+                <button
+                  type="button"
+                  aria-pressed={activeSpecialist === s.id}
+                  onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
+                  className={`cursor-pointer w-full p-4 md:p-5 rounded-[24px] flex flex-col items-start gap-1 transition-all duration-300 relative overflow-hidden text-left ${
+                    activeSpecialist === s.id 
+                    ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none text-white' 
+                    : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50'
+                  }`}
+                >
+                  {activeSpecialist === s.id && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                  )}
+                  <div className="flex items-center gap-3 w-full">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-200 dark:bg-[#2C2C2E]'}`}>
+                      <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-[var(--color-text)] dark:text-slate-100'}`}>{s.displayName}</div>
+                      <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-slate-200' : 'text-[var(--color-text-muted)] dark:text-slate-300'}`}>
+                        {s.expertise.slice(0, 2).join(' • ')}...
+                      </div>
                     </div>
                   </div>
-                </div>
+                </button>
               </div>
             ))}
           </div>

@@ -116,7 +116,10 @@ export const VirtualizedChatList: React.FC<VirtualizedChatListProps> = ({
     const text = (msg.text || '').toString();
     
     return (
-      <div style={{ ...style, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '8px', paddingBottom: '8px' }}>
+      <div 
+        role="listitem"
+        style={{ ...style, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '8px', paddingBottom: '8px' }}
+      >
         <div 
           className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} px-2 md:px-4`}
         >
