@@ -15,17 +15,19 @@ export default function ComparativeAnalysis({
   const latestLabs = useMemo(() => {
     // Get the most recent lab for each marker
     const latest: Record<string, LabResult> = {};
-    const sorted = [...labs].sort((a, b) => {
-      const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
-      const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
-      return timeA - timeB;
-    });
+    const latestTime: Record<string, number> = {};
 
-    sorted.forEach((lab) => {
+    labs.forEach((lab) => {
       const name = lab.markerName
         ? lab.markerName.trim().toUpperCase()
         : "UNKNOWN";
-      latest[name] = lab;
+
+      const time = parseSafeTimestamp(lab.date)?.getTime() || 0;
+
+      if (!latest[name] || time >= (latestTime[name] || 0)) {
+        latest[name] = lab;
+        latestTime[name] = time;
+      }
     });
 
     return Object.values(latest).slice(0, 4); // Take top 4

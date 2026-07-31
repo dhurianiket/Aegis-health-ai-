@@ -92,11 +92,14 @@ const aggregateLabs = (docs: MedicalDocument[]): any[] => {
   
   const aggregatedLabs: any[] = [];
   labMap.forEach((vals, normalizedMarker) => {
-     vals.sort((a, b) => {
-       const timeA = parseSafeTimestamp(a.date)?.getTime() || 0;
-       const timeB = parseSafeTimestamp(b.date)?.getTime() || 0;
-       return timeB - timeA;
-     });
+     const decorated = vals.map(val => ({
+       val,
+       time: parseSafeTimestamp(val.date)?.getTime() || 0
+     }));
+     decorated.sort((a, b) => b.time - a.time);
+     for (let i = 0; i < decorated.length; i++) {
+       vals[i] = decorated[i].val;
+     }
      const latest = vals[0];
      const previous = vals.length > 1 ? vals[1] : null;
      let trend = 'stable';
