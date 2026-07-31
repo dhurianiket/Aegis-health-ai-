@@ -144,6 +144,7 @@ export default function ShareReport() {
                     </h2>
                     <button
                       onClick={() => setIsModalOpen(false)}
+                      aria-label="Close"
                       className="text-slate-400 hover:text-white transition-colors"
                     >
                       <X className="w-5 h-5" />
@@ -316,6 +317,7 @@ export default function ShareReport() {
                       />
                       <button
                         onClick={() => setIsModalOpen(false)}
+                        aria-label="Close"
                         className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-300 transition-colors"
                       >
                         <X className="w-5 h-5" />
