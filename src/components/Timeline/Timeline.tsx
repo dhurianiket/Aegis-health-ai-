@@ -392,6 +392,7 @@ export default function Timeline() {
                 </div>
                 <button
                   onClick={() => setSelectedDoc(null)}
+                  aria-label="Close"
                   className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                 >
                   <X className="w-5 h-5" />
