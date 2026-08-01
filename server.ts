@@ -17,6 +17,7 @@ const limiter = rateLimit({
 
 async function startServer() {
   const app = express();
+  app.disable("x-powered-by");
   const PORT = 3000;
 
   // Apply rate limiter globally
@@ -50,7 +51,7 @@ async function startServer() {
        if (!response.ok) {
            const errBody = await response.text();
            console.error("[Server Gemini API Error]:", errBody);
-           return res.status(response.status).json({ error: `Gemini generation failed: ${response.statusText}`, details: errBody });
+           return res.status(response.status).json({ error: "Gemini generation failed" });
        }
        
        const data = await response.json();
@@ -58,7 +59,7 @@ async function startServer() {
        res.json({ text });
     } catch (e: any) {
        console.error("[Server Internal Error]:", e);
-       res.status(500).json({ error: e.message || "Failed to generate report" });
+       res.status(500).json({ error: "Failed to generate report" });
     }
   });
 
