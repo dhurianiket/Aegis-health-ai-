@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -90,10 +90,11 @@ export default function Timeline() {
     fetchDocs();
   }, [user, activeProfile]);
 
-  const filteredDocs =
-    filterType === "ALL"
+  const filteredDocs = useMemo(() => {
+    return filterType === "ALL"
       ? documents
       : documents.filter((d) => d.type === filterType);
+  }, [documents, filterType]);
 
   const categories = [
     { id: "ALL", label: "All Records" },

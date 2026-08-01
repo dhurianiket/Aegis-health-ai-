@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   CloudUpload,
@@ -794,41 +794,43 @@ export default function UploadCenter({
     },
   } as any);
 
-  const filteredDocuments = documents.filter((docItem: any) => {
-    const docTags = docItem.tags || docItem.suggestedTags || generateSuggestedTags(docItem.extractedData, docItem.fileName);
+  const filteredDocuments = useMemo(() => {
+    return documents.filter((docItem: any) => {
+      const docTags = docItem.tags || docItem.suggestedTags || generateSuggestedTags(docItem.extractedData, docItem.fileName);
 
-    if (selectedTagFilter !== "All" && !docTags.includes(selectedTagFilter)) {
-      return false;
-    }
+      if (selectedTagFilter !== "All" && !docTags.includes(selectedTagFilter)) {
+        return false;
+      }
 
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    
-    const matchesFileName = docItem.fileName?.toLowerCase().includes(q);
-    const matchesDocType = docItem.type?.toLowerCase().includes(q);
-    const matchesDoctor = docItem.doctorName?.toLowerCase().includes(q);
-    const matchesHospital = docItem.hospitalName?.toLowerCase().includes(q);
-    const matchesDate = docItem.date?.toLowerCase().includes(q);
-    const matchesTags = docTags.some((t: string) => t.toLowerCase().includes(q));
-    
-    // Check inside extracted summary
-    const matchesSummary = docItem.extractedData?.summary?.toLowerCase().includes(q);
-    
-    // Check inside medications
-    const matchesMedications = docItem.extractedData?.medications?.some((m: any) => {
-      const name = typeof m === 'string' ? m : (m.name || '');
-      return name.toLowerCase().includes(q);
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+
+      const matchesFileName = docItem.fileName?.toLowerCase().includes(q);
+      const matchesDocType = docItem.type?.toLowerCase().includes(q);
+      const matchesDoctor = docItem.doctorName?.toLowerCase().includes(q);
+      const matchesHospital = docItem.hospitalName?.toLowerCase().includes(q);
+      const matchesDate = docItem.date?.toLowerCase().includes(q);
+      const matchesTags = docTags.some((t: string) => t.toLowerCase().includes(q));
+
+      // Check inside extracted summary
+      const matchesSummary = docItem.extractedData?.summary?.toLowerCase().includes(q);
+
+      // Check inside medications
+      const matchesMedications = docItem.extractedData?.medications?.some((m: any) => {
+        const name = typeof m === 'string' ? m : (m.name || '');
+        return name.toLowerCase().includes(q);
+      });
+
+      // Check inside lab values
+      const matchesLabs = (docItem.extractedData?.lab_values || docItem.extractedData?.observations || [])?.some((l: any) => {
+        const marker = (l.marker || l.testName || '').toLowerCase();
+        const status = (l.status || '').toLowerCase();
+        return marker.includes(q) || status.includes(q);
+      });
+
+      return matchesFileName || matchesDocType || matchesDoctor || matchesHospital || matchesDate || matchesTags || matchesSummary || matchesMedications || matchesLabs;
     });
-
-    // Check inside lab values
-    const matchesLabs = (docItem.extractedData?.lab_values || docItem.extractedData?.observations || [])?.some((l: any) => {
-      const marker = (l.marker || l.testName || '').toLowerCase();
-      const status = (l.status || '').toLowerCase();
-      return marker.includes(q) || status.includes(q);
-    });
-
-    return matchesFileName || matchesDocType || matchesDoctor || matchesHospital || matchesDate || matchesTags || matchesSummary || matchesMedications || matchesLabs;
-  });
+  }, [documents, selectedTagFilter, searchQuery]);
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-0 pb-24 touch-auto">
