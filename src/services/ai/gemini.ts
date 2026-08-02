@@ -469,7 +469,7 @@ export async function extractMedicalReports(
             parts: [
               { text: prompt },
               ...filesData.map((f) => {
-                console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
+                if (import.meta.env.DEV) console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
                 return {
                   inlineData: { data: f.base64Data, mimeType: f.mimeType },
                 };
@@ -541,8 +541,10 @@ export async function extractMedicalReports(
       clearTimeout(timeoutId);
 
       const text = response.text || "{}";
-      console.log("RAW_GEMINI:", JSON.stringify(response));
-      console.log("[Extraction] Gemini raw response:", text);
+      if (import.meta.env.DEV) {
+        console.log("RAW_GEMINI:", JSON.stringify(response));
+        console.log("[Extraction] Gemini raw response:", text);
+      }
       const result = safeJsonParse<ExtractedReportResponse | null>(text, null);
       
       if (result) {
@@ -609,9 +611,10 @@ export async function extractMedicalReports(
       }
 
       const labs = result?.lab_values || [];
-      console.log("NORMALIZED_LABS:", labs);
-
-      console.log("[Extraction] Parsed result success:", !!result);
+      if (import.meta.env.DEV) {
+        console.log("NORMALIZED_LABS:", labs);
+        console.log("[Extraction] Parsed result success:", !!result);
+      }
       
       if (!result || (Object.keys(result).length === 0) || !result.lab_values) {
           console.warn("[Extraction] AI returned an empty or invalid response result, but we'll try to provide a skeleton.");
