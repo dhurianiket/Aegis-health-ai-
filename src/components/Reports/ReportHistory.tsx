@@ -145,34 +145,47 @@ export default function ReportHistory() {
     );
   }, [allReports]);
 
-  // Find preceding value helper for repeated markers
-  const getPrecedingMarkerValue = (reportId: string, markerName: string, currentDateStr: string) => {
-    const currentNorm = markerName.toLowerCase().trim();
-    const currentReportIndex = chronologicalReports.findIndex((r) => r.docId === reportId);
+  // Precompute preceding values in a single O(N) forward pass instead of O(N^2) backward scanning during render
+  const precedingValuesMap = useMemo(() => {
+    const map = new Map<string, Map<string, any>>();
+    const lastSeenMap = new Map<string, any>();
 
-    if (currentReportIndex <= 0) return null;
+    for (const report of chronologicalReports) {
+      const reportPreceding = new Map<string, any>();
+      map.set(report.docId, reportPreceding);
 
-    // Scan backwards from the preceding report index
-    for (let i = currentReportIndex - 1; i >= 0; i--) {
-      const prevReport = chronologicalReports[i];
-      const matchedObs = prevReport.observations?.find((obs: any) => {
-        const obsName = (obs.marker || obs.testName || obs.name || "").toLowerCase().trim();
-        return obsName === currentNorm;
-      });
+      if (report.observations && Array.isArray(report.observations)) {
+        for (const obs of report.observations) {
+          const markerName = (obs.marker || obs.testName || obs.name || "").toLowerCase().trim();
+          if (!markerName) continue;
 
-      if (matchedObs) {
-        const val = matchedObs.valueCanonical ?? matchedObs.numeric_value ?? matchedObs.valueOriginal;
-        if (val !== undefined && val !== null) {
-          return {
-            value: parseFloat(String(val)),
-            unit: matchedObs.unitCanonical || matchedObs.unitOriginal || "",
-            date: prevReport.date,
-            reportName: prevReport.fileName,
-          };
+          // Store the preceding value if it exists from previous reports
+          if (lastSeenMap.has(markerName)) {
+            reportPreceding.set(markerName, lastSeenMap.get(markerName));
+          }
+
+          // Update last seen for the next reports in chronological order
+          const val = obs.valueCanonical ?? obs.numeric_value ?? obs.valueOriginal;
+          if (val !== undefined && val !== null) {
+            lastSeenMap.set(markerName, {
+              value: parseFloat(String(val)),
+              unit: obs.unitCanonical || obs.unitOriginal || "",
+              date: report.date,
+              reportName: report.fileName,
+            });
+          }
         }
       }
     }
-    return null;
+    return map;
+  }, [chronologicalReports]);
+
+  // O(1) preceding value lookup using the precomputed map
+  const getPrecedingMarkerValue = (reportId: string, markerName: string, currentDateStr: string) => {
+    const currentNorm = markerName.toLowerCase().trim();
+    const reportPreceding = precedingValuesMap.get(reportId);
+    if (!reportPreceding) return null;
+    return reportPreceding.get(currentNorm) || null;
   };
 
   // Filter based on search query
