@@ -9,6 +9,16 @@ interface ComparativeAnalysisProps {
   labs: LabResult[];
 }
 
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash &= hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
 export default function ComparativeAnalysis({
   labs,
 }: ComparativeAnalysisProps) {
@@ -61,15 +71,15 @@ export default function ComparativeAnalysis({
       <div className="space-y-5">
         {latestLabs.map((lab, idx) => {
           // Synthetic percentile calculation based on normal ranges if provided
-          // Or just random for the MVP visualization
-          let percentile = Math.floor(Math.random() * 60) + 20; // 20-80
+          // Or just deterministic hash for the MVP visualization
+          let percentile = (simpleHash(lab.id) % 60) + 20; // 20-80
           if (lab.status === LabStatus.NORMAL)
-            percentile = Math.floor(Math.random() * 40) + 50; // 50-90
+            percentile = (simpleHash(lab.id) % 40) + 50; // 50-90
           if (
             lab.status === LabStatus.CRITICAL ||
             lab.status === LabStatus.ABNORMAL
           )
-            percentile = Math.floor(Math.random() * 20) + 80;
+            percentile = (simpleHash(lab.id) % 20) + 80;
 
           const getStatusColor = () => {
             if (lab.status === LabStatus.CRITICAL)
