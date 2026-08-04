@@ -283,7 +283,8 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     <>
       <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#121214] flex items-center gap-4 shrink-0 transition-colors z-10">
         <button 
-          className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-slate-100 transition-colors active:scale-95"
+          aria-label="Back to specialists"
+          className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-slate-100 transition-colors active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
           onClick={() => setIsMobileChatOpen(false)}
         >
           <ChevronLeft className="w-6 h-6 shrink-0" />
