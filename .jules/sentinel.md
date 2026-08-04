@@ -10,3 +10,7 @@
 **Vulnerability:** Weak pseudo-random number generators (`Math.random()`) were used to generate unique identifiers (Toast IDs) and render keys/states (percentile values).
 **Learning:** Using predictable randomness can lead to ID collisions or allow attackers to predict UI states, failing SAST checks.
 **Prevention:** Always use cryptographically secure methods like `crypto.randomUUID()` for identifiers, or deterministic object property hashing for stable rendering logic that doesn't trigger security flags.
+## 2025-03-08 - [DoS Vulnerability in Webhook Signature Verification]
+**Vulnerability:** `crypto.timingSafeEqual` was used without verifying that input buffers have the exact same length.
+**Learning:** Node.js throws an exception ('Input buffers must have the same byte length') if the lengths differ, which can lead to Denial of Service (DoS) vulnerabilities or unhandled rejections if not properly caught.
+**Prevention:** Always verify that input buffers have the exact same length before comparing them with `crypto.timingSafeEqual` (e.g., `if (a.length !== b.length) return false;`).

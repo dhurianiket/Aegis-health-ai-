@@ -18,7 +18,8 @@ const verifyRecaptchaToken = async (token, secretKey) => {
         const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `secret=${secretKey}&response=${token}`,
+            // Security: use encodeURIComponent to prevent HTTP Parameter Pollution (HPP) via the token parameter
+            body: `secret=${encodeURIComponent(secretKey)}&response=${encodeURIComponent(token)}`,
         });
         const result = await response.json();
         console.log("reCAPTCHA raw response:", JSON.stringify(result));
