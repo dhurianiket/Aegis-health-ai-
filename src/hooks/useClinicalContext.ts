@@ -29,24 +29,23 @@ export function useClinicalContext() {
     }
 
     setMedsLoading(true);
-    const q = query(
-      collection(db, 'users', user.uid, 'medications'),
-      where('endDate', '==', null),
-      orderBy('addedAt', 'desc')
-    );
+    const q = collection(db, 'users', user.uid, 'medications');
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const activeMeds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const activeMeds = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() as any }))
+        .filter(med => !med.endDate)
+        .sort((a, b) => new Date(b.addedAt || 0).getTime() - new Date(a.addedAt || 0).getTime());
       setMedications(activeMeds);
       setMedsLoading(false);
     }, (err) => {
-      console.error("[useClinicalContext] Failed to load medications via onSnapshot, falling back:", err);
+      console.warn("[useClinicalContext] Failed to load medications via onSnapshot, falling back:", err);
       // Fallback
       getActiveMedications(user.uid)
         .then(activeMeds => {
           setMedications(activeMeds);
         })
-        .catch(console.error)
+        .catch(console.warn)
         .finally(() => setMedsLoading(false));
     });
 
@@ -60,10 +59,7 @@ export function useClinicalContext() {
       return;
     }
 
-    const docQuery = query(
-      collection(db, 'users', user.uid, 'documents'),
-      orderBy('createdAt', 'desc')
-    );
+    const docQuery = collection(db, 'users', user.uid, 'documents');
 
     const unsubscribe = onSnapshot(docQuery, (snapshot) => {
       const extractedLabs: LabBiomarker[] = [];

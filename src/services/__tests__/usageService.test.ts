@@ -210,4 +210,52 @@ describe("usageService", () => {
       });
     });
   });
+
+  describe("Feature Tokens Telemetry & Uninitialized globalStats Stress Test", () => {
+    it("should correctly update globalStats with feature token maps for chat, specialist, pdf_extraction, sbar, summary", async () => {
+      (firestore.updateDoc as any).mockResolvedValue();
+
+      await trackUsage("user_test", {
+        promptTokens: 1000,
+        responseTokens: 500,
+        thinkingTokens: 200,
+        totalTokens: 1700,
+        feature: "pdf_extraction",
+      });
+
+      expect(firestore.updateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          "featureTokens.pdf_extraction": expect.anything(),
+        })
+      );
+    });
+
+    it("should initialize default featureTokens map when globalStats document is missing (not-found)", async () => {
+      (firestore.updateDoc as any).mockRejectedValue({ code: "not-found" });
+      (firestore.setDoc as any).mockResolvedValue();
+
+      await trackUsage("user_test_new", {
+        promptTokens: 500,
+        responseTokens: 200,
+        thinkingTokens: 100,
+        totalTokens: 800,
+        feature: "sbar",
+      });
+
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          featureTokens: {
+            pdf_extraction: 0,
+            chat: 0,
+            sbar: 0,
+            summary: 0,
+            specialist: 0,
+          },
+        })
+      );
+    });
+  });
 });
+
