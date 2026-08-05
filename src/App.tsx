@@ -31,6 +31,7 @@ import { UserProfile } from "./types/medical";
 import { AppNav } from "./components/Header/AppNav";
 
 import { SectionErrorBoundary } from "./components/ui/SectionErrorBoundary";
+import { trackPageView } from "./utils/analytics";
 
 const ConsentScreen = lazy(
   () => import("./components/Onboarding/ConsentScreen"),
@@ -193,6 +194,10 @@ function MainApp() {
     window.addEventListener("hashchange", syncTabFromHash);
     return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
+
+  useEffect(() => {
+    trackPageView(`/#${activeTab}`, `Aegis Health - ${activeTab}`);
+  }, [activeTab]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
