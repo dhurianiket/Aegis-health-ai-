@@ -7,7 +7,7 @@ import {
   Radar,
 } from "recharts";
 
-export default function HealthRadarChart({ radarData }: { radarData: any[] }) {
+function HealthRadarChart({ radarData }: { radarData: any[] }) {
   return (
     <div className="w-full h-[300px] min-h-[300px]">
       <ResponsiveContainer width="100%" height={300} minWidth={0}>
@@ -29,3 +29,5 @@ export default function HealthRadarChart({ radarData }: { radarData: any[] }) {
     </div>
   );
 }
+
+export default React.memo(HealthRadarChart);

@@ -9,7 +9,7 @@ interface TrendSparklinesProps {
   labs: LabResult[];
 }
 
-export default function TrendSparklines({ labs }: TrendSparklinesProps) {
+function TrendSparklines({ labs }: TrendSparklinesProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = React.useState(0);
 
@@ -149,3 +149,5 @@ export default function TrendSparklines({ labs }: TrendSparklinesProps) {
     </div>
   );
 }
+
+export default React.memo(TrendSparklines);

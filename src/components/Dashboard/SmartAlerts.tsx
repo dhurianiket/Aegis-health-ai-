@@ -4,7 +4,7 @@ import AlertBanner from "../ui/AlertBanner";
 import { BellRing } from "lucide-react";
 import { useAlerts } from "../../context/AlertsContext";
 
-export default function SmartAlerts({ labs }: { labs?: any[] }) {
+function SmartAlerts({ labs }: { labs?: any[] }) {
   const { dismissedIds, dismissAlert } = useAlerts();
 
   const visibleAlerts = useMemo(() => {
@@ -73,3 +73,5 @@ export default function SmartAlerts({ labs }: { labs?: any[] }) {
     </div>
   );
 }
+
+export default React.memo(SmartAlerts);

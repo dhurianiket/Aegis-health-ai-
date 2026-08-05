@@ -27,7 +27,7 @@ interface LabTrendChartProps {
 
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 
-export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
+function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [labResults, setLabResults] = useState<any[]>([]);
@@ -400,3 +400,5 @@ export default function LabTrendChart({ labs, reports }: LabTrendChartProps) {
     </div>
   );
 }
+
+export default React.memo(LabTrendChart);

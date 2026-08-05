@@ -8,7 +8,7 @@ interface CorrelationMatrixProps {
   labs: LabResult[];
 }
 
-export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
+function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
   // Simple Pearson correlation coefficient calculation
   const calculateCorrelation = (x: number[], y: number[]) => {
     if (x.length !== y.length || x.length === 0) return 0;
@@ -173,3 +173,5 @@ export default function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
     </div>
   );
 }
+
+export default React.memo(CorrelationMatrix);

@@ -21,7 +21,7 @@ function simpleHash(str: string | undefined | null): number {
   return Math.abs(hash);
 }
 
-export default function ComparativeAnalysis({
+function ComparativeAnalysis({
   labs,
 }: ComparativeAnalysisProps) {
   const latestLabs = useMemo(() => {
@@ -130,3 +130,5 @@ export default function ComparativeAnalysis({
     </div>
   );
 }
+
+export default React.memo(ComparativeAnalysis);
