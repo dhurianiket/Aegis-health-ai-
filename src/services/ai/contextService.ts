@@ -171,14 +171,19 @@ export const formatContextForPrompt = (context: any): string => {
       return 1;
     };
 
+    // Pre-compute latest severity score for each marker
+    const markerSeverities = new Map<string, number>();
+    const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
+    for (const [marker, labs] of labsByMarker.entries()) {
+      // Map to include time so we avoid parsing repeatedly during reduce
+      const labsWithTime = labs.map((l: any) => ({ lab: l, time: getT(l) }));
+      const latestObj = labsWithTime.reduce((latest: any, current: any) => current.time > latest.time ? current : latest);
+      markerSeverities.set(marker, severityScore(latestObj.lab.status));
+    }
+
     // Sort markers by severity of their most recent lab
     const sortedMarkers = Array.from(labsByMarker.keys()).sort((a, b) => {
-      const labsA = labsByMarker.get(a);
-      const labsB = labsByMarker.get(b);
-      const getT = (doc: any) => parseSafeTimestamp(doc.extractedDate || doc.date)?.getTime() || 0;
-      const latestA = labsA.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      const latestB = labsB.sort((x: any, y: any) => getT(y) - getT(x))[0];
-      return severityScore(latestB.status) - severityScore(latestA.status);
+      return (markerSeverities.get(b) || 0) - (markerSeverities.get(a) || 0);
     });
 
     sortedMarkers.slice(0, 15).forEach((markerName) => {

@@ -9,3 +9,7 @@
 ## 2026-08-04 - Precompute Repeated Backwards Scanning
 **Learning:** Using `findIndex` combined with a backward `for` loop inside a render function to locate preceding marker values across a list of medical reports created a severe O(N^2 * M^2) time complexity bottleneck. This caused significant lag during rendering as the number of reports grew.
 **Action:** Replace nested array scanning inside render with a single O(N) forward pass inside a `useMemo` hook to precompute mapping values (e.g. using a Map of Maps). This reduces the per-item lookup time complexity to O(1) during the actual render.
+
+## 2024-05-19 - Replace .sort()[0] with single forward pass
+**Learning:** Using `.sort((a, b) => b - a)[0]` just to find the maximum or latest value incurs an unnecessary O(N log N) computational cost, which is particularly severe if nested within other sorts or rendering cycles.
+**Action:** Replace `.sort()[0]` with a single O(N) forward pass using `.reduce()` (e.g. `arr.reduce((max, curr) => curr > max ? curr : max)`) to pre-compute maximum values and avoid unnecessary full-array sorts.
