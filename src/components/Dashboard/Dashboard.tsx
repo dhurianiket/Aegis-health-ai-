@@ -204,47 +204,58 @@ export default function Dashboard({
     return () => { isMounted = false; };
   }, [user, activeProfile, retryCount, authResolved]);
 
+  const defaultSystems = useMemo(() => ({
+    metabolic: 85,
+    heart: 70,
+    liver: 92,
+    kidney: 88,
+    blood: 65,
+    inflammation: 78,
+  }), []);
+
   const latestScore =
     healthScores[0] ||
     ({
       overall: 85,
-      systems: {
-        metabolic: 85,
-        heart: 70,
-        liver: 92,
-        kidney: 88,
-        blood: 65,
-        inflammation: 78,
-      },
+      systems: defaultSystems,
     } as HealthScore);
+
+  const safeSystems = useMemo(() => ({
+    metabolic: latestScore?.systems?.metabolic ?? defaultSystems.metabolic,
+    heart: latestScore?.systems?.heart ?? defaultSystems.heart,
+    liver: latestScore?.systems?.liver ?? defaultSystems.liver,
+    kidney: latestScore?.systems?.kidney ?? defaultSystems.kidney,
+    blood: latestScore?.systems?.blood ?? defaultSystems.blood,
+    inflammation: latestScore?.systems?.inflammation ?? defaultSystems.inflammation,
+  }), [latestScore?.systems, defaultSystems]);
 
   const radarData = useMemo(
     () => [
-      { subject: "Metabolic", A: latestScore.systems.metabolic, fullMark: 100 },
-      { subject: "Heart Risk", A: latestScore.systems.heart, fullMark: 100 },
-      { subject: "Liver Health", A: latestScore.systems.liver, fullMark: 100 },
+      { subject: "Metabolic", A: safeSystems.metabolic, fullMark: 100 },
+      { subject: "Heart Risk", A: safeSystems.heart, fullMark: 100 },
+      { subject: "Liver Health", A: safeSystems.liver, fullMark: 100 },
       {
         subject: "Kidney Health",
-        A: latestScore.systems.kidney,
+        A: safeSystems.kidney,
         fullMark: 100,
       },
-      { subject: "Blood Health", A: latestScore.systems.blood, fullMark: 100 },
+      { subject: "Blood Health", A: safeSystems.blood, fullMark: 100 },
       {
         subject: "Inflammation",
-        A: latestScore.systems.inflammation,
+        A: safeSystems.inflammation,
         fullMark: 100,
       },
     ],
-    [latestScore.systems],
+    [safeSystems],
   );
 
   const attentionLabs = useMemo(() => {
-    return keyLabs.filter(l => (l.status as any) === 'high' || (l.status as any) === 'abnormal' || (l.status as any) === 'low' || (l.status as any) === 'critical');
+    return keyLabs.filter(l => l && l.status && ['high', 'abnormal', 'low', 'critical'].includes(String(l.status).toLowerCase().trim()));
   }, [keyLabs]);
 
   const trackedKeyMarkers = useMemo(() => {
     const trackedNames = ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'];
-    return keyLabs.filter(l => trackedNames.includes(l.markerName.toLowerCase().trim()));
+    return keyLabs.filter(l => l && l.markerName && trackedNames.includes(String(l.markerName).toLowerCase().trim()));
   }, [keyLabs]);
 
   const containerVariants: any = {
@@ -382,12 +393,12 @@ export default function Dashboard({
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
-                {latestScore.systems.metabolic}
+                {safeSystems.metabolic}
               </span>
               <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                {latestScore.systems.metabolic > 80
+                {safeSystems.metabolic > 80
                   ? "Optimal"
-                  : latestScore.systems.metabolic > 60
+                  : safeSystems.metabolic > 60
                     ? "Stable"
                     : "Needs Focus"}
               </span>
@@ -408,15 +419,15 @@ export default function Dashboard({
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
-                {latestScore.systems.blood}
+                {safeSystems.blood}
               </span>
               <span className="text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center">
-                {latestScore.systems.blood < 70 && (
+                {safeSystems.blood < 70 && (
                   <AlertTriangle className="w-3.5 h-3.5 mr-1" />
                 )}
-                {latestScore.systems.blood > 80
+                {safeSystems.blood > 80
                   ? "Optimal"
-                  : latestScore.systems.blood > 60
+                  : safeSystems.blood > 60
                     ? "Fair"
                     : "Attention"}
               </span>
