@@ -210,7 +210,8 @@ export default function ProfileManagement() {
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
-                  className="text-slate-400 hover:text-white"
+                  aria-label="Close create profile form"
+                  className="text-slate-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-md"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -427,7 +428,8 @@ export default function ProfileManagement() {
 
               <button
                 onClick={() => handleEdit(p)}
-                className="p-1.5 text-slate-400 hover:text-indigo-400 bg-white/5 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                aria-label="Edit Profile"
+                className="p-1.5 text-slate-400 hover:text-indigo-400 bg-white/5 hover:bg-indigo-500/10 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
                 title="Edit Profile"
               >
                 <Edit2 className="w-4 h-4" />
@@ -436,7 +438,8 @@ export default function ProfileManagement() {
               <button
                 onClick={() => setDeletingId(p.id)}
                 disabled={profiles.length <= 1}
-                className="p-1.5 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-white/5"
+                aria-label="Delete Profile"
+                className="p-1.5 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                 title={
                   profiles.length <= 1
                     ? "Cannot delete last profile"
