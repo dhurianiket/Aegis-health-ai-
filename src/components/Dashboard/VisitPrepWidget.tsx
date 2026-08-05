@@ -50,7 +50,7 @@ export default function VisitPrepWidget() {
             const responses = await getFormResponses(formId);
             if (responses?.responses?.length > 0) {
                // Get earliest latest
-               const latest = responses.responses.sort((a,b) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime())[0];
+               const latest = responses.responses.reduce((latest: any, current: any) => new Date(current.lastSubmittedTime).getTime() > new Date(latest.lastSubmittedTime).getTime() ? current : latest);
                let answersText = [];
                if (latest && latest.answers) {
                   for (const [qId, answerObj] of Object.entries(latest.answers)) {
