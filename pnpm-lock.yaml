@@ -75,7 +75,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)
       react-router-dom:
-        specifier: ^7.15.1
+        specifier: ^7.1.5
         version: 7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-window:
         specifier: ^2.2.7
