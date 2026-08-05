@@ -1,6 +1,16 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 5, 2026 (XII)
+## Latest Update — August 5, 2026 (XIII)
+### Completed by: Teamwork Multi-Agent System & Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Admin Dashboard & Telemetry Calibration (`AdminDashboard.tsx`, `usageService.ts`, `usageService.test.ts`)**:
+  - **Comprehensive User Resolution (`usageService.ts`)**: Updated `getAllUsersUsage()` to batch-query root `users` documents alongside `collectionGroup(db, "usage")` so every registered user (including 0-usage accounts) is properly indexed without N+1 fetch overhead.
+  - **Live Fallback Feature Token Merging (`AdminDashboard.tsx`)**: Refactored `AdminDashboard` fallback state to dynamically compute live aggregated token usage by feature (`chat`, `specialist`, `pdf_extraction`, `sbar`, `summary`) directly from user records when `analytics/globalStats` is uninitialized or missing.
+  - **Pricing & Recharts Calibration (`AdminDashboard.tsx`)**: Verified Gemini API token pricing ($0.15 prompt, $0.60 response, $3.50 thinking per 1M tokens) and enforced strict Tailwind height envelopes (`h-[250px]` & `minWidth={0}`) on all charts.
+  - **Unit Test Coverage (`usageService.test.ts`)**: Added 7 unit tests covering cost calculation, user resolution, and stats aggregation. Verified with `npm test` (17 test files, 54 tests passing), `tsc --noEmit` (0 errors), and `npm run build`.
+  - Pushed commit (`b818e3b`) directly to `main` on GitHub.
+
+## Previous Update — August 5, 2026 (XII)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Google Analytics GA4 Tag Integration (`index.html`, `App.tsx`, `analytics.ts`)**:
