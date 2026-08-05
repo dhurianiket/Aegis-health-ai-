@@ -9,10 +9,12 @@ interface ComparativeAnalysisProps {
   labs: LabResult[];
 }
 
-function simpleHash(str: string): number {
+function simpleHash(str: string | undefined | null): number {
+  if (!str) return 0;
+  const s = String(str);
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
+  for (let i = 0; i < s.length; i++) {
+    const char = s.charCodeAt(i);
     hash = (hash << 5) - hash + char;
     hash &= hash; // Convert to 32bit integer
   }
@@ -70,27 +72,28 @@ export default function ComparativeAnalysis({
 
       <div className="space-y-5">
         {latestLabs.map((lab, idx) => {
+          const labId = lab?.id || (lab as any)?.docId || lab?.markerName || `lab_${idx}`;
           // Synthetic percentile calculation based on normal ranges if provided
           // Or just deterministic hash for the MVP visualization
-          let percentile = (simpleHash(lab.id) % 60) + 20; // 20-80
-          if (lab.status === LabStatus.NORMAL)
-            percentile = (simpleHash(lab.id) % 40) + 50; // 50-90
+          let percentile = (simpleHash(labId) % 60) + 20; // 20-80
+          if (lab?.status === LabStatus.NORMAL)
+            percentile = (simpleHash(labId) % 40) + 50; // 50-90
           if (
-            lab.status === LabStatus.CRITICAL ||
-            lab.status === LabStatus.ABNORMAL
+            lab?.status === LabStatus.CRITICAL ||
+            lab?.status === LabStatus.ABNORMAL
           )
-            percentile = (simpleHash(lab.id) % 20) + 80;
+            percentile = (simpleHash(labId) % 20) + 80;
 
           const getStatusColor = () => {
-            if (lab.status === LabStatus.CRITICAL)
+            if (lab?.status === LabStatus.CRITICAL)
               return "from-red-500 to-red-600";
-            if (lab.status === LabStatus.ABNORMAL)
+            if (lab?.status === LabStatus.ABNORMAL)
               return "from-amber-500 to-orange-500";
             return "from-emerald-400 to-teal-500";
           };
 
           return (
-            <div key={lab.id} className="relative">
+            <div key={labId} className="relative">
               <div className="flex justify-between items-end mb-2">
                 <span className="text-sm font-bold text-slate-900 dark:text-gray-100">
                   {lab.markerName}
