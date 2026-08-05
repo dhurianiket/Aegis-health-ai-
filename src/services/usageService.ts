@@ -6,6 +6,7 @@ import {
   increment,
   collectionGroup,
   getDocs,
+  collection,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebase/config";
@@ -17,6 +18,10 @@ export interface UsageData {
   totalTokens?: number;
   feature?: "pdf_extraction" | "chat" | "sbar" | "summary" | "specialist" | string;
 }
+
+export const getEstCost = (prompt: number = 0, resp: number = 0, think: number = 0): number => {
+  return (prompt / 1000000) * 0.15 + (resp / 1000000) * 0.6 + (think / 1000000) * 3.5;
+};
 
 const updateGlobalStats = async (updates: any) => {
   const globalRef = doc(db, "analytics/globalStats");
@@ -103,10 +108,7 @@ export const trackUsage = async (userId: string, data: UsageData) => {
   }
   updates[`monthlyUsage.${month}`] = increment(data.totalTokens || 0);
 
-  const costIncrement =
-    ((data.promptTokens || 0) / 1000000) * 0.15 +
-    ((data.responseTokens || 0) / 1000000) * 0.6 +
-    ((data.thinkingTokens || 0) / 1000000) * 3.5;
+  const costIncrement = getEstCost(data.promptTokens, data.responseTokens, data.thinkingTokens);
 
   const globalUpdates: any = {
     totalTokensUsed: increment(data.totalTokens || 0),
@@ -204,43 +206,78 @@ export const getUserUsageStats = async (userId: string) => {
 
 export const getAllUsersUsage = async () => {
   try {
-    const querySnapshot = await getDocs(collectionGroup(db, "usage"));
-    const usageData: any[] = [];
+    // 1. Batch fetch all registered root users
+    const usersSnapshot = await getDocs(collection(db, "users"));
+    const usersMap = new Map<string, { email: string; role?: string }>();
+
+    usersSnapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      usersMap.set(docSnap.id, {
+        email: data.email || "",
+        role: data.role,
+      });
+    });
+
+    // 2. Fetch usage stats via collectionGroup
+    const usageSnapshot = await getDocs(collectionGroup(db, "usage"));
+    const usageStatsMap = new Map<string, any>();
+
+    for (const docSnap of usageSnapshot.docs) {
+      if (docSnap.id === "stats") {
+        const userId = docSnap.ref.parent.parent?.id;
+        if (userId) {
+          usageStatsMap.set(userId, docSnap.data());
+        }
+      }
+    }
+
     const now = Date.now();
     const DAY = 24 * 60 * 60 * 1000;
     const MONTH = 30 * DAY;
+    const usageData: any[] = [];
 
-    for (const docSnap of querySnapshot.docs) {
-      if (docSnap.id === "stats") {
-        const userId = docSnap.ref.parent.parent?.id;
-        if (!userId) continue;
+    // Combine user IDs from both collections
+    const allUserIds = new Set([...usersMap.keys(), ...usageStatsMap.keys()]);
 
-        let email = "Unknown";
+    for (const userId of allUserIds) {
+      const rootUserInfo = usersMap.get(userId);
+      const statsData = usageStatsMap.get(userId) || {};
+
+      let email = rootUserInfo?.email || "";
+
+      // Fallback check profile/main if email is missing from root
+      if (!email) {
         try {
           const profileSnap = await getDoc(doc(db, `users/${userId}/profile/main`));
           if (profileSnap.exists()) {
-            email = profileSnap.data().email || "Unknown";
-          } else {
-            const rootSnap = await getDoc(doc(db, `users/${userId}`));
-            if (rootSnap.exists() && rootSnap.data().email) {
-              email = rootSnap.data().email;
-            }
+            email = profileSnap.data().email || "";
           }
         } catch (e) {}
-
-        const data = docSnap.data();
-        const lastActiveTime = data.lastActive ? new Date(data.lastActive).getTime() : 0;
-        const isActiveToday = now - lastActiveTime < DAY;
-        const isActiveThisMonth = now - lastActiveTime < MONTH;
-
-        usageData.push({
-          userId,
-          email,
-          isActiveToday,
-          isActiveThisMonth,
-          ...data,
-        });
       }
+
+      if (!email) {
+        email = "Unknown";
+      }
+
+      const lastActiveTime = statsData.lastActive ? new Date(statsData.lastActive).getTime() : 0;
+      const isActiveToday = lastActiveTime > 0 && now - lastActiveTime < DAY;
+      const isActiveThisMonth = lastActiveTime > 0 && now - lastActiveTime < MONTH;
+
+      usageData.push({
+        userId,
+        email,
+        isActiveToday,
+        isActiveThisMonth,
+        totalTokensUsed: statsData.totalTokensUsed || 0,
+        promptTokens: statsData.promptTokens || 0,
+        responseTokens: statsData.responseTokens || 0,
+        thinkingTokens: statsData.thinkingTokens || 0,
+        documentsUploaded: statsData.documentsUploaded || 0,
+        totalStorageBytes: statsData.totalStorageBytes || 0,
+        lastActive: statsData.lastActive || null,
+        featureUsage: statsData.featureUsage || {},
+        monthlyUsage: statsData.monthlyUsage || {},
+      });
     }
 
     // Sort by Total Tokens descending
@@ -257,8 +294,8 @@ export const getAllUsersUsage = async () => {
 
     return usageData;
   } catch (error: any) {
-    if (error.code !== 'permission-denied') {
-       console.error("Error fetching all users:", error);
+    if (error.code !== "permission-denied") {
+      console.error("Error fetching all users:", error);
     }
     return [];
   }

@@ -78,14 +78,33 @@ export default function AdminDashboard() {
         if (statDoc.exists()) {
           setGlobalStats(statDoc.data());
         } else {
+          const fallbackFeatureTokens: Record<string, number> = {
+            pdf_extraction: 0,
+            chat: 0,
+            sbar: 0,
+            summary: 0,
+            specialist: 0,
+          };
+          usersData.forEach((u) => {
+            if (u.featureUsage) {
+              Object.entries(u.featureUsage).forEach(([feat, tokens]) => {
+                fallbackFeatureTokens[feat] = (fallbackFeatureTokens[feat] || 0) + (tokens as number || 0);
+              });
+            }
+          });
+
           setGlobalStats({
-             totalUsers: usersData?.length || 0,
-             activeUsersToday: usersData?.filter((u) => u.isActiveToday).length || 0,
-             activeUsersThisMonth: usersData?.filter((u) => u.isActiveThisMonth).length || 0,
-             totalDocumentsUploaded: usersData?.reduce((acc, u) => acc + (u.documentsUploaded || 0), 0) || 0,
-             totalStorageBytes: usersData?.reduce((acc, u) => acc + (u.totalStorageBytes || 0), 0) || 0,
-             totalTokensUsed: usersData?.reduce((acc, u) => acc + (u.totalTokensUsed || 0), 0) || 0,
-             estimatedCostUSD: 0,
+            totalUsers: usersData?.length || 0,
+            activeUsersToday: usersData?.filter((u) => u.isActiveToday).length || 0,
+            activeUsersThisMonth: usersData?.filter((u) => u.isActiveThisMonth).length || 0,
+            totalDocumentsUploaded: usersData?.reduce((acc, u) => acc + (u.documentsUploaded || 0), 0) || 0,
+            totalStorageBytes: usersData?.reduce((acc, u) => acc + (u.totalStorageBytes || 0), 0) || 0,
+            totalTokensUsed: usersData?.reduce((acc, u) => acc + (u.totalTokensUsed || 0), 0) || 0,
+            totalPromptTokens: usersData?.reduce((acc, u) => acc + (u.promptTokens || 0), 0) || 0,
+            totalResponseTokens: usersData?.reduce((acc, u) => acc + (u.responseTokens || 0), 0) || 0,
+            totalThinkingTokens: usersData?.reduce((acc, u) => acc + (u.thinkingTokens || 0), 0) || 0,
+            estimatedCostUSD: usersData?.reduce((acc, u) => acc + getEstCost(u.promptTokens, u.responseTokens, u.thinkingTokens), 0) || 0,
+            featureTokens: fallbackFeatureTokens,
           });
         }
       } catch (e: any) {
@@ -184,7 +203,9 @@ export default function AdminDashboard() {
     .slice(0, 10);
 
   const featureTokensArray = globalStats?.featureTokens
-    ? Object.entries(globalStats.featureTokens).map(([name, value]) => ({ name, value }))
+    ? Object.entries(globalStats.featureTokens)
+        .map(([name, value]) => ({ name, value: Number(value) || 0 }))
+        .filter((entry) => entry.value > 0)
     : [];
 
   const estimatedCost = globalStats?.estimatedCostUSD || users.reduce((acc, u) => acc + getEstCost(u.promptTokens, u.responseTokens, u.thinkingTokens), 0);

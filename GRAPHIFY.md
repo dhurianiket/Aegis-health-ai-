@@ -310,7 +310,7 @@
   - *Exports*: `executeFullUploadPipeline`
   - *Imports*: `./ai/promptFramework`, `../lib/firebase/firestore`, `../utils/trendAnalysis`, `./alertService`, `../types/medical...`
 - **[`src/services/usageService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/usageService.ts)**
-  - *Exports*: `UsageData`, `markUserActive`, `trackUsage`, `trackStorageUsage`, `getUserUsageStats`, `getAllUsersUsage`
+  - *Exports*: `UsageData`, `getEstCost`, `markUserActive`, `trackUsage`, `trackStorageUsage`, `getUserUsageStats`, `getAllUsersUsage`
   - *Imports*: `../lib/firebase/config`
 
 ### 🔄 React Context Providers
@@ -372,6 +372,8 @@
   - *Exports*: `isRequired`, `isAlphanumeric`, `validateProfileName`
 - **[`src/utils/aiUtils.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/aiUtils.ts)**
   - *Exports*: `safeJsonParse`, `getFriendlyErrorMessage`
+- **[`src/utils/analytics.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/analytics.ts)**
+  - *Exports*: `GA_MEASUREMENT_ID`, `trackPageView`, `trackEvent`
 - **[`src/utils/calculateBMI.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/calculateBMI.ts)**
   - *Exports*: `calculateBMI`
 - **[`src/utils/dateUtils.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/dateUtils.ts)**
