@@ -1,6 +1,14 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 5, 2026 (XIII)
+## Latest Update — August 5, 2026 (XIV)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Dashboard & Firestore Stream Channel Stability (`useClinicalContext.ts`)**:
+  - **Eliminated Composite Index Requirement**: Refactored `useClinicalContext.ts` real-time listeners for medications (`users/{userId}/medications`) and documents (`users/{userId}/documents`) to remove complex multi-field Firestore queries (`where("endDate", "==", null)` + `orderBy("addedAt", "desc")`) that required missing composite indexes.
+  - **Client-Side Filtering & Sorting**: Filtered active medications (`!med.endDate`) and sorted chronological document records client-side in JS, preventing `net::ERR_ABORTED` Firestore long-poll channel crashes.
+  - Verified compilation with `tsc --noEmit` and `vite build`, committed (`b461b6a`), and pushed to `main` on GitHub.
+
+## Previous Update — August 5, 2026 (XIII)
 ### Completed by: Teamwork Multi-Agent System & Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Admin Dashboard & Telemetry Calibration (`AdminDashboard.tsx`, `usageService.ts`, `usageService.test.ts`)**:
