@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "graphify": "tsx scripts/graphify.ts"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.7",

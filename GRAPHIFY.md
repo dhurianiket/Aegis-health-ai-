@@ -1,0 +1,404 @@
+# GRAPHIFY — Codebase Knowledge Graph & Dependency Sitemap
+
+> Automatically generated knowledge graph for Aegis Health AI.
+> Used by AI Coding Assistants for high-accuracy, low-token context retrieval.
+
+## 🚀 Architecture Overview
+- **Stack**: React 19 + Vite 6 + TypeScript 5.8 + Tailwind CSS 4 + Firebase Cloud Functions & Firestore.
+- **AI Engine**: Dual Gemini SDK pipeline via `geminiClient.ts` with model normalization & 503 retry interceptors.
+- **Routing**: Single-Page App with state-driven auth routing (`onAuthStateChanged`).
+
+## 🌐 Module Node Index
+
+### 🧩 Components
+- **[`src/components/AIHelper/ChatCoach.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/AIHelper/ChatCoach.tsx)**
+  - *Exports*: `ChatCoach`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../hooks/useClinicalContext`, `../../services/ai/voiceService`, `../../lib/geminiUtils...`
+- **[`src/components/Admin/AdminDashboard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Admin/AdminDashboard.tsx)**
+  - *Exports*: `AdminDashboard`, `default`
+  - *Imports*: `../../services/usageService`, `../../lib/firebase/config`, `../../services/googleFormsService`, `../../../package.json`, `../ui/SkeletonLoader...`
+- **[`src/components/CalendarSync/CalendarSync.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/CalendarSync/CalendarSync.tsx)**
+  - *Exports*: `CalendarSync`, `default`
+  - *Imports*: `../../context/AuthContext`
+- **[`src/components/CareMap/CareMap.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/CareMap/CareMap.tsx)**
+  - *Exports*: `CareMapContainer`, `default`
+  - *Imports*: `../../context/ProfileContext`
+- **[`src/components/Chat/VirtualizedChatList.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Chat/VirtualizedChatList.tsx)**
+  - *Exports*: `ChatMessage`, `VirtualizedChatListProps`, `VirtualizedChatList`, `default`
+  - *Imports*: `../../lib/pretext`, `../Common/CitationBadge`
+- **[`src/components/Common/CitationBadge.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Common/CitationBadge.tsx)**
+  - *Exports*: `renderCitationLink`
+  - *Imports*: `../../services/sourceGroundedService`
+- **[`src/components/Dashboard/ComparativeAnalysis.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ComparativeAnalysis.tsx)**
+  - *Exports*: `ComparativeAnalysis`, `default`
+  - *Imports*: `../../types/medical`, `../../utils/dateUtils`
+- **[`src/components/Dashboard/ConditionTile.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ConditionTile.tsx)**
+  - *Exports*: `ConditionTileProps`, `ConditionTile`
+- **[`src/components/Dashboard/CorrelationMatrix.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/CorrelationMatrix.tsx)**
+  - *Exports*: `CorrelationMatrix`, `default`
+  - *Imports*: `../../types/medical`, `../../utils/dateUtils`
+- **[`src/components/Dashboard/CycleTrackingWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/CycleTrackingWidget.tsx)**
+  - *Exports*: `CycleTrackingWidget`, `default`
+  - *Imports*: `../../types/medical`, `../../utils/dateUtils`, `../../lib/firebase/firestore`, `../../context/AuthContext`
+- **[`src/components/Dashboard/Dashboard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/Dashboard.tsx)**
+  - *Exports*: `Dashboard`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical`, `./HeroMetric...`
+- **[`src/components/Dashboard/EmptyDashboard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/EmptyDashboard.tsx)**
+  - *Exports*: `EmptyDashboard`, `default`
+  - *Imports*: `../../types/medical`
+- **[`src/components/Dashboard/FeedbackWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/FeedbackWidget.tsx)**
+  - *Exports*: `FeedbackWidget`, `default`
+- **[`src/components/Dashboard/HealthRadarChart.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/HealthRadarChart.tsx)**
+  - *Exports*: `HealthRadarChart`, `default`
+- **[`src/components/Dashboard/HeroMetric.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/HeroMetric.tsx)**
+  - *Exports*: `HeroMetricProps`, `HeroMetric`
+- **[`src/components/Dashboard/LabTrendChart.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/LabTrendChart.tsx)**
+  - *Exports*: `LabTrendChart`, `default`
+  - *Imports*: `../ui/ExportButton`, `../../lib/firebase/firestore`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../types/medical...`
+- **[`src/components/Dashboard/MasonryLabCards.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/MasonryLabCards.tsx)**
+  - *Exports*: `LabCardData`, `MasonryLabCardsProps`, `MasonryLabCards`, `default`
+  - *Imports*: `../../lib/pretext`
+- **[`src/components/Dashboard/RemindersWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/RemindersWidget.tsx)**
+  - *Exports*: `RemindersWidget`, `default`
+  - *Imports*: `../../types/health`, `../../services/reminderService`
+- **[`src/components/Dashboard/ReportComparison.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ReportComparison.tsx)**
+  - *Exports*: `ReportComparison`, `default`
+  - *Imports*: `../../lib/firebase/config`, `../../context/AuthContext`, `../../utils/reportComparison`
+- **[`src/components/Dashboard/SBARPreview.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SBARPreview.tsx)**
+  - *Exports*: `SBARPreviewProps`, `SBARPreview`
+  - *Imports*: `../../types/medical`, `../../services/pdfExportService`
+- **[`src/components/Dashboard/SmartAlertCard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlertCard.tsx)**
+  - *Exports*: `SmartAlertCardProps`, `SmartAlertCard`
+- **[`src/components/Dashboard/SmartAlerts.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlerts.tsx)**
+  - *Exports*: `SmartAlerts`, `default`
+  - *Imports*: `../ui/AlertBanner`, `../../context/AlertsContext`
+- **[`src/components/Dashboard/TrendSparklines.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/TrendSparklines.tsx)**
+  - *Exports*: `TrendSparklines`, `default`
+  - *Imports*: `../../types/medical`, `../../utils/dateUtils`
+- **[`src/components/Dashboard/VisitPrepWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/VisitPrepWidget.tsx)**
+  - *Exports*: `VisitPrepWidget`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../services/googleFormsService`, `../../hooks/useClinicalContext`, `../Form/AutoSizeTextarea`
+- **[`src/components/ErrorBoundary.test.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ErrorBoundary.test.tsx)**
+  - *Imports*: `./ErrorBoundary`
+- **[`src/components/ErrorBoundary.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ErrorBoundary.tsx)**
+  - *Exports*: `ErrorBoundary`
+  - *Imports*: `../lib/logger`
+- **[`src/components/Export/ExportModal.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Export/ExportModal.tsx)**
+  - *Exports*: `ExportModal`, `default`
+  - *Imports*: `../../services/pdfExportService`
+- **[`src/components/Export/SBARPreview.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Export/SBARPreview.tsx)**
+  - *Exports*: `SBARPreview`, `default`
+  - *Imports*: `../../services/pdfExportService`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/auditLogger`
+- **[`src/components/Export/ShareReport.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Export/ShareReport.tsx)**
+  - *Exports*: `ShareReport`, `default`
+  - *Imports*: `../ui/ExportButton`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../services/ai/gemini`, `../../lib/firebase/firestore`
+- **[`src/components/Export/SharedProfile.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Export/SharedProfile.tsx)**
+  - *Exports*: `SharedProfile`, `default`
+  - *Imports*: `../../lib/firebase/config`
+- **[`src/components/Form/AutoSizeTextarea.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Form/AutoSizeTextarea.tsx)**
+  - *Exports*: `AutoSizeTextareaProps`, `AutoSizeTextarea`, `default`
+  - *Imports*: `../../lib/pretext`
+- **[`src/components/Header/AppNav.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Header/AppNav.tsx)**
+  - *Exports*: `AppNavProps`, `AppNav`
+  - *Imports*: `./BottomSheet`, `../../context/ProfileContext`, `../../context/AuthContext`
+- **[`src/components/Header/BottomSheet.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Header/BottomSheet.tsx)**
+  - *Exports*: `BottomSheet`
+- **[`src/components/Header/NotificationDropdown.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Header/NotificationDropdown.tsx)**
+  - *Exports*: `NotificationDropdown`, `default`
+  - *Imports*: `../../types/alerts`, `../../context/AlertsContext`
+- **[`src/components/InfoPages/AboutUs.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/InfoPages/AboutUs.tsx)**
+  - *Exports*: `AboutUs`, `default`
+  - *Imports*: `./InfoPageLayout`
+- **[`src/components/InfoPages/BlogCBC.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/InfoPages/BlogCBC.tsx)**
+  - *Exports*: `BlogCBC`, `default`
+  - *Imports*: `./InfoPageLayout`
+- **[`src/components/InfoPages/BlogHbA1c.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/InfoPages/BlogHbA1c.tsx)**
+  - *Exports*: `BlogHbA1c`, `default`
+  - *Imports*: `./InfoPageLayout`
+- **[`src/components/InfoPages/EngineeringPlaybook.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/InfoPages/EngineeringPlaybook.tsx)**
+  - *Exports*: `EngineeringPlaybook`, `default`
+  - *Imports*: `./InfoPageLayout`
+- **[`src/components/InfoPages/HowItWorks.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/InfoPages/HowItWorks.tsx)**
+  - *Exports*: `HowItWorks`, `default`
+  - *Imports*: `./InfoPageLayout`
+- **[`src/components/InfoPages/InfoPageLayout.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/InfoPages/InfoPageLayout.tsx)**
+  - *Exports*: `InfoPageLayout`, `default`
+  - *Imports*: `../../context/AuthContext`, `../ErrorBoundary`
+- **[`src/components/InfoPages/SecurityFirst.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/InfoPages/SecurityFirst.tsx)**
+  - *Exports*: `SecurityFirst`, `default`
+  - *Imports*: `./InfoPageLayout`
+- **[`src/components/LandingPage/LandingPage.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/LandingPage/LandingPage.tsx)**
+  - *Exports*: `LandingPage`, `default`
+  - *Imports*: `../../context/AuthContext`, `../ErrorBoundary`, `./LegalModal`
+- **[`src/components/LandingPage/LegalModal.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/LandingPage/LegalModal.tsx)**
+  - *Exports*: `LegalModal`, `default`
+- **[`src/components/LandingPage/PrivacyPolicy.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/LandingPage/PrivacyPolicy.tsx)**
+  - *Exports*: `PrivacyPolicy`, `default`
+- **[`src/components/LandingPage/TermsOfService.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/LandingPage/TermsOfService.tsx)**
+  - *Exports*: `TermsOfService`, `default`
+- **[`src/components/Legal/PrivacyPolicy.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Legal/PrivacyPolicy.tsx)**
+  - *Exports*: `PrivacyPolicy`, `default`
+- **[`src/components/Legal/TermsOfService.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Legal/TermsOfService.tsx)**
+  - *Exports*: `TermsOfService`, `default`
+- **[`src/components/Medications/InteractionMatrix.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Medications/InteractionMatrix.tsx)**
+  - *Exports*: `InteractionMatrix`, `default`
+  - *Imports*: `../../types/health`, `../../services/drugLabEngine`
+- **[`src/components/Medications/Medications.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Medications/Medications.tsx)**
+  - *Exports*: `Medications`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../lib/firebase/config`, `../../lib/auditLogger`, `../../services/medicationService`, `../../types/health...`
+- **[`src/components/Notifications/NotificationCenter.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Notifications/NotificationCenter.tsx)**
+  - *Exports*: `NotificationCenter`, `default`
+  - *Imports*: `../../types/alerts`, `../ui/AlertBanner`
+- **[`src/components/OfflineIndicator.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/OfflineIndicator.tsx)**
+  - *Exports*: `OfflineIndicator`, `default`
+- **[`src/components/Onboarding/ConsentScreen.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Onboarding/ConsentScreen.tsx)**
+  - *Exports*: `ConsentScreen`, `default`
+  - *Imports*: `../../lib/firebase/config`, `../../lib/auditLogger`
+- **[`src/components/Onboarding/PostLoginTransition.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Onboarding/PostLoginTransition.tsx)**
+  - *Exports*: `PostLoginTransition`, `default`
+  - *Imports*: `../../context/AuthContext`
+- **[`src/components/Onboarding/SplashScreen.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Onboarding/SplashScreen.tsx)**
+  - *Exports*: `SplashScreen`, `default`
+- **[`src/components/Profile/CycleTrackingSettings.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Profile/CycleTrackingSettings.tsx)**
+  - *Exports*: `CycleTrackingSettings`, `default`
+  - *Imports*: `../../types/medical`, `../../lib/firebase/firestore`, `../../context/AuthContext`
+- **[`src/components/Profile/FamilyHub.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Profile/FamilyHub.tsx)**
+  - *Exports*: `FamilyHub`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../services/ai/geneticService`, `../../types/medical`
+- **[`src/components/Profile/ProfileManagement.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Profile/ProfileManagement.tsx)**
+  - *Exports*: `ProfileManagement`, `default`
+  - *Imports*: `../../context/ProfileContext`, `../../types/medical`, `../../lib/validation`, `../../lib/logger`, `../../services/usageService...`
+- **[`src/components/Reports/ClinicalHandover.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Reports/ClinicalHandover.tsx)**
+  - *Exports*: `ClinicalHandover`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../services/sbarGenerationService`, `../../services/pdfExportService...`
+- **[`src/components/Reports/LabReportsSection.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Reports/LabReportsSection.tsx)**
+  - *Exports*: `LabReportsSection`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../lib/firebase/config`, `../../context/ProfileContext`, `../../services/sourceGroundedService`, `../Dashboard/LabTrendChart...`
+- **[`src/components/Reports/ReportHistory.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Reports/ReportHistory.tsx)**
+  - *Exports*: `ReportHistory`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical`, `../../services/sourceGroundedService`
+- **[`src/components/Settings/IntegrationsPanel.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Settings/IntegrationsPanel.tsx)**
+  - *Exports*: `IntegrationsPanel`, `default`
+  - *Imports*: `../../services/integrationService`
+- **[`src/components/Settings/SettingsPage.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Settings/SettingsPage.tsx)**
+  - *Exports*: `SettingsPage`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/auditLogger`
+- **[`src/components/Specialists/SpecialistLounge.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Specialists/SpecialistLounge.tsx)**
+  - *Exports*: `SpecialistLounge`, `default`
+  - *Imports*: `../../services/cacheService`, `../../services/sourceGroundedService`, `../Common/CitationBadge`, `../../types/ai`, `../../services/ai/specialists/specialistFactory...`
+- **[`src/components/Text/FixedSizeText.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Text/FixedSizeText.tsx)**
+  - *Exports*: `FixedSizeTextProps`, `FixedSizeText`, `default`
+  - *Imports*: `../../lib/pretext`
+- **[`src/components/Timeline/Timeline.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Timeline/Timeline.tsx)**
+  - *Exports*: `Timeline`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical`, `../ui/SkeletonLoader...`
+- **[`src/components/Upload/NoteAnalyzer.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Upload/NoteAnalyzer.tsx)**
+  - *Exports*: `NoteAnalyzer`, `default`
+  - *Imports*: `../../services/ai/entityExtractorService`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical...`
+- **[`src/components/Upload/UploadCenter.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Upload/UploadCenter.tsx)**
+  - *Exports*: `generateSuggestedTags`, `UploadCenter`, `default`
+  - *Imports*: `../../services/ai/gemini`, `../../services/usageService`, `../../lib/firebase/firestore`, `./NoteAnalyzer`, `../../context/AuthContext...`
+- **[`src/components/ui/AIErrorBoundary.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ui/AIErrorBoundary.tsx)**
+  - *Exports*: `AIErrorBoundary`
+  - *Imports*: `../../lib/logger`
+- **[`src/components/ui/AlertBanner.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ui/AlertBanner.tsx)**
+  - *Exports*: `AlertBanner`, `default`
+  - *Imports*: `../../types/alerts`
+- **[`src/components/ui/ExportButton.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ui/ExportButton.tsx)**
+  - *Exports*: `ExportButton`, `default`
+  - *Imports*: `../../services/pdfExportService`
+- **[`src/components/ui/LoadingSpinner.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ui/LoadingSpinner.tsx)**
+  - *Exports*: `LoadingSpinner`, `default`
+- **[`src/components/ui/MedicalSafetyBanner.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ui/MedicalSafetyBanner.tsx)**
+  - *Exports*: `SafetyLevel`, `MedicalSafetyBanner`, `default`
+- **[`src/components/ui/SectionErrorBoundary.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ui/SectionErrorBoundary.tsx)**
+  - *Exports*: `SectionErrorBoundary`
+- **[`src/components/ui/SkeletonLoader.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ui/SkeletonLoader.tsx)**
+  - *Exports*: `SkeletonLoader`, `DashboardSkeleton`, `TimelineSkeleton`, `SpecialistsSkeleton`, `default`
+
+### ⚙️ Services & API Providers
+- **[`src/lib/firebase/config.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/firebase/config.ts)**
+  - *Exports*: `auth`, `db`, `storage`, `googleProvider`, `default`
+- **[`src/lib/firebase/firestore.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/firebase/firestore.ts)**
+  - *Exports*: `ClinicalSummaryRecord`
+  - *Imports*: `./config`, `../../types/medical`
+- **[`src/services/ai/coachService.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/coachService.test.ts)**
+  - *Imports*: `./coachService`
+- **[`src/services/ai/coachService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/coachService.ts)**
+  - *Exports*: `COACH_SYSTEM_INSTRUCTION`, `CoachResponse`, `getCoachResponse`
+  - *Imports*: `../../lib/geminiClient`, `../../types/ai`, `./contextService`, `./safetyGuardrail`, `./promptFramework...`
+- **[`src/services/ai/contextService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/contextService.ts)**
+  - *Exports*: `getPatientContext`, `formatContextForPrompt`
+  - *Imports*: `../../lib/firebase/firestore`, `../alertService`, `../../types/ai`, `../../types/medical`, `../../utils/dateUtils`
+- **[`src/services/ai/entityExtractorService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/entityExtractorService.ts)**
+  - *Exports*: `ExtractedClinicalEntities`, `extractClinicalEntities`
+  - *Imports*: `../../lib/geminiClient`, `./promptFramework`, `../../utils/aiUtils`
+- **[`src/services/ai/gemini.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/gemini.ts)**
+  - *Exports*: `SpecialistAnalysisResponse`, `ExtractedReportResponse`
+  - *Imports*: `../../lib/geminiClient`, `../../lib/geminiUtils`, `../../types/medical`, `./promptFramework`, `../../utils/aiUtils...`
+- **[`src/services/ai/geneticService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/geneticService.ts)**
+  - *Exports*: `GeneticRiskAnalysis`, `analyzeSharedRisks`
+  - *Imports*: `../../lib/geminiClient`, `../../types/medical`, `./promptFramework`, `../../utils/aiUtils`
+- **[`src/services/ai/promptFramework.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/promptFramework.ts)**
+  - *Exports*: `CORE_SYSTEM_PROMPT`, `OUTPUT_FORMAT_JSON`, `LabExtractionSchema`, `LabExtraction`, `normalizeObservation`, `GeminiQuotaError`, `GeminiInputError`, `GeminiTimeoutError`, `UnifiedLabValueSchema`, `UnifiedPrescriptionSchema`, `UnifiedExtractionResultSchema`, `UnifiedLabValue`, `UnifiedPrescription`, `UnifiedExtractionResult`
+  - *Imports*: `../../lib/geminiClient`, `../../utils/aiUtils`, `../../lib/firebase/config`, `../usageService`, `../cacheService`
+- **[`src/services/ai/safetyGuardrail.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/safetyGuardrail.test.ts)**
+  - *Imports*: `./safetyGuardrail`
+- **[`src/services/ai/safetyGuardrail.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/safetyGuardrail.ts)**
+  - *Exports*: `SafetyCheckResult`, `runSafetyCheck`
+- **[`src/services/ai/specialists/cardiologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/cardiologist.ts)**
+  - *Exports*: `getCardiologistPrompt`
+- **[`src/services/ai/specialists/dermatologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/dermatologist.ts)**
+  - *Exports*: `getDermatologistPrompt`
+- **[`src/services/ai/specialists/endocrinologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/endocrinologist.ts)**
+  - *Exports*: `getEndocrinologistPrompt`
+- **[`src/services/ai/specialists/gastroenterologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/gastroenterologist.ts)**
+  - *Exports*: `getGastroenterologistPrompt`
+- **[`src/services/ai/specialists/index.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/index.ts)**
+  - *Imports*: `./specialistFactory`, `./cardiologist`, `./endocrinologist`, `./neurologist`, `./gastroenterologist...`
+- **[`src/services/ai/specialists/nephrologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/nephrologist.ts)**
+  - *Exports*: `getNephrologistPrompt`
+- **[`src/services/ai/specialists/neurologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/neurologist.ts)**
+  - *Exports*: `getNeurologistPrompt`
+- **[`src/services/ai/specialists/oncologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/oncologist.ts)**
+  - *Exports*: `getOncologistPrompt`
+- **[`src/services/ai/specialists/orthopedist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/orthopedist.ts)**
+  - *Exports*: `getOrthopedistPrompt`
+- **[`src/services/ai/specialists/psychiatrist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/psychiatrist.ts)**
+  - *Exports*: `getPsychiatristPrompt`
+- **[`src/services/ai/specialists/pulmonologist.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/pulmonologist.ts)**
+  - *Exports*: `getPulmonologistPrompt`
+- **[`src/services/ai/specialists/specialistFactory.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/specialists/specialistFactory.ts)**
+  - *Exports*: `SPECIALISTS`, `getSpecialist`, `getSpecialistSystemPrompt`
+  - *Imports*: `../../../types/ai`, `./cardiologist`, `./endocrinologist`, `./neurologist`, `./gastroenterologist...`
+- **[`src/services/ai/voiceService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/voiceService.ts)**
+  - *Exports*: `VoiceServiceOptions`, `VoiceService`
+- **[`src/services/alertService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/alertService.ts)**
+  - *Exports*: `checkLabResultForAlerts`, `getConsolidatedAlerts`
+  - *Imports*: `../types/medical`, `../types/alerts`, `./medicationCheckService`
+- **[`src/services/cacheService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/cacheService.ts)**
+  - *Exports*: `CachedReport`
+  - *Imports*: `../lib/firebase/firestore`
+- **[`src/services/drugLabEngine.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/drugLabEngine.ts)**
+  - *Exports*: `LabBiomarker`, `DrugLabContraindication`, `BioRegimenSafetySummary`, `isMedInCategory`, `parseNumericValue`, `evaluateDrugLabContraindications`, `buildBioRegimenSafetySummary`
+  - *Imports*: `../types/health`
+- **[`src/services/googleFormsService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/googleFormsService.ts)**
+  - *Exports*: `FormResponse`, `FormMetadata`, `getForm`, `getFormResponses`
+  - *Imports*: `../context/AuthContext`
+- **[`src/services/integrationService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/integrationService.ts)**
+  - *Exports*: `exportToCSV`, `exportToFHIR`
+- **[`src/services/medicationCheckService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/medicationCheckService.ts)**
+  - *Exports*: `checkMedicationInteractions`
+  - *Imports*: `../types/medical`, `../types/alerts`, `../lib/medicationInteractionDB`
+- **[`src/services/medicationService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/medicationService.ts)**
+  - *Imports*: `../types/health`, `../lib/firebase/config`, `./ai/promptFramework`
+- **[`src/services/pdfExportService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/pdfExportService.ts)**
+  - *Exports*: `exportToPDF`, `generateTrendNarrative`, `SBAROutput`, `TrendSummary`, `LabObservation`
+  - *Imports*: `../lib/geminiClient`, `./ai/promptFramework`, `../utils/aiUtils`
+- **[`src/services/qrCodeService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/qrCodeService.ts)**
+  - *Exports*: `ShareOptions`, `generateShareLink`
+  - *Imports*: `../lib/firebase/config`
+- **[`src/services/reminderService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/reminderService.ts)**
+  - *Exports*: `checkAppointmentsForReminders`, `generateRemindersFromAlerts`
+  - *Imports*: `../types/health`, `../types/alerts`, `../lib/firebase/config`
+- **[`src/services/sbarGenerationService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/sbarGenerationService.ts)**
+  - *Exports*: `generateSBAR`
+  - *Imports*: `../types/medical`, `../lib/geminiClient`, `./ai/contextService`, `./cacheService`, `../lib/firebase/config...`
+- **[`src/services/sourceGroundedService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/sourceGroundedService.ts)**
+  - *Exports*: `MedicalSource`, `getSourceForMarker`, `UrgencyInfo`, `getUrgencyAndNextStep`, `ClinicalGuideline`, `CLINICAL_GUIDELINES`, `lookupRelevantGuidelines`, `buildGuidelinePromptAugmentation`
+- **[`src/services/uploadPipeline.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/uploadPipeline.ts)**
+  - *Exports*: `executeFullUploadPipeline`
+  - *Imports*: `./ai/promptFramework`, `../lib/firebase/firestore`, `../utils/trendAnalysis`, `./alertService`, `../types/medical...`
+- **[`src/services/usageService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/usageService.ts)**
+  - *Exports*: `UsageData`, `markUserActive`, `trackUsage`, `trackStorageUsage`, `getUserUsageStats`, `getAllUsersUsage`
+  - *Imports*: `../lib/firebase/config`
+
+### 🔄 React Context Providers
+- **[`src/context/AlertsContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/AlertsContext.tsx)**
+  - *Exports*: `AlertsProvider`, `useAlerts`
+  - *Imports*: `./AuthContext`, `./ProfileContext`, `../lib/firebase/firestore`, `../types/alerts`, `../services/alertService...`
+- **[`src/context/AuthContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/AuthContext.tsx)**
+  - *Exports*: `getAccessToken`, `AuthContext`, `AuthProvider`, `useAuth`
+  - *Imports*: `../lib/firebase/config`, `../services/usageService`
+- **[`src/context/ProfileContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/ProfileContext.tsx)**
+  - *Exports*: `Profile`, `ProfileContext`, `ProfileProvider`, `useProfile`
+  - *Imports*: `./AuthContext`, `../lib/firebase/config`, `../types/medical`
+- **[`src/context/RemindersContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/RemindersContext.tsx)**
+  - *Exports*: `RemindersProvider`, `useReminders`
+  - *Imports*: `./AuthContext`, `./ProfileContext`, `../lib/firebase/firestore`, `../types/health`, `../services/reminderService...`
+- **[`src/context/ToastContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/ToastContext.tsx)**
+  - *Exports*: `ToastProvider`, `useToast`
+
+### 🪝 Custom Hooks
+- **[`src/hooks/useClinicalContext.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/hooks/useClinicalContext.ts)**
+  - *Exports*: `useClinicalContext`
+  - *Imports*: `../context/ProfileContext`, `../context/AuthContext`, `../services/medicationService`, `../utils/calculateBMI`, `../services/googleFormsService...`
+- **[`src/hooks/useCoach.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/hooks/useCoach.ts)**
+  - *Exports*: `useCoach`
+  - *Imports*: `../services/ai/coachService`, `../services/ai/contextService`, `../services/ai/safetyGuardrail`, `../types/ai`, `../types/medical...`
+
+### 📐 TypeScript Schemas & Types
+- **[`src/types/ai.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/ai.ts)**
+  - *Exports*: `ChatRole`, `ChatMessage`, `Conversation`, `SpecialistId`, `SpecialistProfile`, `PatientContext`
+  - *Imports*: `./medical`, `./alerts`
+- **[`src/types/alerts.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/alerts.ts)**
+  - *Exports*: `AlertSeverity`, `AlertType`, `HealthAlert`, `AlertThreshold`, `AlertContextType`
+- **[`src/types/api.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/api.ts)**
+  - *Exports*: `ApiResponse`, `AIExtractionResponse`, `SpecialistAnalysisResponse`
+- **[`src/types/health.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/health.ts)**
+  - *Exports*: `LabValue`, `Medication`, `DrugInteraction`, `HealthProfile`, `Appointment`, `HealthInsight`, `LabObservation`, `LabReminder`
+- **[`src/types/medical.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/medical.ts)**
+  - *Exports*: `Gender`, `DocumentType`, `LabStatus`, `MedicationStatus`, `ReproductiveProfile`, `CycleLog`, `UserProfile`, `MedicalDocument`, `LabResult`, `Medication`, `SpecialistInsight`, `HealthScore`, `Specialty`, `SBARSummary`, `ReportHistoryEntry`
+- **[`src/types/ui.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/ui.ts)**
+  - *Exports*: `BaseComponentProps`, `CardProps`, `ButtonProps`, `StatusBadgeProps`
+
+### 🛠️ Utilities & Helpers
+- **[`src/lib/auditLogger.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/auditLogger.ts)**
+  - *Imports*: `./firebase/config`
+- **[`src/lib/geminiClient.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/geminiClient.ts)**
+  - *Exports*: `getAI`, `default`
+- **[`src/lib/geminiUtils.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/geminiUtils.ts)**
+  - *Exports*: `Type`
+  - *Imports*: `./geminiClient`
+- **[`src/lib/logger.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/logger.ts)**
+  - *Exports*: `logger`
+- **[`src/lib/medicationInteractionDB.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/medicationInteractionDB.ts)**
+  - *Exports*: `InteractionRule`, `DRUG_INTERACTIONS`, `isDuplicateClass`, `MED_CATEGORIES`, `isMedInCategory`
+- **[`src/lib/pretext.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/pretext.ts)**
+  - *Exports*: `PretextPrepared`, `prepareText`, `measureHeight`, `measureWidth`, `measureLines`
+- **[`src/lib/utils.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/utils.ts)**
+  - *Exports*: `cn`, `formatHealthScore`
+- **[`src/lib/validation.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/validation.ts)**
+  - *Exports*: `isRequired`, `isAlphanumeric`, `validateProfileName`
+- **[`src/utils/aiUtils.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/aiUtils.ts)**
+  - *Exports*: `safeJsonParse`, `getFriendlyErrorMessage`
+- **[`src/utils/calculateBMI.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/calculateBMI.ts)**
+  - *Exports*: `calculateBMI`
+- **[`src/utils/dateUtils.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/dateUtils.ts)**
+  - *Exports*: `parseSafeTimestamp`
+- **[`src/utils/geminiClient.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/geminiClient.ts)**
+  - *Exports*: `default`
+  - *Imports*: `../lib/geminiClient`
+- **[`src/utils/recaptcha.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/recaptcha.ts)**
+  - *Exports*: `getRecaptchaToken`
+- **[`src/utils/reportComparison.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/reportComparison.ts)**
+  - *Exports*: `ComparisonRow`, `compareReports`
+  - *Imports*: `./trendAnalysis`
+- **[`src/utils/trendAnalysis.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/utils/trendAnalysis.ts)**
+  - *Exports*: `CLINICAL_STABILITY_THRESHOLDS`, `TrendSummary`, `computeTrend`, `computeAllTrends`, `formatTrendForPrompt`
+  - *Imports*: `../types/health`
+
+### ⚙️ Configuration
+- **[`src/App.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/App.tsx)**
+  - *Exports*: `App`, `default`
+  - *Imports*: `./lib/firebase/config`, `./components/Onboarding/SplashScreen`, `./components/Onboarding/PostLoginTransition`, `./context/AuthContext`, `./context/ProfileContext...`
+- **[`src/main.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/main.tsx)**
+  - *Imports*: `./App`, `./context/AuthContext`, `./context/ProfileContext`, `./context/AlertsContext`, `./context/RemindersContext...`
+- **[`src/vite-env.d.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/vite-env.d.ts)**
+
+## 🔗 Key Data Flow Relationships
+- **Auth Flow**: `AuthContext.tsx` -> `firebase/config.ts` -> `onAuthStateChanged` -> `App.tsx` -> `Dashboard.tsx`
+- **Clinical Data Real-Time Sync**: `useClinicalContext.ts` -> Firestore `users/{userId}/documents` (`onSnapshot`) -> `drugLabEngine.ts` -> `InteractionMatrix.tsx`
+- **AI Extraction**: `UploadCenter.tsx` -> Canvas compression -> `geminiClient.ts` -> `promptFramework.ts` (Zod validation) -> Firestore `users/{userId}/documents`
+- **Specialist Chat**: `SpecialistLounge.tsx` -> `sourceGroundedService.ts` (Guideline lookup ACC/ADA/KDIGO/ESC) -> `VirtualizedChatList.tsx` (`pretext` height measurement) -> `CitationBadge.tsx`
+
