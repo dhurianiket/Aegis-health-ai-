@@ -38,6 +38,7 @@ import SkeletonLoader, { DashboardSkeleton } from "../ui/SkeletonLoader";
 import { Sparkles, MessageSquare } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
+import { useWearableTelemetry } from "../../hooks/useWearableTelemetry";
 
 // Lazy-loaded components for faster initial dashboard render
 const LabTrendChart = lazy(() => import("./LabTrendChart"));
@@ -141,6 +142,9 @@ export default function Dashboard({
   const [latestInsights, setLatestInsights] = useState<SpecialistInsight[]>([]);
   const [keyLabs, setKeyLabs] = useState<LabResult[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Real-time Firestore-backed wearable telemetry (AGENTS.md Rule 3)
+  const { telemetry: liveWearable, saveTelemetry } = useWearableTelemetry();
 
   const [retryCount, setRetryCount] = useState(0);
 
@@ -355,7 +359,11 @@ export default function Dashboard({
 
           <motion.div variants={tileVariants} className="mt-6 mb-6">
             <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
-              <WearableCoachWidget labResults={keyLabs} />
+              <WearableCoachWidget
+                labResults={keyLabs}
+                telemetry={liveWearable ?? undefined}
+                onSyncRequest={saveTelemetry}
+              />
             </Suspense>
           </motion.div>
 

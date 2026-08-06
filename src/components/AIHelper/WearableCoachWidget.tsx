@@ -39,6 +39,8 @@ export interface WearableCoachWidgetProps {
   labResults?: LabResult[];
   imagingFindings?: string[] | MedicalDocument[];
   onActionClick?: (action: string) => void;
+  /** Called with the current telemetry when the user requests a cloud sync */
+  onSyncRequest?: (overrides: Partial<WearableBiometrics>) => Promise<void>;
 }
 
 export default function WearableCoachWidget({
@@ -47,12 +49,15 @@ export default function WearableCoachWidget({
   labResults = [],
   imagingFindings = [],
   onActionClick,
+  onSyncRequest,
 }: WearableCoachWidgetProps) {
   // Use state to allow mock toggles/updates if interactive
   const [telemetry, setTelemetry] = useState<WearableBiometrics>(
     () => initialTelemetry || generateMockTelemetry("demo_user")
   );
   const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'synced' | 'error'>('idle');
 
   // Compute correlation matrix dynamically if not explicitly passed
   const correlation = useMemo<BiometricDiagnosticCorrelation>(() => {
@@ -124,13 +129,35 @@ export default function WearableCoachWidget({
     ];
   }, [telemetry]);
 
-  const toggleMockScenario = (scenario: "normal" | "tachycardia" | "hypoxia") => {
+  const toggleMockScenario = async (scenario: "normal" | "tachycardia" | "hypoxia") => {
+    let newTelemetry: WearableBiometrics;
     if (scenario === "normal") {
-      setTelemetry(generateMockTelemetry("demo_user", { rhr: 64, spo2: 98 }));
+      newTelemetry = generateMockTelemetry("demo_user", { rhr: 64, spo2: 98 });
     } else if (scenario === "tachycardia") {
-      setTelemetry(generateMockTelemetry("demo_user", { rhr: 108, heartRate: 112 }));
-    } else if (scenario === "hypoxia") {
-      setTelemetry(generateMockTelemetry("demo_user", { spo2: 89 }));
+      newTelemetry = generateMockTelemetry("demo_user", { rhr: 108, heartRate: 112 });
+    } else {
+      newTelemetry = generateMockTelemetry("demo_user", { spo2: 89 });
+    }
+    setTelemetry(newTelemetry);
+    // Auto-sync to Firestore when scenario changes (saves real data for user)
+    if (onSyncRequest) {
+      await handleSync(newTelemetry);
+    }
+  };
+
+  const handleSync = async (overrides?: Partial<WearableBiometrics>) => {
+    if (!onSyncRequest) return;
+    setIsSyncing(true);
+    setSyncStatus('idle');
+    try {
+      await onSyncRequest(overrides ?? telemetry);
+      setSyncStatus('synced');
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } catch {
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus('idle'), 4000);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -156,8 +183,8 @@ export default function WearableCoachWidget({
           </p>
         </div>
 
-        {/* Diagnostic Scenario Switcher */}
-        <div className="flex items-center gap-2">
+        {/* Diagnostic Scenario Switcher + Sync Button */}
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => toggleMockScenario("normal")}
             className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
@@ -176,6 +203,18 @@ export default function WearableCoachWidget({
           >
             Hypoxia Demo
           </button>
+
+          {/* Sync to Cloud button — only shown when a saveTelemetry callback is wired in */}
+          {onSyncRequest && (
+            <button
+              onClick={() => handleSync()}
+              disabled={isSyncing}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/30 disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Syncing…' : syncStatus === 'synced' ? '✓ Synced' : syncStatus === 'error' ? '⚠ Retry' : 'Sync to Cloud'}
+            </button>
+          )}
         </div>
       </div>
 

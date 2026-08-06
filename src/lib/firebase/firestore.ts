@@ -12,6 +12,7 @@ import {
   deleteDoc,
   limit,
   startAfter,
+  onSnapshot,
 } from "firebase/firestore";
 import { auth, db } from "./config";
 export { auth, db };
@@ -22,6 +23,7 @@ import {
   SpecialistInsight,
   ReportHistoryEntry,
 } from "../../types/medical";
+import { WearableBiometrics } from "../../types/wearables";
 
 // Error handling helper as per Firebase integration instructions
 enum OperationType {
@@ -514,3 +516,96 @@ export async function getReportHistory(
   }
 }
 
+// ─── Wearable Telemetry Firestore Helpers ────────────────────────────────────
+// Path: users/{uid}/wearableTelemetry/{docId}
+// Covered by the existing users/{userId}/{document=**} wildcard security rule.
+
+/**
+ * Persists a WearableBiometrics snapshot to Firestore.
+ * Uses the biometrics.id as the document ID for idempotent upserts
+ * (same reading won't create duplicate docs on re-save).
+ */
+export async function saveWearableTelemetry(
+  userId: string,
+  biometrics: WearableBiometrics
+): Promise<string> {
+  const pathString = `users/${userId}/wearableTelemetry/${biometrics.id}`;
+  try {
+    await setDoc(
+      doc(db, 'users', userId, 'wearableTelemetry', biometrics.id),
+      sanitizeData({
+        ...biometrics,
+        userId,
+        savedAt: serverTimestamp(),
+      }),
+      { merge: true }
+    );
+    return biometrics.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, pathString);
+    throw error;
+  }
+}
+
+/**
+ * Opens a real-time onSnapshot listener on the user's wearableTelemetry subcollection.
+ * Calls callback with the most recent WearableBiometrics reading (or null if none exist).
+ * Returns an unsubscribe function — MUST be called on component unmount to prevent leaks.
+ */
+export function subscribeToLatestTelemetry(
+  userId: string,
+  callback: (latest: WearableBiometrics | null, history: WearableBiometrics[]) => void,
+  onError?: (err: Error) => void
+): () => void {
+  const q = query(
+    collection(db, 'users', userId, 'wearableTelemetry'),
+    orderBy('timestamp', 'desc'),
+    limit(20)
+  );
+
+  const unsubscribe = onSnapshot(
+    q,
+    (snapshot) => {
+      const readings = snapshot.docs.map(
+        (d) => ({ ...d.data() as WearableBiometrics, id: d.id })
+      );
+      callback(readings[0] ?? null, readings);
+    },
+    (err) => {
+      console.warn('[Firestore] wearableTelemetry onSnapshot error:', err.message);
+      if (onError) onError(err);
+    }
+  );
+
+  return unsubscribe;
+}
+
+/**
+ * One-time fetch of wearable telemetry history for the past N days.
+ * Useful for charts and trend analysis without a live listener.
+ */
+export async function getWearableHistory(
+  userId: string,
+  days = 7
+): Promise<WearableBiometrics[]> {
+  const pathString = `users/${userId}/wearableTelemetry`;
+  try {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    const sinceISO = since.toISOString();
+
+    const q = query(
+      collection(db, 'users', userId, 'wearableTelemetry'),
+      where('timestamp', '>=', sinceISO),
+      orderBy('timestamp', 'desc'),
+      limit(200)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (d) => ({ ...d.data() as WearableBiometrics, id: d.id })
+    );
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, pathString);
+    return [];
+  }
+}
