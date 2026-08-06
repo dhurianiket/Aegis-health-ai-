@@ -13,3 +13,7 @@
 ## 2024-05-19 - Replace .sort()[0] with single forward pass
 **Learning:** Using `.sort((a, b) => b - a)[0]` just to find the maximum or latest value incurs an unnecessary O(N log N) computational cost, which is particularly severe if nested within other sorts or rendering cycles.
 **Action:** Replace `.sort()[0]` with a single O(N) forward pass using `.reduce()` (e.g. `arr.reduce((max, curr) => curr > max ? curr : max)`) to pre-compute maximum values and avoid unnecessary full-array sorts.
+
+## 2024-05-20 - Redundant Sorting of Already Sorted Data
+**Learning:** Re-sorting an array that is already strictly sorted in the exact opposite order (e.g., to create a chronological view from a reverse-chronological list) using `.sort()` is an unnecessary O(N log N) operation that severely degrades render performance, particularly when the sort comparator parses Dates.
+**Action:** When needing an inverse order of an already sorted array, use `[...array].reverse()` (O(N)) rather than running a second `.sort()` (O(N log N)) to prevent redundant computational overhead.
