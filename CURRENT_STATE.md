@@ -1,6 +1,16 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 6, 2026 (XVIII)
+## Latest Update — August 6, 2026 (XIX)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Wearable Telemetry Firestore Persistence & Real-Time Sync**:
+  - **`firestore.ts`**: Added `saveWearableTelemetry`, `subscribeToLatestTelemetry`, `getWearableHistory` under path `users/{uid}/wearableTelemetry`. Added `onSnapshot` to imports. Added `WearableBiometrics` type import. Covered by existing `/{document=**}` wildcard security rule — no rules change needed.
+  - **`useWearableTelemetry.ts`** (NEW): React hook with real-time `onSnapshot` listener following the same pattern as `useClinicalContext.ts` (AGENTS.md Rule 3). Provides `telemetry`, `history`, `loading`, `error`, `saveTelemetry`, `hasRealData`. Gracefully degrades to localStorage fallback on Firestore error. Seeds Firestore from localStorage on first use.
+  - **`Dashboard.tsx`**: Calls `useWearableTelemetry()` and passes `telemetry={liveWearable}` + `onSyncRequest={saveTelemetry}` to `WearableCoachWidget`.
+  - **`WearableCoachWidget.tsx`**: Added `onSyncRequest` prop, `isSyncing`/`syncStatus` state, `handleSync()` function, and **"Sync to Cloud"** button with spinner animation and ✓ Synced / ⚠ Retry feedback. Demo scenario toggles auto-sync to Firestore.
+  - Build: `✓ built in 14.64s`. Pushed commit `392a8d4` to `main`.
+
+## Previous Update — August 6, 2026 (XVIII)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Wearable Telemetry Fusion Engine & AI Health Coach Widget (`AIHelper/`, `services/`, `types/`)**:
