@@ -140,9 +140,9 @@ export default function ReportHistory() {
 
   // chronological oldest to newest for trend scanning
   const chronologicalReports = useMemo(() => {
-    return [...allReports].sort(
-      (a, b) => new Date(a.date || a.uploadedAt || 0).getTime() - new Date(b.date || b.uploadedAt || 0).getTime()
-    );
+    // allReports is already strictly sorted in reverse-chronological order using the exact same date logic.
+    // We can safely use .reverse() to get O(N) instead of O(N log N) with repeated Date parsing.
+    return [...allReports].reverse();
   }, [allReports]);
 
   // Precompute preceding values in a single O(N) forward pass instead of O(N^2) backward scanning during render
