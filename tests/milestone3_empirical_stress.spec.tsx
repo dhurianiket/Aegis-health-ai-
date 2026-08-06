@@ -42,6 +42,13 @@ vi.mock("../src/lib/firebase/firestore", () => ({
     },
   ]),
   getLabHistory: vi.fn().mockResolvedValue([]),
+  // Wearable telemetry helpers — return a no-op unsubscribe so useWearableTelemetry doesn't throw
+  subscribeToLatestTelemetry: vi.fn((_userId: string, callback: Function) => {
+    callback(null, []);
+    return () => {};
+  }),
+  saveWearableTelemetry: vi.fn().mockResolvedValue('mock-id'),
+  getWearableHistory: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock AlertsContext
