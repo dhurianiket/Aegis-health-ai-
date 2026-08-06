@@ -33,3 +33,50 @@ export interface BiometricSample {
   timestamp: string;
   unit: string;
 }
+
+/**
+ * BiometricPoint — a single time-series data point for trend charting.
+ */
+export interface BiometricPoint {
+  timestamp: string;
+  value: number;
+  metric: string;
+  unit: string;
+}
+
+/**
+ * DailyWearableSummary — aggregated daily view of wearable data for a user.
+ * Includes averages, totals, sleep architecture, and connection metadata.
+ */
+export interface DailyWearableSummary {
+  userId: string;
+  date: string; // ISO date string e.g. "2026-08-06"
+  avgHeartRate: number;
+  avgRhr: number;
+  avgHrv: number;
+  avgSpo2: number;
+  totalSteps: number;
+  sleep: SleepArchitecture;
+  readinessScore: number;
+  connectionStatus: 'connected' | 'disconnected' | 'syncing' | 'unsupported';
+  sampleCount: number;
+}
+
+/**
+ * BiometricDiagnosticInsight — a structured AI-generated health insight
+ * combining wearable telemetry and clinical diagnostic context.
+ */
+export interface BiometricDiagnosticInsight {
+  insightId: string;
+  userId: string;
+  generatedAt: string;
+  readinessScore: number;
+  headline: string;
+  bodyMarkdown: string;
+  sources: Array<{
+    label: string;
+    citationTag: string;
+  }>;
+  safetyLevel: 'safe' | 'caution' | 'urgent';
+  actionItems: string[];
+}

@@ -363,3 +363,54 @@ export function extractBiometricSamples(biometrics: WearableBiometrics): Biometr
     { metric: 'steps', value: biometrics.steps, timestamp: biometrics.timestamp, unit: 'steps' },
   ];
 }
+
+const LOCAL_STORAGE_PREFIX = 'aegis_wearable_telemetry';
+
+/**
+ * Persists the latest WearableBiometrics snapshot to localStorage keyed by userId.
+ * Enables offline-first fallback and session continuity between page loads.
+ * Silently handles environments where localStorage is unavailable (SSR, private browsing).
+ */
+export function persistTelemetryToLocal(biometrics: WearableBiometrics): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const key = `${LOCAL_STORAGE_PREFIX}_${biometrics.userId}`;
+      window.localStorage.setItem(key, JSON.stringify(biometrics));
+    }
+  } catch {
+    // localStorage may be blocked in some environments — fail silently
+  }
+}
+
+/**
+ * Loads the most recently persisted WearableBiometrics snapshot from localStorage for the given userId.
+ * Returns null if nothing is persisted or if the stored data is corrupt.
+ */
+export function loadPersistedTelemetry(userId: string): WearableBiometrics | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const key = `${LOCAL_STORAGE_PREFIX}_${userId}`;
+      const raw = window.localStorage.getItem(key);
+      if (raw) {
+        return parseRawTelemetryStream(raw);
+      }
+    }
+  } catch {
+    // localStorage may be blocked — fail silently
+  }
+  return null;
+}
+
+/**
+ * Clears the persisted telemetry snapshot for the given userId from localStorage.
+ */
+export function clearPersistedTelemetry(userId: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const key = `${LOCAL_STORAGE_PREFIX}_${userId}`;
+      window.localStorage.removeItem(key);
+    }
+  } catch {
+    // ignore
+  }
+}
