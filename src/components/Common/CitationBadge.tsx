@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldCheck, ExternalLink } from "lucide-react";
+import { ShieldCheck, ExternalLink, Activity, FileText, Sparkles } from "lucide-react";
 import { CLINICAL_GUIDELINES } from "../../services/sourceGroundedService";
 
 /**
@@ -7,7 +7,66 @@ import { CLINICAL_GUIDELINES } from "../../services/sourceGroundedService";
  */
 export const renderCitationLink = ({ href, children }: { href?: string; children?: React.ReactNode }) => {
   if (href?.startsWith("cite:")) {
-    const guidelineId = href.replace("cite:", "");
+    const citationKey = href.replace("cite:", "");
+
+    // 1. Wearable Biometrics Citation (Cyan Badge)
+    if (citationKey.startsWith("wearable_") || citationKey === "wearable" || citationKey === "wearable_hr_steps") {
+      return (
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          title="Wearable Biometrics Telemetry"
+          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 my-0.5 mx-1 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-xs hover:scale-105 hover:shadow-md bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/80"
+        >
+          <Activity className="w-3.5 h-3.5 shrink-0 text-cyan-600 dark:text-cyan-400" />
+          <span>{children || "[Source: Wearable HR/Steps]"}</span>
+        </a>
+      );
+    }
+
+    // 2. Lab Report & Diagnostic Imaging Citation (Purple Badge)
+    if (
+      citationKey.startsWith("lab_") ||
+      citationKey.startsWith("imaging_") ||
+      citationKey === "lab" ||
+      citationKey === "imaging" ||
+      citationKey === "lab_report" ||
+      citationKey === "imaging_finding"
+    ) {
+      return (
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          title="Lab Report / Diagnostic Imaging Finding"
+          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 my-0.5 mx-1 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-xs hover:scale-105 hover:shadow-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60 hover:bg-purple-100 dark:hover:bg-purple-900/80"
+        >
+          <FileText className="w-3.5 h-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
+          <span>{children || "[Source: Lab Report]"}</span>
+        </a>
+      );
+    }
+
+    // 3. Biometric Diagnostic Correlation Citation (Amber Badge)
+    if (
+      citationKey.startsWith("correlation_") ||
+      citationKey === "correlation" ||
+      citationKey === "correlation_matrix"
+    ) {
+      return (
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          title="Wearable + Lab Cross-Correlation Matrix"
+          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 my-0.5 mx-1 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-xs hover:scale-105 hover:shadow-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/80"
+        >
+          <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <span>{children || "[Source: Wearable + Lab Correlation]"}</span>
+        </a>
+      );
+    }
+
+    // 4. Verified Clinical Guideline Citation
+    const guidelineId = citationKey;
     const guideline = CLINICAL_GUIDELINES[guidelineId];
 
     let colorClass = "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80";

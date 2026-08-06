@@ -48,6 +48,7 @@ const TrendSparklines = lazy(() => import("./TrendSparklines"));
 const EmptyDashboard = lazy(() => import("./EmptyDashboard"));
 const ShareReport = lazy(() => import("../Export/ShareReport"));
 const HealthRadarChart = lazy(() => import("./HealthRadarChart"));
+const WearableCoachWidget = React.lazy(() => import('../AIHelper/WearableCoachWidget'));
 
 const CycleTrackingWidget = lazy(() => import("./CycleTrackingWidget"));
 
@@ -349,6 +350,12 @@ export default function Dashboard({
           <motion.div variants={tileVariants}>
             <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
               <SmartAlerts labs={keyLabs} />
+            </Suspense>
+          </motion.div>
+
+          <motion.div variants={tileVariants} className="mt-6 mb-6">
+            <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
+              <WearableCoachWidget labResults={keyLabs} />
             </Suspense>
           </motion.div>
 
