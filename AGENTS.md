@@ -3,7 +3,7 @@
 This file outlines the non-negotiable architectural and behavior rules for all AI agents, code editors, and developers modifying the Aegis Health AI repository.
 
 ## 🚨 CONFLICT RESOLUTION RULE
-Always read `ARCHITECTURE.md` and `CURRENT_STATE.md` FIRST to understand the latest project reality. If a request violates documented invariants, inform the user and seek explicit approval before proceeding.
+Always read `ARCHITECTURE.md`, `CURRENT_STATE.md`, and `GRAPHIFY.md` FIRST to understand codebase structure, component relationships, and the latest project reality. Use Graphify (`GRAPHIFY.md` / `npm run graphify`) to quickly navigate the codebase graph before making changes. If a request violates documented invariants, inform the user and seek explicit approval before proceeding.
 
 ---
 

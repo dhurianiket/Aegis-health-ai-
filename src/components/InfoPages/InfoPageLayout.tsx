@@ -382,7 +382,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                 Proudly developed in Dombivli West, Maharashtra, India.
               </p>
               <p className="text-xs text-slate-400 tracking-[0.2em] font-mono mb-2">
-                VERSION 1.7.0 / SECURE ENCRYPTION ACTIVE
+                VERSION 2.0.0 / SECURE ENCRYPTION ACTIVE
               </p>
               <p className="text-xs text-slate-300 max-w-sm">
                 This site uses only essential session cookies to keep you signed in. We do not use tracking or advertising cookies.

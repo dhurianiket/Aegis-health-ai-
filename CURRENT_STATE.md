@@ -1,8 +1,18 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 7, 2026 (XXII)
+## Latest Update — August 7, 2026 (XXIV)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
+- **Major Release Bump to Version 2.0.0 (`package.json`, `README.md`, `LandingPage.tsx`, `InfoPageLayout.tsx`, `SettingsPage.tsx`)**:
+  - Upgraded application release version from `1.7.0` to **`2.0.0`** across all manifests and UI components to reflect the major feature additions (Wearable Telemetry Fusion Engine, Visual Drug-Drug & Drug-Lab Contraindication Matrix, Multimodal OCR Vision Extraction, 10+ Specialist Polyclinic with Medical Guidelines Grounding, 3D Glassmorphic Showcase, and Graphify Knowledge Graph Context).
+  - Updated `package.json`, synchronized `package-lock.json`, and regenerated `GRAPHIFY.md` (155 AST nodes indexed).
+
+## Previous Update — August 7, 2026 (XXIII)
+- **Mandatory Graphify Codebase Context Invariant Enforced (`AGENTS.md`, `LESSONS.md`)**:
+  - Updated `AGENTS.md` (🚨 CONFLICT RESOLUTION RULE) to mandate consulting `GRAPHIFY.md` first for codebase context, dependency mapping, and symbol relations before making code changes.
+  - Added Graphify Context Search as Invariant #1 in `LESSONS.md`.
+
+## Previous Update — August 7, 2026 (XXII)
 - **Site-Wide Theme & Light/Dark Mode Readability Polish (`ThemeContext.tsx`, `ProfileManagement.tsx`, `FamilyHub.tsx`, `IntegrationsPanel.tsx`)**:
   - **Global Theme Synchronization**: Fully integrated `ThemeContext.tsx` with instant root `.dark` class toggling, `localStorage` persistence, and cross-tab storage event listeners. Verified Settings page toggle and Header Sun/Moon switch update all views dynamically.
   - **Site-Wide WCAG AA High-Contrast Typography Audit**: Converted hardcoded dark-only colors (`text-white`, `bg-slate-800`, `border-white/5`, `text-slate-400`, `text-slate-300`) to semantic CSS design tokens (`text-[var(--color-text)]`, `text-[var(--color-text-muted)]`, `bg-[var(--color-surface)]`, `border-[var(--color-border)]`) across all core sections:

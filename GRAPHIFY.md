@@ -14,6 +14,9 @@
 - **[`src/components/AIHelper/ChatCoach.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/AIHelper/ChatCoach.tsx)**
   - *Exports*: `ChatCoach`, `default`
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../hooks/useClinicalContext`, `../../services/ai/voiceService`, `../../lib/geminiUtils...`
+- **[`src/components/AIHelper/WearableCoachWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/AIHelper/WearableCoachWidget.tsx)**
+  - *Exports*: `WearableCoachWidgetProps`, `WearableCoachWidget`, `default`
+  - *Imports*: `../../types/wearables`, `../../types/medical`, `../../services/biometricDiagnosticEngine`, `../../services/wearableService`
 - **[`src/components/Admin/AdminDashboard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Admin/AdminDashboard.tsx)**
   - *Exports*: `AdminDashboard`, `default`
   - *Imports*: `../../services/usageService`, `../../lib/firebase/config`, `../../services/googleFormsService`, `../../../package.json`, `../ui/SkeletonLoader...`
@@ -30,12 +33,12 @@
   - *Exports*: `renderCitationLink`
   - *Imports*: `../../services/sourceGroundedService`
 - **[`src/components/Dashboard/ComparativeAnalysis.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ComparativeAnalysis.tsx)**
-  - *Exports*: `ComparativeAnalysis`, `default`
+  - *Exports*: `default`
   - *Imports*: `../../types/medical`, `../../utils/dateUtils`
 - **[`src/components/Dashboard/ConditionTile.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ConditionTile.tsx)**
   - *Exports*: `ConditionTileProps`, `ConditionTile`
 - **[`src/components/Dashboard/CorrelationMatrix.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/CorrelationMatrix.tsx)**
-  - *Exports*: `CorrelationMatrix`, `default`
+  - *Exports*: `default`
   - *Imports*: `../../types/medical`, `../../utils/dateUtils`
 - **[`src/components/Dashboard/CycleTrackingWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/CycleTrackingWidget.tsx)**
   - *Exports*: `CycleTrackingWidget`, `default`
@@ -49,11 +52,11 @@
 - **[`src/components/Dashboard/FeedbackWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/FeedbackWidget.tsx)**
   - *Exports*: `FeedbackWidget`, `default`
 - **[`src/components/Dashboard/HealthRadarChart.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/HealthRadarChart.tsx)**
-  - *Exports*: `HealthRadarChart`, `default`
+  - *Exports*: `default`
 - **[`src/components/Dashboard/HeroMetric.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/HeroMetric.tsx)**
   - *Exports*: `HeroMetricProps`, `HeroMetric`
 - **[`src/components/Dashboard/LabTrendChart.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/LabTrendChart.tsx)**
-  - *Exports*: `LabTrendChart`, `default`
+  - *Exports*: `default`
   - *Imports*: `../ui/ExportButton`, `../../lib/firebase/firestore`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../types/medical...`
 - **[`src/components/Dashboard/MasonryLabCards.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/MasonryLabCards.tsx)**
   - *Exports*: `LabCardData`, `MasonryLabCardsProps`, `MasonryLabCards`, `default`
@@ -70,10 +73,10 @@
 - **[`src/components/Dashboard/SmartAlertCard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlertCard.tsx)**
   - *Exports*: `SmartAlertCardProps`, `SmartAlertCard`
 - **[`src/components/Dashboard/SmartAlerts.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlerts.tsx)**
-  - *Exports*: `SmartAlerts`, `default`
+  - *Exports*: `default`
   - *Imports*: `../ui/AlertBanner`, `../../context/AlertsContext`
 - **[`src/components/Dashboard/TrendSparklines.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/TrendSparklines.tsx)**
-  - *Exports*: `TrendSparklines`, `default`
+  - *Exports*: `default`
   - *Imports*: `../../types/medical`, `../../utils/dateUtils`
 - **[`src/components/Dashboard/VisitPrepWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/VisitPrepWidget.tsx)**
   - *Exports*: `VisitPrepWidget`, `default`
@@ -182,7 +185,7 @@
   - *Imports*: `../../services/integrationService`
 - **[`src/components/Settings/SettingsPage.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Settings/SettingsPage.tsx)**
   - *Exports*: `SettingsPage`, `default`
-  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/auditLogger`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/auditLogger`, `../../context/ThemeContext`
 - **[`src/components/Specialists/SpecialistLounge.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Specialists/SpecialistLounge.tsx)**
   - *Exports*: `SpecialistLounge`, `default`
   - *Imports*: `../../services/cacheService`, `../../services/sourceGroundedService`, `../Common/CitationBadge`, `../../types/ai`, `../../services/ai/specialists/specialistFactory...`
@@ -220,16 +223,16 @@
 - **[`src/lib/firebase/config.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/firebase/config.ts)**
   - *Exports*: `auth`, `db`, `storage`, `googleProvider`, `default`
 - **[`src/lib/firebase/firestore.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/firebase/firestore.ts)**
-  - *Exports*: `ClinicalSummaryRecord`
-  - *Imports*: `./config`, `../../types/medical`
+  - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
+  - *Imports*: `./config`, `../../types/medical`, `../../types/wearables`
 - **[`src/services/ai/coachService.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/coachService.test.ts)**
-  - *Imports*: `./coachService`
+  - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
 - **[`src/services/ai/coachService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/coachService.ts)**
-  - *Exports*: `COACH_SYSTEM_INSTRUCTION`, `CoachResponse`, `getCoachResponse`
+  - *Exports*: `COACH_SYSTEM_INSTRUCTION`, `buildCoachPromptAugmentation`, `CoachResponse`, `getCoachResponse`
   - *Imports*: `../../lib/geminiClient`, `../../types/ai`, `./contextService`, `./safetyGuardrail`, `./promptFramework...`
 - **[`src/services/ai/contextService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/contextService.ts)**
   - *Exports*: `getPatientContext`, `formatContextForPrompt`
-  - *Imports*: `../../lib/firebase/firestore`, `../alertService`, `../../types/ai`, `../../types/medical`, `../../utils/dateUtils`
+  - *Imports*: `../../lib/firebase/firestore`, `../alertService`, `../../types/ai`, `../../types/medical`, `../../utils/dateUtils...`
 - **[`src/services/ai/entityExtractorService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/entityExtractorService.ts)**
   - *Exports*: `ExtractedClinicalEntities`, `extractClinicalEntities`
   - *Imports*: `../../lib/geminiClient`, `./promptFramework`, `../../utils/aiUtils`
@@ -276,6 +279,13 @@
 - **[`src/services/alertService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/alertService.ts)**
   - *Exports*: `checkLabResultForAlerts`, `getConsolidatedAlerts`
   - *Imports*: `../types/medical`, `../types/alerts`, `./medicationCheckService`
+- **[`src/services/biometricDiagnosticEngine.stress.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/biometricDiagnosticEngine.stress.test.ts)**
+  - *Imports*: `./biometricDiagnosticEngine`, `../types/wearables`, `../types/medical`
+- **[`src/services/biometricDiagnosticEngine.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/biometricDiagnosticEngine.test.ts)**
+  - *Imports*: `./biometricDiagnosticEngine`, `../types/wearables`, `../types/medical`
+- **[`src/services/biometricDiagnosticEngine.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/biometricDiagnosticEngine.ts)**
+  - *Exports*: `MetabolicAdaptation`, `RecoveryOverride`, `ActivityFilter`, `SafetyTriageAlert`, `BiometricDiagnosticCorrelation`, `evaluateBiometricDiagnosticCorrelation`
+  - *Imports*: `../types/wearables`, `../types/medical`
 - **[`src/services/cacheService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/cacheService.ts)**
   - *Exports*: `CachedReport`
   - *Imports*: `../lib/firebase/firestore`
@@ -312,6 +322,13 @@
 - **[`src/services/usageService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/usageService.ts)**
   - *Exports*: `UsageData`, `getEstCost`, `markUserActive`, `trackUsage`, `trackStorageUsage`, `getUserUsageStats`, `getAllUsersUsage`
   - *Imports*: `../lib/firebase/config`
+- **[`src/services/wearableService.stress.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/wearableService.stress.test.ts)**
+  - *Imports*: `./wearableService`, `../types/wearables`
+- **[`src/services/wearableService.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/wearableService.test.ts)**
+  - *Imports*: `./wearableService`, `../types/wearables`
+- **[`src/services/wearableService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/wearableService.ts)**
+  - *Exports*: `CLINICAL_BOUNDS`, `calculateSleepScore`, `generateMockTelemetry`, `parseRawTelemetryStream`, `subscribeToWearableTelemetry`, `extractBiometricSamples`, `persistTelemetryToLocal`, `loadPersistedTelemetry`, `clearPersistedTelemetry`
+  - *Imports*: `../types/wearables`
 
 ### 🔄 React Context Providers
 - **[`src/context/AlertsContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/AlertsContext.tsx)**
@@ -326,6 +343,10 @@
 - **[`src/context/RemindersContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/RemindersContext.tsx)**
   - *Exports*: `RemindersProvider`, `useReminders`
   - *Imports*: `./AuthContext`, `./ProfileContext`, `../lib/firebase/firestore`, `../types/health`, `../services/reminderService...`
+- **[`src/context/ThemeContext.test.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/ThemeContext.test.tsx)**
+  - *Imports*: `./ThemeContext`
+- **[`src/context/ThemeContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/ThemeContext.tsx)**
+  - *Exports*: `Theme`, `ThemeProvider`, `useTheme`
 - **[`src/context/ToastContext.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/context/ToastContext.tsx)**
   - *Exports*: `ToastProvider`, `useToast`
 
@@ -336,11 +357,14 @@
 - **[`src/hooks/useCoach.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/hooks/useCoach.ts)**
   - *Exports*: `useCoach`
   - *Imports*: `../services/ai/coachService`, `../services/ai/contextService`, `../services/ai/safetyGuardrail`, `../types/ai`, `../types/medical...`
+- **[`src/hooks/useWearableTelemetry.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/hooks/useWearableTelemetry.ts)**
+  - *Exports*: `UseWearableTelemetryResult`, `useWearableTelemetry`
+  - *Imports*: `../context/AuthContext`, `../lib/firebase/firestore`, `../services/wearableService`, `../types/wearables`
 
 ### 📐 TypeScript Schemas & Types
 - **[`src/types/ai.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/ai.ts)**
   - *Exports*: `ChatRole`, `ChatMessage`, `Conversation`, `SpecialistId`, `SpecialistProfile`, `PatientContext`
-  - *Imports*: `./medical`, `./alerts`
+  - *Imports*: `./medical`, `./alerts`, `./wearables`
 - **[`src/types/alerts.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/alerts.ts)**
   - *Exports*: `AlertSeverity`, `AlertType`, `HealthAlert`, `AlertThreshold`, `AlertContextType`
 - **[`src/types/api.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/api.ts)**
@@ -351,6 +375,8 @@
   - *Exports*: `Gender`, `DocumentType`, `LabStatus`, `MedicationStatus`, `ReproductiveProfile`, `CycleLog`, `UserProfile`, `MedicalDocument`, `LabResult`, `Medication`, `SpecialistInsight`, `HealthScore`, `Specialty`, `SBARSummary`, `ReportHistoryEntry`
 - **[`src/types/ui.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/ui.ts)**
   - *Exports*: `BaseComponentProps`, `CardProps`, `ButtonProps`, `StatusBadgeProps`
+- **[`src/types/wearables.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/types/wearables.ts)**
+  - *Exports*: `BluetoothConnectionState`, `SleepArchitecture`, `WearableBiometrics`, `TelemetryStreamConfig`, `BiometricSample`, `BiometricPoint`, `DailyWearableSummary`, `BiometricDiagnosticInsight`
 
 ### 🛠️ Utilities & Helpers
 - **[`src/lib/auditLogger.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/lib/auditLogger.ts)**
