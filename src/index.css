@@ -175,12 +175,18 @@
 }
 
 .symptom-button-text {
-  color: #f1f5f9;
+  color: #0f172a;
+  font-size: 0.875rem; /* 14px for improved legibility */
+  font-weight: 500;
+}
+
+.dark .symptom-button-text {
+  color: #f8fafc;
 }
 
 .prep-form-label {
   font-size: 0.875rem; /* 14px */
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
 }
 
