@@ -433,5 +433,21 @@ describe("Milestone 3 Empirical Stress Test Suite", () => {
       expect(screen.queryByText(/Rest Immediately & Contact Care Team/i)).toBeNull();
       alertSpy.mockRestore();
     });
+
+    it("verifies interactive Web Bluetooth and Cloud Sync controls in WearableCoachWidget", () => {
+      const onActionClick = vi.fn();
+      const onSyncRequest = vi.fn().mockResolvedValue(undefined);
+      render(<WearableCoachWidget onActionClick={onActionClick} onSyncRequest={onSyncRequest} />);
+
+      const pairBtn = screen.getByRole("button", { name: /Pair Bluetooth Device/i });
+      expect(pairBtn).not.toBeNull();
+
+      const syncBtn = screen.getByRole("button", { name: /Sync Cloud Data/i });
+      expect(syncBtn).not.toBeNull();
+      act(() => {
+        fireEvent.click(syncBtn);
+      });
+      expect(onSyncRequest).toHaveBeenCalled();
+    });
   });
 });
