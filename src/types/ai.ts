@@ -46,6 +46,8 @@ export interface SpecialistProfile {
   systemPrompt: string;
 }
 
+import { WearableBiometrics } from "./wearables";
+
 export interface PatientContext {
   profile: UserProfile;
   labHistory: LabResult[];
@@ -59,4 +61,5 @@ export interface PatientContext {
     gender: string;
   };
   extraContext?: string;
+  wearableTelemetry?: WearableBiometrics;
 }

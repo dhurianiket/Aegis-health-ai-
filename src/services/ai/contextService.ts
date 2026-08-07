@@ -9,6 +9,8 @@ import { PatientContext } from "../../types/ai";
 import { UserProfile, MedicalDocument } from "../../types/medical";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 
+import { WearableBiometrics } from "../../types/wearables";
+
 /**
  * ContextService - Consolidates patient telemetry into a standardized format
  * for RAG (Retrieval-Augmented Generation) grounding.
@@ -16,6 +18,7 @@ import { parseSafeTimestamp } from "../../utils/dateUtils";
 export const getPatientContext = async (
   userId: string,
   profile: UserProfile,
+  wearableTelemetry?: WearableBiometrics,
 ): Promise<PatientContext> => {
   const profileId = profile?.id === "Myself" ? undefined : profile?.id;
 
@@ -95,7 +98,8 @@ export const getPatientContext = async (
       height: profile?.height,
       weight: profile?.weight,
     },
-    clinicalNotes: profile?.clinicalNotes
+    clinicalNotes: profile?.clinicalNotes,
+    wearableTelemetry,
   } as PatientContext;
 };
 
@@ -103,7 +107,7 @@ export const getPatientContext = async (
  * Formats the patient context into a clean, prompt-friendly string.
  */
 export const formatContextForPrompt = (context: any): string => {
-  const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics, clinicalNotes } = context;
+  const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics, clinicalNotes, wearableTelemetry } = context;
 
   let prompt = `PATIENT PROFILE:\n`;
   prompt += `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`;
@@ -125,6 +129,17 @@ export const formatContextForPrompt = (context: any): string => {
     prompt += `- Clinical Notes: ${clinicalNotes}\n`;
   }
   prompt += `- Reported Symptoms: ${reportedSymptoms?.join(", ") || "None reported"}\n\n`;
+
+  if (wearableTelemetry) {
+    prompt += `WEARABLE BIOMETRICS TELEMETRY:\n`;
+    prompt += `- Resting HR: ${wearableTelemetry.rhr || 0} bpm | Heart Rate: ${wearableTelemetry.heartRate || 0} bpm\n`;
+    prompt += `- HRV (rMSSD): ${wearableTelemetry.hrv || 0} ms | SpO2: ${wearableTelemetry.spo2 || 0}%\n`;
+    prompt += `- Steps: ${wearableTelemetry.steps || 0} | Connection: ${wearableTelemetry.connectionStatus || 'synced'}\n`;
+    if (wearableTelemetry.sleep) {
+      prompt += `- Sleep: Score ${wearableTelemetry.sleep.sleepScore}/100 | Deep: ${wearableTelemetry.sleep.deepMinutes}m, REM: ${wearableTelemetry.sleep.remMinutes}m, Light: ${wearableTelemetry.sleep.lightMinutes}m\n`;
+    }
+    prompt += `\n`;
+  }
 
   prompt += `ACTIVE MEDICATIONS:\n`;
   if (medications && medications.length > 0) {
