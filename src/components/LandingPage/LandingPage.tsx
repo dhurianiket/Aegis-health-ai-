@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin, Cloud } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin, Cloud, Watch, Camera, Pill, Layers, RefreshCw, FileText, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
@@ -453,6 +453,229 @@ export default function LandingPage() {
                   </Link>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* NEW FEATURES SHOWCASE: 3D GLASSMORPHIC CLINICAL INTELLIGENCE & WEARABLES */}
+        <section id="features-showcase" className="w-full relative z-20 bg-[#071325] border-t border-white/10 py-24 px-6 overflow-hidden">
+          {/* Subtle Ambient Background Lighting */}
+          <div className="absolute top-1/4 left-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-16 max-w-3xl mx-auto">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 mb-4 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                <Sparkles className="w-4 h-4 text-cyan-400" /> Next-Gen Health Intelligence 2.0
+              </span>
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6 text-white leading-tight">
+                Wearable Biometrics Met Clinical Diagnostics. <br />
+                <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                  Powered by Gemini 3.6 & Web Bluetooth.
+                </span>
+              </h2>
+              <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
+                Connect live wearable streams, scan handwritten prescriptions, and cross-reference active medications against blood lab values in real time.
+              </p>
+            </div>
+
+            {/* 3D Glassmorphic Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Feature Card 1: AI Health Coach Wearable Fusion */}
+              <motion.div
+                whileHover={{ y: -8, rotateX: 2, rotateY: -2, scale: 1.01 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-cyan-500/40 hover:shadow-[0_20px_60px_rgba(6,182,212,0.2)] flex flex-col justify-between"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Watch className="w-32 h-32 text-cyan-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-3 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                      <Watch className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
+                      Web Bluetooth Active
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-cyan-300 transition-colors">
+                    AI Health Coach & Biometric Telemetry
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
+                    Streams continuous Resting HR, HRV, SpO2, and Sleep Architecture from smartwatches directly to your dashboard. Automatically overrides workout strain when inflammatory markers (hs-CRP) flag high.
+                  </p>
+                </div>
+
+                {/* Micro Live UI Mockup */}
+                <div className="bg-[#0A192F]/90 border border-white/10 rounded-2xl p-4 space-y-3 shadow-inner">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-cyan-400" />
+                      <span className="text-xs font-bold text-white">Daily Readiness Score</span>
+                    </div>
+                    <span className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                      88 / 100 Optimal Peak
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-slate-400 block text-[10px]">Resting HR</span>
+                      <span className="text-cyan-400 font-extrabold">64 bpm</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-slate-400 block text-[10px]">SpO2</span>
+                      <span className="text-emerald-400 font-extrabold">98%</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-slate-400 block text-[10px]">HRV Baseline</span>
+                      <span className="text-indigo-400 font-extrabold">62 ms</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] pt-1 text-slate-300">
+                    <span className="font-semibold text-cyan-300">[Source: Wearable HR/Steps]</span>
+                    <span className="font-semibold text-purple-300">[Source: Lab HbA1c]</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Feature Card 2: Drug-Lab Interaction Matrix */}
+              <motion.div
+                whileHover={{ y: -8, rotateX: 2, rotateY: 2, scale: 1.01 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-rose-500/40 hover:shadow-[0_20px_60px_rgba(244,63,94,0.2)] flex flex-col justify-between"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Pill className="w-32 h-32 text-rose-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-3 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
+                      <Pill className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
+                      Contraindication Guard
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-rose-300 transition-colors">
+                    Drug-Lab Interaction Matrix
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
+                    Cross-references active prescriptions against parsed blood lab biomarkers. Instantly flags clinical contraindications like ACE Inhibitors combined with elevated serum potassium before adverse reactions occur.
+                  </p>
+                </div>
+
+                {/* Micro Live UI Mockup */}
+                <div className="bg-[#0A192F]/90 border border-rose-500/30 rounded-2xl p-4 space-y-3 shadow-inner">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-rose-400" />
+                      <span className="text-xs font-bold text-rose-300">CRITICAL SAFETY ALERT</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md border border-rose-500/40">
+                      High Risk
+                    </span>
+                  </div>
+                  <div className="text-xs space-y-1">
+                    <div className="flex justify-between text-slate-200">
+                      <span className="font-semibold">Lisinopril (10mg) ↔ Potassium</span>
+                      <span className="text-rose-400 font-bold">5.4 mEq/L ↑</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-normal">
+                      Risk of severe hyperkalemia. Co-monitoring of serum electrolytes recommended.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Feature Card 3: Multimodal Camera & Prescription Scan */}
+              <motion.div
+                whileHover={{ y: -8, rotateX: -2, rotateY: -2, scale: 1.01 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-emerald-500/40 hover:shadow-[0_20px_60px_rgba(16,185,129,0.2)] flex flex-col justify-between"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Camera className="w-32 h-32 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                      <Camera className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                      Gemini Multimodal OCR
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-emerald-300 transition-colors">
+                    Prescription & Camera Scan Vision
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
+                    Direct camera capture and high-res image upload extracts handwritten doctor notes, multi-column lab charts, and physical diagnostic documents with clinical schema validation.
+                  </p>
+                </div>
+
+                {/* Micro Live UI Mockup */}
+                <div className="bg-[#0A192F]/90 border border-white/10 rounded-2xl p-4 space-y-2.5 shadow-inner">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-300 font-bold flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-emerald-400" /> Photo Report Parsed
+                    </span>
+                    <span className="text-emerald-400 font-mono text-[10px]">99.4% Confidence</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold">
+                      HbA1c: 5.8% (Normal)
+                    </span>
+                    <span className="px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-semibold">
+                      Vitamin D: 18 ng/mL (Low)
+                    </span>
+                    <span className="px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold">
+                      Metformin 500mg BD
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Feature Card 4: Guidelines-Grounded Polyclinic */}
+              <motion.div
+                whileHover={{ y: -8, rotateX: -2, rotateY: 2, scale: 1.01 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-purple-500/40 hover:shadow-[0_20px_60px_rgba(168,85,247,0.2)] flex flex-col justify-between"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Brain className="w-32 h-32 text-purple-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-3 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                      <Brain className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
+                      Consensus Evidence Grounded
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-purple-300 transition-colors">
+                    10+ AI Specialist Polyclinic
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
+                    Consult Virtual Cardiologists, Endocrinologists, and Nephrologists. Every recommendation displays official evidence citation badges linked to ACC/AHA 2024, ADA 2025, and KDIGO guidelines.
+                  </p>
+                </div>
+
+                {/* Micro Live UI Mockup */}
+                <div className="bg-[#0A192F]/90 border border-white/10 rounded-2xl p-4 space-y-2 shadow-inner">
+                  <div className="flex items-center justify-between text-xs text-purple-300 font-bold">
+                    <span>AI Endocrinologist</span>
+                    <span className="text-[10px] bg-purple-500/20 px-2 py-0.5 rounded-full border border-purple-500/40 text-purple-200">
+                      ADA 2025 Standard
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    "Post-meal glucose spikes can be dampened by a 15-minute Zone 2 walk after dinner."
+                  </p>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
