@@ -17,3 +17,7 @@
 ## 2024-05-20 - Redundant Sorting of Already Sorted Data
 **Learning:** Re-sorting an array that is already strictly sorted in the exact opposite order (e.g., to create a chronological view from a reverse-chronological list) using `.sort()` is an unnecessary O(N log N) operation that severely degrades render performance, particularly when the sort comparator parses Dates.
 **Action:** When needing an inverse order of an already sorted array, use `[...array].reverse()` (O(N)) rather than running a second `.sort()` (O(N log N)) to prevent redundant computational overhead.
+
+## 2024-05-21 - Extract Expensive Mapping from Render
+**Learning:** Performing expensive parsing (like regex matching and date parsing) directly inside `array.map()` during a React render cycle can cause severe performance bottlenecks on every re-render.
+**Action:** Extract expensive inline computations inside render `.map()` loops into `useMemo` hooks by pre-computing the values on the dataset array itself, reducing the render function to simple O(1) property reads.
