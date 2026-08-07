@@ -433,7 +433,7 @@ ${remindersContext}`;
                 </button>
               </div>
 
-              <div className="shrink-0 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-xs p-2 text-center border-b border-amber-200 dark:border-amber-800/50">
+              <div className="shrink-0 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-100 text-xs font-semibold p-2.5 text-center border-b border-amber-300 dark:border-amber-800/80">
                 Aura AI is an educational assistant, not a clinical authority. Always consult a doctor for medical advice.
               </div>
 
@@ -446,10 +446,10 @@ ${remindersContext}`;
                         className="w-12 h-12 text-[var(--color-primary)] mx-auto mb-4 opacity-80"
                         strokeWidth={1}
                       />
-                      <p className="text-[1.125rem] font-medium">
+                      <p className="text-[1.125rem] font-bold text-slate-900 dark:text-slate-100">
                         Ask me anything about your health
                       </p>
-                      <p className="text-sm text-muted px-4">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 font-medium px-4">
                         Upload a report to get started — I can then analyse your results and answer questions about your health
                       </p>
                     </div>
@@ -463,7 +463,7 @@ ${remindersContext}`;
                         <button
                           key={i}
                           onClick={() => handleSendMessage(q)}
-                          className="text-left px-4 py-3 rounded-[16px] bg-surface/50 hover:bg-surface border border-surface text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                          className="text-left px-4 py-3 rounded-[16px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm"
                         >
                           {q}
                         </button>
@@ -480,20 +480,20 @@ ${remindersContext}`;
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
                         msg.role === "user"
-                          ? "bg-[var(--color-primary)] text-white"
-                          : "bg-surface/50 text-theme"
+                          ? "bg-[var(--color-primary)] text-white font-medium shadow-sm"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 shadow-sm"
                       }`}
                     >
                       {msg.role === "assistant" ? (
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <div className="prose prose-sm dark:prose-invert text-slate-900 dark:text-slate-100 max-w-none font-medium">
                           <ReactMarkdown components={{
-                            strong: ({node, ...props}) => <strong className="text-indigo-600 dark:text-indigo-400 font-semibold" {...props} />
+                            strong: ({node, ...props}) => <strong className="text-indigo-700 dark:text-indigo-300 font-bold" {...props} />
                           }}>{msg.content}</ReactMarkdown>
                         </div>
                       ) : (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <p className="whitespace-pre-wrap font-medium">{msg.content}</p>
                       )}
-                      <div className={`text-xs opacity-60 mt-1.5 ${msg.role === "user" ? "text-right" : "text-left"}`}>
+                      <div className={`text-xs mt-1.5 ${msg.role === "user" ? "text-right text-white/80" : "text-left text-slate-600 dark:text-slate-300 font-semibold"}`}>
                         {(() => {
                           const d = parseSafeTimestamp(msg.timestamp);
                           return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
@@ -506,10 +506,10 @@ ${remindersContext}`;
                 {/* Streaming Response Overlay */}
                 {streamedText && (
                   <div className="flex justify-start">
-                    <div className="max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed bg-surface/50 text-theme pb-8 relative">
-                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <div className="max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 pb-8 relative shadow-sm">
+                      <div className="prose prose-sm dark:prose-invert text-slate-900 dark:text-slate-100 max-w-none font-medium">
                         <ReactMarkdown components={{
-                            strong: ({node, ...props}) => <strong className="text-indigo-600 dark:text-indigo-400 font-semibold" {...props} />
+                            strong: ({node, ...props}) => <strong className="text-indigo-700 dark:text-indigo-300 font-bold" {...props} />
                           }}>{streamedText}</ReactMarkdown>
                       </div>
                       <span className="absolute bottom-4 left-4 w-2 h-4 bg-[var(--color-primary)] animate-pulse" />
@@ -519,9 +519,9 @@ ${remindersContext}`;
 
                 {isTyping && !streamedText && (
                   <div className="flex justify-start">
-                    <div className="bg-[var(--color-surface)] rounded-2xl px-4 py-3 flex gap-3 items-center min-h-[52px]">
+                    <div className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 flex gap-3 items-center min-h-[52px]">
                       <Loader2 className="w-4 h-4 text-[var(--color-primary)] animate-spin" />
-                      <span className="text-sm font-medium text-[var(--color-text-muted)] animate-pulse">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 animate-pulse">
                          {processingMessage}
                       </span>
                     </div>
@@ -537,7 +537,7 @@ ${remindersContext}`;
                   <div className="flex justify-center mb-3">
                     <button
                       onClick={handleAbort}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--color-surface)] hover:bg-[var(--color-surface)]/80 text-xs font-medium tracking-wider uppercase text-[var(--color-text-muted)] transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-semibold tracking-wider uppercase text-slate-800 dark:text-slate-200 transition-colors"
                     >
                       <Square size={10} className="fill-current" /> Stop
                     </button>
@@ -549,7 +549,7 @@ ${remindersContext}`;
                       <button
                         key={i}
                         onClick={() => handleSendMessage(q)}
-                        className="shrink-0 px-3 py-1.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-xs text-[var(--color-text-muted)] whitespace-nowrap hover:border-teal-400/50 hover:text-teal-400 transition-colors duration-200"
+                        className="shrink-0 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap hover:border-teal-400 hover:text-teal-600 dark:hover:text-teal-300 transition-colors duration-200"
                       >
                         {q}
                       </button>
@@ -562,7 +562,7 @@ ${remindersContext}`;
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder={isAlAvailable ? (isListening ? "Listening..." : "Ask Aura AI...") : "Neural Link Offline"}
                     disabled={isTyping || !isAlAvailable}
-                    className={`w-full bg-[var(--color-surface)] border border-transparent rounded-full py-3.5 pl-5 pr-24 text-[15px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${isTyping || !isAlAvailable ? "pointer-events-none opacity-50" : ""} ${isListening ? "ring-2 ring-indigo-500 bg-indigo-500/5 animate-pulse" : ""}`}
+                    className={`w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full py-3.5 pl-5 pr-24 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${isTyping || !isAlAvailable ? "pointer-events-none opacity-50" : ""} ${isListening ? "ring-2 ring-indigo-500 bg-indigo-500/5 animate-pulse" : ""}`}
                   />
                   <div className="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1.5">
                     {voiceServiceRef.current && (
@@ -572,7 +572,7 @@ ${remindersContext}`;
                         className={`aspect-square w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                           isListening
                             ? "bg-red-500 text-white animate-pulse"
-                            : "bg-[var(--color-surface)] hover:bg-[var(--color-border)] text-[var(--color-text-muted)]"
+                            : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"
                         }`}
                         title={isListening ? "Stop listening" : "Talk to Aura AI"}
                       >
@@ -589,7 +589,7 @@ ${remindersContext}`;
                     </button>
                   </div>
                 </form>
-                <div className="mt-2 text-center text-xs text-[var(--color-text-faint)]">
+                <div className="mt-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300">
                   {isAlAvailable ? "Generated by Aegis AI. Not a diagnosis." : "Please configure VITE_GEMINI_API_KEY to enable AI."}
                 </div>
               </div>
