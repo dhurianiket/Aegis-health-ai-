@@ -391,13 +391,13 @@ export default function WearableCoachWidget({
           {/* Micro Card 1: Resting HR */}
           <div className="bg-[var(--color-bg)] p-4 rounded-2xl border border-[var(--color-border)] space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Resting HR</span>
+              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">Resting HR</span>
               <span className={`text-xs font-extrabold ${(telemetry?.rhr ?? 0) > 100 ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
                 {(telemetry?.rhr ?? 0) > 100 ? "Tachycardic" : "Normal"}
               </span>
             </div>
             <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              {telemetry?.rhr ?? 0} <span className="text-xs font-normal">bpm</span>
+              {telemetry?.rhr ?? 0} <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">bpm</span>
             </div>
             <div className="h-10 w-full relative min-w-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -411,11 +411,11 @@ export default function WearableCoachWidget({
           {/* Micro Card 2: HRV */}
           <div className="bg-[var(--color-bg)] p-4 rounded-2xl border border-[var(--color-border)] space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">HRV (rMSSD)</span>
+              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">HRV (rMSSD)</span>
               <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300">Good</span>
             </div>
             <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-              {telemetry?.hrv ?? 0} <span className="text-xs font-normal">ms</span>
+              {telemetry?.hrv ?? 0} <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">ms</span>
             </div>
             <div className="h-10 w-full relative min-w-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -429,7 +429,7 @@ export default function WearableCoachWidget({
           {/* Micro Card 3: SpO2 */}
           <div className="bg-[var(--color-bg)] p-4 rounded-2xl border border-[var(--color-border)] space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Blood Oxygen (SpO2)</span>
+              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">Blood Oxygen (SpO2)</span>
               <span className={`text-xs font-extrabold ${(telemetry?.spo2 ?? 0) < 92 ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
                 {(telemetry?.spo2 ?? 0) < 92 ? "Hypoxic" : "Optimal"}
               </span>
@@ -449,7 +449,7 @@ export default function WearableCoachWidget({
           {/* Micro Card 4: Daily Steps */}
           <div className="bg-[var(--color-bg)] p-4 rounded-2xl border border-[var(--color-border)] space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Daily Steps</span>
+              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">Daily Steps</span>
               <span className="text-xs font-extrabold text-cyan-700 dark:text-cyan-300">Active</span>
             </div>
             <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">

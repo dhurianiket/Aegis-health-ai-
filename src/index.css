@@ -195,4 +195,37 @@
   opacity: 0.9 !important;
 }
 
+/* Global Recharts SVG Text High-Contrast Overrides */
+.recharts-text,
+.recharts-polar-angle-axis-tick text,
+.recharts-cartesian-axis-tick text,
+.recharts-legend-item-text {
+  fill: #334155 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+.dark .recharts-text,
+.dark .recharts-polar-angle-axis-tick text,
+.dark .recharts-cartesian-axis-tick text,
+.dark .recharts-legend-item-text {
+  fill: #f8fafc !important;
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+}
+
+/* Dark Mode Text Contrast Safety Rules */
+.dark .text-slate-700,
+.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+.dark .text-indigo-950 {
+  color: #e0e7ff !important;
+}
+
 
