@@ -215,25 +215,14 @@
 }
 
 /* Dark Mode Text Contrast Safety Rules */
-.dark .text-slate-900 {
-  color: #f8fafc !important;
-}
-
-.dark .text-slate-800,
-.dark .text-slate-700,
-.dark .text-slate-600,
-.dark .text-slate-500 {
-  color: #cbd5e1 !important;
-}
-
 .dark .text-amber-800,
 .dark .text-amber-700 {
-  color: #fef08a !important;
+  color: #fef08a;
 }
 
 .dark .text-indigo-900,
 .dark .text-indigo-950 {
-  color: #e0e7ff !important;
+  color: #e0e7ff;
 }
 
 

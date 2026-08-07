@@ -463,7 +463,7 @@ ${remindersContext}`;
                         <button
                           key={i}
                           onClick={() => handleSendMessage(q)}
-                          className="text-left px-4 py-3 rounded-[16px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm"
+                          className="text-left px-4 py-3 rounded-[16px] bg-slate-900 dark:bg-[#1C1C1E] hover:opacity-90 border border-slate-700 dark:border-[#2C2C2E] text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm"
                         >
                           {q}
                         </button>
@@ -481,19 +481,19 @@ ${remindersContext}`;
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
                         msg.role === "user"
                           ? "bg-[var(--color-primary)] text-white font-medium shadow-sm"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 shadow-sm"
+                          : "bg-slate-900 dark:bg-[#1C1C1E] text-slate-100 border border-slate-700 dark:border-[#2C2C2E] shadow-sm"
                       }`}
                     >
                       {msg.role === "assistant" ? (
-                        <div className="prose prose-sm dark:prose-invert text-slate-900 dark:text-slate-100 max-w-none font-medium">
+                        <div className="prose prose-sm dark:prose-invert text-slate-100 dark:text-slate-100 max-w-none font-medium">
                           <ReactMarkdown components={{
-                            strong: ({node, ...props}) => <strong className="text-indigo-700 dark:text-indigo-300 font-bold" {...props} />
+                            strong: ({node, ...props}) => <strong className="text-indigo-400 dark:text-indigo-300 font-bold" {...props} />
                           }}>{msg.content}</ReactMarkdown>
                         </div>
                       ) : (
-                        <p className="whitespace-pre-wrap font-medium">{msg.content}</p>
+                        <p className="whitespace-pre-wrap font-medium text-white">{msg.content}</p>
                       )}
-                      <div className={`text-xs mt-1.5 ${msg.role === "user" ? "text-right text-white/80" : "text-left text-slate-600 dark:text-slate-300 font-semibold"}`}>
+                      <div className={`text-xs mt-1.5 ${msg.role === "user" ? "text-right text-white/80" : "text-left text-slate-300 font-semibold"}`}>
                         {(() => {
                           const d = parseSafeTimestamp(msg.timestamp);
                           return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
@@ -506,10 +506,10 @@ ${remindersContext}`;
                 {/* Streaming Response Overlay */}
                 {streamedText && (
                   <div className="flex justify-start">
-                    <div className="max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 pb-8 relative shadow-sm">
-                      <div className="prose prose-sm dark:prose-invert text-slate-900 dark:text-slate-100 max-w-none font-medium">
+                    <div className="max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed bg-slate-900 dark:bg-[#1C1C1E] text-slate-100 border border-slate-700 dark:border-[#2C2C2E] pb-8 relative shadow-sm">
+                      <div className="prose prose-sm dark:prose-invert text-slate-100 dark:text-slate-100 max-w-none font-medium">
                         <ReactMarkdown components={{
-                            strong: ({node, ...props}) => <strong className="text-indigo-700 dark:text-indigo-300 font-bold" {...props} />
+                            strong: ({node, ...props}) => <strong className="text-indigo-400 dark:text-indigo-300 font-bold" {...props} />
                           }}>{streamedText}</ReactMarkdown>
                       </div>
                       <span className="absolute bottom-4 left-4 w-2 h-4 bg-[var(--color-primary)] animate-pulse" />
