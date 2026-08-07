@@ -368,8 +368,8 @@ function CareMap() {
               </div>
               
               {selectedPlace.rating && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-bold shrink-0">
-                  <Star className="w-3.5 h-3.5 fill-amber-500" />
+                <div className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-700 dark:text-amber-300 text-xs font-bold shrink-0">
+                  <Star className="w-3.5 h-3.5 fill-amber-600 dark:fill-amber-400 text-amber-600 dark:text-amber-400" />
                   {selectedPlace.rating}
                 </div>
               )}

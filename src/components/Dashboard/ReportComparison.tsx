@@ -180,7 +180,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
 
                     <td className="px-6 py-4 font-mono text-xs">
                       {row.deltaPercent !== null ? (
-                        <div className={`flex items-center gap-1 ${isWorsened ? 'text-amber-500' : isImproved ? 'text-green-500' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <div className={`flex items-center gap-1 ${isWorsened ? 'text-amber-600 dark:text-amber-400 font-bold' : isImproved ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-800 dark:text-slate-200 font-medium'}`}>
                           {row.direction === 'worsened' ? <ArrowUpRight size={14} className={row.delta! < 0 ? 'rotate-90' : ''} /> : 
                            row.direction === 'improved' ? <ArrowDownRight size={14} className={row.delta! > 0 ? '-rotate-90' : ''} /> : null}
                           <span>
