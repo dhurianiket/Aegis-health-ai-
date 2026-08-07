@@ -532,18 +532,18 @@ export default function Dashboard({
                        <div className="flex justify-between items-baseline mb-2">
                           <div className="flex items-baseline gap-1">
                              <span className="text-xl font-extrabold text-[var(--color-text)]">{lab.value}</span>
-                             <span className="text-xs text-slate-800 dark:text-slate-200 font-bold">{lab.unit}</span>
+                             <span className="text-xs text-slate-900 dark:text-slate-100 font-bold">{lab.unit}</span>
                           </div>
-                          <span className="text-xs text-slate-800 dark:text-slate-200 font-bold">
+                          <span className="text-xs text-slate-900 dark:text-slate-100 font-bold">
                              Ref: {lab.referenceRange || 'N/A'}
                           </span>
                        </div>
-                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs font-medium">
+                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs font-semibold">
                          <div className="leading-relaxed">
                            <span className="font-extrabold text-[var(--color-text)] text-xs">Next Step: </span>
                            <span className="text-slate-900 dark:text-slate-100 text-xs font-bold">{urgency.nextStep}</span>
                          </div>
-                         <div className="flex items-center justify-between mt-1 text-xs text-slate-800 dark:text-slate-200 font-semibold">
+                         <div className="flex items-center justify-between mt-1 text-xs text-slate-900 dark:text-slate-100 font-bold">
                            <span>Source:</span>
                            {source ? (
                              <a 
@@ -557,7 +557,7 @@ export default function Dashboard({
                                {source.name}
                              </a>
                            ) : (
-                             <span className="italic text-slate-700 dark:text-slate-300 font-medium">reference not available</span>
+                             <span className="italic text-slate-800 dark:text-slate-200 font-semibold">reference not available</span>
                            )}
                          </div>
                        </div>

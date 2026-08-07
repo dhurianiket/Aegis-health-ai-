@@ -476,7 +476,7 @@ export default function WearableCoachWidget({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Recovery Strain Overrides */}
           <div className="bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 p-5 rounded-2xl space-y-3">
-            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-bold text-sm">
+            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 font-bold text-sm">
               <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
               <span>Strain Reduction Overrides</span>
             </div>
@@ -484,16 +484,16 @@ export default function WearableCoachWidget({
               correlation.recoveryOverrides.map((override, i) => (
                 <div key={i} className="text-xs text-slate-900 dark:text-slate-100 font-semibold space-y-1">
                   <p className="font-bold">{override.reason}</p>
-                  <p className="text-amber-800 dark:text-amber-200">
+                  <p className="text-amber-900 dark:text-amber-200 font-bold">
                     Active Strain Override: -{override.strainReductionPercent}% intensity adjustment applied.
                   </p>
-                  <p className="text-[11px] text-slate-800 dark:text-slate-200 font-medium">
+                  <p className="text-xs text-slate-900 dark:text-slate-100 font-semibold">
                     {override.evidence}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
                 No active strain reduction overrides based on current bloodwork.
               </p>
             )}
@@ -501,14 +501,14 @@ export default function WearableCoachWidget({
 
           {/* Diagnostic Imaging Activity Filters */}
           <div className="bg-indigo-500/10 dark:bg-indigo-950/40 border border-indigo-500/30 p-5 rounded-2xl space-y-3">
-            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
+            <div className="flex items-center gap-2 text-indigo-800 dark:text-indigo-200 font-bold text-sm">
               <Info className="w-4 h-4 text-indigo-500 shrink-0" />
               <span>Diagnostic Imaging Exercise Restrictions</span>
             </div>
             {correlation.activityFilters && correlation.activityFilters.length > 0 ? (
               correlation.activityFilters.map((filter, i) => (
                 <div key={i} className="text-xs text-slate-900 dark:text-slate-100 font-semibold space-y-1">
-                  <p className="font-bold text-indigo-900 dark:text-indigo-200">
+                  <p className="font-bold text-indigo-900 dark:text-indigo-100">
                     Target: {filter.anatomicalTarget}
                   </p>
                   <p className="text-rose-700 dark:text-rose-300">
@@ -520,7 +520,7 @@ export default function WearableCoachWidget({
                 </div>
               ))
             ) : (
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
                 No imaging-based spinal or joint exercise restrictions detected.
               </p>
             )}

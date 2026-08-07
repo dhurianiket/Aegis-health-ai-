@@ -165,7 +165,7 @@ Format as a clean, highly structured Markdown document with:
               {useInAppForm ? (
                  <div className="space-y-3">
                     <div>
-                        <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 prep-form-label mb-2 uppercase tracking-wider">
+                        <label className="block text-xs font-bold text-slate-900 dark:text-slate-100 prep-form-label mb-2 uppercase tracking-wider">
                            Select Symptoms
                         </label>
                         <div className="grid grid-cols-2 gap-2">
@@ -180,10 +180,10 @@ Format as a clean, highly structured Markdown document with:
                                           prev.includes(symptom) ? prev.filter(s => s !== symptom) : [...prev, symptom]
                                        );
                                     }}
-                                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl border transition-all text-left ${
+                                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl border transition-all text-left shadow-sm ${
                                        isSelected 
-                                          ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-700 dark:text-indigo-300 font-bold shadow-sm' 
-                                          : 'bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 symptom-button-text'
+                                          ? 'bg-indigo-500/20 border-indigo-500/60 text-indigo-800 dark:text-indigo-200 font-bold' 
+                                          : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100'
                                     }`}
                                  >
                                     <span className={`w-4 h-4 rounded flex items-center justify-center border text-xs font-bold ${
@@ -191,7 +191,7 @@ Format as a clean, highly structured Markdown document with:
                                     }`}>
                                        {isSelected && "✓"}
                                     </span>
-                                    <span className="symptom-button-text text-sm font-semibold text-slate-900 dark:text-slate-100">{symptom}</span>
+                                    <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{symptom}</span>
                                  </button>
                               );
                            })}
@@ -199,27 +199,27 @@ Format as a clean, highly structured Markdown document with:
                      </div>
                      
                      <div>
-                        <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 prep-form-label mb-1 uppercase tracking-wider">
+                        <label className="block text-xs font-bold text-slate-900 dark:text-slate-100 prep-form-label mb-1 uppercase tracking-wider">
                            Questions for your Doctor
                         </label>
                         <AutoSizeTextarea
                            value={questions}
                            onChange={(e: any) => setQuestions(e.target.value)}
                            placeholder="e.g., Is this dosage of Lisinopril safe to continue? When should I retest?"
-                           className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none shadow-sm"
                            minLines={2}
                         />
                      </div>
 
                      <div>
-                        <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 prep-form-label mb-1 uppercase tracking-wider">
+                        <label className="block text-xs font-bold text-slate-900 dark:text-slate-100 prep-form-label mb-1 uppercase tracking-wider">
                            Additional Symptoms or Notes
                         </label>
                         <AutoSizeTextarea
                            value={onsetNotes}
                            onChange={(e: any) => setOnsetNotes(e.target.value)}
                            placeholder="e.g., Symptoms have been mostly in the evening. Slight chest tightness."
-                           className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none shadow-sm"
                            minLines={1}
                         />
                      </div>
