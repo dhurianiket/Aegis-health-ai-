@@ -19,9 +19,9 @@
 
 @layer base {
   :root {
-    --color-bg: #ffffff;
-    --color-surface: #f5f5f7;
-    --color-border: rgba(0, 0, 0, 0.12);
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-border: rgba(15, 23, 42, 0.12);
     --color-primary: #0d9488;
     --color-critical: #dc2626;
     --color-warning: #d97706;
@@ -29,13 +29,13 @@
     --color-info: #2563eb;
 
     --color-text: #0f172a;
-    --color-text-muted: #475569;
-    --color-text-faint: #64748b;
+    --color-text-muted: #334155;
+    --color-text-faint: #475569;
   }
 
   .dark {
-    --color-bg: #09090b;
-    --color-surface: rgba(255, 255, 255, 0.08);
+    --color-bg: #090d16;
+    --color-surface: #111827;
     --color-border: rgba(255, 255, 255, 0.14);
     --color-primary: #2dd4bf;
     --color-critical: #f87171;

@@ -15,7 +15,7 @@ function HealthRadarChart({ radarData }: { radarData: any[] }) {
         <PolarGrid stroke="rgba(255,255,255,0.1)" />
         <PolarAngleAxis
           dataKey="subject"
-          tick={{ fill: "#94A3B8", fontSize: 10, fontWeight: 600 }}
+          tick={{ fill: "#cbd5e1", fontSize: 11, fontWeight: 700 }}
         />
         <Radar
           name="Health"

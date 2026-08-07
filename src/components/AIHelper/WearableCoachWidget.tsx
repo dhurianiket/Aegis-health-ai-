@@ -359,8 +359,8 @@ export default function WearableCoachWidget({
           <div className="h-[300px] min-h-[300px] w-full relative">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={sleepData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-                <XAxis dataKey="name" stroke="#64748b" tick={{ fill: "#64748b", fontWeight: "bold" }} />
-                <YAxis stroke="#64748b" tick={{ fill: "#64748b", fontWeight: "bold" }} unit="m" />
+                <XAxis dataKey="name" stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} />
+                <YAxis stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} unit="m" />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "rgba(15, 23, 42, 0.9)",
@@ -487,7 +487,7 @@ export default function WearableCoachWidget({
                   <p className="text-amber-800 dark:text-amber-200">
                     Active Strain Override: -{override.strainReductionPercent}% intensity adjustment applied.
                   </p>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+                  <p className="text-[11px] text-slate-800 dark:text-slate-200 font-medium">
                     {override.evidence}
                   </p>
                 </div>

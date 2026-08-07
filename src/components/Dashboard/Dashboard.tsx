@@ -468,9 +468,9 @@ export default function Dashboard({
               <HealthRadarChart radarData={radarData} />
             </Suspense>
           </div>
-          <div className="mt-4 p-4 bg-indigo-500/10 dark:bg-indigo-950/50 rounded-2xl border border-indigo-500/20 flex items-start gap-4">
+          <div className="mt-4 p-4 bg-indigo-500/10 dark:bg-indigo-950/80 rounded-2xl border border-indigo-500/30 flex items-start gap-4">
             <ShieldCheck className="text-indigo-600 dark:text-indigo-400 w-5 h-5 shrink-0" />
-            <p className="text-xs text-indigo-950 dark:text-indigo-100 leading-relaxed font-semibold">
+            <p className="text-xs text-slate-900 dark:text-slate-100 leading-relaxed font-semibold">
               {latestInsights[0]?.content ||
                 "No intelligence data synthesized for this profile yet. Run a specialist analysis to see AI insights here."}
             </p>
