@@ -1,5 +1,6 @@
 @import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap");
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 @plugin "@tailwindcss/typography";
 
 @theme {
@@ -215,14 +216,24 @@
 }
 
 /* Dark Mode Text Contrast Safety Rules */
+.dark .text-slate-700,
+.dark .text-slate-800,
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+
 .dark .text-amber-800,
-.dark .text-amber-700 {
-  color: #fef08a;
+.dark .text-amber-700,
+.dark .text-amber-900 {
+  color: #fef08a !important;
 }
 
 .dark .text-indigo-900,
-.dark .text-indigo-950 {
-  color: #e0e7ff;
+.dark .text-indigo-950,
+.dark .text-indigo-800 {
+  color: #e0e7ff !important;
 }
 
 
