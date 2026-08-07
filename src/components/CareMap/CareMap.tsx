@@ -426,7 +426,7 @@ function CareMap() {
                   className={`w-full text-left p-3 rounded-2xl flex items-center justify-between gap-3 border transition-all pointer-events-auto ${
                     selectedPlace?.id === place.id
                       ? "bg-indigo-500/10 border-indigo-500/40 shadow-sm"
-                      : "bg-black/5 hover:bg-black/10 border-transparent text-slate-800 dark:text-slate-300"
+                      : "bg-black/5 hover:bg-black/10 border-transparent text-slate-800 dark:text-slate-200 font-semibold"
                   }`}
                 >
                   <div className="min-w-0">

@@ -112,7 +112,7 @@ function TrendSparklines({ labs }: TrendSparklinesProps) {
                 </span>
                 {item.previous && (
                   <div
-                    className={`flex items-center text-xs font-bold ${isUp ? "text-red-600 dark:text-red-400" : isDown ? "text-emerald-600 dark:text-emerald-400" : "text-slate-600 dark:text-slate-400"}`}
+                    className={`flex items-center text-xs font-bold ${isUp ? "text-red-600 dark:text-red-400" : isDown ? "text-emerald-600 dark:text-emerald-400" : "text-slate-800 dark:text-slate-200"}`}
                   >
                     {isUp ? (
                       <TrendingUp className="w-3 h-3 mr-0.5" />

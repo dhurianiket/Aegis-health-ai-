@@ -285,7 +285,7 @@ export default function CalendarSync() {
           {/* Calendar Event List (8 Cols) */}
           <div className="lg:col-span-8 space-y-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-indigo-500" />
                 Upcoming Medical & Routine Events
               </h4>

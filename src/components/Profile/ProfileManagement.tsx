@@ -175,17 +175,17 @@ export default function ProfileManagement() {
       {usageStats && (
         <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-md rounded-[24px] border border-slate-200 dark:border-slate-700/50 p-6 flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-700/50">
           <div className="flex-1 px-4 py-2 sm:py-0">
-             <p className="text-slate-700 dark:text-slate-400 text-sm mb-1">Documents Uploaded</p>
+             <p className="text-slate-800 dark:text-slate-200 text-sm font-semibold mb-1">Documents Uploaded</p>
              <p className="text-2xl font-bold text-slate-900 dark:text-white">{usageStats.documentsUploaded || 0}</p>
           </div>
           <div className="flex-1 px-4 py-2 sm:py-0">
-             <p className="text-slate-700 dark:text-slate-400 text-sm mb-1">Storage Used</p>
+             <p className="text-slate-800 dark:text-slate-200 text-sm font-semibold mb-1">Storage Used</p>
              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {((usageStats.totalStorageBytes || 0) / (1024 * 1024)).toFixed(2)} MB
              </p>
           </div>
-          <div className="flex-1 px-4 py-2 sm:py-0 text-indigo-500 dark:text-indigo-400">
-             <p className="text-indigo-600/80 dark:text-indigo-400/80 text-sm mb-1">AI Interactions (This Month)</p>
+          <div className="flex-1 px-4 py-2 sm:py-0 text-indigo-600 dark:text-indigo-300">
+             <p className="text-indigo-700 dark:text-indigo-300 text-sm font-semibold mb-1">AI Interactions (This Month)</p>
              <p className="text-2xl font-bold">
                 {((usageStats.monthlyUsage && usageStats.monthlyUsage[new Date().toISOString().substring(0, 7)]) || 0).toLocaleString()}
              </p>

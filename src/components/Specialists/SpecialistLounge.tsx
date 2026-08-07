@@ -315,7 +315,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
              <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-200 dark:border-white/10">
                 <Stethoscope className="text-slate-600 dark:text-slate-300 w-10 h-10"/>
              </div>
-             <p className="text-[15px] text-slate-700 dark:text-slate-300 text-center font-medium leading-relaxed max-w-sm">
+             <p className="text-[15px] text-slate-800 dark:text-slate-200 text-center font-semibold leading-relaxed max-w-sm">
                Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
              </p>
              <div className="flex gap-2 w-full max-w-[280px]">
@@ -350,7 +350,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           <div className="flex justify-start pr-12 pb-2">
              <div className="bg-slate-50 dark:bg-[#1C1C1E] rounded-[24px] rounded-bl-[8px] px-5 py-4 flex items-center gap-3 shadow-sm border border-slate-200 dark:border-[#2C2C2E]">
                 <Loader2 className="w-5 h-5 text-slate-600 dark:text-slate-300 animate-spin" />
-                <span className="text-[14px] font-medium text-slate-700 dark:text-slate-300 animate-pulse">Analyzing record...</span>
+                <span className="text-[14px] font-semibold text-slate-800 dark:text-slate-200 animate-pulse">Analyzing record...</span>
              </div>
           </div>
         )}
@@ -361,7 +361,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           <div className="flex justify-center mb-3">
             <button
               onClick={handleAbort}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 dark:bg-[#1C1C1E] hover:bg-slate-200 dark:hover:bg-[#2C2C2E] text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 transition-colors active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 dark:bg-[#1C1C1E] hover:bg-slate-200 dark:hover:bg-[#2C2C2E] text-xs font-bold uppercase tracking-widest text-slate-800 dark:text-slate-200 transition-colors active:scale-95"
             >
               <Square size={10} className="fill-current" /> Stop
             </button>

@@ -128,7 +128,7 @@ export const MasonryLabCards: React.FC<MasonryLabCardsProps> = ({
                           ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-900/40' 
                           : item.trend === 'down' 
                             ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/40' 
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold'
                       }`}>
                         {item.trend === 'up' ? '↑ High' : item.trend === 'down' ? '↓ Low' : '→ Stable'}
                       </span>
@@ -138,7 +138,7 @@ export const MasonryLabCards: React.FC<MasonryLabCardsProps> = ({
                     {item.value}
                   </div>
                   {item.note && (
-                    <div className="text-slate-600 dark:text-slate-400 font-medium text-xs mt-auto pt-2 border-t border-slate-100 dark:border-white/5" style={{ font: NOTE_FONT, lineHeight: `${NOTE_LH}px` }}>
+                    <div className="text-slate-800 dark:text-slate-200 font-semibold text-xs mt-auto pt-2 border-t border-slate-100 dark:border-white/10" style={{ font: NOTE_FONT, lineHeight: `${NOTE_LH}px` }}>
                       {item.note}
                     </div>
                   )}
