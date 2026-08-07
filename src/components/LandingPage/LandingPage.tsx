@@ -258,42 +258,43 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 lg:gap-12 items-center w-full relative z-10 transform-gpu">
             {/* Left Content */}
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 mb-6">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-                Early Beta – Free for Feedback
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 mb-6 shadow-[0_0_25px_rgba(45,212,191,0.2)] backdrop-blur-md">
+                <span className="h-2 w-2 rounded-full bg-teal-400 animate-ping"></span>
+                <span>Next-Gen Health Intelligence 2.0</span>
               </span>
 
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]"
+                className="text-5xl md:text-7xl font-black tracking-tight text-white mb-6 leading-[1.08] font-sans"
               >
-                Understand your medical reports instantly. <br className="hidden md:block" />
-                <span className="text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.3)]">In plain language.</span>
+                Understand your medical telemetry. <br className="hidden md:block" />
+                <span className="bg-gradient-to-r from-teal-300 via-emerald-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(45,212,191,0.35)]">
+                  In plain clinical language.
+                </span>
               </motion.h1>
               
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="text-lg md:text-xl text-slate-400 mb-6 font-light max-w-lg leading-relaxed"
+                className="text-lg md:text-xl text-slate-200 mb-6 font-medium max-w-lg leading-relaxed"
               >
-                Upload lab reports or prescriptions. Get a clear, AI-powered summary and ask questions. Built to help Indian families prepare for doctor visits.
+                Upload lab reports or prescriptions. Get a clear, AI-powered summary and ask questions. Built to help Indian families prepare for doctor visits with total confidence.
               </motion.p>
-
 
               <motion.div
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
-               className="text-emerald-300 text-xs md:text-sm font-bold tracking-wide mb-8 bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 rounded-xl inline-flex items-start gap-3 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+               className="text-teal-200 text-xs md:text-sm font-semibold tracking-wide mb-8 bg-teal-500/10 border border-teal-500/30 px-5 py-3.5 rounded-2xl inline-flex items-start gap-3 shadow-[0_0_20px_rgba(45,212,191,0.15)] backdrop-blur-xl"
               >
                 <div className="shrink-0 mt-0.5">
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <Sparkles className="w-5 h-5 text-teal-300 animate-pulse" />
                 </div>
                 <span>
-                  Powered by <strong>Google Gemini 3.6 Flash & 3.1 Pro</strong> for advanced clinical reasoning and instant lab report extraction.
+                  Engineered with <strong className="text-white">Google Gemini 3.6 Flash & 3.1 Pro</strong> for high-precision multimodal vision & autonomous clinical reasoning.
                 </span>
               </motion.div>
 
@@ -301,11 +302,11 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-                className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 text-xs md:text-sm font-medium text-emerald-400/80"
+                className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 text-xs md:text-sm font-bold text-teal-300"
               >
-                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> DPDP Act 2023 Aligned</div>
-                <div className="flex items-center gap-2"><Activity className="w-4 h-4" /> Instant Analysis</div>
-                <div className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> AI-Powered</div>
+                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-400" /> DPDP Act 2023 Aligned</div>
+                <div className="flex items-center gap-2"><Activity className="w-4 h-4 text-teal-400" /> Real-time Lab Analysis</div>
+                <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-cyan-400" /> AI Doctor Visit Prep</div>
               </motion.div>
               
               <motion.div 
@@ -317,12 +318,12 @@ export default function LandingPage() {
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
-                  className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-[#0A192F] rounded-full font-bold tracking-wide transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex flex-col items-center justify-center"
+                  className="px-8 py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] rounded-full font-black tracking-wider transition-all shadow-[0_0_30px_rgba(45,212,191,0.4)] hover:shadow-[0_0_45px_rgba(45,212,191,0.6)] flex flex-col items-center justify-center active:scale-95"
                 >
                   <div className="flex items-center gap-2 text-base">
                     {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "GET STARTED FOR FREE"}
                   </div>
-                  <span className="text-xs font-semibold mt-0.5 tracking-wider">NO CREDIT CARD REQUIRED</span>
+                  <span className="text-[10px] font-extrabold mt-0.5 tracking-widest opacity-90 uppercase">NO CREDIT CARD REQUIRED</span>
                 </button>
                 <button
                   onClick={handleSignIn}
