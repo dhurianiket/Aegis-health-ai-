@@ -1,6 +1,14 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 7, 2026 (XXX)
+## Latest Update — August 7, 2026 (XXXI)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Tailwind CSS v4 Dark Variant Configuration & Global High-Contrast Overrides (`index.css`)**:
+  - **Tailwind v4 Root Cause Fix**: Configured `@custom-variant dark (&:where(.dark, .dark *));` at the top of `index.css`. In Tailwind v4, without this custom variant, `dark:` classes (`dark:text-slate-100`, `dark:bg-slate-800`, `dark:text-amber-200`) were completely ignored when `.dark` was toggled on `document.documentElement`, causing dark text fallback across all 5 screenshot areas.
+  - **Bulletproof CSS Overrides**: Added global `!important` color rules targeting `.dark .text-slate-700`, `.dark .text-slate-800`, `.dark .text-amber-800`, `.dark .text-indigo-900` to enforce bright, high-contrast text (`#cbd5e1`, `#fef08a`, `#e0e7ff`) on dark slate surfaces.
+  - **Pushed Commit `fdaa95d` to GitHub `main`**.
+
+## Previous Update — August 7, 2026 (XXX)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Mobile Viewport & Touch Target Optimization (`App.tsx`, `AppNav.tsx`, `LabReportsSection.tsx`)**:
