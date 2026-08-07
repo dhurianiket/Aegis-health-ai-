@@ -198,7 +198,7 @@ export default function InteractionMatrix({
                 className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
                   viewMode === "drug-drug"
                     ? "bg-indigo-600 text-white font-bold shadow-md"
-                    : "text-slate-400 hover:text-white"
+                    : "text-slate-600 dark:text-slate-300 hover:text-theme"
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -209,7 +209,7 @@ export default function InteractionMatrix({
                 className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
                   viewMode === "drug-lab"
                     ? "bg-indigo-600 text-white font-bold shadow-md"
-                    : "text-slate-400 hover:text-white"
+                    : "text-slate-600 dark:text-slate-300 hover:text-theme"
                 }`}
               >
                 <Activity className="w-3.5 h-3.5" />
@@ -220,7 +220,7 @@ export default function InteractionMatrix({
                 className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
                   viewMode === "overview"
                     ? "bg-indigo-600 text-white font-bold shadow-md"
-                    : "text-slate-400 hover:text-white"
+                    : "text-slate-600 dark:text-slate-300 hover:text-theme"
                 }`}
               >
                 <ShieldAlert className="w-3.5 h-3.5" />
@@ -371,7 +371,7 @@ export default function InteractionMatrix({
                           </div>
                         </div>
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                          inter?.severity === "severe" ? "bg-red-500 text-white" : inter?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/20 text-emerald-400"
+                          inter?.severity === "severe" ? "bg-red-500 text-white" : inter?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
                         }`}>
                           {inter ? inter.severity : "Compatible"}
                         </span>
@@ -497,7 +497,7 @@ export default function InteractionMatrix({
                               </div>
                             </div>
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                              contra?.severity === "critical" ? "bg-red-500 text-white" : contra?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/20 text-emerald-400"
+                              contra?.severity === "critical" ? "bg-red-500 text-white" : contra?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
                             }`}>
                               {contra ? contra.severity : "Safe"}
                             </span>
@@ -698,7 +698,7 @@ export default function InteractionMatrix({
                 <div className="flex items-center justify-between">
                   <h4 className="text-lg font-bold text-slate-900 dark:text-white">{selectedContra.title}</h4>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase border ${
-                    selectedContra.severity === "critical" ? "bg-red-500 text-white" : selectedContra.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                    selectedContra.severity === "critical" ? "bg-red-500 text-white" : selectedContra.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                   }`}>
                     {selectedContra.severity}
                   </span>

@@ -386,7 +386,7 @@ export default function Dashboard({
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
                 {latestScore.overall}
-                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 ml-1">/100</span>
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">/100</span>
               </span>
               <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center">
                 <TrendingUp className="w-3.5 h-3.5 mr-1" /> +4%
@@ -557,7 +557,7 @@ export default function Dashboard({
                                {source.name}
                              </a>
                            ) : (
-                             <span className="italic text-slate-600 dark:text-slate-300 font-medium">reference not available</span>
+                             <span className="italic text-slate-700 dark:text-slate-300 font-medium">reference not available</span>
                            )}
                          </div>
                        </div>

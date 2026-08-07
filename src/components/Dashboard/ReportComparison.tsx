@@ -120,7 +120,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
             <div className="px-3 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-600 text-xs font-semibold flex items-center gap-1.5">
               Worsened: {data.summary.worsened}
             </div>
-            <div className="px-3 py-1.5 rounded-full border border-slate-500/20 bg-slate-500/10 text-slate-600 text-xs font-semibold flex items-center gap-1.5">
+            <div className="px-3 py-1.5 rounded-full border border-slate-500/20 bg-slate-500/10 text-muted text-xs font-semibold flex items-center gap-1.5">
               Stable: {data.summary.stable}
             </div>
             <div className="px-3 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-600 text-xs font-semibold flex items-center gap-1.5">
@@ -160,7 +160,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
                           <span className="font-mono">{row.valueA ?? '-'}</span>
                           <span className="text-xs text-[var(--color-text-muted)]">{row.unitA}</span>
                           {row.flagA && row.flagA !== 'NORMAL' && (
-                            <span className="text-xs font-bold bg-slate-500/10 text-slate-300 px-1.5 rounded">{row.flagA}</span>
+                            <span className="text-xs font-bold bg-slate-500/10 text-slate-700 dark:text-slate-300 px-1.5 rounded">{row.flagA}</span>
                           )}
                         </div>
                       )}
@@ -172,7 +172,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
                            <span className="font-mono">{row.valueB ?? '-'}</span>
                            <span className="text-xs text-[var(--color-text-muted)]">{row.unitB}</span>
                            {row.flagB && row.flagB !== 'NORMAL' && (
-                             <span className={`text-xs font-bold px-1.5 rounded ${isWorsened ? 'bg-amber-500/10 text-amber-600' : 'bg-slate-500/10 text-slate-300'}`}>{row.flagB}</span>
+                             <span className={`text-xs font-bold px-1.5 rounded ${isWorsened ? 'bg-amber-500/10 text-amber-600' : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'}`}>{row.flagB}</span>
                            )}
                          </div>
                       )}
@@ -180,7 +180,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
 
                     <td className="px-6 py-4 font-mono text-xs">
                       {row.deltaPercent !== null ? (
-                        <div className={`flex items-center gap-1 ${isWorsened ? 'text-amber-500' : isImproved ? 'text-green-500' : 'text-slate-300'}`}>
+                        <div className={`flex items-center gap-1 ${isWorsened ? 'text-amber-500' : isImproved ? 'text-green-500' : 'text-slate-700 dark:text-slate-300'}`}>
                           {row.direction === 'worsened' ? <ArrowUpRight size={14} className={row.delta! < 0 ? 'rotate-90' : ''} /> : 
                            row.direction === 'improved' ? <ArrowDownRight size={14} className={row.delta! > 0 ? '-rotate-90' : ''} /> : null}
                           <span>
@@ -188,7 +188,7 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-300">{row.direction === 'unchanged' ? 'Unchanged' : '-'}</span>
+                        <span className="text-slate-700 dark:text-slate-300">{row.direction === 'unchanged' ? 'Unchanged' : '-'}</span>
                       )}
                     </td>
                   </tr>

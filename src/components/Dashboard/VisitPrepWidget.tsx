@@ -206,7 +206,7 @@ Format as a clean, highly structured Markdown document with:
                           value={questions}
                           onChange={(e: any) => setQuestions(e.target.value)}
                           placeholder="e.g., Is this dosage of Lisinopril safe to continue? When should I retest?"
-                          className="w-full bg-white/70 dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl p-3 text-sm text-[var(--color-text)] font-medium placeholder:text-slate-500 dark:placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                          className="w-full bg-white/70 dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl p-3 text-sm text-[var(--color-text)] font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                           minLines={2}
                        />
                     </div>
@@ -219,7 +219,7 @@ Format as a clean, highly structured Markdown document with:
                           value={onsetNotes}
                           onChange={(e: any) => setOnsetNotes(e.target.value)}
                           placeholder="e.g., Symptoms have been mostly in the evening. Slight chest tightness."
-                          className="w-full bg-white/70 dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl p-3 text-sm text-[var(--color-text)] font-medium placeholder:text-slate-500 dark:placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                          className="w-full bg-white/70 dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl p-3 text-sm text-[var(--color-text)] font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                           minLines={1}
                        />
                     </div>
@@ -255,7 +255,7 @@ Format as a clean, highly structured Markdown document with:
 
         {loading && (
            <div className="flex flex-col items-center justify-center py-6 gap-3">
-              <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-spin" />
               <span className="text-xs text-muted uppercase tracking-wider animate-pulse">Compiling Medical Summary...</span>
            </div>
         )}
@@ -270,7 +270,7 @@ Format as a clean, highly structured Markdown document with:
                  <button
                     type="button"
                     onClick={() => { setUseInAppForm(true); setError(null); }}
-                    className="w-full bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 py-2 rounded-xl text-xs font-semibold transition"
+                    className="w-full bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 py-2 rounded-xl text-xs font-semibold transition"
                  >
                     Fill Symptoms directly in the App instead
                  </button>
@@ -282,7 +282,7 @@ Format as a clean, highly structured Markdown document with:
            <div className="mt-4 p-4 border border-[var(--color-border)] rounded-2xl bg-white/5 space-y-4 text-sm relative">
                <button 
                  type="button"
-                 className="absolute top-4 right-4 text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                 className="absolute top-4 right-4 text-xs text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold"
                  onClick={() => setSummary(null)}
                >
                    Reset
@@ -291,7 +291,7 @@ Format as a clean, highly structured Markdown document with:
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   Ready for your visit
                </div>
-               <div className="prose prose-sm prose-invert max-w-none text-muted whitespace-pre-wrap">
+               <div className="prose prose-sm prose-slate dark:prose-invert max-w-none text-muted whitespace-pre-wrap">
                   {summary}
                </div>
            </div>

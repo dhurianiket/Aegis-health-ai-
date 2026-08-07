@@ -52,7 +52,7 @@ export default function IntegrationsPanel({
           <motion.div
             key={item.id}
             whileHover={{ y: -4 }}
-            className="bg-slate-800/40 border border-white/5 p-6 rounded-3xl flex flex-col justify-between group"
+            className="bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-3xl flex flex-col justify-between group"
           >
             <div>
               <div className="flex items-center justify-between mb-6">
@@ -63,30 +63,30 @@ export default function IntegrationsPanel({
                   {item.status}
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{item.name}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-bold text-[var(--color-text)] mb-2">{item.name}</h3>
+              <p className="text-[var(--color-text-muted)] text-sm leading-relaxed">
                 {item.description}
               </p>
             </div>
 
-            <button className="mt-8 flex items-center gap-2 text-indigo-400 font-bold text-sm hover:text-indigo-300 transition-colors group-hover:translate-x-1 duration-300">
+            <button className="mt-8 flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors group-hover:translate-x-1 duration-300">
               Connect Integration <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
         ))}
       </div>
 
-      <div className="bg-slate-800/40 border border-white/5 rounded-3xl overflow-hidden">
-        <div className="p-8 border-b border-white/5">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl overflow-hidden">
+        <div className="p-8 border-b border-[var(--color-border)]">
           <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-indigo-500/20 rounded-2xl text-indigo-400">
+              <div className="p-3 bg-indigo-500/20 rounded-2xl text-indigo-600 dark:text-indigo-400">
               <Database className="w-6 h-6" />
             </div>
-            <h3 className="text-2xl font-bold text-white tracking-tight">
+            <h3 className="text-2xl font-bold text-[var(--color-text)] tracking-tight">
               Data Portability
             </h3>
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-[var(--color-text-muted)] text-sm">
             Export your health data in industry-standard formats for EHR
             compatibility.
           </p>
@@ -95,20 +95,20 @@ export default function IntegrationsPanel({
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* FHIR Export */}
           <div
-            className="p-8 border-r border-white/5 hover:bg-white/5 transition-colors cursor-pointer group"
+            className="p-8 border-r border-[var(--color-border)] hover:bg-[var(--color-bg)]/50 transition-colors cursor-pointer group"
             onClick={() => exportToFHIR(activeProfile)}
           >
             <div className="flex items-center gap-4 mb-4">
-              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400">
+              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400">
                 <FileJson className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-white">FHIR JSON Export</h4>
+              <h4 className="font-bold text-[var(--color-text)]">FHIR JSON Export</h4>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed mb-6">
+            <p className="text-xs text-[var(--color-text-muted)] leading-relaxed mb-6">
               Standardized format used by healthcare systems like Epic and
               Cerner for seamless record transfers.
             </p>
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-text-faint)] uppercase tracking-widest">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" /> V1.0.0
               Compatible
             </div>
@@ -116,20 +116,20 @@ export default function IntegrationsPanel({
 
           {/* CSV Export */}
           <div
-            className="p-8 hover:bg-white/5 transition-colors cursor-pointer group"
+            className="p-8 hover:bg-[var(--color-bg)]/50 transition-colors cursor-pointer group"
             onClick={handleCSVExport}
           >
             <div className="flex items-center gap-4 mb-4">
-              <div className="p-2 bg-amber-500/10 rounded-xl text-amber-400">
+              <div className="p-2 bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400">
                 <Table className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-white">Spreadsheet (CSV)</h4>
+              <h4 className="font-bold text-[var(--color-text)]">Spreadsheet (CSV)</h4>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed mb-6">
+            <p className="text-xs text-[var(--color-text-muted)] leading-relaxed mb-6">
               Download your complete lab history and vital trends for custom
               analysis in Excel or Google Sheets.
             </p>
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-text-faint)] uppercase tracking-widest">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Formatted
               for Analysis
             </div>

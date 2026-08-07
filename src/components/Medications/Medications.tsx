@@ -238,7 +238,7 @@ export default function Medications({
               >
                 <div>
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                       <Pill className="w-6 h-6" />
                     </div>
                     <button
@@ -276,7 +276,7 @@ export default function Medications({
                   {onOpenChat && (
                     <button
                       onClick={onOpenChat}
-                      className="flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest transition-colors w-full justify-center py-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-xl"
+                      className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 uppercase tracking-widest transition-colors w-full justify-center py-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-xl"
                     >
                       <Sparkles className="w-4 h-4" /> Ask Aura AI about this
                       medication
@@ -367,7 +367,7 @@ export default function Medications({
         </div>
       )}
 
-      <div className="pt-8 mt-12 border-t border-surface opacity-40 text-center">
+      <div className="pt-8 mt-12 border-t border-surface text-center">
         <p className="text-xs text-faint font-mono uppercase tracking-[0.15em]">
           Built by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="text-muted hover:text-[var(--color-text)] underline decoration-faint transition-colors">Aniket Dhuri</a> · Powered by Gemini AI
         </p>

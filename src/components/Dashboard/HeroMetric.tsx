@@ -61,7 +61,7 @@ export const HeroMetric: React.FC<HeroMetricProps> = ({
       </div>
 
       {(refLow !== undefined || refHigh !== undefined) && (
-        <div className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+        <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
           Ref: <span className="font-semibold text-slate-800 dark:text-slate-200">{refLow !== undefined ? refLow : ''}–{refHigh !== undefined ? refHigh : ''}</span>
         </div>
       )}
@@ -78,7 +78,7 @@ export const HeroMetric: React.FC<HeroMetricProps> = ({
             )}
             {Math.abs(delta).toFixed(1)}
           </span>
-          <span className="text-slate-600 dark:text-slate-300 font-medium">
+          <span className="text-slate-700 dark:text-slate-300 font-medium">
             vs {previousValue} ({previousDate})
           </span>
         </div>

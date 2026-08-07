@@ -149,11 +149,11 @@ export default function ProfileManagement() {
     <div className="space-y-6 max-w-4xl mx-auto px-4 sm:px-0">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text)] flex items-center gap-2">
             <Users className="w-6 h-6 text-indigo-400" />
             Profile Management
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--color-text-muted)] text-sm mt-1">
             Manage multiple records and views
           </p>
         </div>
@@ -203,15 +203,15 @@ export default function ProfileManagement() {
           >
             <form
               onSubmit={handleCreate}
-              className="bg-slate-800/50 backdrop-blur-md border border-indigo-500/30 p-6 rounded-2xl relative mb-6"
+              className="bg-[var(--color-surface)] backdrop-blur-md border border-indigo-500/30 p-6 rounded-2xl relative mb-6"
             >
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-white">Create New Profile</h3>
+                <h3 className="font-semibold text-[var(--color-text)]">Create New Profile</h3>
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
                   aria-label="Close create profile form"
-                  className="text-slate-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-md"
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-md"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -223,7 +223,7 @@ export default function ProfileManagement() {
                 value={newProfileName}
                 onChange={(e) => setNewProfileName(e.target.value)}
                 placeholder="Enter patient name..."
-                className={`w-full bg-black/20 border ${createError ? "border-red-500" : "border-white/10"} rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 mb-2`}
+                className={`w-full bg-[var(--color-bg)] border ${createError ? "border-red-500" : "border-[var(--color-border)]"} rounded-xl px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-indigo-500 mb-2`}
               />
               {createError && (
                 <p className="text-red-400 text-xs mb-4">{createError}</p>
@@ -247,10 +247,10 @@ export default function ProfileManagement() {
           <motion.div
             key={p.id}
             layout
-            className={`relative bg-slate-800/30 border backdrop-blur-sm p-6 rounded-2xl transition-all ${
+            className={`relative bg-[var(--color-surface)] border backdrop-blur-sm p-6 rounded-2xl transition-all ${
               activeProfile?.id === p.id
                 ? "border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
-                : "border-white/5 hover:border-white/10"
+                : "border-[var(--color-border)] hover:border-[var(--color-border)]"
             }`}
           >
             {activeProfile?.id === p.id && (
@@ -263,30 +263,30 @@ export default function ProfileManagement() {
               {editingId === p.id ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Full Name</label>
+                    <label className="block text-xs text-[var(--color-text-muted)] mb-1">Full Name</label>
                     <input
                       type="text"
                       value={editFullName}
                       onChange={(e) => setEditFullName(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">DOB</label>
+                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">DOB</label>
                       <input
                         type="date"
                         value={editDob}
                         onChange={(e) => setEditDob(e.target.value)}
-                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Gender</label>
+                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Gender</label>
                       <select
                         value={editGender}
                         onChange={(e) => setEditGender(e.target.value as Gender)}
-                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                       >
                         <option value="">Select</option>
                         {Object.values(Gender).map((g) => (
@@ -297,54 +297,54 @@ export default function ProfileManagement() {
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Blood Type</label>
+                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Blood Type</label>
                       <select
                         value={editBloodType}
                         onChange={(e) => setEditBloodType(e.target.value)}
-                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                       >
                         <option value="">Select</option>
                         {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bt => <option key={bt} value={bt}>{bt}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Height (cm)</label>
+                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Height (cm)</label>
                       <input
                         type="number"
                         value={editHeight}
                         onChange={(e) => setEditHeight(e.target.value ? Number(e.target.value) : "")}
-                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                         placeholder="cm"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Weight (kg)</label>
+                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Weight (kg)</label>
                       <input
                         type="number"
                         value={editWeight}
                         onChange={(e) => setEditWeight(e.target.value ? Number(e.target.value) : "")}
-                        className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                         placeholder="kg"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Google Forms Intake ID (Optional)</label>
+                    <label className="block text-xs text-[var(--color-text-muted)] mb-1">Google Forms Intake ID (Optional)</label>
                     <input
                       type="text"
                       value={editGoogleFormId}
                       onChange={(e) => setEditGoogleFormId(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                       placeholder="e.g. 1FAIpQLScX..."
                     />
-                    <p className="text-xs text-slate-300 mt-1">If provided, AI will fetch your form responses as clinical context.</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">If provided, AI will fetch your form responses as clinical context.</p>
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Clinical Notes</label>
+                    <label className="block text-xs text-[var(--color-text-muted)] mb-1">Clinical Notes</label>
                     <AutoSizeTextarea
                       value={editDoctorNotes}
                       onChange={(e: any) => setEditDoctorNotes(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-1.5 text-white text-sm"
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
                       placeholder="Medical history, allergies, or notes..."
                       minLines={3}
                     />
@@ -365,7 +365,7 @@ export default function ProfileManagement() {
                     <button
                       onClick={() => setEditingId(null)}
                       disabled={isSaving}
-                      className="text-xs px-3 py-1.5 text-slate-400 hover:text-white"
+                      className="text-xs px-3 py-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
                     >
                       Cancel
                     </button>
@@ -374,16 +374,16 @@ export default function ProfileManagement() {
               ) : (
                 <div>
                   <h3
-                    className="text-xl font-semibold text-white truncate pr-6 mb-2"
+                    className="text-xl font-semibold text-[var(--color-text)] truncate pr-6 mb-2"
                     title={p.fullName || p.name}
                   >
                     {p.fullName || p.name}
                   </h3>
                   
                   <div className="flex flex-col gap-2 mt-3">
-                     <div className="flex items-center gap-4 text-xs text-slate-300">
-                        {p.dob && <div><span className="text-slate-300">DOB:</span> {p.dob}</div>}
-                        {p.bloodType && <div><span className="text-slate-300">Type:</span> <span className="font-bold text-red-400">{p.bloodType}</span></div>}
+                     <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
+                        {p.dob && <div><span className="text-[var(--color-text-muted)]">DOB:</span> {p.dob}</div>}
+                        {p.bloodType && <div><span className="text-[var(--color-text-muted)]">Type:</span> <span className="font-bold text-red-400">{p.bloodType}</span></div>}
                      </div>
                      
                      {p.googleFormId && (
@@ -393,16 +393,16 @@ export default function ProfileManagement() {
                        </div>
                      )}
 
-                     <div className="bg-white/5 rounded-lg p-3 border border-white/10 flex items-center justify-between">
+                     <div className="bg-[var(--color-surface)] rounded-lg p-3 border border-[var(--color-border)] flex items-center justify-between">
                         <div>
-                           <div className="text-xs text-slate-400 mb-0.5">BMI</div>
+                           <div className="text-xs text-[var(--color-text-muted)] mb-0.5">BMI</div>
                            {p.weight && p.height ? (
                               <div className="flex items-center gap-2">
-                                 <span className="text-sm font-bold text-white">{calculateBMI(p.weight, p.height)}</span>
+                                 <span className="text-sm font-bold text-[var(--color-text)]">{calculateBMI(p.weight, p.height)}</span>
                                  <span className="text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">{getBMICategory(Number(calculateBMI(p.weight, p.height)))}</span>
                               </div>
                            ) : (
-                              <div className="text-xs text-slate-300">Add height and weight to calculate BMI</div>
+                              <div className="text-xs text-[var(--color-text-muted)]">Add height and weight to calculate BMI</div>
                            )}
                         </div>
                      </div>
@@ -411,7 +411,7 @@ export default function ProfileManagement() {
               )}
             </div>
 
-            <div className="flex items-center gap-3 border-t border-white/5 pt-4">
+            <div className="flex items-center gap-3 border-t border-[var(--color-border)] pt-4">
               <button
                 onClick={() => {
                   if (activeProfile?.id !== p.id) setActiveProfile(p);
@@ -420,7 +420,7 @@ export default function ProfileManagement() {
                 className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   activeProfile?.id === p.id
                     ? "bg-indigo-500/10 text-indigo-400 cursor-default"
-                    : "border border-slate-300 text-slate-700 dark:bg-white/10 dark:text-white"
+                    : "border border-[var(--color-border)] text-[var(--color-text)] bg-[var(--color-surface)]"
                 }`}
               >
                 {activeProfile?.id === p.id ? "Viewing" : "Switch To"}
@@ -429,7 +429,7 @@ export default function ProfileManagement() {
               <button
                 onClick={() => handleEdit(p)}
                 aria-label="Edit Profile"
-                className="p-1.5 text-slate-400 hover:text-indigo-400 bg-white/5 hover:bg-indigo-500/10 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-400 bg-[var(--color-surface)] hover:bg-indigo-500/10 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
                 title="Edit Profile"
               >
                 <Edit2 className="w-4 h-4" />
@@ -439,7 +439,7 @@ export default function ProfileManagement() {
                 onClick={() => setDeletingId(p.id)}
                 disabled={profiles.length <= 1}
                 aria-label="Delete Profile"
-                className="p-1.5 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                className="p-1.5 text-[var(--color-text-muted)] hover:text-red-400 bg-[var(--color-surface)] hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-[var(--color-text-muted)] disabled:hover:bg-[var(--color-surface)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                 title={
                   profiles.length <= 1
                     ? "Cannot delete last profile"

@@ -103,30 +103,30 @@ export default function FamilyHub() {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/5 p-8 rounded-[40px] border border-white/10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[var(--color-surface)] p-8 rounded-[40px] border border-[var(--color-border)]">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-500/20 rounded-lg">
               <Users className="w-5 h-5 text-indigo-400" />
             </div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">
+            <h2 className="text-3xl font-bold text-[var(--color-text)] tracking-tight">
               Family Hub
             </h2>
           </div>
-          <p className="text-slate-400 text-sm font-light max-w-xl">
+          <p className="text-[var(--color-text-muted)] text-sm font-light max-w-xl">
             Aura's Multi-User interface allows you to manage dependents, share
             records securely, and analyze collective health risks across
             generations.
           </p>
         </div>
 
-        <div className="flex bg-black/20 p-1.5 rounded-2xl border border-white/5">
+        <div className="flex bg-[var(--color-bg)] p-1.5 rounded-2xl border border-[var(--color-border)]">
           <button
             onClick={() => setActiveTab("members")}
             className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
               activeTab === "members"
                 ? "bg-indigo-600 text-white shadow-xl shadow-indigo-500/20"
-                : "text-slate-400 hover:text-white"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             }`}
           >
             Manage Access
@@ -136,7 +136,7 @@ export default function FamilyHub() {
             className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
               activeTab === "risk"
                 ? "bg-indigo-600 text-white shadow-xl shadow-indigo-500/20"
-                : "text-slate-400 hover:text-white"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             }`}
           >
             Cross-Genetic Risk
@@ -233,14 +233,14 @@ export default function FamilyHub() {
                         )}
                       </div>
                       <div>
-                        <div className="text-white font-bold text-sm tracking-tight">
+                        <div className="text-[var(--color-text)] font-bold text-sm tracking-tight">
                           {rel.relatedEmail}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-slate-300 uppercase font-bold tracking-widest">
+                          <span className="text-xs text-[var(--color-text-muted)] uppercase font-bold tracking-widest">
                             {rel.relationType}
                           </span>
-                          <span className="w-1 h-1 rounded-full bg-slate-700" />
+                          <span className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
                           <span
                             className={`text-xs font-black uppercase tracking-widest ${
                               rel.status === "active"
@@ -274,14 +274,14 @@ export default function FamilyHub() {
                 ))}
 
                 {relations.length === 0 && (
-                  <div className="text-center py-24 bg-white/5 border border-dashed border-white/10 rounded-[40px]">
-                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-8 h-8 text-slate-300" />
+                  <div className="text-center py-24 bg-[var(--color-surface)] border border-dashed border-[var(--color-border)] rounded-[40px]">
+                    <div className="w-16 h-16 bg-[var(--color-bg)] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-8 h-8 text-[var(--color-text-muted)]" />
                     </div>
-                    <h5 className="text-slate-300 font-bold">
+                    <h5 className="text-[var(--color-text)] font-bold">
                       No Active Family Links
                     </h5>
-                    <p className="text-xs text-slate-300 mt-2 max-w-sm mx-auto leading-relaxed">
+                    <p className="text-xs text-[var(--color-text-muted)] mt-2 max-w-sm mx-auto leading-relaxed">
                       Share access to manage chronic conditions together or
                       compare genetic lab markers.
                     </p>
@@ -293,12 +293,12 @@ export default function FamilyHub() {
         ) : (
           /* Risk Tab Placeholder - D3 Visuals later */
           <div className="lg:col-span-3 space-y-8">
-            <div className="bg-white/5 border border-white/10 rounded-[40px] p-12 text-center">
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[40px] p-12 text-center">
               <Dna className="w-16 h-16 text-indigo-400 mx-auto mb-6 animate-pulse" />
-              <h3 className="text-2xl font-bold text-white mb-4">
+              <h3 className="text-2xl font-bold text-[var(--color-text)] mb-4">
                 Genetic Marker Cross-Analysis
               </h3>
-              <p className="text-slate-400 max-w-2xl mx-auto leading-relaxed font-light mb-8">
+              <p className="text-[var(--color-text-muted)] max-w-2xl mx-auto leading-relaxed font-light mb-8">
                 Aura securely visualizes patterns across linked family accounts
                 to provide insight into shared health histories. This
                 functionality allows you to review historical data together for
@@ -342,7 +342,7 @@ export default function FamilyHub() {
                 {risks.map((risk, i) => (
                   <div
                     key={i}
-                    className="bg-white/5 border border-white/10 rounded-[32px] p-8 flex flex-col h-full"
+                    className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-8 flex flex-col h-full"
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-xs text-indigo-400 font-black uppercase tracking-widest">
@@ -351,10 +351,10 @@ export default function FamilyHub() {
                       <Dna className="w-5 h-5 text-indigo-400/50" />
                     </div>
 
-                    <h5 className="text-xl font-bold text-white mb-2">
+                    <h5 className="text-xl font-bold text-[var(--color-text)] mb-2">
                       {risk.condition}
                     </h5>
-                    <p className="text-xs text-slate-400 leading-relaxed mb-6 flex-grow">
+                    <p className="text-xs text-[var(--color-text-muted)] leading-relaxed mb-6 flex-grow">
                       {risk.description}
                     </p>
 
