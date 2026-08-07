@@ -1,5 +1,8 @@
 name: Nightly smoke
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
+
 on:
   push:
     branches:
@@ -11,10 +14,11 @@ jobs:
   smoke-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: '22'
           cache: 'npm'
@@ -23,7 +27,7 @@ jobs:
         run: npm ci
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -37,7 +41,7 @@ jobs:
         run: npx playwright test tests/e2e/smoke.spec.ts
         env:
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
-          TEST_TARGET_URL: https://aegis-health-app-90697.web.app
+          TEST_TARGET_URL: https://aegishealthai.co.in
           
       - name: Notify on failure
         if: failure()
