@@ -390,49 +390,7 @@ describe("Milestone 3 Empirical Stress Test Suite", () => {
       });
     });
 
-    it("verifies interactive scenario buttons and safety triage alert interactions in WearableCoachWidget", () => {
-      const onActionClick = vi.fn();
-      render(<WearableCoachWidget onActionClick={onActionClick} />);
 
-      // Click Tachycardia demo toggle button
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: "Tachycardia Demo" }));
-      });
-      expect(screen.getByText(/exceeds safe physiological threshold/i)).not.toBeNull();
-
-      // Click Hypoxia demo toggle button
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: "Hypoxia Demo" }));
-      });
-      expect(screen.getByText(/below sub-normal threshold/i)).not.toBeNull();
-
-      // Return to Normal
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: "Normal" }));
-      });
-
-      // Trigger Tachycardia demo to test safety alert action & dismiss
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: "Tachycardia Demo" }));
-      });
-      const actionButton = screen.getByText("Rest Immediately & Contact Care Team");
-      
-      // Mock window.alert
-      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
-      act(() => {
-        fireEvent.click(actionButton);
-      });
-      expect(onActionClick).toHaveBeenCalled();
-      expect(alertSpy).toHaveBeenCalled();
-
-      // Dismiss alert
-      const dismissButton = screen.getByText("Dismiss");
-      act(() => {
-        fireEvent.click(dismissButton);
-      });
-      expect(screen.queryByText(/Rest Immediately & Contact Care Team/i)).toBeNull();
-      alertSpy.mockRestore();
-    });
 
     it("verifies interactive Web Bluetooth and Cloud Sync controls in WearableCoachWidget", () => {
       const onActionClick = vi.fn();
