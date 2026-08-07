@@ -20,3 +20,6 @@ firebase-adminsdk.json
 .vscode/
 ORIGINAL_REQUEST.md
 PROJECT.md
+
+# Graphify AST knowledge graph output
+graphify-out/
