@@ -89,30 +89,17 @@ describe("WearableCoachWidget Empirical Stress & Layout Verification Suite", () 
     expect(screen.queryByText(/URGENT Safety Alert/i)).toBeNull();
   });
 
-  it("5. should support interactive scenario toggle buttons (Tachycardia / Hypoxia / Normal)", () => {
-    render(<WearableCoachWidget telemetry={normalTelemetry} />);
+  it("5. should support interactive Web Bluetooth device pairing and cloud sync controls", async () => {
+    const onSyncRequest = vi.fn().mockResolvedValue(undefined);
+    render(<WearableCoachWidget telemetry={normalTelemetry} onSyncRequest={onSyncRequest} />);
 
-    expect(screen.queryByText(/URGENT Safety Alert/i)).toBeNull();
+    const pairBtn = screen.getByRole("button", { name: /Pair Bluetooth Device/i });
+    expect(pairBtn).not.toBeNull();
 
-    // Click Tachycardia Demo
-    const tachyBtn = screen.getByRole("button", { name: /Tachycardia Demo/i });
-    fireEvent.click(tachyBtn);
-
-    expect(screen.getByText(/URGENT Safety Alert/i)).not.toBeNull();
-    expect(screen.getAllByText(/108 bpm/i).length).toBeGreaterThan(0);
-
-    // Click Hypoxia Demo
-    const hypoxiaBtn = screen.getByRole("button", { name: /Hypoxia Demo/i });
-    fireEvent.click(hypoxiaBtn);
-
-    expect(screen.getByText(/URGENT Safety Alert/i)).not.toBeNull();
-    expect(screen.getAllByText(/89%/i).length).toBeGreaterThan(0);
-
-    // Click Normal
-    const normalBtn = screen.getByRole("button", { name: /^Normal$/i });
-    fireEvent.click(normalBtn);
-
-    expect(screen.queryByText(/URGENT Safety Alert/i)).toBeNull();
+    const syncBtn = screen.getByRole("button", { name: /Sync Cloud Data/i });
+    expect(syncBtn).not.toBeNull();
+    fireEvent.click(syncBtn);
+    expect(onSyncRequest).toHaveBeenCalled();
   });
 
   it("6. should enforce AGENTS.md Rule 3 strict h-[300px] min-h-[300px] pixel boundary envelope for Recharts container", () => {

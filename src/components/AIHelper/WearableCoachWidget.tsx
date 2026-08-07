@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Activity,
   Heart,
@@ -31,7 +31,7 @@ import {
   evaluateBiometricDiagnosticCorrelation,
   BiometricDiagnosticCorrelation,
 } from "../../services/biometricDiagnosticEngine";
-import { generateMockTelemetry } from "../../services/wearableService";
+import { generateMockTelemetry, connectWebBluetooth } from "../../services/wearableService";
 
 export interface WearableCoachWidgetProps {
   telemetry?: WearableBiometrics;
@@ -161,6 +161,31 @@ export default function WearableCoachWidget({
     }
   };
 
+  // Sync prop updates from parent / Firestore real-time listener
+  useEffect(() => {
+    if (initialTelemetry) {
+      setTelemetry(initialTelemetry);
+    }
+  }, [initialTelemetry]);
+
+  const handleConnectBluetooth = async () => {
+    try {
+      const state = await connectWebBluetooth();
+      if (state === 'connected') {
+        alert("Web Bluetooth connected successfully! Syncing live telemetry...");
+        if (onSyncRequest) {
+          await handleSync();
+        }
+      } else if (state === 'unsupported') {
+        alert("Web Bluetooth is not supported on this browser or platform. Please use Google Chrome or Edge on desktop/Android.");
+      } else {
+        alert("Bluetooth pairing canceled or device disconnected.");
+      }
+    } catch (e: any) {
+      console.warn("Bluetooth connection error:", e);
+    }
+  };
+
   return (
     <section
       role="region"
@@ -183,36 +208,27 @@ export default function WearableCoachWidget({
           </p>
         </div>
 
-        {/* Diagnostic Scenario Switcher + Sync Button */}
+        {/* Real Bluetooth & Cloud Sync Toolbar */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => toggleMockScenario("normal")}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+            type="button"
+            onClick={handleConnectBluetooth}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors cursor-pointer"
           >
-            Normal
-          </button>
-          <button
-            onClick={() => toggleMockScenario("tachycardia")}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-700 dark:text-rose-300 hover:bg-rose-500/30 transition-colors"
-          >
-            Tachycardia Demo
-          </button>
-          <button
-            onClick={() => toggleMockScenario("hypoxia")}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 hover:bg-amber-500/30 transition-colors"
-          >
-            Hypoxia Demo
+            <Activity className="w-3.5 h-3.5" />
+            Pair Bluetooth Device
           </button>
 
-          {/* Sync to Cloud button — only shown when a saveTelemetry callback is wired in */}
+          {/* Sync to Cloud button */}
           {onSyncRequest && (
             <button
+              type="button"
               onClick={() => handleSync()}
               disabled={isSyncing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/30 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-teal-700 hover:bg-teal-800 dark:bg-teal-400 dark:hover:bg-teal-300 text-white dark:text-slate-950 disabled:opacity-50 transition-colors cursor-pointer"
             >
-              <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Syncing…' : syncStatus === 'synced' ? '✓ Synced' : syncStatus === 'error' ? '⚠ Retry' : 'Sync to Cloud'}
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Syncing…' : syncStatus === 'synced' ? '✓ Synced' : syncStatus === 'error' ? '⚠ Retry' : 'Sync Cloud Data'}
             </button>
           )}
         </div>
