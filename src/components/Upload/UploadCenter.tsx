@@ -172,10 +172,10 @@ const readFileAsSafeBase64 = async (file: File): Promise<{
         .replace(/\r?\n/g, "");
 
       if (import.meta.env.DEV) console.log("[Upload Stage 1] File size:", fileToRead.size, "bytes");
-      console.log("[Upload Stage 1] Base64 start:", base64Data.substring(0, 100));
-      console.log("[Safari Upload] MIME:", mimeType);
-      console.log("[Safari Upload] Base64 length:", base64Data.length);
-      console.log("[Safari Upload] Valid:", base64Data.length > 100);
+      if (import.meta.env.DEV) console.log("[Upload Stage 1] Base64 start:", base64Data.substring(0, 100));
+      if (import.meta.env.DEV) console.log("[Safari Upload] MIME:", mimeType);
+      if (import.meta.env.DEV) console.log("[Safari Upload] Base64 length:", base64Data.length);
+      if (import.meta.env.DEV) console.log("[Safari Upload] Valid:", base64Data.length > 100);
 
       resolve({ base64Data, mimeType });
     };
@@ -496,8 +496,8 @@ export default function UploadCenter({
 
     setIsSyncing(true);
     setHasSynced(true);
-    console.log('[Sync] Starting vault sync for', results.length, 'reports');
-    console.log('[Sync] Auth UID:', user?.uid);
+    if (import.meta.env.DEV) console.log('[Sync] Starting vault sync for', results.length, 'reports');
+    if (import.meta.env.DEV) console.log('[Sync] Auth UID:', user?.uid);
     
     try {
       const userId = user.uid;
@@ -505,7 +505,7 @@ export default function UploadCenter({
       let totalSavedLabs = 0;
 
       for (const [extIndex, result] of results.entries()) {
-        console.log('[Sync] Processing report:', result.fileName);
+        if (import.meta.env.DEV) console.log('[Sync] Processing report:', result.fileName);
         const suggestedTags = result.tags || result.suggestedTags || generateSuggestedTags(result, result.fileName);
         const docId = await saveDocument(userId, {
           fileName: result.fileName || "Document",
@@ -520,7 +520,7 @@ export default function UploadCenter({
           fileUrl: result.fileUrl,
           storagePath: result.storagePath,
         });
-        console.log("[Sync Stage 4] Database doc write SUCCESS for:", result.fileName, "ID:", docId);
+        if (import.meta.env.DEV) console.log("[Sync Stage 4] Database doc write SUCCESS for:", result.fileName, "ID:", docId);
         totalSavedDocs++;
 
         if (result.lab_values && result.lab_values.length > 0) {
@@ -538,16 +538,16 @@ export default function UploadCenter({
                 status: (lab.status as LabStatus) || LabStatus.NORMAL,
                 profileId: activeProfile?.id,
               });
-              console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
+              if (import.meta.env.DEV) console.log("[Sync Stage 4] Database lab write SUCCESS for:", lab.marker);
               savedCount++;
             }
           }
           totalSavedLabs += savedCount;
-          console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
+          if (import.meta.env.DEV) console.log(`[Sync] Saved ${savedCount} lab values for ${result.fileName}`);
         }
       }
 
-      console.log(`[Sync] Completed successfully: ${totalSavedDocs} docs, ${totalSavedLabs} labs`);
+      if (import.meta.env.DEV) console.log(`[Sync] Completed successfully: ${totalSavedDocs} docs, ${totalSavedLabs} labs`);
       showToast("Report saved to health vault ✓", "success");
       window.location.hash = "home";
     } catch (error: any) {
@@ -939,7 +939,7 @@ export default function UploadCenter({
                   <span className="text-xs">Reports are encrypted, processed securely, and kept strictly private.</span>
                 </div>
                 <button 
-                  onClick={() => console.log('Sample report feature coming soon.')}
+                  onClick={() => { if (import.meta.env.DEV) console.log('Sample report feature coming soon.') }}
                   className="px-6 py-2 bg-surface hover:bg-black/5 dark:hover:bg-white/5 border border-border text-xs rounded-full font-semibold transition-all inline-flex items-center gap-2"
                 >
                   🔎 Try with a Sample Report
