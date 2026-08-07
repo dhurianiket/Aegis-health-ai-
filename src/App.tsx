@@ -465,7 +465,7 @@ function MainApp() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                    className="max-w-[1200px] mx-auto w-full h-full p-6 md:p-10 pb-32"
+                    className="max-w-[1200px] mx-auto w-full h-full p-3 sm:p-6 md:p-10 pb-32"
                   >
                     {activeTab === "home" && (
                       <SectionErrorBoundary sectionName="Dashboard">
