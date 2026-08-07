@@ -468,9 +468,9 @@ export default function Dashboard({
               <HealthRadarChart radarData={radarData} />
             </Suspense>
           </div>
-          <div className="mt-4 p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-start gap-4">
+          <div className="mt-4 p-4 bg-indigo-500/10 dark:bg-indigo-950/50 rounded-2xl border border-indigo-500/20 flex items-start gap-4">
             <ShieldCheck className="text-indigo-600 dark:text-indigo-400 w-5 h-5 shrink-0" />
-            <p className="text-xs text-indigo-900 dark:text-indigo-100/80 leading-relaxed font-medium">
+            <p className="text-xs text-indigo-950 dark:text-indigo-100 leading-relaxed font-semibold">
               {latestInsights[0]?.content ||
                 "No intelligence data synthesized for this profile yet. Run a specialist analysis to see AI insights here."}
             </p>
@@ -524,7 +524,7 @@ export default function Dashboard({
                   return (
                     <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
                        <div className="flex justify-between items-start gap-2 mb-2">
-                          <span className="font-semibold text-sm text-[var(--color-text)] leading-tight">{lab.markerName}</span>
+                          <span className="font-bold text-sm text-[var(--color-text)] leading-tight">{lab.markerName}</span>
                           <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider shrink-0 ${urgency.badgeClass}`}>
                              {urgency.level} Urgency
                           </span>
@@ -532,18 +532,18 @@ export default function Dashboard({
                        <div className="flex justify-between items-baseline mb-2">
                           <div className="flex items-baseline gap-1">
                              <span className="text-xl font-extrabold text-[var(--color-text)]">{lab.value}</span>
-                             <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{lab.unit}</span>
+                             <span className="text-xs text-slate-800 dark:text-slate-200 font-bold">{lab.unit}</span>
                           </div>
-                          <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">
+                          <span className="text-xs text-slate-800 dark:text-slate-200 font-bold">
                              Ref: {lab.referenceRange || 'N/A'}
                           </span>
                        </div>
-                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs text-slate-700 dark:text-slate-200 font-medium">
+                       <div className="mt-2 pt-2 border-t border-[var(--color-border)]/20 flex flex-col gap-1 text-xs font-medium">
                          <div className="leading-relaxed">
-                           <span className="font-bold text-[var(--color-text)] text-xs">Next Step: </span>
-                           <span className="text-slate-800 dark:text-slate-200 text-xs font-medium">{urgency.nextStep}</span>
+                           <span className="font-extrabold text-[var(--color-text)] text-xs">Next Step: </span>
+                           <span className="text-slate-900 dark:text-slate-100 text-xs font-bold">{urgency.nextStep}</span>
                          </div>
-                         <div className="flex items-center justify-between mt-1 text-xs text-slate-600 dark:text-slate-300 font-medium">
+                         <div className="flex items-center justify-between mt-1 text-xs text-slate-800 dark:text-slate-200 font-semibold">
                            <span>Source:</span>
                            {source ? (
                              <a 
@@ -557,7 +557,7 @@ export default function Dashboard({
                                {source.name}
                              </a>
                            ) : (
-                             <span className="italic text-slate-500 dark:text-slate-400">reference not available</span>
+                             <span className="italic text-slate-600 dark:text-slate-300 font-medium">reference not available</span>
                            )}
                          </div>
                        </div>

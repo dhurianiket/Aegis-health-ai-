@@ -29,6 +29,7 @@ class GlobalErrorBoundary extends Component<{children: ReactNode}, {hasError: bo
 }
 
 import { BrowserRouter } from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const rootElement = document.getElementById("root");
 
@@ -43,7 +44,9 @@ if (rootElement) {
               <ProfileProvider>
                 <AlertsProvider>
                   <RemindersProvider>
-                    <App />
+                    <ThemeProvider>
+                      <App />
+                    </ThemeProvider>
                   </RemindersProvider>
                 </AlertsProvider>
               </ProfileProvider>

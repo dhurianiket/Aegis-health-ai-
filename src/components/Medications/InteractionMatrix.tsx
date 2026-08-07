@@ -271,7 +271,7 @@ export default function InteractionMatrix({
                     {activeMeds.map((m) => (
                       <div
                         key={m.id}
-                        className="p-3 text-center text-xs font-semibold text-slate-700 dark:text-slate-300 truncate tracking-tight uppercase border-b border-white/5 bg-black/5"
+                        className="p-3 text-center text-xs font-bold text-slate-900 dark:text-slate-100 truncate tracking-tight uppercase border-b border-white/5 bg-black/5"
                         title={m.genericName}
                       >
                         {m.genericName}

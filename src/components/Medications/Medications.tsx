@@ -265,7 +265,7 @@ export default function Medications({
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <div className="flex items-start gap-2 text-amber-500/80 text-xs uppercase font-bold tracking-widest leading-relaxed mb-4">
+                  <div className="flex items-start gap-2 text-amber-700 dark:text-amber-300 text-xs uppercase font-extrabold tracking-widest leading-relaxed mb-4">
                     <ShieldAlert className="w-4 h-4 shrink-0" />
                     <p>
                       Always discuss medication changes with your doctor before

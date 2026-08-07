@@ -12,32 +12,12 @@ import {
 } from "lucide-react";
 import { logAuditEvent } from "../../lib/auditLogger";
 
+import { useTheme } from "../../context/ThemeContext";
+
 export default function SettingsPage() {
   const { logOut, user } = useAuth();
   const { activeProfile, profiles, deleteProfile } = useProfile();
-
-  const [theme, setTheme] = useState("dark");
-
-  React.useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "dark";
-    setTheme(savedTheme);
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("theme", newTheme);
-  };
+  const { theme, toggleTheme } = useTheme();
 
   const handleEmergencyMode = async () => {
     if (

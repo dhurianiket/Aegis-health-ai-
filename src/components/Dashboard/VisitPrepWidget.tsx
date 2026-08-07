@@ -206,7 +206,7 @@ Format as a clean, highly structured Markdown document with:
                           value={questions}
                           onChange={(e: any) => setQuestions(e.target.value)}
                           placeholder="e.g., Is this dosage of Lisinopril safe to continue? When should I retest?"
-                          className="w-full bg-white/70 dark:bg-black/20 border border-slate-300 dark:border-white/15 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                          className="w-full bg-white/70 dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl p-3 text-sm text-[var(--color-text)] font-medium placeholder:text-slate-500 dark:placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                           minLines={2}
                        />
                     </div>
@@ -219,7 +219,7 @@ Format as a clean, highly structured Markdown document with:
                           value={onsetNotes}
                           onChange={(e: any) => setOnsetNotes(e.target.value)}
                           placeholder="e.g., Symptoms have been mostly in the evening. Slight chest tightness."
-                          className="w-full bg-white/70 dark:bg-black/20 border border-slate-300 dark:border-white/15 rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                          className="w-full bg-white/70 dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl p-3 text-sm text-[var(--color-text)] font-medium placeholder:text-slate-500 dark:placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                           minLines={1}
                        />
                     </div>

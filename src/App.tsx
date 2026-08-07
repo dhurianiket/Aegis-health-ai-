@@ -18,11 +18,14 @@ import {
   Sparkles,
   Plus,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./context/AuthContext";
 import { useProfile } from "./context/ProfileContext";
 import { useAlerts } from "./context/AlertsContext";
+import { useTheme } from "./context/ThemeContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AIErrorBoundary } from "./components/ui/AIErrorBoundary";
 import NotificationDropdown from "./components/Header/NotificationDropdown";
@@ -100,6 +103,7 @@ function MainApp() {
   const { profiles, activeProfile, setActiveProfile, createProfile, isLoading: profileLoading } =
     useProfile();
   const { alerts, dismissedIds, dismissAlert, unreadCount } = useAlerts();
+  const { theme, toggleTheme } = useTheme();
 
   const [isNewProfileModaOpen, setIsNewProfileModaOpen] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
@@ -374,8 +378,13 @@ function MainApp() {
                 className="pl-10 pr-4 py-2.5 bg-surface border-transparent rounded-[12px] text-sm md:w-56 focus:ring-1 focus:ring-[var(--color-primary)] transition-all placeholder-muted text-theme outline-none"
               />
             </div>
-            <button aria-label="Search" className="md:hidden p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors relative">
-              <Search className="w-5 h-5" />
+            <button
+              className="p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors relative focus:outline-none cursor-pointer"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-400" />}
             </button>
             <div className="relative">
               <button
