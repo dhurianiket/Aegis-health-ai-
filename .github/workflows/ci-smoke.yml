@@ -39,6 +39,9 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Wait for CDN propagation
+        run: sleep 10
+
       - name: Run Playwright tests
         run: npx playwright test tests/e2e/smoke.spec.ts
         env:
