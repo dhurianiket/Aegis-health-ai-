@@ -4,14 +4,16 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Deploy Aegis Health AI to Firebase Hosting"]
+    types:
+      - completed
   schedule:
     - cron: '0 1 * * *' # 01:00 UTC nightly
 
 jobs:
   smoke-test:
+    if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
