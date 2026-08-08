@@ -767,7 +767,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const isLoading = authLoading || splashTimeout;
-  console.log("[ProtectedRoute] Render state:", { authLoading, splashTimeout, isLoading, hasUser: !!user });
+  if (import.meta.env.DEV) console.log("[ProtectedRoute] Render state:", { authLoading, splashTimeout, isLoading, hasUser: !!user });
 
   if (isLoading) {
     return <SplashScreen />;
@@ -778,24 +778,24 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/" replace />;
   }
 
-  console.log("[ProtectedRoute] Authentication resolved and user exists! Rendering child components...");
+  if (import.meta.env.DEV) console.log("[ProtectedRoute] Authentication resolved and user exists! Rendering child components...");
   return <>{children}</>;
 };
 
 const PublicLandingPageRoute = () => {
   const { user, loading: authLoading } = useAuth();
-  console.log("[PublicLandingPageRoute] Render state:", { authLoading, hasUser: !!user });
+  if (import.meta.env.DEV) console.log("[PublicLandingPageRoute] Render state:", { authLoading, hasUser: !!user });
 
   if (authLoading) {
     return <SplashScreen />;
   }
 
   if (user) {
-    console.log("[PublicLandingPageRoute] User found! Redirecting to /dashboard via <Navigate />");
+    if (import.meta.env.DEV) console.log("[PublicLandingPageRoute] User found! Redirecting to /dashboard via <Navigate />");
     return <Navigate to="/dashboard" replace />;
   }
 
-  console.log("[PublicLandingPageRoute] No user found. Rendering LandingPage...");
+  if (import.meta.env.DEV) console.log("[PublicLandingPageRoute] No user found. Rendering LandingPage...");
   return <LandingPage />;
 };
 

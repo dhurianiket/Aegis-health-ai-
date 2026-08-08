@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // A safely wrapped function for resolving the auth state to prevent early termination
     const resolveAuth = (u: User | null) => {
        if (isMounted) {
-         console.log("[Auth] resolveAuth called with user:", u ? u.uid : "null", "current state user:", user ? user.uid : "null");
+         if (import.meta.env.DEV) console.log("[Auth] resolveAuth called with user:", u ? u.uid : "null", "current state user:", user ? user.uid : "null");
          setUser(u);
          setLoading(false);
          setAuthResolved(true);
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         auth,
         (u) => {
           if (isMounted) {
-            console.log("[Auth] onAuthStateChanged fired with user:", u ? u.uid : "null");
+            if (import.meta.env.DEV) console.log("[Auth] onAuthStateChanged fired with user:", u ? u.uid : "null");
             if (u) {
               markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
             }
@@ -86,14 +86,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Step 2: Extract redirect credential if available, but do not block on it
       try {
-        console.log("[Auth] Checking redirect result on load...");
+        if (import.meta.env.DEV) console.log("[Auth] Checking redirect result on load...");
         // Add a timeout race so it doesn't hang indefinitely if AppCheck keeps failing
         const redirectPromise = getRedirectResult(auth);
         const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject(new Error("redirect-timeout")), 5000));
         const result = await Promise.race([redirectPromise, timeoutPromise]);
         
         if (result?.user) {
-          console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
+          if (import.meta.env.DEV) console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
           const credential = GoogleAuthProvider.credentialFromResult(result);
           if (credential?.accessToken) {
             cachedAccessToken = credential.accessToken;
@@ -128,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signIn = async () => {
     if (signInInProgress.current) {
-      console.log("Sign-in already in progress, ignoring duplicate request.");
+      if (import.meta.env.DEV) console.log("Sign-in already in progress, ignoring duplicate request.");
       return;
     }
     
@@ -140,20 +140,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         prompt: 'select_account'
       });
 
-      console.log("Current Origin:", window.location.origin);
+      if (import.meta.env.DEV) console.log("Current Origin:", window.location.origin);
 
       const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
       const preferRedirect = (window !== window.parent) || isMobileDevice; // Use redirect if in iframe or on mobile
 
       if (preferRedirect) {
-        console.log("[Auth] Embedded/Mobile detected. Attempting signInWithRedirect...");
+        if (import.meta.env.DEV) console.log("[Auth] Embedded/Mobile detected. Attempting signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
-        console.log("[Auth] signInWithRedirect initiated.");
+        if (import.meta.env.DEV) console.log("[Auth] signInWithRedirect initiated.");
         // Redirect navigates away from the page, no need to resolve state here
         return;
       }
       
-      console.log("[Auth] Attempting signInWithPopup...");
+      if (import.meta.env.DEV) console.log("[Auth] Attempting signInWithPopup...");
       
       // We implement a custom timeout race specifically for COOP blocked configurations in Safari/Desktop
       const popupPromise = signInWithPopup(auth, googleProvider);
@@ -173,7 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         }
       }
-      console.log("[Auth] Sign-in with popup successful.");
+      if (import.meta.env.DEV) console.log("[Auth] Sign-in with popup successful.");
 
     } catch (popupError: any) {
       console.error("[Auth] signInWithPopup failed:", popupError?.code, popupError?.message);
