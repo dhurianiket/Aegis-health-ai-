@@ -1,6 +1,14 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 8, 2026 (XXXV)
+## Latest Update — August 8, 2026 (XXXVI)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Playwright E2E Smoke Test CDN Propagation & Noise Filter Fix (`smoke.spec.ts`, `ci-smoke.yml`)**:
+  - **CDN Propagation Delay**: Added a 10-second stabilization pause (`sleep 10`) in `ci-smoke.yml` before starting Playwright tests to allow Cloudflare/Firebase Hosting edge caches to complete revalidation after new deployment.
+  - **Third-Party Noise Filter**: Updated `page.on('pageerror')` listener in `smoke.spec.ts` to filter out non-critical third-party network noise (reCAPTCHA, Cloudflare, analytics blocks in headless CI), preventing false-positive CI failures.
+  - **Pushed Commit `6d39262` to GitHub `main`**.
+
+## Previous Update — August 8, 2026 (XXXV)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **GitHub Actions Race Condition Fix (`.github/workflows/ci-smoke.yml`)**:
