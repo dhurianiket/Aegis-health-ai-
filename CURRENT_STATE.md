@@ -1,6 +1,13 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 8, 2026 (XXXVIII)
+## Latest Update — August 8, 2026 (XXXV)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **GitHub Actions Race Condition Fix (`.github/workflows/ci-smoke.yml`)**:
+  - **Eliminated Race Condition Check Failure**: Updated `ci-smoke.yml` from concurrent `push` triggers to `workflow_run` (triggering sequentially AFTER `Deploy Aegis Health AI to Firebase Hosting` completes successfully). This prevents Playwright smoke tests from hitting transient 502/503 network errors while Firebase Hosting is hot-reloading new build assets.
+  - **Pushed Commit `783855a` to GitHub `main`**.
+
+## Previous Update — August 8, 2026 (XXXIV)
 ### Completed by: Worker Alerts Provider Fix (Teamwork Implementer, QA & Specialist)
 ### Tasks Completed:
 - **`AlertsProvider` Context Wrapper Fix in `src/components/__tests__/typography_contrast.test.tsx`**:
