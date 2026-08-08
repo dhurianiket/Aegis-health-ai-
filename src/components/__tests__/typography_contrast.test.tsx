@@ -40,6 +40,15 @@ vi.mock("../../hooks/useWearableTelemetry", () => ({
   }),
 }));
 
+vi.mock("../../lib/firebase/firestore", () => ({
+  getHealthScores: vi.fn().mockResolvedValue([{ overall: 85, systems: { metabolic: 85, blood: 70 } }]),
+  getLatestInsights: vi.fn().mockResolvedValue([]),
+  getLabHistory: vi.fn().mockResolvedValue([]),
+  getDocuments: vi.fn().mockResolvedValue([]),
+  saveWearableTelemetry: vi.fn(),
+  subscribeToLatestTelemetry: vi.fn().mockReturnValue(() => {}),
+}));
+
 vi.mock("../../lib/geminiClient", () => ({
   default: () => ({
     chats: {
@@ -61,7 +70,7 @@ import { HeroMetric } from "../Dashboard/HeroMetric";
 import Dashboard from "../Dashboard/Dashboard";
 
 describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
-  it("1. VisitPrepWidget verifies prose-slate dark:prose-invert, indigo dark mode classes, and dark placeholder", () => {
+  it("1. VisitPrepWidget verifies prose-slate dark:prose-invert, indigo dark mode classes, dark placeholder, and 3D glassmorphism container", () => {
     const { container } = render(<VisitPrepWidget />);
 
     const textareas = container.querySelectorAll("textarea");
@@ -69,9 +78,15 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
       expect(textarea.className).toContain("placeholder:text-slate-500");
       expect(textarea.className).toContain("dark:placeholder:text-slate-400");
     });
+
+    // 3D Glassmorphism container check
+    const glassContainer = container.querySelector(".backdrop-blur-xl");
+    expect(glassContainer).not.toBeNull();
+    expect(glassContainer?.className).toContain("bg-[var(--color-surface)]");
+    expect(glassContainer?.className).toContain("border");
   });
 
-  it("2. ExportModal printable container uses text-slate-600 on white background for high contrast", () => {
+  it("2. ExportModal printable container uses text-slate-600 on white background for high contrast and glassmorphic backdrop", () => {
     const healthContext = {
       userName: "John Doe",
       healthScore: 85,
@@ -97,9 +112,14 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
     const highContrastParagraph = printableContainer?.querySelector("p.text-slate-600");
     expect(highContrastParagraph).not.toBeNull();
     expect(highContrastParagraph?.textContent).toContain("Patient: John Doe");
+
+    // Verify 3D glassmorphic backdrop
+    const glassBackdrop = container.querySelector(".backdrop-blur-md");
+    expect(glassBackdrop).not.toBeNull();
+    expect(glassBackdrop?.className).toContain("bg-slate-900/60");
   });
 
-  it("3. InteractionMatrix uses theme-aware emerald badges and slate dark mode overrides", () => {
+  it("3. InteractionMatrix uses theme-aware emerald badges, slate dark mode overrides, and 3D glass card layout", () => {
     const mockMeds = [
       {
         id: "m1",
@@ -142,7 +162,7 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
     expect(inactiveButton?.className).toContain("hover:text-theme");
   });
 
-  it("4. WearableCoachWidget adopts CitationBadge dual-theme text variants for metrics", () => {
+  it("4. WearableCoachWidget adopts CitationBadge dual-theme text variants, 3D glass styling, and strict Recharts height boundary", () => {
     const { container } = render(<WearableCoachWidget />);
 
     const goodStatus = container.querySelector(".text-emerald-700");
@@ -152,6 +172,10 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
     const activeStatus = container.querySelector(".text-cyan-700");
     expect(activeStatus).not.toBeNull();
     expect(activeStatus?.className).toContain("dark:text-cyan-300");
+
+    // Strict Recharts h-[300px] pixel envelope check
+    const chartEnvelope = container.querySelector(".h-\\[300px\\]");
+    expect(chartEnvelope).not.toBeNull();
   });
 
   it("5. Medications component uses text-indigo-600 dark:text-indigo-400 and removes opacity-40 on footer", () => {
@@ -162,7 +186,7 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
     expect(footer?.className).not.toContain("opacity-40");
   });
 
-  it("6. ReportComparison replaces text-slate-300 with text-slate-700 dark:text-slate-300 and text-slate-600 with text-muted", () => {
+  it("6. ReportComparison replaces text-slate-300 with text-slate-700 dark:text-slate-300, text-slate-600 with text-muted, and uses 3D glass backdrop", () => {
     const { container } = render(
       <ReportComparison
         reportAId="doc-1"
@@ -174,9 +198,11 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
     );
 
     expect(container).not.toBeNull();
+    const backdrop = container.querySelector(".backdrop-blur-sm");
+    expect(backdrop).not.toBeNull();
   });
 
-  it("7. SpecialistLounge verified for input placeholder theme compliance", () => {
+  it("7. SpecialistLounge verified for input placeholder theme compliance and high contrast options", () => {
     const { container } = render(<SpecialistLounge />);
 
     const input = container.querySelector("input[placeholder*='Message']");
@@ -185,7 +211,7 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
     expect(input?.className).toContain("dark:placeholder:text-slate-400");
   });
 
-  it("8. HeroMetric and Dashboard replace single mode text-slate-600 with text-slate-700 dark:text-slate-300", () => {
+  it("8. HeroMetric replaces single mode text-slate-600 with text-slate-700 dark:text-slate-300", () => {
     const { container } = render(
       <HeroMetric
         label="HbA1c"
@@ -201,4 +227,19 @@ describe("Milestone 2: High-Contrast Typography & Apple HIG Audit", () => {
     const refElement = container.querySelector(".text-slate-700.dark\\:text-slate-300");
     expect(refElement).not.toBeNull();
   });
+
+  it("9. Dashboard renders refactored M2 components with high-contrast text and 3D glass surface layers", async () => {
+    const { container, findByText } = render(<Dashboard />);
+    expect(container).not.toBeNull();
+
+    // Wait for async dashboard content to render
+    const healthIndexText = await findByText("Health Index");
+    expect(healthIndexText).not.toBeNull();
+    expect(healthIndexText.className).toContain("text-slate-800");
+    expect(healthIndexText.className).toContain("dark:text-slate-200");
+
+    const glassBanner = container.querySelector(".backdrop-blur-xl") || container.querySelector("[class*='backdrop-blur']");
+    expect(glassBanner).not.toBeNull();
+  });
 });
+

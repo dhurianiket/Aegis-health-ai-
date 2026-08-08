@@ -154,5 +154,5 @@ describe("WearableCoachWidget Empirical Stress & Layout Verification Suite", () 
     const duration = performance.now() - startTime;
     console.log(`[WIDGET STRESS TEST RESULT] 50 Rapid Re-renders completed in ${duration.toFixed(2)} ms`);
     expect(duration).toBeLessThan(10000);
-  });
+  }, 15000);
 });

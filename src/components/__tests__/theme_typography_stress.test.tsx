@@ -232,7 +232,7 @@ describe("Milestone 2: Empirical Rapid Theme Switching & Typography Stress Testi
       expect(textarea.className).toContain("placeholder:text-slate-500");
       expect(textarea.className).toContain("dark:placeholder:text-slate-400");
       expect(textarea.className).toContain("bg-white");
-      expect(textarea.className).toContain("dark:bg-slate-900/90");
+      expect(textarea.className).toContain("dark:bg-slate-900");
     });
   });
 

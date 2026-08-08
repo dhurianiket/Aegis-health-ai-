@@ -123,6 +123,64 @@
     @apply rounded-[24px] transition-all duration-200;
   }
 
+  /* Ultra-Premium 3D Glassmorphic System Cards & Panels */
+  .glass-card-3d {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 12px 36px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dark .glass-card-3d {
+    background: rgba(18, 18, 20, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.3), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glass-card-3d:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -8px rgba(13, 148, 136, 0.15), inset 0 1px 1px 0 rgba(255, 255, 255, 1);
+  }
+
+  .dark .glass-card-3d:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -8px rgba(45, 212, 191, 0.2), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .ambient-glow-teal {
+    background: radial-gradient(circle at 50% 0%, rgba(45, 212, 191, 0.15), transparent 70%);
+  }
+
+  .ambient-glow-multi {
+    background: radial-gradient(circle at 0% 0%, rgba(13, 148, 136, 0.12), transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.12), transparent 50%);
+  }
+
+  .dark .ambient-glow-multi {
+    background: radial-gradient(circle at 0% 0%, rgba(45, 212, 191, 0.18), transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.18), transparent 50%);
+  }
+
+  .text-glow-gradient {
+    background: linear-gradient(135deg, #0d9488 0%, #0284c7 50%, #4f46e5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .dark .text-glow-gradient {
+    background: linear-gradient(135deg, #5eead4 0%, #38bdf8 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 12px rgba(94, 234, 212, 0.35));
+  }
+
   .card-hover {
     @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-500/5 hover:border-teal-500/30;
   }
@@ -192,8 +250,13 @@
 }
 
 ::placeholder {
-  color: var(--color-text-muted) !important;
-  opacity: 0.9 !important;
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+.dark ::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
 }
 
 /* Global Recharts SVG Text High-Contrast Overrides */
@@ -215,12 +278,19 @@
   font-weight: 700 !important;
 }
 
-/* Dark Mode Text Contrast Safety Rules */
+/* Dark Mode Text Contrast Safety Rules (WCAG AA > 4.5:1) */
 .dark .text-slate-700,
 .dark .text-slate-800,
 .dark .text-slate-600,
 .dark .text-slate-500,
 .dark .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-400,
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-gray-700 {
   color: #cbd5e1 !important;
 }
 
@@ -235,5 +305,55 @@
 .dark .text-indigo-800 {
   color: #e0e7ff !important;
 }
+
+/* Badge Contrast Utilities */
+.badge-high-contrast-success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.dark .badge-high-contrast-success {
+  background-color: rgba(6, 78, 59, 0.85);
+  color: #a7f3d0;
+  border: 1px solid #059669;
+}
+
+.badge-high-contrast-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.dark .badge-high-contrast-warning {
+  background-color: rgba(120, 53, 15, 0.85);
+  color: #fde68a;
+  border: 1px solid #d97706;
+}
+
+.badge-high-contrast-critical {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.dark .badge-high-contrast-critical {
+  background-color: rgba(127, 29, 29, 0.85);
+  color: #fecaca;
+  border: 1px solid #dc2626;
+}
+
+.badge-high-contrast-info {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.dark .badge-high-contrast-info {
+  background-color: rgba(30, 58, 138, 0.85);
+  color: #bfdbfe;
+  border: 1px solid #2563eb;
+}
+
 
 

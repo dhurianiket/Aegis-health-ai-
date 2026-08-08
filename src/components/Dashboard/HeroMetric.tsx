@@ -48,7 +48,7 @@ export const HeroMetric: React.FC<HeroMetricProps> = ({
   }, [value, previousValue]);
 
   return (
-    <div className="flex flex-col gap-2 p-5 bg-white dark:bg-[#121214] rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-sm transition-all hover:border-teal-500/30">
+    <div className="glass-card-3d p-5 flex flex-col gap-2 transition-all hover:border-teal-500/40">
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">{label}</h3>
 
       <div className="flex items-baseline gap-2">

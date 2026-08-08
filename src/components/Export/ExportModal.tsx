@@ -260,7 +260,7 @@ function HealthReportPrintable({
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+          <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">
             Export Date
           </p>
           <p className="text-xl font-bold">
@@ -275,7 +275,7 @@ function HealthReportPrintable({
         </h2>
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-slate-50 p-6 rounded-2xl">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">
                 Health Score
               </p>
               <p className="font-bold text-xl text-indigo-600">
@@ -283,7 +283,7 @@ function HealthReportPrintable({
               </p>
           </div>
           <div className="bg-red-50 p-6 rounded-2xl space-y-2">
-              <p className="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">
+              <p className="text-xs font-bold text-red-700 uppercase tracking-widest mb-1">
                 Top Flags
               </p>
             {context?.topFlags?.length > 0 ? (
@@ -342,16 +342,16 @@ function HealthReportPrintable({
         <table className="w-full text-left">
           <thead>
             <tr className="border-b-2 border-slate-200">
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <th className="py-3 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 Marker
               </th>
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <th className="py-3 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 Value
               </th>
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <th className="py-3 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 Trend
               </th>
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <th className="py-3 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 Status
               </th>
             </tr>
@@ -375,10 +375,10 @@ function HealthReportPrintable({
                     <tr key={i} className="border-b border-slate-100 last:border-0">
                       <td className="py-4 font-bold text-slate-700">
                         {trend?.marker || "N/A"}
-                        {validTs > 0 && <div className="text-xs text-slate-400 font-normal">{new Date(validTs).toLocaleDateString()}</div>}
+                        {validTs > 0 && <div className="text-xs text-slate-600 font-normal">{new Date(validTs).toLocaleDateString()}</div>}
                       </td>
                       <td className="py-4 text-slate-600 font-medium">
-                        {trend?.value ?? "N/A"} <span className="text-xs text-slate-400">{trend?.unit || ""}</span>
+                        {trend?.value ?? "N/A"} <span className="text-xs text-slate-600">{trend?.unit || ""}</span>
                       </td>
                       <td className="py-4">
                         {trend?.direction === "up" ? (
@@ -416,13 +416,13 @@ function HealthReportPrintable({
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200">
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <th className="py-3 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 Medication
               </th>
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <th className="py-3 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 Dosage
               </th>
-              <th className="py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <th className="py-3 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 Frequency
               </th>
             </tr>
@@ -449,13 +449,13 @@ function HealthReportPrintable({
 
       <div className="mt-auto pt-16 border-t border-slate-200 flex items-center justify-between">
         <div>
-          <p className="text-xs text-slate-400 uppercase tracking-[0.2em] font-bold">
+          <p className="text-xs text-slate-600 uppercase tracking-[0.2em] font-bold">
             Confidential Health Report • For Informational Purposes Only
           </p>
         </div>
         <div>
           <p className="text-sm font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
-            <Activity className="w-4 h-4 text-indigo-400" /> Generated by Aegis Health AI
+            <Activity className="w-4 h-4 text-indigo-700" /> Generated by Aegis Health AI
           </p>
         </div>
       </div>

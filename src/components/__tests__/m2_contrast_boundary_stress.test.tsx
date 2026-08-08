@@ -263,20 +263,20 @@ describe("Milestone 2: Empirical Contrast Ratio & Component Boundary Stress Test
       );
 
       expect(fatigueBtn).toBeDefined();
-      // Inactive state: bg-white/60 dark:bg-black/20 text-slate-800 dark:text-slate-200
-      expect(fatigueBtn?.className).toContain("text-slate-800");
-      expect(fatigueBtn?.className).toContain("dark:text-slate-200");
+      // Inactive state: bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100
+      expect(fatigueBtn?.className).toContain("text-slate-900");
+      expect(fatigueBtn?.className).toContain("dark:text-slate-100");
 
       // Click to activate Fatigue symptom
       fireEvent.click(fatigueBtn!);
 
-      // Active state: bg-indigo-500/20 border-indigo-500/40 text-indigo-700 dark:text-indigo-300
-      expect(fatigueBtn?.className).toContain("text-indigo-700");
-      expect(fatigueBtn?.className).toContain("dark:text-indigo-300");
+      // Active state: bg-indigo-500/20 border-indigo-500/60 text-indigo-800 dark:text-indigo-200
+      expect(fatigueBtn?.className).toContain("text-indigo-800");
+      expect(fatigueBtn?.className).toContain("dark:text-indigo-200");
 
       // Click again to deactivate
       fireEvent.click(fatigueBtn!);
-      expect(fatigueBtn?.className).toContain("text-slate-800");
+      expect(fatigueBtn?.className).toContain("text-slate-900");
     });
 
     it("2.5 Modal Open States in Light Theme: ExportModal accessibility & overlay background contrast", () => {

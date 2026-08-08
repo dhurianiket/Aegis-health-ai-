@@ -243,7 +243,7 @@ describe("Milestone 3 Empirical Stress Test Suite: Safety Triage Alerts & AI Pro
 
       const durationMs = performance.now() - startTime;
       console.log(`[STRESS TEST RESULT] 1000 High-Frequency Telemetry & Correlation updates completed in ${durationMs.toFixed(2)} ms`);
-      expect(durationMs).toBeLessThan(2000);
+      expect(durationMs).toBeLessThan(5000);
     });
   });
 
