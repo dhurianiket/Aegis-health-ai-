@@ -115,7 +115,11 @@ export default function CycleTrackingWidget({ userProfile }: { userProfile?: Use
           <Calendar className="w-5 h-5 text-indigo-400" />
           <h3 className="font-bold text-[var(--color-text)] tracking-tight">Cycle Tracking</h3>
         </div>
-        <button onClick={() => window.location.hash = "profile"} className="text-muted hover:text-indigo-400 transition-colors">
+        <button
+          onClick={() => window.location.hash = "profile"}
+          aria-label="Cycle tracking settings"
+          className="text-muted hover:text-indigo-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-md p-1 -mr-1"
+        >
           <Settings className="w-4 h-4" />
         </button>
       </div>
