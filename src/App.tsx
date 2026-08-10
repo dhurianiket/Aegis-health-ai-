@@ -53,6 +53,8 @@ const IntegrationsPanel = lazy(
   () => import("./components/Settings/IntegrationsPanel"),
 );
 const SharedProfile = lazy(() => import("./components/Export/SharedProfile"));
+const PricingModal = lazy(() => import("./components/Billing/PricingModal"));
+import { getUserSubscription, UserSubscription } from "./services/usageService";
 
 import { validateProfileName } from "./lib/validation";
 import { logger } from "./lib/logger";
@@ -119,7 +121,15 @@ function MainApp() {
     useState(false);
   const [isSBAROpen, setIsSBAROpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [userSub, setUserSub] = useState<UserSubscription | null>(null);
   const [sbarData, setSbarData] = useState<any>(null);
+
+  useEffect(() => {
+    if (user?.uid) {
+      getUserSubscription(user.uid).then(setUserSub);
+    }
+  }, [user?.uid, isPricingModalOpen]);
   const [isGeneratingSBAR, setIsGeneratingSBAR] = useState(false);
   const [sbarError, setSbarError] = useState<string | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -413,20 +423,39 @@ function MainApp() {
                 )}
               </AnimatePresence>
             </div>
+
+            {/* Upgrade / Plan Badge */}
+            <button
+              onClick={() => setIsPricingModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 shadow-md transition-all cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {userSub && userSub.planId !== 'free' ? userSub.planName : 'Upgrade (₹99)'}
+            </button>
+
             {user ? (
-              <div className="relative group ml-1">
+              <div className="relative">
                 <div
-                  className="w-10 h-10 rounded-[12px] bg-[var(--color-primary)] flex items-center justify-center font-bold text-white text-sm cursor-pointer hover:opacity-90 transition-opacity"
+                  className="w-10 h-10 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 text-[var(--color-primary)] flex items-center justify-center font-extrabold cursor-pointer hover:scale-105 transition-transform"
                   onClick={() => setShowLogout(!showLogout)}
                   title="Profile Action"
                 >
                   {user.email?.[0]?.toUpperCase() || "U"}
                 </div>
                 {showLogout && (
-                  <div className="absolute top-12 right-0 bg-theme border border-surface rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="absolute top-12 right-0 bg-theme border border-surface rounded-xl shadow-xl z-50 overflow-hidden min-w-[180px]">
                     <div className="px-4 py-3 text-xs text-muted border-b border-surface">
                       {user.email}
                     </div>
+                    <button
+                      onClick={() => {
+                        setShowLogout(false);
+                        setIsPricingModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-teal-400 hover:bg-surface transition-colors border-b border-surface"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" /> Subscription & Billing
+                    </button>
                     <button
                       onClick={logOut}
                       className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-500 hover:bg-surface transition-colors"
@@ -751,6 +780,19 @@ function MainApp() {
         
         <Suspense fallback={null}>
           <FeedbackWidget />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <PricingModal
+            isOpen={isPricingModalOpen}
+            onClose={() => setIsPricingModalOpen(false)}
+            currentPlanId={userSub?.planId}
+            onSubscriptionSuccess={() => {
+              if (user?.uid) {
+                getUserSubscription(user.uid).then(setUserSub);
+              }
+            }}
+          />
         </Suspense>
       </main>
     </div>

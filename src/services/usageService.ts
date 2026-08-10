@@ -19,6 +19,117 @@ export interface UsageData {
   feature?: "pdf_extraction" | "chat" | "sbar" | "summary" | "specialist" | string;
 }
 
+export type SubscriptionPlanId =
+  | 'free'
+  | 'b2c_monthly'
+  | 'b2c_quarterly'
+  | 'b2b_clinic_monthly'
+  | 'b2b_clinic_quarterly';
+
+export interface UserSubscription {
+  planId: SubscriptionPlanId;
+  planName: string;
+  status: 'active' | 'expired' | 'canceled';
+  scansUsedThisMonth: number;
+  monthlyScanLimit: number; // 3 for Free, Infinity for Pro/Clinic
+  expiresAt: string | null;
+  paymentId?: string;
+  updatedAt: string;
+}
+
+const LOCAL_SUB_PREFIX = 'aegis_user_sub';
+
+export const getUserSubscription = async (userId: string): Promise<UserSubscription> => {
+  const defaultFreeSub: UserSubscription = {
+    planId: 'free',
+    planName: 'Free Basic',
+    status: 'active',
+    scansUsedThisMonth: 0,
+    monthlyScanLimit: 3,
+    expiresAt: null,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (!userId) return defaultFreeSub;
+
+  // 1. Check Local Storage first for fast offline UI state
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const cached = window.localStorage.getItem(`${LOCAL_SUB_PREFIX}_${userId}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        // Check if subscription expired
+        if (parsed.expiresAt && new Date(parsed.expiresAt).getTime() < Date.now()) {
+          parsed.planId = 'free';
+          parsed.planName = 'Free Basic';
+          parsed.monthlyScanLimit = 3;
+        }
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore
+  }
+
+  // 2. Fetch from Firestore doc users/{userId}/subscription/main
+  try {
+    const docRef = doc(db, `users/${userId}/subscription/main`);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data() as UserSubscription;
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(`${LOCAL_SUB_PREFIX}_${userId}`, JSON.stringify(data));
+      }
+      return data;
+    }
+  } catch {
+    // Return default free plan on network offline
+  }
+
+  return defaultFreeSub;
+};
+
+export const updateUserSubscription = async (
+  userId: string,
+  updates: Partial<UserSubscription>
+): Promise<UserSubscription> => {
+  const current = await getUserSubscription(userId);
+  const updated: UserSubscription = {
+    ...current,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(`${LOCAL_SUB_PREFIX}_${userId}`, JSON.stringify(updated));
+    }
+  } catch {}
+
+  if (userId) {
+    try {
+      const docRef = doc(db, `users/${userId}/subscription/main`);
+      await setDoc(docRef, updated, { merge: true });
+    } catch {}
+  }
+
+  return updated;
+};
+
+export const checkCanUploadReport = async (
+  userId: string
+): Promise<{ allowed: boolean; scansUsed: number; limit: number; planId: string }> => {
+  const sub = await getUserSubscription(userId);
+  const isUnlimited = sub.planId !== 'free';
+
+  if (isUnlimited) {
+    return { allowed: true, scansUsed: sub.scansUsedThisMonth, limit: Infinity, planId: sub.planId };
+  }
+
+  const allowed = sub.scansUsedThisMonth < sub.monthlyScanLimit;
+  return { allowed, scansUsed: sub.scansUsedThisMonth, limit: sub.monthlyScanLimit, planId: sub.planId };
+};
+
 export const getEstCost = (prompt: number = 0, resp: number = 0, think: number = 0): number => {
   return (prompt / 1000000) * 0.15 + (resp / 1000000) * 0.6 + (think / 1000000) * 3.5;
 };
