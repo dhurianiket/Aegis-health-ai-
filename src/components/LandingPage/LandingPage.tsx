@@ -798,6 +798,150 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* PRICING & LAUNCH SPECIAL COUPON SECTION */}
+        <section id="pricing" className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 py-24 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16 max-w-3xl mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                <Sparkles className="w-3.5 h-3.5" /> Launch Offer: Promo Code AEGIS100 (100 Slots)
+              </div>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
+                Affordable India-First Pricing
+              </h2>
+              <p className="text-lg text-slate-400 font-light leading-relaxed">
+                Choose the plan tailored for your family's health or your clinical practice. Try full access for 1 month free using coupon <strong className="text-emerald-400 font-bold">AEGIS100</strong>.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {/* Free Basic Tier */}
+              <div className="rounded-3xl p-8 border border-white/10 bg-white/5 backdrop-blur-md flex flex-col justify-between hover:border-slate-400/30 transition-all">
+                <div>
+                  <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                    Free Tier
+                  </span>
+                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Free Basic</h3>
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-4xl font-black text-white">₹0</span>
+                    <span className="text-sm font-medium text-slate-400">/ month</span>
+                  </div>
+
+                  <ul className="space-y-3 mb-8 text-sm text-slate-300 font-light">
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
+                      3 Report OCR Scans / Month
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
+                      Basic Biomarker & Vitals Tracking
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
+                      Single User Profile
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  onClick={handleSignIn}
+                  disabled={isSigningIn}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
+                >
+                  Start Free
+                </button>
+              </div>
+
+              {/* B2C Aegis Pro Tier */}
+              <div className="rounded-3xl p-8 border-2 border-emerald-500 bg-gradient-to-b from-emerald-500/10 to-teal-500/5 backdrop-blur-md flex flex-col justify-between relative shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-0.5 rounded-full bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest shadow-md">
+                  🔥 50% OFF SPECIAL OFFER
+                </div>
+
+                <div>
+                  <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                    Consumer Pro
+                  </span>
+                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Aegis Pro</h3>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-4xl font-black text-emerald-400">₹99</span>
+                    <span className="text-sm font-medium text-slate-400">/ mo</span>
+                    <span className="text-xs font-bold text-emerald-400/80">(₹149 / 3 mos)</span>
+                  </div>
+                  <p className="text-xs font-bold text-emerald-400 mb-6">Free for 1 Month with code AEGIS100</p>
+
+                  <ul className="space-y-3 mb-8 text-sm text-slate-200">
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <strong className="text-white font-semibold">Unlimited</strong> Lab Report Vision Scans
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <strong className="text-white font-semibold">24/7 Aura AI</strong> Health Coach
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      Apple & Google Health Auto-Sync
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      Up to 5 Family Profiles
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  onClick={handleSignIn}
+                  disabled={isSigningIn}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  Claim Free Trial (Code: AEGIS100)
+                </button>
+              </div>
+
+              {/* B2B Clinic Pro Tier */}
+              <div className="rounded-3xl p-8 border border-indigo-500/40 bg-indigo-500/5 backdrop-blur-md flex flex-col justify-between hover:border-indigo-500/80 transition-all">
+                <div>
+                  <span className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+                    Doctors & OPDs
+                  </span>
+                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Clinic Pro</h3>
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-4xl font-black text-indigo-400">₹999</span>
+                    <span className="text-sm font-medium text-slate-400">/ month</span>
+                  </div>
+
+                  <ul className="space-y-3 mb-8 text-sm text-slate-300">
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                      Automated SBAR Doctor Summaries
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                      Drug-Lab Contraindication Matrix
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                      FHIR R4 JSON & CSV Exports
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                      Priority Gemini 3.1 Pro Inference
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  onClick={handleSignIn}
+                  disabled={isSigningIn}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  Try Clinic Pro
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* 3. LAB SUMMARY BENTO GRID */}
         <div className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 pt-16 pb-32">
           <div className="max-w-7xl mx-auto px-6">
