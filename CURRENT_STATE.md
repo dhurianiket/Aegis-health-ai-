@@ -1,6 +1,17 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 10, 2026 (XXXIX)
+## Latest Update — August 10, 2026 (XL)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Admin Master Access (`dhurianiket@gmail.com`)**:
+  - `dhurianiket@gmail.com` is granted automatic, permanent **Master Admin Access** across all B2C Pro and B2B Clinic Pro features (unlimited scans, SBAR reports, contraindication matrix, FHIR exports, and Gemini 3.1 Pro inference).
+- **100-User Launch Special Coupon Engine (`couponService.ts`)**:
+  - Code **`AEGIS100`** (or `LAUNCH100` / `FREE100`) grants **1 Month Full Aegis Pro Access** for free.
+  - Valid until **December 31, 2026** for the first **100 users**.
+  - Integrated into `PricingModal.tsx` with a live redemption form and counter.
+- **Pushed Commit `e5cb548` to GitHub `main`**.
+
+## Previous Update — August 10, 2026 (XXXIX)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Monetization Strategy & Razorpay UPI Subscription Stack (`razorpayService.ts`, `usageService.ts`, `PricingModal.tsx`)**:
