@@ -18,6 +18,20 @@ vi.mock('../../../services/healthSyncService', () => ({
     appleHealth: { connected: true, recordsCount: 10 },
     googleHealth: { connected: false, recordsCount: 0 },
   }),
+  getHealthPermissions: vi.fn().mockReturnValue({
+    heartRate: true,
+    hrv: true,
+    spo2: true,
+    steps: true,
+    sleep: true,
+  }),
+  saveHealthPermissions: vi.fn().mockReturnValue({
+    heartRate: true,
+    hrv: true,
+    spo2: true,
+    steps: true,
+    sleep: true,
+  }),
 }));
 
 describe('HealthConnectModal Component Test Suite', () => {

@@ -51,8 +51,16 @@ export default function IntegrationsPanel({
     message: string;
   } | null>(null);
 
-  useEffect(() => {
+  const refreshSyncState = () => {
     setSyncState(getHealthSyncState(userId));
+  };
+
+  useEffect(() => {
+    refreshSyncState();
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", refreshSyncState);
+      return () => window.removeEventListener("storage", refreshSyncState);
+    }
   }, [userId]);
 
   const handleSync = async (provider: HealthProvider) => {
@@ -66,7 +74,7 @@ export default function IntegrationsPanel({
           : await syncGoogleHealth(userId);
 
       if (result.success) {
-        setSyncState(getHealthSyncState(userId));
+        refreshSyncState();
         setSyncFeedback({
           type: "success",
           message: `Successfully synced 5 biometric data points from ${
@@ -111,7 +119,7 @@ export default function IntegrationsPanel({
           type: "success",
           message: `Successfully imported ${provider === "apple" ? "Apple Health" : "Google Health"} export file. HR: ${biometrics.heartRate} bpm, Steps: ${biometrics.steps}.`,
         });
-        setSyncState(getHealthSyncState(userId));
+        refreshSyncState();
       } catch {
         setSyncFeedback({
           type: "error",
@@ -128,40 +136,12 @@ export default function IntegrationsPanel({
     }
   };
 
-  const handleToggleConnection = (provider: HealthProvider) => {
-    const isConnected = provider === "apple" ? syncState.appleHealth.connected : syncState.googleHealth.connected;
-    const newState = saveHealthSyncState(userId, provider, {
-      connected: !isConnected,
-    });
-    setSyncState(newState);
-    setSyncFeedback({
-      type: "success",
-      message: `${provider === "apple" ? "Apple Health" : "Google Health Connect"} ${!isConnected ? "connected" : "disconnected"}.`,
-    });
-  };
-
-  const integrations = [
-    {
-      id: "apple" as HealthProvider,
-      name: "Apple Health (HealthKit)",
-      icon: Apple,
-      color: "bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-100 border border-slate-700/50 shadow-md",
-      status: syncState.appleHealth.connected ? "Connected" : "Available",
-      config: syncState.appleHealth,
-      description:
-        "Sync vitals, heart rate variability (HRV), SpO2, steps and sleep architecture directly from Apple Watch and HealthKit.",
-    },
-    {
-      id: "google" as HealthProvider,
-      name: "Google Health Connect",
-      icon: Chrome,
-      color: "bg-blue-600 text-white dark:bg-blue-500 shadow-md",
-      status: syncState.googleHealth.connected ? "Connected" : "Available",
-      config: syncState.googleHealth,
-      description:
-        "Import real-time activity logs, telemetry metrics, and biometric measurements from Google Health Connect & Google Fit.",
-    },
-  ];
+  const appleStatus = syncState.appleHealth.connected
+    ? "Connected (Live HealthKit)"
+    : "Available";
+  const googleStatus = syncState.googleHealth.connected
+    ? "Connected (Live Health Connect)"
+    : "Available";
 
   return (
     <div className="space-y-8">
@@ -172,8 +152,8 @@ export default function IntegrationsPanel({
           animate={{ opacity: 1, y: 0 }}
           className={`p-4 rounded-2xl flex items-center justify-between border ${
             syncFeedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+              ? "bg-emerald-500/15 border-emerald-400/40 text-emerald-300"
+              : "bg-rose-500/15 border-rose-400/40 text-rose-300"
           }`}
         >
           <div className="flex items-center gap-3">
@@ -186,103 +166,182 @@ export default function IntegrationsPanel({
           </div>
           <button
             onClick={() => setSyncFeedback(null)}
-            className="text-xs font-bold opacity-70 hover:opacity-100 uppercase tracking-widest px-2 py-1"
+            className="text-xs font-bold opacity-70 hover:opacity-100 uppercase tracking-widest px-2 py-1 cursor-pointer"
           >
             Dismiss
           </button>
         </motion.div>
       )}
 
-      {/* Health Integrations Grid */}
+      {/* Ultra-Premium 3D Glassmorphic Health Integrations Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {integrations.map((item) => {
-          const isSyncing = syncingProvider === item.id;
-          const lastSyncedDate = item.config.lastSynced
-            ? new Date(item.config.lastSynced).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "Never";
+        {/* Apple Health (HealthKit) 3D Glass Card */}
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="relative overflow-hidden bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-700/60 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.15)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-slate-600/80 hover:shadow-[0_20px_48px_-10px_rgba(45,212,191,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.25)] flex flex-col justify-between group"
+        >
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-slate-400/20 via-rose-500/10 to-transparent blur-3xl pointer-events-none" />
 
-          return (
-            <motion.div
-              key={item.id}
-              whileHover={{ y: -4 }}
-              className="bg-[var(--color-surface)] border border-[var(--color-border)] p-6 rounded-3xl flex flex-col justify-between group shadow-sm hover:shadow-xl transition-all"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className={`p-3 rounded-2xl ${item.color} shadow-lg`}>
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                  <span
-                    className={`text-xs font-bold px-3 py-1 rounded-full border uppercase tracking-widest ${
-                      item.config.connected
-                        ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/30"
-                        : "text-slate-400 bg-slate-500/10 border-slate-500/20"
-                    }`}
-                  >
-                    {item.status}
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-700/80 text-white shadow-[0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] shrink-0">
+                <Apple className="w-7 h-7 text-white" />
+              </div>
+              <span
+                className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${
+                  syncState.appleHealth.connected
+                    ? "text-emerald-300 bg-emerald-500/20 border-emerald-400/40"
+                    : "text-slate-400 bg-slate-800/60 border-slate-700/60"
+                }`}
+              >
+                {appleStatus}
+              </span>
+            </div>
+
+            <h3 className="text-xl font-extrabold text-slate-50 tracking-tight mb-2">
+              Apple Health (HealthKit)
+            </h3>
+            <p className="text-slate-200 text-xs md:text-sm leading-relaxed mb-4">
+              Continuous bidirectional telemetry bridge for heart rate variability (HRV), resting heart rate, SpO2, daily active energy, and sleep architecture directly from Apple Watch and HealthKit.
+            </p>
+
+            {syncState.appleHealth.connected && (
+              <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl mb-4 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-slate-300">
+                  <span>Last Synced:</span>
+                  <span className="font-bold text-slate-50">
+                    {syncState.appleHealth.lastSynced
+                      ? new Date(syncState.appleHealth.lastSynced).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Just now"}
                   </span>
                 </div>
-
-                <h3 className="text-xl font-bold text-[var(--color-text)] mb-2">
-                  {item.name}
-                </h3>
-                <p className="text-[var(--color-text-muted)] text-sm leading-relaxed mb-4">
-                  {item.description}
-                </p>
-
-                {item.config.connected && (
-                  <div className="p-3 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-2xl mb-4 space-y-1">
-                    <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
-                      <span>Last Synced:</span>
-                      <span className="font-bold text-[var(--color-text)]">
-                        {lastSyncedDate}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
-                      <span>Records Synced:</span>
-                      <span className="font-bold text-emerald-400">
-                        {item.config.recordsCount} biometrics
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-[var(--color-border)] space-y-3">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setModalProvider(item.id)}
-                    disabled={isSyncing}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-md disabled:opacity-50 cursor-pointer"
-                  >
-                    <RefreshCw
-                      className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`}
-                    />
-                    {isSyncing
-                      ? "Syncing..."
-                      : item.config.connected
-                      ? "Sync Now"
-                      : "Connect & Sync"}
-                  </button>
-
-                  <label className="flex items-center gap-2 py-2.5 px-3 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] font-bold text-xs rounded-xl transition-all cursor-pointer">
-                    <Upload className="w-4 h-4 text-indigo-400" />
-                    <span>Import File</span>
-                    <input
-                      type="file"
-                      accept=".xml,.json,.txt"
-                      onChange={(e) => handleFileUpload(item.id, e)}
-                      className="hidden"
-                    />
-                  </label>
+                <div className="flex items-center justify-between text-xs text-slate-300">
+                  <span>Records Synced:</span>
+                  <span className="font-bold text-emerald-300">
+                    {syncState.appleHealth.recordsCount} biometrics
+                  </span>
                 </div>
               </div>
-            </motion.div>
-          );
-        })}
+            )}
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-slate-800/80 space-y-3 relative z-10">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setModalProvider("apple")}
+                disabled={syncingProvider === "apple"}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-slate-800/90 to-slate-950/90 border border-slate-700/70 hover:border-slate-500/80 text-slate-50 font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${syncingProvider === "apple" ? "animate-spin" : ""}`}
+                />
+                {syncingProvider === "apple"
+                  ? "Syncing..."
+                  : syncState.appleHealth.connected
+                  ? "Sync Now"
+                  : "Connect & Sync"}
+              </button>
+
+              <label className="flex items-center gap-2 py-3 px-4 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/60 text-slate-100 font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
+                <Upload className="w-4 h-4 text-cyan-400" />
+                <span>Import File</span>
+                <input
+                  type="file"
+                  accept=".xml,.json,.txt"
+                  onChange={(e) => handleFileUpload("apple", e)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Google Health Connect 3D Glass Card */}
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="relative overflow-hidden bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-[0_16px_40px_-8px_rgba(37,99,235,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.2)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-blue-400/50 hover:shadow-[0_20px_48px_-10px_rgba(59,130,246,0.35),inset_0_1px_1px_0_rgba(255,255,255,0.3)] flex flex-col justify-between group"
+        >
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-blue-500/25 via-teal-400/15 to-transparent blur-3xl pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-blue-600 to-indigo-900 border border-blue-400/60 text-white shadow-[0_8px_20px_rgba(37,99,235,0.4),inset_0_1px_0_rgba(255,255,255,0.3)] shrink-0">
+                <Chrome className="w-7 h-7 text-cyan-300" />
+              </div>
+              <span
+                className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${
+                  syncState.googleHealth.connected
+                    ? "text-teal-300 bg-teal-500/20 border-teal-400/40"
+                    : "text-slate-400 bg-slate-800/60 border-slate-700/60"
+                }`}
+              >
+                {googleStatus}
+              </span>
+            </div>
+
+            <h3 className="text-xl font-extrabold text-slate-50 tracking-tight mb-2">
+              Google Health Connect
+            </h3>
+            <p className="text-slate-200 text-xs md:text-sm leading-relaxed mb-4">
+              Real-time encrypted Android telemetry bridge for Google Fit, Samsung Health, Garmin, and Fitbit biometrics and activity metrics.
+            </p>
+
+            {syncState.googleHealth.connected && (
+              <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl mb-4 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-slate-300">
+                  <span>Last Synced:</span>
+                  <span className="font-bold text-slate-50">
+                    {syncState.googleHealth.lastSynced
+                      ? new Date(syncState.googleHealth.lastSynced).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Just now"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-300">
+                  <span>Records Synced:</span>
+                  <span className="font-bold text-teal-300">
+                    {syncState.googleHealth.recordsCount} biometrics
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-slate-800/80 space-y-3 relative z-10">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setModalProvider("google")}
+                disabled={syncingProvider === "google"}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-blue-600/90 to-indigo-900/90 border border-blue-400/50 hover:border-blue-300/70 text-white font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${syncingProvider === "google" ? "animate-spin" : ""}`}
+                />
+                {syncingProvider === "google"
+                  ? "Syncing..."
+                  : syncState.googleHealth.connected
+                  ? "Sync Now"
+                  : "Connect & Sync"}
+              </button>
+
+              <label className="flex items-center gap-2 py-3 px-4 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/60 text-slate-100 font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
+                <Upload className="w-4 h-4 text-cyan-300" />
+                <span>Import File</span>
+                <input
+                  type="file"
+                  accept=".xml,.json,.txt"
+                  onChange={(e) => handleFileUpload("google", e)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Data Portability Section */}
@@ -351,7 +410,7 @@ export default function IntegrationsPanel({
         onClose={() => setModalProvider(null)}
         provider={modalProvider || 'apple'}
         onSyncComplete={() => {
-          setSyncState(getHealthSyncState(userId));
+          refreshSyncState();
         }}
       />
     </div>

@@ -219,6 +219,50 @@ export async function syncGoogleHealth(userId: string): Promise<SyncResult> {
   }
 }
 
+export interface HealthPermissions {
+  heartRate: boolean;
+  hrv: boolean;
+  spo2: boolean;
+  steps: boolean;
+  sleep: boolean;
+}
+
+export const DEFAULT_PERMISSIONS: HealthPermissions = {
+  heartRate: true,
+  hrv: true,
+  spo2: true,
+  steps: true,
+  sleep: true,
+};
+
+export function getHealthPermissions(userId: string, provider: HealthProvider): HealthPermissions {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = window.localStorage.getItem(`aegis_health_permissions_${provider}_${userId}`);
+      if (raw) return { ...DEFAULT_PERMISSIONS, ...JSON.parse(raw) };
+    }
+  } catch {}
+  return { ...DEFAULT_PERMISSIONS };
+}
+
+export function saveHealthPermissions(
+  userId: string,
+  provider: HealthProvider,
+  permissions: Partial<HealthPermissions>
+): HealthPermissions {
+  const current = getHealthPermissions(userId, provider);
+  const updated = { ...current, ...permissions };
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(
+        `aegis_health_permissions_${provider}_${userId}`,
+        JSON.stringify(updated)
+      );
+    }
+  } catch {}
+  return updated;
+}
+
 /**
  * Parses Apple Health export XML or JSON format into structured WearableBiometrics entity.
  */
@@ -234,7 +278,7 @@ export function parseAppleHealthExport(fileContent: string, userId: string): Wea
   let remMinutes = 95;
   let lightMinutes = 255;
 
-  if (fileContent.trim().startsWith('<') || fileContent.includes('HealthData')) {
+  if (fileContent.trim().startsWith('<') || fileContent.includes('HealthData') || fileContent.includes('HKQuantityTypeIdentifier')) {
     // XML Export Parsing
     const hrMatch = fileContent.match(/HKQuantityTypeIdentifierHeartRate"[\s\S]*?value="([0-9.]+)"/);
     if (hrMatch) heartRate = parseFloat(hrMatch[1]);
@@ -248,25 +292,36 @@ export function parseAppleHealthExport(fileContent: string, userId: string): Wea
     const spo2Match = fileContent.match(/HKQuantityTypeIdentifierOxygenSaturation"[\s\S]*?value="([0-9.]+)"/);
     if (spo2Match) {
       const parsedVal = parseFloat(spo2Match[1]);
-      spo2 = parsedVal <= 1 ? parsedVal * 100 : parsedVal;
+      spo2 = parsedVal <= 1 ? Math.round(parsedVal * 100) : Math.round(parsedVal);
     }
 
     const stepMatch = fileContent.match(/HKQuantityTypeIdentifierStepCount"[\s\S]*?value="([0-9.]+)"/);
     if (stepMatch) steps = parseInt(stepMatch[1], 10);
+
+    const sleepMatches = fileContent.match(/HKCategoryTypeIdentifierSleepAnalysis"[\s\S]*?value="([A-Za-z0-9.]+)"/g);
+    if (sleepMatches && sleepMatches.length > 0) {
+      totalMinutes = Math.min(600, sleepMatches.length * 30);
+      deepMinutes = Math.round(totalMinutes * 0.25);
+      remMinutes = Math.round(totalMinutes * 0.22);
+      lightMinutes = totalMinutes - deepMinutes - remMinutes;
+    }
   } else {
     // JSON Format Parsing
     try {
       const obj = JSON.parse(fileContent);
-      if (obj.heartRate) heartRate = Number(obj.heartRate);
-      if (obj.rhr || obj.restingHeartRate) rhr = Number(obj.rhr || obj.restingHeartRate);
-      if (obj.hrv || obj.heartRateVariability) hrv = Number(obj.hrv || obj.heartRateVariability);
-      if (obj.spo2) spo2 = Number(obj.spo2);
-      if (obj.steps) steps = Number(obj.steps);
+      if (obj.heartRate ?? obj.heart_rate ?? obj.bpm) heartRate = Number(obj.heartRate ?? obj.heart_rate ?? obj.bpm);
+      if (obj.rhr ?? obj.restingHeartRate ?? obj.resting_heart_rate) rhr = Number(obj.rhr ?? obj.restingHeartRate ?? obj.resting_heart_rate);
+      if (obj.hrv ?? obj.heartRateVariability ?? obj.heart_rate_variability) hrv = Number(obj.hrv ?? obj.heartRateVariability ?? obj.heart_rate_variability);
+      if (obj.spo2 ?? obj.oxygenSaturation ?? obj.oxygen_saturation) {
+        const val = Number(obj.spo2 ?? obj.oxygenSaturation ?? obj.oxygen_saturation);
+        spo2 = val <= 1 ? Math.round(val * 100) : Math.round(val);
+      }
+      if (obj.steps ?? obj.stepCount ?? obj.step_count) steps = Number(obj.steps ?? obj.stepCount ?? obj.step_count);
       if (obj.sleep) {
-        totalMinutes = Number(obj.sleep.totalMinutes || totalMinutes);
-        deepMinutes = Number(obj.sleep.deepMinutes || deepMinutes);
-        remMinutes = Number(obj.sleep.remMinutes || remMinutes);
-        lightMinutes = Number(obj.sleep.lightMinutes || lightMinutes);
+        totalMinutes = Number(obj.sleep.totalMinutes ?? obj.sleep.total_minutes ?? totalMinutes);
+        deepMinutes = Number(obj.sleep.deepMinutes ?? obj.sleep.deep_minutes ?? deepMinutes);
+        remMinutes = Number(obj.sleep.remMinutes ?? obj.sleep.rem_minutes ?? remMinutes);
+        lightMinutes = Number(obj.sleep.lightMinutes ?? obj.sleep.light_minutes ?? lightMinutes);
       }
     } catch {
       // Return default bounded telemetry if JSON parsing fails
@@ -317,16 +372,34 @@ export function parseGoogleHealthExport(jsonContent: string, userId: string): We
     rawObj = {};
   }
 
+  let rawSpo2 = rawObj.spo2 ?? rawObj.oxygenSaturation ?? rawObj.oxygen_saturation ?? rawObj.blood_oxygen ?? 98;
+  if (typeof rawSpo2 === 'number' && rawSpo2 <= 1) {
+    rawSpo2 = Math.round(rawSpo2 * 100);
+  }
+
+  const heartRate = rawObj.heartRate ?? rawObj.heart_rate ?? rawObj.bpm ?? rawObj.hr ?? 70;
+  const rhr = rawObj.rhr ?? rawObj.restingHeartRate ?? rawObj.resting_heart_rate ?? 62;
+  const hrv = rawObj.hrv ?? rawObj.heartRateVariability ?? rawObj.heart_rate_variability ?? rawObj.rmssd ?? 54;
+  const steps = rawObj.steps ?? rawObj.stepCount ?? rawObj.step_count ?? rawObj.daily_steps ?? 6500;
+
+  const rawSleep = rawObj.sleep ?? rawObj.sleep_architecture ?? {};
+  const totalMinutes = Number(rawSleep.totalMinutes ?? rawSleep.total_minutes ?? 480);
+  const deepMinutes = Number(rawSleep.deepMinutes ?? rawSleep.deep_minutes ?? 110);
+  const remMinutes = Number(rawSleep.remMinutes ?? rawSleep.rem_minutes ?? 105);
+  const lightMinutes = Number(rawSleep.lightMinutes ?? rawSleep.light_minutes ?? 265);
+  const sleepScore = calculateSleepScore({ totalMinutes, deepMinutes, remMinutes, lightMinutes });
+  const sleep: SleepArchitecture = { totalMinutes, deepMinutes, remMinutes, lightMinutes, sleepScore };
+
   const biometrics = parseRawTelemetryStream({
     id: `google-export-${Date.now()}`,
     userId,
     timestamp: new Date().toISOString(),
-    heartRate: rawObj.heartRate ?? rawObj.heart_rate ?? rawObj.bpm ?? 70,
-    rhr: rawObj.rhr ?? rawObj.restingHeartRate ?? 62,
-    hrv: rawObj.hrv ?? rawObj.heartRateVariability ?? 54,
-    spo2: rawObj.spo2 ?? rawObj.oxygenSaturation ?? 98,
-    steps: rawObj.steps ?? rawObj.stepCount ?? 6500,
-    sleep: rawObj.sleep ?? { totalMinutes: 480, deepMinutes: 110, remMinutes: 105, lightMinutes: 265 },
+    heartRate,
+    rhr,
+    hrv,
+    spo2: rawSpo2,
+    steps,
+    sleep,
     connectionStatus: 'connected',
   });
 
@@ -346,3 +419,4 @@ export function parseGoogleHealthExport(jsonContent: string, userId: string): We
 
   return biometrics;
 }
+
