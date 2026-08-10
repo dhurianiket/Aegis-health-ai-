@@ -33,6 +33,7 @@ import {
 } from "../../services/biometricDiagnosticEngine";
 import { generateMockTelemetry, connectWebBluetooth } from "../../services/wearableService";
 import { syncAppleHealth, syncGoogleHealth } from "../../services/healthSyncService";
+import { useAuth } from "../../context/AuthContext";
 
 export interface WearableCoachWidgetProps {
   telemetry?: WearableBiometrics;
@@ -52,10 +53,12 @@ export default function WearableCoachWidget({
   onActionClick,
   onSyncRequest,
 }: WearableCoachWidgetProps) {
+  const { user } = useAuth();
   // Use state to allow mock toggles/updates if interactive
   const [telemetry, setTelemetry] = useState<WearableBiometrics>(
     () => initialTelemetry || generateMockTelemetry("demo_user")
   );
+  const activeUserId = user?.uid || telemetry.userId || 'demo-user-id';
   const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'synced' | 'error'>('idle');
@@ -214,7 +217,7 @@ export default function WearableCoachWidget({
           <button
             type="button"
             onClick={async () => {
-              await syncAppleHealth(telemetry.userId || 'demo-user-id');
+              await syncAppleHealth(activeUserId);
               if (onSyncRequest) (onSyncRequest as any)();
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white shadow-sm transition-colors cursor-pointer"
@@ -225,7 +228,7 @@ export default function WearableCoachWidget({
           <button
             type="button"
             onClick={async () => {
-              await syncGoogleHealth(telemetry.userId || 'demo-user-id');
+              await syncGoogleHealth(activeUserId);
               if (onSyncRequest) (onSyncRequest as any)();
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors cursor-pointer"

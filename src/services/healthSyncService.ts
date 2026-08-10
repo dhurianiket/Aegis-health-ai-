@@ -276,7 +276,7 @@ export function parseAppleHealthExport(fileContent: string, userId: string): Wea
   const sleepScore = calculateSleepScore({ totalMinutes, deepMinutes, remMinutes, lightMinutes });
   const sleep: SleepArchitecture = { totalMinutes, deepMinutes, remMinutes, lightMinutes, sleepScore };
 
-  return parseRawTelemetryStream({
+  const biometrics = parseRawTelemetryStream({
     id: `apple-export-${Date.now()}`,
     userId,
     timestamp: new Date().toISOString(),
@@ -288,6 +288,22 @@ export function parseAppleHealthExport(fileContent: string, userId: string): Wea
     sleep,
     connectionStatus: 'connected',
   });
+
+  // Save to Firestore and sync state
+  if (userId && userId !== 'demo-user-id' && userId !== 'unknown_user') {
+    try {
+      saveWearableTelemetry(userId, biometrics);
+    } catch {}
+  }
+
+  const currentState = getHealthSyncState(userId);
+  saveHealthSyncState(userId, 'apple', {
+    connected: true,
+    lastSynced: new Date().toISOString(),
+    recordsCount: (currentState.appleHealth.recordsCount || 0) + 5,
+  });
+
+  return biometrics;
 }
 
 /**
@@ -301,7 +317,7 @@ export function parseGoogleHealthExport(jsonContent: string, userId: string): We
     rawObj = {};
   }
 
-  return parseRawTelemetryStream({
+  const biometrics = parseRawTelemetryStream({
     id: `google-export-${Date.now()}`,
     userId,
     timestamp: new Date().toISOString(),
@@ -313,4 +329,20 @@ export function parseGoogleHealthExport(jsonContent: string, userId: string): We
     sleep: rawObj.sleep ?? { totalMinutes: 480, deepMinutes: 110, remMinutes: 105, lightMinutes: 265 },
     connectionStatus: 'connected',
   });
+
+  // Save to Firestore and sync state
+  if (userId && userId !== 'demo-user-id' && userId !== 'unknown_user') {
+    try {
+      saveWearableTelemetry(userId, biometrics);
+    } catch {}
+  }
+
+  const currentState = getHealthSyncState(userId);
+  saveHealthSyncState(userId, 'google', {
+    connected: true,
+    lastSynced: new Date().toISOString(),
+    recordsCount: (currentState.googleHealth.recordsCount || 0) + 5,
+  });
+
+  return biometrics;
 }

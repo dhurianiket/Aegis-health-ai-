@@ -18,6 +18,7 @@ import { motion } from "motion/react";
 import { exportToCSV, exportToFHIR } from "../../services/integrationService";
 import {
   getHealthSyncState,
+  saveHealthSyncState,
   syncAppleHealth,
   syncGoogleHealth,
   parseAppleHealthExport,
@@ -125,12 +126,24 @@ export default function IntegrationsPanel({
     }
   };
 
+  const handleToggleConnection = (provider: HealthProvider) => {
+    const isConnected = provider === "apple" ? syncState.appleHealth.connected : syncState.googleHealth.connected;
+    const newState = saveHealthSyncState(userId, provider, {
+      connected: !isConnected,
+    });
+    setSyncState(newState);
+    setSyncFeedback({
+      type: "success",
+      message: `${provider === "apple" ? "Apple Health" : "Google Health Connect"} ${!isConnected ? "connected" : "disconnected"}.`,
+    });
+  };
+
   const integrations = [
     {
       id: "apple" as HealthProvider,
       name: "Apple Health (HealthKit)",
       icon: Apple,
-      color: "bg-black text-white dark:bg-slate-800 dark:text-slate-100",
+      color: "bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-100 border border-slate-700/50 shadow-md",
       status: syncState.appleHealth.connected ? "Connected" : "Available",
       config: syncState.appleHealth,
       description:
@@ -140,7 +153,7 @@ export default function IntegrationsPanel({
       id: "google" as HealthProvider,
       name: "Google Health Connect",
       icon: Chrome,
-      color: "bg-blue-600 text-white dark:bg-blue-500",
+      color: "bg-blue-600 text-white dark:bg-blue-500 shadow-md",
       status: syncState.googleHealth.connected ? "Connected" : "Available",
       config: syncState.googleHealth,
       description:
