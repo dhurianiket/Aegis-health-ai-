@@ -1,6 +1,15 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 10, 2026 (XL)
+## Latest Update — August 10, 2026 (XLI)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Landing Page Pricing & Promo Coupon Showcase (`LandingPage.tsx`)**:
+  - Added dedicated **Pricing Showcase Section** on the root landing page (`https://aegishealthai.co.in/`).
+  - Highlights **🎁 Launch Offer: Use Coupon AEGIS100 for 1 Month Pro Free (100 Slots)** banner right at the top hero & pricing section.
+  - Displays side-by-side cards for **Free Basic (₹0/mo)**, **Aegis Pro (₹99/mo or ₹149/3mos — 50% OFF)**, and **Clinic Pro (₹999/mo)** with instant Google Sign-In / Get Started CTA buttons.
+  - **Pushed Commit `09898fa` to GitHub `main`**.
+
+## Previous Update — August 10, 2026 (XL)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Admin Master Access (`dhurianiket@gmail.com`)**:
