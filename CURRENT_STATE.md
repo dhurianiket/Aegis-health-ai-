@@ -1,6 +1,19 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 10, 2026 (XXXVIII)
+## Latest Update — August 10, 2026 (XXXIX)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Monetization Strategy & Razorpay UPI Subscription Stack (`razorpayService.ts`, `usageService.ts`, `PricingModal.tsx`)**:
+  - **India-First Pricing Architecture**:
+    * **Free Tier**: 3 report OCR scans/month + basic vitals tracking.
+    * **B2C Aegis Pro Tier**: **₹99 / month** or **₹149 / 3 months** (50% Special Offer — effective ₹49.67/mo) for unlimited report scans, 24/7 Aura AI coach, Apple Health & Google Health sync, and 5 family profiles.
+    * **B2B Clinic Pro Tier**: **₹999 / month** or **₹2,499 / 3 months** for doctors, polyclinics, and OPD care managers (Unlimited SBAR handover summaries, Drug-Lab & Drug-Drug contraindication matrix, multi-patient lounge, FHIR JSON / CSV EHR export).
+  - **Razorpay SDK & UPI Payment Integration (`razorpayService.ts`)**: Built dynamic Razorpay script loader supporting GPay, PhonePe, Paytm, UPI Autopay, Cards, NetBanking, and mock test mode fallback.
+  - **Usage Gating Engine (`usageService.ts`)**: Enforces 3 scans/month limit for Free Tier users before triggering upgrade prompt.
+  - **Interactive Billing UI (`PricingModal.tsx`, `App.tsx`)**: Added plan category switcher (B2C Consumer vs B2B Clinic), "Upgrade to Pro (₹99)" header badge, subscription billing manager, and 3D glassmorphic checkout cards.
+  - **Pushed Commit `1a238e0` to GitHub `main`**.
+
+## Previous Update — August 10, 2026 (XXXVIII)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Apple Health (HealthKit) & Google Health Connect Live Sync Engine (`healthSyncService.ts`, `IntegrationsPanel.tsx`)**:
