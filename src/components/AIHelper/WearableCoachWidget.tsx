@@ -32,6 +32,7 @@ import {
   BiometricDiagnosticCorrelation,
 } from "../../services/biometricDiagnosticEngine";
 import { generateMockTelemetry, connectWebBluetooth } from "../../services/wearableService";
+import { syncAppleHealth, syncGoogleHealth } from "../../services/healthSyncService";
 
 export interface WearableCoachWidgetProps {
   telemetry?: WearableBiometrics;
@@ -212,8 +213,30 @@ export default function WearableCoachWidget({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
+            onClick={async () => {
+              await syncAppleHealth(telemetry.userId || 'demo-user-id');
+              if (onSyncRequest) (onSyncRequest as any)();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white shadow-sm transition-colors cursor-pointer"
+          >
+             Apple Health
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              await syncGoogleHealth(telemetry.userId || 'demo-user-id');
+              if (onSyncRequest) (onSyncRequest as any)();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors cursor-pointer"
+          >
+            Google Health
+          </button>
+
+          <button
+            type="button"
             onClick={handleConnectBluetooth}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors cursor-pointer"
           >
             <Activity className="w-3.5 h-3.5" />
             Pair Bluetooth Device
