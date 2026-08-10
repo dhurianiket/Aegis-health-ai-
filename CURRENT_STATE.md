@@ -1,6 +1,15 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Latest Update — August 10, 2026 (XLI)
+## Latest Update — August 10, 2026 (XLII)
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Apple Health & Google Health Connect Sync Bug Fixes (`healthSyncService.ts`, `IntegrationsPanel.tsx`, `WearableCoachWidget.tsx`)**:
+  - **Active User ID Resolution**: Updated `WearableCoachWidget.tsx` sync toolbar buttons to extract `user?.uid` from `useAuth()` rather than defaulting to fallback `'demo-user-id'`.
+  - **Export File Sync State Persistence (`healthSyncService.ts`)**: Enhanced `parseAppleHealthExport` and `parseGoogleHealthExport` to save telemetry directly to Firestore (`saveWearableTelemetry`) and update `saveHealthSyncState` (`connected: true`, `lastSynced: ISOString`, `recordsCount`).
+  - **Apple Health Card Badge & Contrast Fix (`IntegrationsPanel.tsx`)**: Updated Apple Health card styling to `bg-slate-900 border border-slate-700/50 text-white dark:bg-slate-800` to eliminate visual glitches. Added `handleToggleConnection` toggle handler.
+  - **Pushed Commit `0cf9961` to GitHub `main`**.
+
+## Previous Update — August 10, 2026 (XLI)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Landing Page Pricing & Promo Coupon Showcase (`LandingPage.tsx`)**:
