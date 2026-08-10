@@ -12,7 +12,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { initiateRazorpayPayment, PaymentOrder } from '../../services/razorpayService';
-import { updateUserSubscription, SubscriptionPlanId } from '../../services/usageService';
+import { updateUserSubscription } from '../../services/usageService';
+import { redeemCoupon } from '../../services/couponService';
 import { useAuth } from '../../context/AuthContext';
 
 interface PricingModalProps {
@@ -34,8 +35,30 @@ export default function PricingModal({
   const [billingCycle, setBillingCycle] = useState<'b2c' | 'b2b'>('b2c');
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('');
 
   if (!isOpen) return null;
+
+  const handleApplyCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!couponCode.trim()) return;
+
+    setIsProcessing(true);
+    setStatusMessage(null);
+
+    const result = await redeemCoupon(couponCode, userId, user?.email || undefined);
+
+    setIsProcessing(false);
+    setStatusMessage(result.message);
+
+    if (result.success) {
+      setCouponCode('');
+      if (onSubscriptionSuccess) onSubscriptionSuccess();
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    }
+  };
 
   const handleSelectPlan = async (
     planId: 'b2c_monthly' | 'b2c_quarterly' | 'b2b_clinic_monthly' | 'b2b_clinic_quarterly',
@@ -143,6 +166,27 @@ export default function PricingModal({
               </button>
             </div>
           </div>
+
+          {/* Coupon Code Redemption Input Bar */}
+          <form onSubmit={handleApplyCoupon} className="max-w-md mx-auto mb-8">
+            <div className="flex items-center gap-2 p-1.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-2xl focus-within:border-teal-500 transition-colors">
+              <Sparkles className="w-4 h-4 text-teal-400 ml-3 shrink-0" />
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="Have a promo code? (e.g. AEGIS100)"
+                className="w-full bg-transparent border-none text-xs md:text-sm font-semibold text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none px-2"
+              />
+              <button
+                type="submit"
+                disabled={isProcessing || !couponCode.trim()}
+                className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-black uppercase tracking-wider transition-all disabled:opacity-40 cursor-pointer shrink-0"
+              >
+                Apply
+              </button>
+            </div>
+          </form>
 
           {/* Feedback message */}
           {statusMessage && (
