@@ -32,8 +32,9 @@ import {
   BiometricDiagnosticCorrelation,
 } from "../../services/biometricDiagnosticEngine";
 import { generateMockTelemetry, connectWebBluetooth } from "../../services/wearableService";
-import { syncAppleHealth, syncGoogleHealth } from "../../services/healthSyncService";
+import { syncAppleHealth, syncGoogleHealth, HealthProvider } from "../../services/healthSyncService";
 import { useAuth } from "../../context/AuthContext";
+import HealthConnectModal from "../Settings/HealthConnectModal";
 
 export interface WearableCoachWidgetProps {
   telemetry?: WearableBiometrics;
@@ -62,6 +63,7 @@ export default function WearableCoachWidget({
   const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'synced' | 'error'>('idle');
+  const [activeHealthModal, setActiveHealthModal] = useState<HealthProvider | null>(null);
 
   // Compute correlation matrix dynamically if not explicitly passed
   const correlation = useMemo<BiometricDiagnosticCorrelation>(() => {
@@ -216,10 +218,7 @@ export default function WearableCoachWidget({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
-            onClick={async () => {
-              await syncAppleHealth(activeUserId);
-              if (onSyncRequest) (onSyncRequest as any)();
-            }}
+            onClick={() => setActiveHealthModal('apple')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white shadow-sm transition-colors cursor-pointer"
           >
              Apple Health
@@ -227,10 +226,7 @@ export default function WearableCoachWidget({
 
           <button
             type="button"
-            onClick={async () => {
-              await syncGoogleHealth(activeUserId);
-              if (onSyncRequest) (onSyncRequest as any)();
-            }}
+            onClick={() => setActiveHealthModal('google')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors cursor-pointer"
           >
             Google Health
@@ -553,6 +549,15 @@ export default function WearableCoachWidget({
           </div>
         </div>
       </div>
+
+      <HealthConnectModal
+        isOpen={activeHealthModal !== null}
+        onClose={() => setActiveHealthModal(null)}
+        provider={activeHealthModal || 'apple'}
+        onSyncComplete={() => {
+          if (onSyncRequest) (onSyncRequest as any)();
+        }}
+      />
     </section>
   );
 }

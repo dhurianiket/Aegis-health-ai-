@@ -27,6 +27,7 @@ import {
   HealthProvider,
 } from "../../services/healthSyncService";
 import { useAuth } from "../../context/AuthContext";
+import HealthConnectModal from "./HealthConnectModal";
 
 interface IntegrationsPanelProps {
   activeProfile: any;
@@ -44,6 +45,7 @@ export default function IntegrationsPanel({
   const [syncingProvider, setSyncingProvider] = useState<HealthProvider | null>(
     null
   );
+  const [modalProvider, setModalProvider] = useState<HealthProvider | null>(null);
   const [syncFeedback, setSyncFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -252,9 +254,9 @@ export default function IntegrationsPanel({
               <div className="mt-6 pt-4 border-t border-[var(--color-border)] space-y-3">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => handleSync(item.id)}
+                    onClick={() => setModalProvider(item.id)}
                     disabled={isSyncing}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-md disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-md disabled:opacity-50 cursor-pointer"
                   >
                     <RefreshCw
                       className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`}
@@ -343,6 +345,15 @@ export default function IntegrationsPanel({
           </div>
         </div>
       </div>
+
+      <HealthConnectModal
+        isOpen={modalProvider !== null}
+        onClose={() => setModalProvider(null)}
+        provider={modalProvider || 'apple'}
+        onSyncComplete={() => {
+          setSyncState(getHealthSyncState(userId));
+        }}
+      />
     </div>
   );
 }
