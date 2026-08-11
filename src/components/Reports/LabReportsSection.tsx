@@ -356,15 +356,16 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
   }, [user, activeProfile]);
 
   const filteredReports = useMemo(() => {
+     const queryStr = searchQuery.trim().toLowerCase();
      return reports.filter(r => {
         if (filterType !== 'All') {
-           const typeMatch = filterType === 'Lab Reports' ? r.type?.toLowerCase().includes('lab') || r.type?.toLowerCase().includes('blood') || r.type?.toLowerCase().includes('pathology')
-              : filterType === 'Consultations' ? r.type?.toLowerCase().includes('consult') || r.type?.toLowerCase().includes('visit')
+           const rType = r.type?.toLowerCase();
+           const typeMatch = filterType === 'Lab Reports' ? rType?.includes('lab') || rType?.includes('blood') || rType?.includes('pathology')
+              : filterType === 'Consultations' ? rType?.includes('consult') || rType?.includes('visit')
               : true;
            if (!typeMatch) return false;
         }
-        if (searchQuery.trim().length > 0) {
-           const queryStr = searchQuery.toLowerCase();
+        if (queryStr.length > 0) {
            const hospMatch = (r.hospitalName || '').toLowerCase().includes(queryStr);
            const docMatch = (r.doctorName || '').toLowerCase().includes(queryStr);
            const markerMatch = (r.extractedData?.lab_values || []).some(l => (l.marker || l.testName || '').toLowerCase().includes(queryStr));
