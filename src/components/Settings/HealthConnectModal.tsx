@@ -223,7 +223,8 @@ export default function HealthConnectModal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-slate-50 transition-colors cursor-pointer"
+            aria-label="Close modal"
+            className="absolute top-6 right-6 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-slate-50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
           >
             <X className="w-5 h-5" />
           </button>
