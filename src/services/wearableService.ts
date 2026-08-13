@@ -93,7 +93,7 @@ export function generateMockTelemetry(
   overrides?: Partial<WearableBiometrics>
 ): WearableBiometrics {
   const now = new Date().toISOString();
-  const id = `telemetry-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  const id = `telemetry-${Date.now()}-${crypto.randomUUID()}`;
 
   // Realistic baseline values with slight random fluctuations
   const hrNoise = (Math.random() - 0.5) * 6;
