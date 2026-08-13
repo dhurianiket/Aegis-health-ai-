@@ -96,6 +96,25 @@ export default function Timeline() {
       : documents.filter((d) => d.type === filterType);
   }, [documents, filterType]);
 
+  // ⚡ Bolt: Performance optimization
+  // Extracted inline sorting of trends into a useMemo block.
+  // This prevents an expensive O(N log N) re-sort of the trends array on every render cycle,
+  // particularly when users interact with the Timeline filters or UI elements.
+  const sortedTrends = useMemo(() => {
+    return Object.values(trends).sort((a, b) => {
+      const severityMap: Record<string, number> = {
+        CRITICAL: 0,
+        HIGH: 1,
+        LOW: 2,
+        NORMAL: 3,
+      };
+      return (
+        (severityMap[a.latestFlag || "NORMAL"] ?? 4) -
+        (severityMap[b.latestFlag || "NORMAL"] ?? 4)
+      );
+    });
+  }, [trends]);
+
   const categories = [
     { id: "ALL", label: "All Records" },
     { id: DocumentType.LAB_REPORT, label: "Blood & Labs" },
@@ -194,19 +213,7 @@ export default function Timeline() {
               Clinical Trends
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.values(trends)
-                .sort((a, b) => {
-                  const severityMap: Record<string, number> = {
-                    CRITICAL: 0,
-                    HIGH: 1,
-                    LOW: 2,
-                    NORMAL: 3,
-                  };
-                  return (
-                    (severityMap[a.latestFlag || "NORMAL"] ?? 4) -
-                    (severityMap[b.latestFlag || "NORMAL"] ?? 4)
-                  );
-                })
+              {sortedTrends
                 .map((trend: any, idx) => {
                   const isUp = trend.direction === "increasing";
                   const isDown = trend.direction === "decreasing";
