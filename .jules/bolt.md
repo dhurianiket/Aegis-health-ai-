@@ -21,3 +21,7 @@
 ## 2024-05-21 - Extract Expensive Mapping from Render
 **Learning:** Performing expensive parsing (like regex matching and date parsing) directly inside `array.map()` during a React render cycle can cause severe performance bottlenecks on every re-render.
 **Action:** Extract expensive inline computations inside render `.map()` loops into `useMemo` hooks by pre-computing the values on the dataset array itself, reducing the render function to simple O(1) property reads.
+
+## 2024-05-22 - Extract Static Objects from Sort Comparators
+**Learning:** Defining static mapping objects (like dictionaries for severity mapping) inside array `.sort()` comparator functions causes the object to be redundantly allocated in memory on every single array comparison step (O(N log N) allocations), resulting in significant garbage collection overhead and slower render times.
+**Action:** When mapping values in a sort comparator, always define the mapping object or dictionary *outside* the `.sort()` function callback (or entirely outside the React component) to ensure it is only allocated once.
