@@ -25,3 +25,7 @@
 ## 2024-05-22 - Extract Static Objects from Sort Comparators
 **Learning:** Defining static mapping objects (like dictionaries for severity mapping) inside array `.sort()` comparator functions causes the object to be redundantly allocated in memory on every single array comparison step (O(N log N) allocations), resulting in significant garbage collection overhead and slower render times.
 **Action:** When mapping values in a sort comparator, always define the mapping object or dictionary *outside* the `.sort()` function callback (or entirely outside the React component) to ensure it is only allocated once.
+
+## $(date +%Y-%m-%d) - Schwartzian Transform for Expensive Sorting Comparators
+**Learning:** Performing expensive computations (like string parsing, regular expressions, or date parsing via `parseSafeTimestamp`) directly inside an array `.sort()` comparator creates an O(N log N) performance bottleneck, as the computation is executed redundantly on every comparison. This is especially impactful when processing large medical datasets like `labHistory`.
+**Action:** When sorting arrays based on computed properties, always extract the computation using a Schwartzian transform (Decorate-Sort-Undecorate) to execute the expensive operation exactly once per item (O(N)), cache the result in a mapped object, perform the sort on the cached value, and finally map back to the original objects.
