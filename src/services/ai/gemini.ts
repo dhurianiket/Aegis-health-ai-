@@ -211,9 +211,12 @@ export async function generateClinicalSummary(
   const ai = getAI();
   
   // Sort labs by date (newest first)
-  const sortedLabs = [...labHistory].sort((a, b) => 
-    (parseSafeTimestamp(b.date)?.getTime() || 0) - (parseSafeTimestamp(a.date)?.getTime() || 0)
-  );
+  // ⚡ Bolt: Performance optimization
+  // Use Schwartzian transform to avoid O(N log N) parseSafeTimestamp calls
+  const sortedLabs = labHistory
+    .map(lab => ({ lab, time: parseSafeTimestamp(lab.date)?.getTime() || 0 }))
+    .sort((a, b) => b.time - a.time)
+    .map(({ lab }) => lab);
 
   const age = patientData.dob
     ? Math.floor((new Date().getTime() - (parseSafeTimestamp(patientData.dob)?.getTime() || new Date().getTime())) / 3.15576e10)
