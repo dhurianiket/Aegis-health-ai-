@@ -7,3 +7,6 @@
 ## 2025-03-09 - Ensure bottom sheets are keyboard accessible
 **Learning:** Bottom sheets that use a list of grid buttons for navigation without explicit outline overrides hide default focus rings, failing keyboard accessibility.
 **Action:** Always add `focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]` to icon-heavy navigation buttons (especially ones rendering in a modal/bottom sheet context).
+## 2025-03-09 - Prefer focus-visible over focus for interactive cards
+**Learning:** Using standard `focus:ring-2` on clickable UI cards (like ConditionTile) creates distracting visual noise when users click them with a mouse, leading to a degraded experience.
+**Action:** When styling cards or buttons that act as primary navigation, always replace `focus:ring-*` with `focus-visible:ring-*` (alongside `focus:outline-none`) to preserve accessibility for keyboard users while maintaining a clean look for mouse/touch interactions.

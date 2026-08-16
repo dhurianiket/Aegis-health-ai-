@@ -83,7 +83,7 @@ export const SmartAlertCard: React.FC<SmartAlertCardProps> = ({
           </span>
           <button
             onClick={onCta}
-            className={`flex items-center gap-1 text-sm font-medium hover:underline text-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-current rounded`}
+            className={`flex items-center gap-1 text-sm font-medium hover:underline text-[var(--color-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded`}
           >
             Review with your doctor <ArrowRight size={14} />
           </button>

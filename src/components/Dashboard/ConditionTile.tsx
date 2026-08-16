@@ -50,7 +50,7 @@ export const ConditionTile: React.FC<ConditionTileProps> = ({
       onClick={onClick}
       whileHover={{ scale: 1.015, y: -2 }}
       transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.18 }}
-      className="glass-card p-6 w-full text-left flex flex-col gap-4 shadow-sm hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+      className="glass-card p-6 w-full text-left flex flex-col gap-4 shadow-sm hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
     >
       <div className="flex justify-between items-center w-full">
         <span className="label-caps">{condition}</span>
