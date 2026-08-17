@@ -29,3 +29,7 @@
 ## $(date +%Y-%m-%d) - Schwartzian Transform for Expensive Sorting Comparators
 **Learning:** Performing expensive computations (like string parsing, regular expressions, or date parsing via `parseSafeTimestamp`) directly inside an array `.sort()` comparator creates an O(N log N) performance bottleneck, as the computation is executed redundantly on every comparison. This is especially impactful when processing large medical datasets like `labHistory`.
 **Action:** When sorting arrays based on computed properties, always extract the computation using a Schwartzian transform (Decorate-Sort-Undecorate) to execute the expensive operation exactly once per item (O(N)), cache the result in a mapped object, perform the sort on the cached value, and finally map back to the original objects.
+
+## 2026-08-17 - O(N log N) Date Parsing Bottleneck
+**Learning:** Parsing dates inside inline `Array.sort()` comparators (like `new Date(str).getTime()`) creates a hidden O(N log N) bottleneck, particularly blocking the main thread during component re-renders. This occurs because `new Date()` is expensive and the comparator parses the exact same date strings multiple times during the sort process.
+**Action:** Use a Schwartzian transform (decorate-sort-undecorate) to parse and cache dates during a single O(N) forward pass before sorting. Replace `new Date()` with `parseSafeTimestamp(date)?.getTime() || 0` to improve robustness against invalid values.

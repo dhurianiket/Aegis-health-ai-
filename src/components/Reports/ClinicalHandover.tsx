@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { getDocuments } from "../../lib/firebase/firestore";
 import { generateSBAR } from "../../services/sbarGenerationService";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 import { generateDoctorReport, SBAROutput, TrendSummary, LabObservation } from "../../services/pdfExportService";
 import { format } from "date-fns";
 import {
@@ -59,9 +60,12 @@ export default function ClinicalHandover() {
       setIsLoadingDocs(true);
       try {
         const docs = await getDocuments(user.uid, activeProfile?.id);
-        const sortedDocs = (docs || []).sort(
-          (a, b) => new Date(b.date || b.uploadedAt || 0).getTime() - new Date(a.date || a.uploadedAt || 0).getTime()
-        );
+        const mappedDocs = (docs || []).map(doc => ({
+          doc,
+          time: parseSafeTimestamp(doc.date || doc.uploadedAt)?.getTime() || 0
+        }));
+        mappedDocs.sort((a, b) => b.time - a.time);
+        const sortedDocs = mappedDocs.map(m => m.doc);
         setDocuments(sortedDocs);
         // Default select all
         setSelectedDocIds(sortedDocs.map((d) => d.id));
@@ -235,7 +239,15 @@ export default function ClinicalHandover() {
 
     const trends: TrendSummary[] = [];
     map.forEach((values, biomarker) => {
-      values.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const mappedValues = values.map(val => ({
+        val,
+        time: parseSafeTimestamp(val.date)?.getTime() || 0
+      }));
+      mappedValues.sort((a, b) => a.time - b.time);
+      for (let i = 0; i < values.length; i++) {
+        values[i] = mappedValues[i].val;
+      }
+
       if (values.length >= 2) {
         const oldest = values[0];
         const newest = values[values.length - 1];

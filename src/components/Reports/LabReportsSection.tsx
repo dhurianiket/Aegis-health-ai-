@@ -5,6 +5,7 @@ import { db } from "../../lib/firebase/config";
 import { collection, onSnapshot, query, orderBy, where } from "firebase/firestore";
 import { useProfile } from "../../context/ProfileContext";
 import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 import {
   FileText,
   Loader2,
@@ -344,8 +345,12 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
          status: "complete"
        })) as LabReport[];
        
-       docs.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
-       setReports(docs);
+       const mappedDocs = docs.map(doc => ({
+         doc,
+         time: parseSafeTimestamp(doc.date)?.getTime() || 0
+       }));
+       mappedDocs.sort((a, b) => b.time - a.time);
+       setReports(mappedDocs.map(m => m.doc));
        setIsLoading(false);
     }, (err) => {
        console.error("Error fetching reports real-time:", err);
