@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { getReportHistory, getDocuments } from "../../lib/firebase/firestore";
 import { ReportHistoryEntry, MedicalDocument } from "../../types/medical";
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 import {
   FileText,
@@ -132,10 +133,13 @@ export default function ReportHistory() {
       }
     });
 
-    // Sort chronologically (newest first)
-    return Array.from(map.values()).sort(
-      (a, b) => new Date(b.date || b.uploadedAt || 0).getTime() - new Date(a.date || a.uploadedAt || 0).getTime()
-    );
+    // Sort chronologically (newest first) using Schwartzian transform for O(N) date parsing
+    const mapped = Array.from(map.values()).map(item => ({
+      item,
+      time: parseSafeTimestamp(item.date || item.uploadedAt)?.getTime() || 0
+    }));
+    mapped.sort((a, b) => b.time - a.time);
+    return mapped.map(m => m.item);
   }, [historyRecords, documents]);
 
   // chronological oldest to newest for trend scanning
