@@ -29,7 +29,7 @@ export default function EmptyDashboard({
           </h2>
           
           <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <button onClick={onUploadClick} className="flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-primary)]/10 border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 rounded-[20px] transition-all group text-left">
+            <button onClick={onUploadClick} aria-label="Upload Report" className="flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-primary)]/10 border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 rounded-[20px] transition-all group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]">
               <Upload className="w-8 h-8 text-[var(--color-primary)] mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold text-sm mb-1 text-[var(--color-text)]">Upload Report</h3>
               <p className="text-xs text-[var(--color-text-muted)]">PDFs or images of test results</p>
@@ -49,9 +49,10 @@ export default function EmptyDashboard({
           <div className="pt-4">
              <motion.button
                 onClick={onUploadClick}
+                aria-label="Upload Report"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex items-center gap-3 px-8 py-4 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20"
+                className="flex items-center gap-3 px-8 py-4 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] focus-visible:ring-[var(--color-primary)]"
               >
                 Upload first report to unlock AI insights <ArrowRight className="w-5 h-5" />
               </motion.button>
