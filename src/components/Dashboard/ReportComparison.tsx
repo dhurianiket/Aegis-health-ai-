@@ -76,11 +76,12 @@ export default function ReportComparison({ reportAId, reportBId, reportADate, re
             <p className="text-red-400 mb-4 text-center">Failed to load this report.</p>
             <button 
               onClick={() => { setRetryCount(old => old + 1); }}
-              className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold uppercase"
+              aria-label="Retry loading report"
+              className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm font-bold uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] focus-visible:ring-[var(--color-primary)]"
             >
               Tap to retry
             </button>
-            <button onClick={onClose} className="mt-4 text-sm text-[var(--color-text-muted)] underline">Cancel</button>
+            <button onClick={onClose} aria-label="Cancel" className="mt-4 text-sm text-[var(--color-text-muted)] underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded px-2 py-1">Cancel</button>
         </div>
       </div>
     );
