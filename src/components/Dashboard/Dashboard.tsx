@@ -357,6 +357,7 @@ export default function Dashboard({
           </div>
           <button
             onClick={() => setRetryCount(c => c + 1)}
+            aria-label="Retry Connection"
             className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20 transition-transform active:scale-95"
           >
             Retry Connection

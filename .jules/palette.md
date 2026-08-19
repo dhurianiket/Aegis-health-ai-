@@ -10,3 +10,6 @@
 ## 2025-03-09 - Prefer focus-visible over focus for interactive cards
 **Learning:** Using standard `focus:ring-2` on clickable UI cards (like ConditionTile) creates distracting visual noise when users click them with a mouse, leading to a degraded experience.
 **Action:** When styling cards or buttons that act as primary navigation, always replace `focus:ring-*` with `focus-visible:ring-*` (alongside `focus:outline-none`) to preserve accessibility for keyboard users while maintaining a clean look for mouse/touch interactions.
+## 2025-03-09 - Accessible Disabled State Management for Interstitial CTAs
+**Learning:** Empty state cards (like in the Dashboard) often use `opacity-70 cursor-not-allowed` to visually indicate a disabled state without setting the `disabled` HTML attribute or an `aria-label` explaining *why* they are disabled. This fails both visual state management for assistive tech and general UX clarity.
+**Action:** When styling "Coming Soon" or conditionally locked buttons, always explicitly add the HTML `disabled` attribute and an `aria-label` (e.g., `aria-label="Action (Coming Soon)"` or `aria-label="Action (Unlock by doing X)"`) to clearly communicate the state and requirement to screen readers.
