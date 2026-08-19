@@ -69,6 +69,9 @@ import RemindersWidget from "./RemindersWidget";
 import FeedbackWidget from "./FeedbackWidget";
 import VisitPrepWidget from "./VisitPrepWidget";
 
+const ATTENTION_STATUSES = new Set(['high', 'abnormal', 'low', 'critical']);
+const TRACKED_NAMES = new Set(['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr']);
+
 const aggregateLabs = (docs: MedicalDocument[]): any[] => {
   const labMap = new Map<string, any[]>();
   docs.forEach(doc => {
@@ -255,12 +258,11 @@ export default function Dashboard({
   );
 
   const attentionLabs = useMemo(() => {
-    return keyLabs.filter(l => l && l.status && ['high', 'abnormal', 'low', 'critical'].includes(String(l.status).toLowerCase().trim()));
+    return keyLabs.filter(l => l && l.status && ATTENTION_STATUSES.has(String(l.status).toLowerCase().trim()));
   }, [keyLabs]);
 
   const trackedKeyMarkers = useMemo(() => {
-    const trackedNames = ['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr'];
-    const filtered = keyLabs.filter(l => l && l.markerName && trackedNames.includes(String(l.markerName).toLowerCase().trim()));
+    const filtered = keyLabs.filter(l => l && l.markerName && TRACKED_NAMES.has(String(l.markerName).toLowerCase().trim()));
 
     return filtered.map(lab => {
        const valRaw = parseFloat(String(lab.value).replace(/[^0-9.-]/g, ''));

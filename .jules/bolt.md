@@ -33,3 +33,11 @@
 ## 2026-08-17 - O(N log N) Date Parsing Bottleneck
 **Learning:** Parsing dates inside inline `Array.sort()` comparators (like `new Date(str).getTime()`) creates a hidden O(N log N) bottleneck, particularly blocking the main thread during component re-renders. This occurs because `new Date()` is expensive and the comparator parses the exact same date strings multiple times during the sort process.
 **Action:** Use a Schwartzian transform (decorate-sort-undecorate) to parse and cache dates during a single O(N) forward pass before sorting. Replace `new Date()` with `parseSafeTimestamp(date)?.getTime() || 0` to improve robustness against invalid values.
+
+## 2026-08-23 - Prevent O(N) Array Allocation in Filters
+**Learning:** Defining static arrays (e.g., `['high', 'abnormal', 'low', 'critical']`) directly inside `.filter()` callbacks or `useMemo` hooks causes the array to be allocated repeatedly, and `.includes()` checks perform at O(M) time complexity. On large datasets, this creates a significant O(N * M) performance bottleneck.
+**Action:** Extract static target arrays into module-scoped `Set` objects (e.g., `const STATUS_SET = new Set([...])`). This eliminates array allocation inside the loop and reduces lookup time to O(1) via `Set.has()`.
+
+## 2026-08-23 - Verify Downstream Data Order Dependencies Before Removing Sort
+**Learning:** Replacing an O(N log N) full sort with an O(N) single-pass search (to just find top items) can inadvertently destroy the expected data order of an array. In this case, removing the full sort of a `history` array broke downstream chart components that implicitly required chronologically ordered data.
+**Action:** Before removing an expensive `.sort()`, explicitly verify that the fully sorted array isn't being passed to downstream components (like charts, lists, or tables) that depend on strict ordering. If the full sort is necessary for downstream consumption, optimize the sort itself (e.g., Schwartzian transform) rather than removing it.
