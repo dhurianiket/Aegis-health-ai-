@@ -13,10 +13,10 @@ export const logger = {
   error: (error: Error | string, context?: Record<string, any>) => {
     // Basic formatting for console
     if (error instanceof Error) {
-      console.error(
-        `[ERROR]: ${error.message}\nStack: ${error.stack}`,
-        context || "",
-      );
+      console.error(`[ERROR]: ${error.message}`, context || "");
+      if (import.meta.env.DEV) {
+        console.error(`[ERROR Stack]: ${error.stack}`);
+      }
     } else {
       console.error(`[ERROR]: ${error}`, context || "");
     }
