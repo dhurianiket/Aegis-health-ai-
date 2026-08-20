@@ -1,13 +1,20 @@
 /**
  * GA4 Measurement Protocol Service
- * Enables sending server-side, background, and offline telemetry events to Google Analytics 4
+ * Securely handles server-side and background telemetry events for Google Analytics 4
  * Stream Name: aegis-web
  * Stream ID: 14925967845
  * Measurement ID: G-KKGF16H7CY
  */
 
-export const GA_MEASUREMENT_ID = 'G-KKGF16H7CY';
-export const GA_API_SECRET = '7_vWiTUqR8yMwi7YZ-NglA';
+import { trackEvent } from '../utils/analytics';
+
+export const GA_MEASUREMENT_ID =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GA_MEASUREMENT_ID) ||
+  'G-KKGF16H7CY';
+
+export const GA_API_SECRET =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GA_API_SECRET) ||
+  '';
 
 export interface MeasurementProtocolEvent {
   name: string;
@@ -34,35 +41,51 @@ export function getOrCreateClientId(): string {
 }
 
 /**
- * Dispatches server-side / background event payloads to GA4 Measurement Protocol endpoint
+ * Dispatches event payloads securely to GA4 endpoint or falls back to client-side gtag
  */
 export async function sendMeasurementProtocolEvent(options: SendTelemetryOptions): Promise<boolean> {
-  const endpoint = `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`;
+  const secret = GA_API_SECRET || (typeof process !== 'undefined' ? process.env?.GA_API_SECRET : '');
 
-  const payload = {
-    client_id: options.clientId || getOrCreateClientId(),
-    ...(options.userId ? { user_id: options.userId } : {}),
-    events: options.events.map((e) => ({
-      name: e.name,
-      params: {
-        engagement_time_msec: '100',
-        ...e.params,
-      },
-    })),
-  };
+  // 1. If API secret is present (e.g. backend / server environment), dispatch via HTTP POST
+  if (secret) {
+    const endpoint = `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${secret}`;
 
+    const payload = {
+      client_id: options.clientId || getOrCreateClientId(),
+      ...(options.userId ? { user_id: options.userId } : {}),
+      events: options.events.map((e) => ({
+        name: e.name,
+        params: {
+          engagement_time_msec: '100',
+          ...e.params,
+        },
+      })),
+    };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      return response.ok || response.status === 204;
+    } catch (err) {
+      console.warn('[MeasurementProtocol] Backend telemetry error:', err);
+      return false;
+    }
+  }
+
+  // 2. Client-side fallback: dispatch through browser gtag queue without exposing secret in JS bundle
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
+    options.events.forEach((evt) => {
+      trackEvent(evt.name, 'MeasurementProtocol', evt.name, undefined, evt.params);
     });
-
-    return response.ok || response.status === 204;
+    return true;
   } catch (err) {
-    console.warn('[MeasurementProtocol] Failed to send telemetry hit:', err);
+    console.warn('[MeasurementProtocol] Client fallback dispatch error:', err);
     return false;
   }
 }

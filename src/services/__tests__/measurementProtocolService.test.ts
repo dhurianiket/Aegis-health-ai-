@@ -3,7 +3,6 @@ import {
   sendMeasurementProtocolEvent,
   getOrCreateClientId,
   GA_MEASUREMENT_ID,
-  GA_API_SECRET,
 } from '../measurementProtocolService';
 
 describe('GA4 Measurement Protocol Service', () => {
@@ -21,7 +20,8 @@ describe('GA4 Measurement Protocol Service', () => {
     expect(id2).toBe(id1);
   });
 
-  it('2. Dispatches Measurement Protocol payload via HTTP POST to GA4 endpoint', async () => {
+  it('2. Dispatches Measurement Protocol payload when API secret is configured', async () => {
+    process.env.GA_API_SECRET = 'test_secret_123';
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 204,
@@ -43,21 +43,23 @@ describe('GA4 Measurement Protocol Service', () => {
 
     const [url, options] = mockFetch.mock.calls[0];
     expect(url).toContain(`measurement_id=${GA_MEASUREMENT_ID}`);
-    expect(url).toContain(`api_secret=${GA_API_SECRET}`);
+    expect(url).toContain('api_secret=test_secret_123');
     expect(options.method).toBe('POST');
 
     const body = JSON.parse(options.body);
     expect(body.user_id).toBe('dhurianiket@gmail.com');
     expect(body.events[0].name).toBe('abdm_care_context_linked');
+
+    delete process.env.GA_API_SECRET;
   });
 
-  it('3. Handles network failures gracefully without throwing unhandled exceptions', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('Network offline'));
+  it('3. Uses client-side analytics fallback safely when no API secret is present', async () => {
+    delete process.env.GA_API_SECRET;
 
     const success = await sendMeasurementProtocolEvent({
-      events: [{ name: 'ping_test' }],
+      events: [{ name: 'frontend_event' }],
     });
 
-    expect(success).toBe(false);
+    expect(success).toBe(true);
   });
 });
