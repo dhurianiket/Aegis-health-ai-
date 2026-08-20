@@ -18,16 +18,17 @@
       href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
       rel="stylesheet"
     />
-    <!-- Google Tag (gtag.js) - Google Analytics GA4 -->
+    <!-- Google Tag (gtag.js) - Google Analytics GA4 & Tag Manager -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KKGF16H7CY"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      function gtag(){window.dataLayer.push(arguments);}
       window.gtag = gtag;
       gtag('js', new Date());
 
+      // Disable default page view on initial script load; React Router tracks virtual pageviews
       gtag('config', 'G-KKGF16H7CY', {
-        send_page_view: true
+        send_page_view: false
       });
     </script>
   </head>

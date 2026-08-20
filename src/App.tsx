@@ -209,9 +209,13 @@ function MainApp() {
     return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
 
+  const location = useLocation();
+
   useEffect(() => {
-    trackPageView(`/#${activeTab}`, `Aegis Health - ${activeTab}`);
-  }, [activeTab]);
+    const currentPath = location.pathname === '/' && activeTab ? `/#${activeTab}` : `${location.pathname}${location.search || ''}${location.hash || ''}`;
+    const pageTitle = document.title || `Aegis Health AI - ${activeTab || location.pathname}`;
+    trackPageView(currentPath, pageTitle);
+  }, [location.pathname, location.search, location.hash, activeTab]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
