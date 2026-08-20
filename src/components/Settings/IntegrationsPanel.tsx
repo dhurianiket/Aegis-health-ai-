@@ -28,6 +28,8 @@ import {
 } from "../../services/healthSyncService";
 import { useAuth } from "../../context/AuthContext";
 import HealthConnectModal from "./HealthConnectModal";
+import AbdmConnectModal from "./AbdmConnectModal";
+import { QrCode, ShieldCheck } from "lucide-react";
 
 interface IntegrationsPanelProps {
   activeProfile: any;
@@ -46,6 +48,7 @@ export default function IntegrationsPanel({
     null
   );
   const [modalProvider, setModalProvider] = useState<HealthProvider | null>(null);
+  const [isAbdmModalOpen, setIsAbdmModalOpen] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -342,6 +345,41 @@ export default function IntegrationsPanel({
             </div>
           </div>
         </motion.div>
+
+        {/* ABDM (Ayushman Bharat Digital Mission) 3D Glass Card */}
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="relative overflow-hidden bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-orange-500/30 shadow-[0_16px_40px_-8px_rgba(234,88,12,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.2)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-orange-400/50 hover:shadow-[0_20px_48px_-10px_rgba(249,115,22,0.35),inset_0_1px_1px_0_rgba(255,255,255,0.3)] flex flex-col justify-between group col-span-1 md:col-span-2"
+        >
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-orange-500/25 via-amber-400/15 to-transparent blur-3xl pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-orange-500 to-amber-700 text-white shadow-lg shrink-0">
+                <QrCode className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest text-orange-300 bg-orange-500/20 border-orange-400/40">
+                NHA ABDM Gateway • Active
+              </span>
+            </div>
+
+            <h3 className="text-xl font-extrabold text-slate-50 tracking-tight mb-2">
+              Ayushman Bharat Digital Health ID (ABHA Card)
+            </h3>
+            <p className="text-slate-200 text-xs md:text-sm leading-relaxed mb-4">
+              Link your 14-digit ABHA ID to continuously aggregate longitudinal medical records, lab reports, and doctor prescriptions across hospitals, clinics, and diagnostic centers in India.
+            </p>
+          </div>
+
+          <div className="pt-4 border-t border-slate-800/80 relative z-10 flex justify-end">
+            <button
+              onClick={() => setIsAbdmModalOpen(true)}
+              className="py-3 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
+            >
+              Connect & Verify ABHA ID
+            </button>
+          </div>
+        </motion.div>
       </div>
 
       {/* Data Portability Section */}
@@ -411,6 +449,17 @@ export default function IntegrationsPanel({
         provider={modalProvider || 'apple'}
         onSyncComplete={() => {
           refreshSyncState();
+        }}
+      />
+
+      <AbdmConnectModal
+        isOpen={isAbdmModalOpen}
+        onClose={() => setIsAbdmModalOpen(false)}
+        onSuccess={() => {
+          setSyncFeedback({
+            type: "success",
+            message: "ABHA Card verified and linked to Aegis Health AI!",
+          });
         }}
       />
     </div>
