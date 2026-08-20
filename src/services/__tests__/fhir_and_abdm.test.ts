@@ -22,8 +22,8 @@ describe('FHIR R4 & ABDM Service Suite', () => {
 
     expect(patient.resourceType).toBe('Patient');
     expect(patient.id).toBe('user-777');
-    expect(patient.name[0].text).toBe('Aniket Dhuri');
-    expect(patient.telecom[0].value).toBe('dhurianiket@gmail.com');
+    expect(patient.name?.[0]?.text).toBe('Aniket Dhuri');
+    expect(patient.telecom?.[0]?.value).toBe('dhurianiket@gmail.com');
   });
 
   it('2. Converts lab biomarker into valid FHIR R4 Observation resource', () => {
@@ -39,9 +39,9 @@ describe('FHIR R4 & ABDM Service Suite', () => {
     );
 
     expect(obs.resourceType).toBe('Observation');
-    expect(obs.code.coding[0].code).toBe('4548-4');
-    expect(obs.valueQuantity.value).toBe(6.8);
-    expect(obs.interpretation[0].coding[0].code).toBe('A');
+    expect(obs.code.coding?.[0]?.code).toBe('4548-4');
+    expect(obs.valueQuantity?.value).toBe(6.8);
+    expect(obs.interpretation?.[0]?.coding?.[0]?.code).toBe('A');
   });
 
   it('3. Generates complete FHIR R4 Bundle from lab report', () => {
@@ -82,6 +82,9 @@ describe('FHIR R4 & ABDM Service Suite', () => {
       display: 'Lipid Panel',
       type: 'LabReport',
       date: '2026-08-20',
+      hipId: 'IN2710001824',
+      hipName: 'Aegis Health Intelligence Clinic (HIP)',
+      status: 'linked',
     });
 
     expect(res.success).toBe(true);

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { format, subDays, subMonths, subYears } from "date-fns";
 import { exportToPDF } from "../../services/pdfExportService";
+import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
 
 interface ExportModalProps {
   onClose: () => void;
@@ -72,6 +73,17 @@ export default function ExportModal({
     }
   };
 
+  const handleExportFhir = () => {
+    try {
+      const patient = { name: healthContext.userName, id: 'patient-export' };
+      const bundle = exportToFhirBundle(patient, healthContext.recentTrends || [], healthContext.aiClinicalSummary);
+      downloadFhirJson(bundle, `Aegis_Health_FHIR_${format(new Date(), "yyyy-MM-dd")}.json`);
+      onClose();
+    } catch (err) {
+      console.error("FHIR export failed:", err);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
       <motion.div
@@ -97,7 +109,7 @@ export default function ExportModal({
                 Export Health Report
               </h3>
               <p className="text-slate-400 text-sm">
-                Professional PDF summary for your records
+                Professional PDF summary or FHIR R4 Bundle for your records
               </p>
             </div>
           </div>
@@ -175,49 +187,60 @@ export default function ExportModal({
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-black/20 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-slate-400 order-2 sm:order-1">
+        <div className="p-6 bg-black/20 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2 text-slate-400 order-3 sm:order-1">
             <Clock className="w-4 h-4" />
-            <span className="text-xs">Approx. generation: 5s</span>
+            <span className="text-xs">Instant client-side export</span>
           </div>
 
-          <button
-            disabled={isExporting}
-            onClick={handleExport}
-            className={`w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all relative overflow-hidden order-1 sm:order-2 ${
-              isExporting
-                ? "bg-indigo-600/50 text-white/50 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-500/20 active:scale-95"
-            }`}
-          >
-            {isExporting ? (
-              <>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${exportProgress}%` }}
-                  className="absolute inset-0 bg-indigo-400/20"
-                />
-                <span className="relative z-10 flex items-center gap-2">
+          <div className="flex items-center gap-3 w-full sm:w-auto order-1 sm:order-2 flex-wrap">
+            <button
+              disabled={isExporting}
+              onClick={handleExportFhir}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 transition-all shadow-lg active:scale-95"
+            >
+              <Activity className="w-5 h-5 text-indigo-400" />
+              Export FHIR R4
+            </button>
+
+            <button
+              disabled={isExporting}
+              onClick={handleExport}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold transition-all relative overflow-hidden ${
+                isExporting
+                  ? "bg-indigo-600/50 text-white/50 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-500/20 active:scale-95"
+              }`}
+            >
+              {isExporting ? (
+                <>
                   <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 1,
-                      ease: "linear",
-                    }}
-                  >
-                    <Clock className="w-5 h-5" />
-                  </motion.div>
-                  Generating...
-                </span>
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5" />
-                Generate Report
-              </>
-            )}
-          </button>
+                    initial={{ width: 0 }}
+                    animate={{ width: `${exportProgress}%` }}
+                    className="absolute inset-0 bg-indigo-400/20"
+                  />
+                  <span className="relative z-10 flex items-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 1,
+                        ease: "linear",
+                      }}
+                    >
+                      <Clock className="w-5 h-5" />
+                    </motion.div>
+                    Generating...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  Generate PDF
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </motion.div>
 

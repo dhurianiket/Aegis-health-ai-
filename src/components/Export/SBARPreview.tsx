@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { FileText, Copy, Check, X, Download, FileDown, AlertTriangle } from "lucide-react";
+import { FileText, Copy, Check, X, Download, FileDown, AlertTriangle, Activity } from "lucide-react";
 import { exportToPDF, generateDoctorReport, SBAROutput, TrendSummary, LabObservation } from "../../services/pdfExportService";
+import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { logAuditEvent } from "../../lib/auditLogger";
@@ -28,6 +29,7 @@ export default function SBARPreview({
   const [copied, setCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isDoctorExporting, setIsDoctorExporting] = useState(false);
+  const [isFhirExporting, setIsFhirExporting] = useState(false);
   const [doctorExportError, setDoctorExportError] = useState<string | null>(null);
 
   const { user } = useAuth();
@@ -128,6 +130,26 @@ export default function SBARPreview({
     }
   };
 
+  const handleFhirExport = () => {
+    setIsFhirExporting(true);
+    try {
+      const patient = {
+        id: user?.uid || activeProfile?.id || 'patient-user',
+        name: activeProfile?.fullName || user?.displayName || 'Patient',
+        email: user?.email || '',
+      };
+      const bundle = exportToFhirBundle(patient, [], sbarData || sbarText);
+      downloadFhirJson(bundle, `Aegis_SBAR_FHIR_${new Date().toISOString().split('T')[0]}.json`);
+      if (user?.uid) {
+        logAuditEvent(user.uid, 'SBAR_EXPORT_FHIR', JSON.stringify({ sbarLength: sbarText.length }));
+      }
+    } catch (err) {
+      console.error("FHIR export failed:", err);
+    } finally {
+      setIsFhirExporting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <motion.div
@@ -201,15 +223,24 @@ export default function SBARPreview({
         <div className="flex flex-col sm:flex-row items-center justify-end gap-3 shrink-0 mt-2">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors order-4 sm:order-1"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors order-5 sm:order-1"
           >
             Close
           </button>
           
           <button
+            disabled={isLoading || isFhirExporting}
+            onClick={handleFhirExport}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-500/30 transition-colors shadow-lg shadow-indigo-950/20 order-4 sm:order-2 disabled:opacity-50"
+          >
+            <Activity className="w-4 h-4" />
+            FHIR
+          </button>
+
+          <button
             disabled={isLoading || isExporting || isDoctorExporting}
             onClick={handleExport}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/10 order-3 sm:order-2 disabled:opacity-50"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/10 order-3 sm:order-3 disabled:opacity-50"
           >
             {isExporting ? (
               <motion.div
@@ -227,7 +258,7 @@ export default function SBARPreview({
           <button
             disabled={isLoading || isDoctorExporting}
             onClick={handleDoctorExport}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-emerald-600 hover:bg-emerald-500 text-white transition-colors shadow-lg shadow-emerald-500/20 order-2 sm:order-3 disabled:opacity-50"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-emerald-600 hover:bg-emerald-500 text-white transition-colors shadow-lg shadow-emerald-500/20 order-2 sm:order-4 disabled:opacity-50"
           >
             {isDoctorExporting ? (
               <motion.div
@@ -245,7 +276,7 @@ export default function SBARPreview({
           <button
             disabled={isLoading}
             onClick={handleCopy}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-lg shadow-indigo-500/20 order-1 sm:order-4 disabled:opacity-50"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-lg shadow-indigo-500/20 order-1 sm:order-5 disabled:opacity-50"
           >
             {copied ? (
               <Check className="w-5 h-5" />

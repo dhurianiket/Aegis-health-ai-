@@ -19,10 +19,12 @@ import {
   Sliders,
   Plus,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { logAuditEvent } from "../../lib/auditLogger";
+import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
 
 export default function ClinicalHandover() {
   const { user } = useAuth();
@@ -315,6 +317,27 @@ export default function ClinicalHandover() {
     }
   };
 
+  const handleExportFhir = () => {
+    try {
+      const patient = {
+        id: user?.uid || activeProfile?.id || 'patient-user',
+        name: activeProfile?.fullName || user?.displayName || 'Patient',
+        email: user?.email || '',
+        dob: activeProfile?.dob,
+        gender: activeProfile?.gender,
+        bloodType: activeProfile?.bloodType,
+      };
+      const bundle = exportToFhirBundle(patient, selectedDocs, editableSbar || sbarRaw);
+      downloadFhirJson(bundle, `Aegis_Clinical_Handover_FHIR_${new Date().toISOString().split('T')[0]}.json`);
+      if (user?.uid) {
+        logAuditEvent(user.uid, 'CLINICAL_HANDOVER_EXPORT_FHIR', JSON.stringify({ docCount: selectedDocs.length }));
+      }
+    } catch (err) {
+      console.error("Clinical FHIR Export failed:", err);
+      setExportError("Failed to generate FHIR R4 Bundle. Please retry.");
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto" id="clinical-handover-container">
       {/* Intro Header */}
@@ -329,7 +352,17 @@ export default function ClinicalHandover() {
           </p>
         </div>
 
-        <div className="flex gap-3 w-full md:w-auto shrink-0">
+        <div className="flex flex-wrap gap-3 w-full md:w-auto shrink-0">
+          <button
+            onClick={handleExportFhir}
+            disabled={selectedDocs.length === 0}
+            className="flex-1 md:flex-none px-4 py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
+            id="btn-export-fhir-handover"
+            title="Export full clinical handover and selected reports as HL7 FHIR R4 Bundle"
+          >
+            <Activity className="w-4 h-4 text-indigo-500" /> FHIR Bundle
+          </button>
+
           <button
             onClick={handleCopy}
             className="flex-1 md:flex-none px-5 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-primary)]/40 transition-colors flex items-center justify-center gap-2"

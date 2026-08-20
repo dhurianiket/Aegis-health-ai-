@@ -29,6 +29,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import HealthConnectModal from "./HealthConnectModal";
 import AbdmConnectModal from "./AbdmConnectModal";
+import { getAbdmProfile, AbhaProfile } from "../../services/abdmService";
 import { QrCode, ShieldCheck } from "lucide-react";
 
 interface IntegrationsPanelProps {
@@ -49,13 +50,21 @@ export default function IntegrationsPanel({
   );
   const [modalProvider, setModalProvider] = useState<HealthProvider | null>(null);
   const [isAbdmModalOpen, setIsAbdmModalOpen] = useState(false);
+  const [abhaProfile, setAbhaProfile] = useState<AbhaProfile | null>(() =>
+    getAbdmProfile(userId)
+  );
   const [syncFeedback, setSyncFeedback] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
 
+  useEffect(() => {
+    setAbhaProfile(getAbdmProfile(userId));
+  }, [userId, isAbdmModalOpen]);
+
   const refreshSyncState = () => {
     setSyncState(getHealthSyncState(userId));
+    setAbhaProfile(getAbdmProfile(userId));
   };
 
   useEffect(() => {
@@ -358,8 +367,12 @@ export default function IntegrationsPanel({
               <div className="p-3.5 rounded-2xl bg-gradient-to-b from-orange-500 to-amber-700 text-white shadow-lg shrink-0">
                 <QrCode className="w-7 h-7 text-white" />
               </div>
-              <span className="text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest text-orange-300 bg-orange-500/20 border-orange-400/40">
-                NHA ABDM Gateway • Active
+              <span className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${
+                abhaProfile
+                  ? "text-emerald-300 bg-emerald-500/20 border-emerald-400/40"
+                  : "text-orange-300 bg-orange-500/20 border-orange-400/40"
+              }`}>
+                {abhaProfile ? "ABHA Verified • Connected" : "NHA ABDM Gateway • Ready"}
               </span>
             </div>
 
@@ -369,6 +382,17 @@ export default function IntegrationsPanel({
             <p className="text-slate-200 text-xs md:text-sm leading-relaxed mb-4">
               Link your 14-digit ABHA ID to continuously aggregate longitudinal medical records, lab reports, and doctor prescriptions across hospitals, clinics, and diagnostic centers in India.
             </p>
+
+            {abhaProfile && (
+              <div className="mb-4 p-3 bg-black/40 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="text-slate-300">
+                  ABHA: <strong className="font-mono text-indigo-300">{abhaProfile.abhaAddress}</strong> ({abhaProfile.abhaNumber})
+                </div>
+                <div className="text-emerald-400 font-bold">
+                  {abhaProfile.linkedCareContextsCount} Care Contexts Linked
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="pt-4 border-t border-slate-800/80 relative z-10 flex justify-end">
@@ -376,7 +400,7 @@ export default function IntegrationsPanel({
               onClick={() => setIsAbdmModalOpen(true)}
               className="py-3 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
             >
-              Connect & Verify ABHA ID
+              {abhaProfile ? "Manage ABHA & Consent Hub" : "Connect & Verify ABHA ID"}
             </button>
           </div>
         </motion.div>

@@ -21,6 +21,8 @@ import {
 import { format } from "date-fns";
 import LabTrendChart from "../Dashboard/LabTrendChart"; // We can reuse this or copy its logic for Trends View
 
+import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
+
 interface LabReport {
   id: string;
   type?: string;
@@ -67,6 +69,12 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
     dlAnchorElem.click();
   };
 
+  const handleExportFhir = () => {
+    const patient = { id: report.profileId || 'patient-user', name: 'Patient' };
+    const bundle = exportToFhirBundle(patient, [report]);
+    downloadFhirJson(bundle, `fhir_r4_${report.fileName || report.id || 'report'}.json`);
+  };
+
   return (
     <div className={`bg-[var(--color-surface)] border ${isSelected ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/50' : 'border-[var(--color-border)]'} rounded-2xl p-4 hover:shadow-md transition-all`}>
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -106,7 +114,14 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
           </div>
         </div>
 
-        <div className="flex sm:flex-col gap-2 justify-end sm:items-end w-full sm:w-auto">
+        <div className="flex sm:flex-col gap-2 justify-end sm:items-end w-full sm:w-auto flex-wrap">
+          <button
+            onClick={handleExportFhir}
+            title="Export as HL7 FHIR R4 JSON Bundle"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-lg border border-indigo-500/20 transition-colors"
+          >
+            <Activity size={14} className="text-indigo-500" /> FHIR R4
+          </button>
           {report.fileUrl ? (
              <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-lg border border-border transition-colors">
                 <Download size={14} /> PDF

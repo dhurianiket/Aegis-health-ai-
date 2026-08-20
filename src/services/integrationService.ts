@@ -35,25 +35,19 @@ export const exportToCSV = (data: any[], filename: string) => {
   }
 };
 
-export const exportToFHIR = (profile: any) => {
-  // Simple FHIR Patient Resource Stub
-  const fhirPatient = {
-    resourceType: "Patient",
-    id: profile.id,
-    name: [{ text: profile.name }],
-    birthDate: profile.dob
-      ? new Date(profile.dob).toISOString().split("T")[0]
-      : undefined,
-    gender: profile.gender?.toLowerCase(),
-    // ... more mapping
-  };
+import { exportToFhirBundle, downloadFhirJson } from './fhirService';
 
-  const blob = new Blob([JSON.stringify(fhirPatient, null, 2)], {
-    type: "application/fhir+json",
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `FHIR_Record_${profile.name}.json`;
-  link.click();
+export const exportToFHIR = (profile: any, labReports?: any[], notes?: string | any) => {
+  const patient = {
+    id: profile?.id,
+    name: profile?.name || profile?.fullName,
+    gender: profile?.gender,
+    birthDate: profile?.dob || profile?.birthDate,
+    email: profile?.email,
+    phone: profile?.phone || profile?.mobile,
+    address: profile?.address,
+  };
+  const bundle = exportToFhirBundle(patient, labReports || profile?.labValues ? [{ id: 'labs', biomarkers: profile.labValues }] : [], notes || profile?.doctorNotes?.join('\n\n'));
+  downloadFhirJson(bundle, `FHIR_Record_${profile?.name || profile?.fullName || 'Patient'}.json`);
 };
+

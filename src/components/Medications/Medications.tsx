@@ -252,14 +252,21 @@ export default function Medications({
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mb-1">
                     {med.genericName}
                   </h3>
-                  <div className="flex gap-4 mb-4">
-                    <div className="text-sm font-semibold text-muted">
-                      {med.dosage}
-                    </div>
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    {med.dosage && (
+                      <div className="text-sm font-semibold text-muted">
+                        {med.dosage}
+                      </div>
+                    )}
                     {med.frequency && (
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-muted uppercase tracking-widest">
                         <Clock className="w-3.5 h-3.5" /> {med.frequency}
                       </div>
+                    )}
+                    {med.rxcui && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-bold">
+                        RxCUI: {med.rxcui}
+                      </span>
                     )}
                   </div>
                 </div>

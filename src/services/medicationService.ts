@@ -2,16 +2,12 @@ import { Medication, DrugInteraction } from '../types/health';
 import { db } from '../lib/firebase/config';
 import { collection, addDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { explainInteraction } from './ai/promptFramework';
+import { resolveRxCuiFuzzy } from './drugInteractionService';
 
 export async function lookupRxCUI(drugName: string): Promise<string | null> {
   try {
-    const res = await fetch(`https://rxnav.nlm.nih.gov/REST/rxcui.json?name=${encodeURIComponent(drugName)}&search=1`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.idGroup && data.idGroup.rxnormId && data.idGroup.rxnormId.length > 0) {
-      return data.idGroup.rxnormId[0];
-    }
-    return null;
+    const match = await resolveRxCuiFuzzy(drugName);
+    return match ? match.rxcui : null;
   } catch (err) {
     console.error("Failed to lookup RxCUI:", err);
     return null;

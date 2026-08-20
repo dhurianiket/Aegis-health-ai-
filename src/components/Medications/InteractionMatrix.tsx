@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Medication, DrugInteraction } from "../../types/health";
 import { 
   LabBiomarker, 
@@ -6,16 +6,24 @@ import {
   evaluateDrugLabContraindications,
   buildBioRegimenSafetySummary
 } from "../../services/drugLabEngine";
+import {
+  fetchOpenFdaAdverseEvents,
+  resolveRxCuiFuzzy,
+  OpenFdaAdverseEventSummary,
+} from "../../services/drugInteractionService";
 import { 
   AlertTriangle, 
   CheckCircle2, 
   ShieldAlert, 
+  ShieldCheck,
   HeartPulse, 
   Info, 
   ArrowUpRight,
   Activity,
   Layers,
-  Sparkles
+  Sparkles,
+  ExternalLink,
+  BookOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -42,9 +50,32 @@ export default function InteractionMatrix({
   } | null>(null);
 
   const [selectedContra, setSelectedContra] = useState<DrugLabContraindication | null>(null);
+  const [adverseSummaries, setAdverseSummaries] = useState<Record<string, OpenFdaAdverseEventSummary>>({});
 
   // Filter out any invalid / empty medications
   const activeMeds = useMemo(() => medications.filter(m => m.genericName), [medications]);
+
+  // Load OpenFDA Adverse Event and RxCUI data
+  useEffect(() => {
+    let isMounted = true;
+    async function loadOpenFdaData() {
+      const results: Record<string, OpenFdaAdverseEventSummary> = {};
+      for (const med of activeMeds) {
+        const name = med.genericName || med.brandName || '';
+        if (!name) continue;
+        const summary = await fetchOpenFdaAdverseEvents(med.rxcui || name);
+        results[name.toLowerCase()] = summary;
+        if (med.rxcui) results[med.rxcui] = summary;
+      }
+      if (isMounted) {
+        setAdverseSummaries(results);
+      }
+    }
+    if (activeMeds.length > 0) {
+      loadOpenFdaData();
+    }
+    return () => { isMounted = false; };
+  }, [activeMeds]);
 
   // Evaluated Drug-Lab contraindications
   const computedContraindications = useMemo(() => {
@@ -271,10 +302,13 @@ export default function InteractionMatrix({
                     {activeMeds.map((m) => (
                       <div
                         key={m.id}
-                        className="p-3 text-center text-xs font-bold text-slate-900 dark:text-slate-100 truncate tracking-tight uppercase border-b border-white/5 bg-black/5"
+                        className="p-3 text-center text-xs font-bold text-slate-900 dark:text-slate-100 tracking-tight uppercase border-b border-white/5 bg-black/5 flex flex-col items-center justify-center gap-1"
                         title={m.genericName}
                       >
-                        {m.genericName}
+                        <span className="truncate max-w-[120px]">{m.genericName}</span>
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-semibold tracking-normal lowercase">
+                          RxCUI: {m.rxcui || (adverseSummaries[m.genericName.toLowerCase()]?.rxcui) || 'Pending'}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -286,10 +320,13 @@ export default function InteractionMatrix({
                       style={{ gridTemplateColumns: `160px repeat(${activeMeds.length}, minmax(0, 1fr))` }}
                     >
                       <div
-                        className="p-3 text-xs font-bold text-slate-800 dark:text-slate-200 truncate bg-black/10 flex items-center border-r border-white/5"
+                        className="p-3 text-xs font-bold text-slate-800 dark:text-slate-200 truncate bg-black/10 flex flex-col justify-center border-r border-white/5 gap-1"
                         title={mRow.genericName}
                       >
-                        {mRow.genericName}
+                        <span className="truncate">{mRow.genericName}</span>
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-semibold w-fit">
+                          RxCUI: {mRow.rxcui || (adverseSummaries[mRow.genericName.toLowerCase()]?.rxcui) || 'Pending'}
+                        </span>
                       </div>
 
                       {activeMeds.map((mCol) => {
@@ -350,11 +387,13 @@ export default function InteractionMatrix({
                 {activeMeds.flatMap((mRow, rIdx) => 
                   activeMeds.slice(rIdx + 1).map((mCol) => {
                     const inter = getCellInteraction(mRow, mCol);
+                    const cuiA = mRow.rxcui || adverseSummaries[mRow.genericName.toLowerCase()]?.rxcui;
+                    const cuiB = mCol.rxcui || adverseSummaries[mCol.genericName.toLowerCase()]?.rxcui;
                     return (
                       <div
                         key={`mob-${mRow.id}-${mCol.id}`}
                         onClick={() => handleDrugCellClick(mRow, mCol)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 ${
                           inter?.severity === "severe"
                             ? "bg-red-500/10 border-red-500/30 text-red-300"
                             : inter?.severity === "moderate"
@@ -362,19 +401,31 @@ export default function InteractionMatrix({
                             : "bg-surface border-surface hover:border-border text-theme"
                         }`}
                       >
-                        <div>
+                        <div className="flex items-center justify-between">
                           <div className="font-bold text-sm text-slate-900 dark:text-white">
                             {mRow.genericName} + {mCol.genericName}
                           </div>
-                          <div className="text-xs text-muted mt-0.5">
-                            {inter ? inter.plainSummary : "No known direct interaction"}
-                          </div>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                            inter?.severity === "severe" ? "bg-red-500 text-white" : inter?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
+                          }`}>
+                            {inter ? inter.severity : "Compatible"}
+                          </span>
                         </div>
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                          inter?.severity === "severe" ? "bg-red-500 text-white" : inter?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
-                        }`}>
-                          {inter ? inter.severity : "Compatible"}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {cuiA && (
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-semibold">
+                              {mRow.genericName}: RxCUI {cuiA}
+                            </span>
+                          )}
+                          {cuiB && (
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-semibold">
+                              {mCol.genericName}: RxCUI {cuiB}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted">
+                          {inter ? inter.plainSummary : "No known direct interaction"}
+                        </div>
                       </div>
                     );
                   })
@@ -547,6 +598,44 @@ export default function InteractionMatrix({
                 </div>
               </div>
 
+              {/* FDA Boxed Warnings Regimen Alert Banners */}
+              {activeMeds.some((m) => {
+                const adv = adverseSummaries[m.genericName.toLowerCase()] || (m.rxcui ? adverseSummaries[m.rxcui] : null);
+                return adv?.blackBoxWarning.hasWarning;
+              }) && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-500 animate-pulse" />
+                    FDA Boxed Warnings in Active Regimen
+                  </h4>
+                  {activeMeds.map((m) => {
+                    const adv = adverseSummaries[m.genericName.toLowerCase()] || (m.rxcui ? adverseSummaries[m.rxcui] : null);
+                    if (!adv?.blackBoxWarning.hasWarning) return null;
+                    return (
+                      <div
+                        key={`boxed-${m.id}`}
+                        className="bg-rose-950/20 border border-rose-500/40 rounded-2xl p-4 shadow-lg flex items-start gap-3"
+                      >
+                        <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5 animate-pulse" />
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2 py-0.5 bg-rose-500 text-white font-black text-[10px] uppercase rounded-full tracking-wider">
+                              FDA Boxed Warning
+                            </span>
+                            <h5 className="font-bold text-slate-900 dark:text-rose-100 text-sm">
+                              {m.genericName} Safety Warning
+                            </h5>
+                          </div>
+                          <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+                            {adv.blackBoxWarning.summary || adv.blackBoxWarning.warningText}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* All Contraindication Alert Cards */}
               <div className="space-y-4">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
@@ -647,7 +736,7 @@ export default function InteractionMatrix({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
-            className="bg-surface backdrop-blur-xl border border-surface rounded-[32px] p-6 shadow-2xl relative"
+            className="bg-surface backdrop-blur-xl border border-surface rounded-[32px] p-6 shadow-2xl relative space-y-6"
           >
             <button
               onClick={() => { setSelectedPair(null); setSelectedContra(null); }}
@@ -656,69 +745,260 @@ export default function InteractionMatrix({
               Clear Inspector
             </button>
 
-            {selectedPair && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
-                  <ShieldAlert className="w-4 h-4" />
-                  Drug-Drug Interaction Analysis
-                </div>
-                <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-                  {selectedPair.medA.genericName} + {selectedPair.medB.genericName}
-                </h4>
-                {selectedPair.interaction ? (
-                  <div className="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-2">
-                    <p className="text-sm text-theme">{selectedPair.interaction.description}</p>
-                    {selectedPair.interaction.plainSummary && (
-                      <p className="text-xs text-muted pt-2 border-t border-white/5">{selectedPair.interaction.plainSummary}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-                    No known major interaction detected between {selectedPair.medA.genericName} and {selectedPair.medB.genericName}.
-                  </div>
-                )}
-                {onOpenChat && (
-                  <button
-                    onClick={() => askAuraAI(`Please provide a detailed safety breakdown for taking ${selectedPair.medA.genericName} together with ${selectedPair.medB.genericName}.`)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Consult Aura AI regarding this drug pair
-                  </button>
-                )}
-              </div>
-            )}
+            {selectedPair && (() => {
+              const advA = adverseSummaries[selectedPair.medA.genericName.toLowerCase()] || (selectedPair.medA.rxcui ? adverseSummaries[selectedPair.medA.rxcui] : null);
+              const advB = adverseSummaries[selectedPair.medB.genericName.toLowerCase()] || (selectedPair.medB.rxcui ? adverseSummaries[selectedPair.medB.rxcui] : null);
 
-            {selectedContra && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
-                  <Activity className="w-4 h-4" />
-                  Drug-Lab Contraindication Analysis
+              return (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
+                    <ShieldAlert className="w-4 h-4" />
+                    Drug-Drug Interaction & Pharmacology Safety
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">
+                      {selectedPair.medA.genericName} + {selectedPair.medB.genericName}
+                    </h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {selectedPair.medA.rxcui && (
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-bold">
+                          {selectedPair.medA.genericName}: RxCUI {selectedPair.medA.rxcui}
+                        </span>
+                      )}
+                      {selectedPair.medB.rxcui && (
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-bold">
+                          {selectedPair.medB.genericName}: RxCUI {selectedPair.medB.rxcui}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Interaction Detail */}
+                  {selectedPair.interaction ? (
+                    <div className="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-2">
+                      <p className="text-sm text-theme font-medium">{selectedPair.interaction.description}</p>
+                      {selectedPair.interaction.plainSummary && (
+                        <p className="text-xs text-muted pt-2 border-t border-white/5">{selectedPair.interaction.plainSummary}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                      No known severe pharmacokinetic interaction detected between {selectedPair.medA.genericName} and {selectedPair.medB.genericName}.
+                    </div>
+                  )}
+
+                  {/* FDA Boxed Warnings Alert if present */}
+                  {(advA?.blackBoxWarning.hasWarning || advB?.blackBoxWarning.hasWarning) && (
+                    <div className="space-y-3">
+                      {advA?.blackBoxWarning.hasWarning && (
+                        <div className="bg-rose-950/20 border border-rose-500/40 rounded-2xl p-4 shadow-lg flex items-start gap-3">
+                          <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5 animate-pulse" />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-rose-500 text-white font-black text-[10px] uppercase rounded-full tracking-wider">
+                                FDA Boxed Warning
+                              </span>
+                              <h5 className="font-bold text-slate-900 dark:text-rose-100 text-sm">
+                                {selectedPair.medA.genericName}
+                              </h5>
+                            </div>
+                            <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+                              {advA.blackBoxWarning.summary || advA.blackBoxWarning.warningText}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {advB?.blackBoxWarning.hasWarning && (
+                        <div className="bg-rose-950/20 border border-rose-500/40 rounded-2xl p-4 shadow-lg flex items-start gap-3">
+                          <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5 animate-pulse" />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-rose-500 text-white font-black text-[10px] uppercase rounded-full tracking-wider">
+                                FDA Boxed Warning
+                              </span>
+                              <h5 className="font-bold text-slate-900 dark:text-rose-100 text-sm">
+                                {selectedPair.medB.genericName}
+                              </h5>
+                            </div>
+                            <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+                              {advB.blackBoxWarning.summary || advB.blackBoxWarning.warningText}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* FAERS Adverse Reactions Bars */}
+                  {(advA?.topReactions || advB?.topReactions) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {advA && (
+                        <div className="p-4 bg-black/10 rounded-2xl border border-white/5 space-y-2">
+                          <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                            {selectedPair.medA.genericName} — Top Adverse Events (FAERS)
+                          </h5>
+                          <div className="space-y-2">
+                            {advA.topReactions.map((rx, i) => (
+                              <div key={i} className="space-y-1">
+                                <div className="flex justify-between text-xs font-medium text-slate-800 dark:text-slate-200">
+                                  <span>{rx.term}</span>
+                                  <span className="font-mono text-muted text-[11px]">{rx.count.toLocaleString()} reports ({rx.frequencyPercentage || 10}%)</span>
+                                </div>
+                                <div className="w-full bg-black/20 rounded-full h-1.5 overflow-hidden">
+                                  <div
+                                    className="bg-gradient-to-r from-amber-500 to-rose-500 h-full rounded-full transition-all"
+                                    style={{ width: `${Math.min(100, (rx.frequencyPercentage || 10) * 3)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {advB && (
+                        <div className="p-4 bg-black/10 rounded-2xl border border-white/5 space-y-2">
+                          <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                            {selectedPair.medB.genericName} — Top Adverse Events (FAERS)
+                          </h5>
+                          <div className="space-y-2">
+                            {advB.topReactions.map((rx, i) => (
+                              <div key={i} className="space-y-1">
+                                <div className="flex justify-between text-xs font-medium text-slate-800 dark:text-slate-200">
+                                  <span>{rx.term}</span>
+                                  <span className="font-mono text-muted text-[11px]">{rx.count.toLocaleString()} reports ({rx.frequencyPercentage || 10}%)</span>
+                                </div>
+                                <div className="w-full bg-black/20 rounded-full h-1.5 overflow-hidden">
+                                  <div
+                                    className="bg-gradient-to-r from-amber-500 to-rose-500 h-full rounded-full transition-all"
+                                    style={{ width: `${Math.min(100, (rx.frequencyPercentage || 10) * 3)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Clinical Citation Chips */}
+                  {((advA?.citations && advA.citations.length > 0) || (advB?.citations && advB.citations.length > 0)) && (
+                    <div className="space-y-2 pt-2 border-t border-white/5">
+                      <div className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
+                        <BookOpen className="w-3.5 h-3.5" /> Clinical Evidence & Citations
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {[...(advA?.citations || []), ...(advB?.citations || [])].map((cite) => (
+                          <a
+                            key={cite.id}
+                            href={cite.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 hover:scale-105 transition-all shadow-xs"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                            <span>{cite.title}</span>
+                            <ExternalLink className="w-3 h-3 opacity-70" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {onOpenChat && (
+                    <button
+                      onClick={() => askAuraAI(`Please provide a detailed safety breakdown for taking ${selectedPair.medA.genericName} together with ${selectedPair.medB.genericName}.`)}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Consult Aura AI regarding this drug pair
+                    </button>
+                  )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">{selectedContra.title}</h4>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase border ${
-                    selectedContra.severity === "critical" ? "bg-red-500 text-white" : selectedContra.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                  }`}>
-                    {selectedContra.severity}
-                  </span>
+              );
+            })()}
+
+            {selectedContra && (() => {
+              const adv = adverseSummaries[selectedContra.medicationName.toLowerCase()] || (selectedContra.rxcui ? adverseSummaries[selectedContra.rxcui] : null);
+
+              return (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
+                    <Activity className="w-4 h-4" />
+                    Drug-Lab Contraindication & Organ Safety
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">{selectedContra.title}</h4>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase border ${
+                      selectedContra.severity === "critical" ? "bg-red-500 text-white border-red-600" : selectedContra.severity === "moderate" ? "bg-amber-500 text-black border-amber-600" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                    }`}>
+                      {selectedContra.severity}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{selectedContra.plainSummary}</p>
+                  
+                  <div className="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-2 text-xs text-muted">
+                    <div><strong>Clinical Rationale:</strong> {selectedContra.clinicalRationale}</div>
+                    <div><strong>Recommended Action:</strong> {selectedContra.recommendedAction}</div>
+                  </div>
+
+                  {/* FAERS Events & Citations for the drug */}
+                  {adv && adv.topReactions.length > 0 && (
+                    <div className="p-4 bg-black/10 rounded-2xl border border-white/5 space-y-2">
+                      <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                        {selectedContra.medicationName} — Top Adverse Reactions (OpenFDA FAERS)
+                      </h5>
+                      <div className="space-y-2">
+                        {adv.topReactions.slice(0, 3).map((rx, i) => (
+                          <div key={i} className="space-y-1">
+                            <div className="flex justify-between text-xs font-medium text-slate-800 dark:text-slate-200">
+                              <span>{rx.term}</span>
+                              <span className="font-mono text-muted text-[11px]">{rx.count.toLocaleString()} reports ({rx.frequencyPercentage || 10}%)</span>
+                            </div>
+                            <div className="w-full bg-black/20 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="bg-gradient-to-r from-amber-500 to-rose-500 h-full rounded-full transition-all"
+                                style={{ width: `${Math.min(100, (rx.frequencyPercentage || 10) * 3)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {adv?.citations && adv.citations.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+                      {adv.citations.map((cite) => (
+                        <a
+                          key={cite.id}
+                          href={cite.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 hover:scale-105 transition-all shadow-xs"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                          <span>{cite.title}</span>
+                          <ExternalLink className="w-3 h-3 opacity-70" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {onOpenChat && (
+                    <button
+                      onClick={() => askAuraAI(`Please advise me on this clinical contraindication: ${selectedContra.title}. ${selectedContra.plainSummary}`)}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Ask Aura AI about this contraindication
+                    </button>
+                  )}
                 </div>
-                <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{selectedContra.plainSummary}</p>
-                <div className="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-1.5 text-xs text-muted">
-                  <div><strong>Clinical Rationale:</strong> {selectedContra.clinicalRationale}</div>
-                  <div><strong>Recommended Action:</strong> {selectedContra.recommendedAction}</div>
-                </div>
-                {onOpenChat && (
-                  <button
-                    onClick={() => askAuraAI(`Please advise me on this clinical contraindication: ${selectedContra.title}. ${selectedContra.plainSummary}`)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Ask Aura AI about this contraindication
-                  </button>
-                )}
-              </div>
-            )}
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>
