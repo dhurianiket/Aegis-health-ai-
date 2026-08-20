@@ -1,6 +1,19 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot XLVII — August 20, 2026
+## Current Snapshot XLVIII — August 20, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Critical: Content-Security-Policy (CSP) Fix for Google Analytics GA4 Data Collection (`firebase.json`)**:
+  - **Root Cause Identified**: Diagnosed via Chrome DevTools network inspection that `gtag.js` requests to `googletagmanager.com` were stuck in `[pending]` state. Traced to Firebase Hosting `Content-Security-Policy` header in `firebase.json` missing all Google Analytics and Tag Manager domains.
+  - **CSP `script-src` Fix**: Added `https://www.googletagmanager.com`, `https://www.google-analytics.com`, `https://ssl.google-analytics.com` to allow `gtag.js` script loading.
+  - **CSP `connect-src` Fix**: Added `https://www.google-analytics.com`, `https://analytics.google.com`, `https://region1.google-analytics.com`, `https://stats.g.doubleclick.net`, `https://www.googletagmanager.com` to allow GA4 data collection beacons and Measurement Protocol requests.
+  - **CSP `img-src` Fix**: Added `https://www.googletagmanager.com`, `https://www.google-analytics.com` to allow tracking pixels.
+  - **Impact**: This was the sole reason GA4 showed "No data received from your website yet" despite the Google Tag being correctly placed in `index.html`.
+- **Verification & Quality**:
+  - Production Build: **15.58s clean Vite build**.
+  - GitHub Commit: [`1529b26`](https://github.com/dhurianiket/Aegis-health-ai-/commit/1529b26) live on `main`.
+
+## Previous Update — August 20, 2026 (XLVII)
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Google Analytics GA4 & Tag Manager Single Page Application (SPA) Tracking (`src/App.tsx`, `src/utils/analytics.ts`, `index.html`)**:
