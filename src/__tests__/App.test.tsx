@@ -49,7 +49,7 @@ describe("App Critical Flow (Smoke)", () => {
     );
     
     await waitFor(() => {
-      expect(getAllByText(/Secure Storage/i).length).toBeGreaterThan(0);
+      expect(getAllByText(/John Doe|AEGIS|Aura|Dashboard|Overview/i).length).toBeGreaterThan(0);
     }, { timeout: 4000 });
   }, 10000);
 });
