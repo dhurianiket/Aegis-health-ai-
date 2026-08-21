@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
+import IntegrationsPanel from "./IntegrationsPanel";
 import {
   Moon,
   Sun,
@@ -63,6 +64,20 @@ export default function SettingsPage() {
         <p className="text-[var(--color-text-muted)] text-sm">
           Manage your preferences, data, and account settings.
         </p>
+      </div>
+
+      {/* ── Connected Apps & ABHA / Health Integrations ── */}
+      <div>
+        <h3 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
+          Connected Apps &amp; Health Integrations
+        </h3>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-48 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+            <div className="w-6 h-6 border-2 border-emerald-400/40 border-t-emerald-400 rounded-full animate-spin" />
+          </div>
+        }>
+          <IntegrationsPanel activeProfile={activeProfile} />
+        </Suspense>
       </div>
 
       <div className="space-y-6">
