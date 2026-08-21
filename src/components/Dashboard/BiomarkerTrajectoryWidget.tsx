@@ -109,21 +109,21 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
   }
 
   return (
-    <div className="bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-indigo-500/30 shadow-[0_16px_40px_-8px_rgba(99,102,241,0.25)] rounded-[32px] p-6 md:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+    <div className="w-full bg-slate-900/95 backdrop-blur-2xl border border-indigo-500/30 shadow-[0_16px_40px_-8px_rgba(99,102,241,0.25)] rounded-[32px] p-5 sm:p-7 md:p-8 space-y-6">
+      {/* Header — Clean flex wrap for title & dropdown */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-white tracking-wide">30-60-90 Day Biomarker Risk Trajectory</h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-mono text-[10px] font-semibold">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">30-60-90 Day Biomarker Risk Trajectory</h3>
+              <span className="px-3 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-mono text-[11px] font-bold">
                 Predictive AI Engine
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-light mt-0.5">
+            <p className="text-xs text-slate-300 font-light mt-1">
               Exponential Moving Average (EMA) & Linear Regression Slope Forecasting
             </p>
           </div>
@@ -133,7 +133,7 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
         <select
           value={selectedIndex}
           onChange={(e) => setSelectedIndex(Number(e.target.value))}
-          className="bg-slate-950 border border-white/20 text-slate-100 font-semibold text-xs rounded-xl px-3.5 py-2 focus:outline-none focus:border-indigo-400 cursor-pointer"
+          className="w-full sm:w-auto bg-slate-950 border border-white/20 text-slate-100 font-bold text-xs rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-400 cursor-pointer min-h-[44px]"
         >
           {labHistory.map((item, idx) => (
             <option key={idx} value={idx}>
@@ -144,10 +144,10 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
       </div>
 
       {/* Stats KPI Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Baseline / Current */}
         <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Current Baseline</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Current Baseline</span>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl font-bold text-white">{trajectory.currentValue}</span>
             <span className="text-xs font-mono text-slate-400">{trajectory.unit}</span>
@@ -156,7 +156,7 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
 
         {/* Forecast Value */}
         <div className="bg-slate-950/80 border border-indigo-500/30 rounded-2xl p-4 flex flex-col justify-between">
-          <div className="flex justify-between items-center text-xs font-medium text-indigo-300 uppercase tracking-wider">
+          <div className="flex justify-between items-center text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
             <span>+{activeWindow}-Day Projected</span>
             <span className="font-mono text-[10px] bg-indigo-500/20 px-2 py-0.5 rounded-full text-indigo-200">
               {forecast.percentChangeFromBaseline > 0 ? `+${forecast.percentChangeFromBaseline}%` : `${forecast.percentChangeFromBaseline}%`}
@@ -170,7 +170,7 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
 
         {/* Risk Badge */}
         <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Trajectory Risk</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Trajectory Risk</span>
           <div className="mt-2 flex items-center gap-2">
             {forecast.riskLevel === 'critical' ? (
               <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1.5">
@@ -190,16 +190,16 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
       </div>
 
       {/* Timeline Controls (30d / 60d / 90d) */}
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <span className="text-slate-300 font-semibold flex items-center gap-1.5">
-          <Calendar className="w-4 h-4 text-indigo-400" /> Forecast Window
+          <Calendar className="w-4 h-4 text-indigo-400" /> Forecast Horizon Window
         </span>
-        <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+        <div className="w-full sm:w-auto flex items-center gap-1 bg-slate-950 p-1.5 rounded-xl border border-white/10 justify-center">
           {[30, 60, 90].map((d) => (
             <button
               key={d}
               onClick={() => setActiveWindow(d as any)}
-              className={`px-3 py-1 rounded-lg font-mono font-bold transition-colors ${
+              className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg font-mono font-bold transition-all min-h-[36px] ${
                 activeWindow === d
                   ? 'bg-indigo-500 text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
@@ -212,7 +212,7 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
       </div>
 
       {/* Recharts Chart Container — Enforced h-[300px] Pixel Boundary */}
-      <div className="w-full h-[300px] bg-slate-950/90 rounded-2xl p-4 border border-white/10 relative">
+      <div className="w-full h-[300px] min-h-[300px] bg-slate-950/90 rounded-2xl p-3 sm:p-4 border border-white/10 relative overflow-hidden">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
@@ -261,12 +261,12 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
       </div>
 
       {/* Clinical Summary & Actions */}
-      <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 space-y-2 text-xs">
+      <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-2.5 text-xs">
         <div className="flex items-center gap-2 text-indigo-300 font-bold">
           <Sparkles className="w-4 h-4 text-indigo-400" />
           <span>Clinical Recommendation & Guidance</span>
         </div>
-        <p className="text-slate-300 leading-relaxed">{trajectory.summary}</p>
+        <p className="text-slate-300 leading-relaxed font-light">{trajectory.summary}</p>
         <ul className="space-y-1.5 pt-1 text-slate-300 font-light">
           {trajectory.mitigationActions.map((act, i) => (
             <li key={i} className="flex items-start gap-2">

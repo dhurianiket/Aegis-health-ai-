@@ -520,25 +520,25 @@ export default function Dashboard({
           </div>
         </div>
 
-        {/* Pillar 2 & 3: 3D Organ Avatar, Trajectory Engine & Food Interaction Matrix */}
-        <motion.div variants={tileVariants} className="space-y-8 mb-8">
-          <Suspense fallback={<div className="h-[200px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading 3D Organ Avatar...</div>}>
-            <OrganHealthAvatar labObservations={keyLabs.map(l => ({ name: l.markerName, value: l.value, unit: l.unit, status: l.status }))} />
-          </Suspense>
-          <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading Trajectory Forecasting...</div>}>
-            <BiomarkerTrajectoryWidget />
-          </Suspense>
-          <Suspense fallback={<div className="h-[250px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading Food Interaction Matrix...</div>}>
-            <FoodInteractionMatrix activeMedications={['Atorvastatin 20mg', 'Lisinopril 10mg', 'Ciprofloxacin 500mg']} />
-          </Suspense>
-        </motion.div>
-
         {/* Trends Section */}
         <div className="lg:col-span-2 w-full h-[350px] min-h-[300px] relative">
           <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading chart...</div>}>
             <LabTrendChart labs={keyLabs} />
           </Suspense>
         </div>
+      </motion.div>
+
+      {/* Pillar 2 & 3 Full-Width Suite: 3D Organ Avatar, Trajectory Engine & Food Interaction Matrix */}
+      <motion.div variants={tileVariants} className="space-y-8 my-8 w-full">
+        <Suspense fallback={<div className="h-[200px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading 3D Organ Avatar...</div>}>
+          <OrganHealthAvatar labObservations={keyLabs.map(l => ({ name: l.markerName, value: l.value, unit: l.unit, status: l.status }))} />
+        </Suspense>
+        <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading Trajectory Forecasting...</div>}>
+          <BiomarkerTrajectoryWidget />
+        </Suspense>
+        <Suspense fallback={<div className="h-[250px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading Food Interaction Matrix...</div>}>
+          <FoodInteractionMatrix activeMedications={['Atorvastatin 20mg', 'Lisinopril 10mg', 'Ciprofloxacin 500mg']} />
+        </Suspense>
       </motion.div>
 
           <motion.div variants={tileVariants}>
