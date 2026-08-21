@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin, Cloud, Watch, Camera, Pill, Layers, RefreshCw, FileText, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin, Cloud, Watch, Camera, Pill, Layers, RefreshCw, FileText, CheckCircle2, ShieldAlert, QrCode, Link2, FileJson } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
@@ -307,6 +307,8 @@ export default function LandingPage() {
                 <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-400" /> DPDP Act 2023 Aligned</div>
                 <div className="flex items-center gap-2"><Activity className="w-4 h-4 text-teal-400" /> Real-time Lab Analysis</div>
                 <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-cyan-400" /> AI Doctor Visit Prep</div>
+                <div className="flex items-center gap-2"><QrCode className="w-4 h-4 text-orange-400" /> ABHA Gateway Ready</div>
+                <div className="flex items-center gap-2"><FileJson className="w-4 h-4 text-indigo-400" /> FHIR R4 Export</div>
               </motion.div>
               
               <motion.div 
@@ -677,6 +679,153 @@ export default function LandingPage() {
                   </p>
                 </div>
               </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── ABHA / ABDM INDIA HEALTH STACK SECTION ─── */}
+        <section id="abha-gateway" className="w-full relative z-20 bg-gradient-to-b from-[#071325] to-[#0A192F] border-t border-white/10 py-24 px-6 overflow-hidden">
+          {/* Ambient glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-orange-500/8 blur-[140px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 right-10 w-80 h-80 bg-indigo-500/8 blur-[120px] rounded-full pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-16 max-w-3xl mx-auto">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-orange-400 bg-orange-500/10 border border-orange-500/30 mb-4 shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+                <QrCode className="w-4 h-4" /> India Health Stack · NHA ABDM Gateway
+              </span>
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6 text-white leading-tight">
+                Your Health ID. <br />
+                <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+                  Linked to Every Hospital in India.
+                </span>
+              </h2>
+              <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
+                Aegis is built on the National Health Authority's ABDM (Ayushman Bharat Digital Mission) stack. 
+                Create your 14-digit ABHA ID, link lab reports from any diagnostic center, and share encrypted FHIR R4 records with any doctor — in seconds.
+              </p>
+            </div>
+
+            {/* Main 3-column grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+
+              {/* Card 1: ABHA ID Creation */}
+              <motion.div
+                whileHover={{ y: -6, scale: 1.01 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-white/5 backdrop-blur-2xl border border-orange-500/30 rounded-[32px] p-8 relative overflow-hidden group shadow-2xl hover:border-orange-400/60 hover:shadow-[0_20px_60px_rgba(249,115,22,0.2)] flex flex-col"
+              >
+                <div className="absolute -top-16 -right-16 w-48 h-48 bg-orange-500/15 rounded-full blur-[60px] pointer-events-none" />
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-3 rounded-2xl bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+                    <QrCode className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">M1 · ABHA Auth</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-orange-300 transition-colors">ABHA ID & OTP Registration</h3>
+                <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light flex-1">
+                  Create your official 14-digit Ayushman Bharat Health Account number using Aadhaar or Mobile OTP. Get your unique <span className="font-mono text-orange-300">name@abdm</span> handle instantly.
+                </p>
+                <div className="bg-[#0A192F]/90 border border-orange-500/20 rounded-2xl p-4 space-y-2 shadow-inner">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-300 font-bold flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-orange-400" /> ABHA Number Assigned</span>
+                    <span className="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">✓ Verified</span>
+                  </div>
+                  <div className="font-mono text-orange-300 text-sm font-bold tracking-widest">91-2345-6789-0123</div>
+                  <div className="text-slate-400 text-[11px]">Handle: <span className="text-orange-300 font-semibold">aniket.dhuri@abdm</span></div>
+                </div>
+              </motion.div>
+
+              {/* Card 2: Care-Context Linking */}
+              <motion.div
+                whileHover={{ y: -6, scale: 1.01 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-white/5 backdrop-blur-2xl border border-amber-500/30 rounded-[32px] p-8 relative overflow-hidden group shadow-2xl hover:border-amber-400/60 hover:shadow-[0_20px_60px_rgba(245,158,11,0.2)] flex flex-col"
+              >
+                <div className="absolute -top-16 -right-16 w-48 h-48 bg-amber-500/15 rounded-full blur-[60px] pointer-events-none" />
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                    <Link2 className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">M2 · Care Contexts</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-amber-300 transition-colors">Lab Report & Prescription Linking</h3>
+                <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light flex-1">
+                  Automatically discover and link CBC, Lipid Panel, and HbA1c lab reports from any diagnostic center to your ABHA profile — across hospital networks.
+                </p>
+                <div className="bg-[#0A192F]/90 border border-amber-500/20 rounded-2xl p-4 space-y-2 shadow-inner">
+                  <div className="text-xs font-bold text-amber-300 mb-2">Linked Care Contexts</div>
+                  {[
+                    { label: 'CBC & Lipid Panel', type: 'DiagnosticReport', status: 'Linked' },
+                    { label: 'Hypertension Rx', type: 'Prescription', status: 'Linked' },
+                    { label: 'SBAR Clinical Handover', type: 'ClinicalNote', status: 'Linked' },
+                  ].map((ctx, i) => (
+                    <div key={i} className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-300 font-semibold">{ctx.label}</span>
+                      <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30 font-bold">✓ {ctx.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Card 3: FHIR R4 Encrypted Transfer */}
+              <motion.div
+                whileHover={{ y: -6, scale: 1.01 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-white/5 backdrop-blur-2xl border border-indigo-500/30 rounded-[32px] p-8 relative overflow-hidden group shadow-2xl hover:border-indigo-400/60 hover:shadow-[0_20px_60px_rgba(99,102,241,0.2)] flex flex-col"
+              >
+                <div className="absolute -top-16 -right-16 w-48 h-48 bg-indigo-500/15 rounded-full blur-[60px] pointer-events-none" />
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                    <FileJson className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">M3 · FHIR R4</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-indigo-300 transition-colors">Encrypted FHIR R4 Health Records</h3>
+                <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light flex-1">
+                  Approve digital consent requests from hospitals, and share AES-GCM-256 encrypted HL7 FHIR R4 bundles with any NHA-compliant HIU. Zero data exposure in transit.
+                </p>
+                <div className="bg-[#0A192F]/90 border border-indigo-500/20 rounded-2xl p-4 space-y-2 shadow-inner">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-300 font-bold flex items-center gap-1.5"><FileJson className="w-3.5 h-3.5 text-indigo-400" /> FHIR Bundle Ready</span>
+                    <span className="text-indigo-300 font-mono text-[10px]">HL7 R4 · NRCeS India</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 mt-1">
+                    {['Patient', 'DiagnosticReport', 'Observation', 'Consent'].map(t => (
+                      <span key={t} className="px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-mono font-semibold text-center">{t}</span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Full-width compliance banner */}
+            <div className="rounded-3xl bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-indigo-500/10 border border-orange-500/20 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
+                <div className="p-3 rounded-2xl bg-orange-500/15 text-orange-400 border border-orange-500/30 shrink-0">
+                  <ShieldCheck className="w-8 h-8" />
+                </div>
+                <div>
+                  <h4 className="text-white font-bold text-lg mb-1">India's Only AI Health Platform on the ABDM Stack</h4>
+                  <p className="text-slate-300 text-sm font-light leading-relaxed max-w-2xl">
+                    Compliant with NHA ABDM M1/M2/M3 milestones, NRCeS FHIR R4 India IG, DPDP Act 2023, and Digital Personal Data Protection. Your records stay yours.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {['NHA ABDM', 'FHIR R4 · NRCeS India', 'DPDP Act 2023', 'AES-GCM-256', 'HL7 Compliant'].map(badge => (
+                      <span key={badge} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-semibold tracking-wide">{badge}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleSignIn}
+                disabled={isSigningIn}
+                className="shrink-0 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-slate-950 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:shadow-[0_0_45px_rgba(249,115,22,0.5)] flex items-center gap-2 active:scale-95"
+              >
+                <QrCode className="w-4 h-4" />
+                {isSigningIn ? 'Connecting...' : 'Connect ABHA ID'}
+              </button>
             </div>
           </div>
         </section>
