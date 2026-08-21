@@ -2,8 +2,21 @@
 
 This file outlines the non-negotiable architectural and behavior rules for all AI agents, code editors, and developers modifying the Aegis Health AI repository.
 
-## 🚨 CONFLICT RESOLUTION RULE
-Always read `ARCHITECTURE.md`, `CURRENT_STATE.md`, and `GRAPHIFY.md` FIRST to understand codebase structure, component relationships, and the latest project reality. Use Graphify (`GRAPHIFY.md` / `npm run graphify`) to quickly navigate the codebase graph before making changes. If a request violates documented invariants, inform the user and seek explicit approval before proceeding.
+## 🚨 MANDATORY SESSION START — READ THESE FILES FIRST (No Exception)
+
+> **This rule fires automatically at the start of EVERY agent session. The user does NOT need to remind you.**
+
+Before doing ANYTHING — before reading any other file, writing any code, or answering any question — you MUST silently read:
+
+1. **[`GRAPHIFY.md`](./GRAPHIFY.md)** — Full codebase knowledge graph (171 source nodes, 1,164 AST nodes, 89 communities). Use this to locate any component, service, hook, or type instantly without guessing.
+2. **[`graphify-out/GRAPH_REPORT.md`](./graphify-out/GRAPH_REPORT.md)** — God nodes, community cohesion scores, knowledge gaps, and cross-module dependency analysis. Use this when a change touches multiple modules.
+3. **[`CURRENT_STATE.md`](./CURRENT_STATE.md)** — The latest snapshot of what has been built. Never repeat work that's already done.
+
+**Regenerate the graph after any major refactor:**
+```bash
+npm run graphify          # fast: 171 nodes → GRAPHIFY.md
+npm run graphify:full     # deep: 1,164 nodes → graphify-out/
+```
 
 ---
 
