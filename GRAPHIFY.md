@@ -2,32 +2,11 @@
 
 > Automatically generated knowledge graph for Aegis Health AI.
 > Used by AI Coding Assistants for high-accuracy, low-token context retrieval.
-> Powered by [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) — local deterministic AST parsing, every edge explained, no vector store.
-
-## 📊 Graph Statistics (Last Run: 2026-08-21)
-| Metric | Value |
-|---|---|
-| **Total Nodes** | 1,191 |
-| **Total Edges** | 3,008 |
-| **Communities** | 91 |
-| **Source Files Indexed** | 175 (TSX/TS) |
-| **Key God Nodes** | `useAuth()`, `dependencies`, `devDependencies` |
-| **New Nodes Added** | `AbdmScanShareModal`, `regionalVoiceService`, `RegionalAudioPlayer`, `snomedService` |
-
-## 🗺️ Interactive Graph Artifacts
-| Artifact | Description |
-|---|---|
-| **[graphify-out/graph.html](./graphify-out/graph.html)** | 🌐 Interactive visual graph — click nodes, search, filter by community |
-| **[graphify-out/GRAPH_REPORT.md](./graphify-out/GRAPH_REPORT.md)** | 📋 God nodes, community analysis, knowledge gaps, suggested questions |
-| **[graphify-out/graph.json](./graphify-out/graph.json)** | 🗄️ Persistent JSON graph (1,191 nodes, 3,008 edges) for programmatic queries |
 
 ## 🚀 Architecture Overview
 - **Stack**: React 19 + Vite 6 + TypeScript 5.8 + Tailwind CSS 4 + Firebase Cloud Functions & Firestore.
 - **AI Engine**: Dual Gemini SDK pipeline via `geminiClient.ts` with model normalization & 503 retry interceptors.
 - **Routing**: Single-Page App with state-driven auth routing (`onAuthStateChanged`).
-- **ABDM Stack**: ABHA M1/M2/M3 Gateway (`abdmService.ts` + `AbdmConnectModal.tsx` + `AbdmScanShareModal.tsx`) + FHIR R4 (`fhirService.ts`).
-- **Clinical Terminology**: SNOMED CT (`snomedService.ts`) + LOINC (`fhirService.ts`).
-- **Regional Narration**: 10+ Indian Language Speech Engine (`regionalVoiceService.ts` + `RegionalAudioPlayer.tsx`).
 
 ## 🌐 Module Node Index
 
@@ -65,6 +44,9 @@
 - **[`src/components/Common/RegionalAudioPlayer.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Common/RegionalAudioPlayer.tsx)**
   - *Exports*: `RegionalAudioPlayer`
   - *Imports*: `../../services/ai/regionalVoiceService`
+- **[`src/components/Dashboard/BiomarkerTrajectoryWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/BiomarkerTrajectoryWidget.tsx)**
+  - *Exports*: `BiomarkerTrajectoryWidget`
+  - *Imports*: `../../services/biomarkerTrajectoryService`
 - **[`src/components/Dashboard/ComparativeAnalysis.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ComparativeAnalysis.tsx)**
   - *Exports*: `default`
   - *Imports*: `../../types/medical`, `../../utils/dateUtils`
@@ -96,6 +78,9 @@
 - **[`src/components/Dashboard/MasonryLabCards.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/MasonryLabCards.tsx)**
   - *Exports*: `LabCardData`, `MasonryLabCardsProps`, `MasonryLabCards`, `default`
   - *Imports*: `../../lib/pretext`
+- **[`src/components/Dashboard/OrganHealthAvatar.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/OrganHealthAvatar.tsx)**
+  - *Exports*: `OrganHealthAvatar`
+  - *Imports*: `../../services/organHealthService`
 - **[`src/components/Dashboard/RemindersWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/RemindersWidget.tsx)**
   - *Exports*: `RemindersWidget`, `default`
   - *Imports*: `../../types/health`, `../../services/reminderService`
@@ -293,6 +278,16 @@
 - **[`src/services/ai/promptFramework.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/promptFramework.ts)**
   - *Exports*: `CORE_SYSTEM_PROMPT`, `OUTPUT_FORMAT_JSON`, `LabExtractionSchema`, `LabExtraction`, `normalizeObservation`, `GeminiQuotaError`, `GeminiInputError`, `GeminiTimeoutError`, `UnifiedLabValueSchema`, `UnifiedPrescriptionSchema`, `UnifiedExtractionResultSchema`, `UnifiedLabValue`, `UnifiedPrescription`, `UnifiedExtractionResult`
   - *Imports*: `../../lib/geminiClient`, `../../utils/aiUtils`, `../../lib/firebase/config`, `../usageService`, `../cacheService`
+
+| Metric | Value |
+|---|---|
+| **Total Nodes** | 1,220 |
+| **Total Edges** | 3,110 |
+| **Communities** | 94 |
+| **Source Files Indexed** | 179 (TSX/TS) |
+| **Key God Nodes** | `useAuth()`, `dependencies`, `devDependencies` |
+| **New Pillar 2 Nodes** | `biomarkerTrajectoryService`, `BiomarkerTrajectoryWidget`, `organHealthService`, `OrganHealthAvatar` |
+
 - **[`src/services/ai/regionalVoiceService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/regionalVoiceService.ts)**
   - *Exports*: `IndianLanguageOption`, `INDIAN_LANGUAGES`, `SpeechState`, `regionalVoiceService`
 - **[`src/services/ai/safetyGuardrail.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/safetyGuardrail.test.ts)**
@@ -329,6 +324,8 @@
 - **[`src/services/alertService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/alertService.ts)**
   - *Exports*: `checkLabResultForAlerts`, `getConsolidatedAlerts`
   - *Imports*: `../types/medical`, `../types/alerts`, `./medicationCheckService`
+- **[`src/services/biomarkerTrajectoryService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/biomarkerTrajectoryService.ts)**
+  - *Exports*: `HistoricalPoint`, `TrajectoryDirection`, `TrajectoryRiskLevel`, `ForecastWindow`, `BiomarkerTrajectory`, `TrajectoryInput`, `computeBiomarkerTrajectory`
 - **[`src/services/biometricDiagnosticEngine.stress.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/biometricDiagnosticEngine.stress.test.ts)**
   - *Imports*: `./biometricDiagnosticEngine`, `../types/wearables`, `../types/medical`
 - **[`src/services/biometricDiagnosticEngine.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/biometricDiagnosticEngine.test.ts)**
@@ -368,6 +365,8 @@
   - *Imports*: `../types/medical`, `../types/alerts`, `../lib/medicationInteractionDB`
 - **[`src/services/medicationService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/medicationService.ts)**
   - *Imports*: `../types/health`, `../lib/firebase/config`, `./ai/promptFramework`, `./drugInteractionService`
+- **[`src/services/organHealthService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/organHealthService.ts)**
+  - *Exports*: `OrganSystemKey`, `OrganHealthStatus`, `OrganSystemScore`, `OrganHealthOverview`, `LabObservationItem`, `calculateOrganSystemScores`
 - **[`src/services/pdfExportService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/pdfExportService.ts)**
   - *Exports*: `exportToPDF`, `generateTrendNarrative`, `SBAROutput`, `TrendSummary`, `LabObservation`
   - *Imports*: `../lib/geminiClient`, `./ai/promptFramework`, `../utils/aiUtils`
@@ -498,18 +497,9 @@
   - *Imports*: `./App`, `./context/AuthContext`, `./context/ProfileContext`, `./context/AlertsContext`, `./context/RemindersContext...`
 - **[`src/vite-env.d.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/vite-env.d.ts)**
 
-## 📊 Graph Statistics (Last Run: 2026-08-21)
-| Metric | Value |
-|---|---|
-| **Total Nodes** | 1,191 |
-| **Total Edges** | 3,008 |
-| **Communities** | 91 |
-| **Source Files Indexed** | 175 (TSX/TS) |
-| **Key God Nodes** | `useAuth()`, `dependencies`, `devDependencies` |
-| **New Nodes Added** | `AbdmScanShareModal`, `regionalVoiceService`, `RegionalAudioPlayer`, `snomedService` |
-
 ## 🔗 Key Data Flow Relationships
 - **Auth Flow**: `AuthContext.tsx` -> `firebase/config.ts` -> `onAuthStateChanged` -> `App.tsx` -> `Dashboard.tsx`
 - **Clinical Data Real-Time Sync**: `useClinicalContext.ts` -> Firestore `users/{userId}/documents` (`onSnapshot`) -> `drugLabEngine.ts` -> `InteractionMatrix.tsx`
 - **AI Extraction**: `UploadCenter.tsx` -> Canvas compression -> `geminiClient.ts` -> `promptFramework.ts` (Zod validation) -> Firestore `users/{userId}/documents`
 - **Specialist Chat**: `SpecialistLounge.tsx` -> `sourceGroundedService.ts` (Guideline lookup ACC/ADA/KDIGO/ESC) -> `VirtualizedChatList.tsx` (`pretext` height measurement) -> `CitationBadge.tsx`
+

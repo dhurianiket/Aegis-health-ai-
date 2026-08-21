@@ -52,6 +52,8 @@ const HealthRadarChart = lazy(() => import("./HealthRadarChart"));
 const WearableCoachWidget = React.lazy(() => import('../AIHelper/WearableCoachWidget'));
 
 const CycleTrackingWidget = lazy(() => import("./CycleTrackingWidget"));
+const OrganHealthAvatar = lazy(() => import("./OrganHealthAvatar").then(m => ({ default: m.OrganHealthAvatar })));
+const BiomarkerTrajectoryWidget = lazy(() => import("./BiomarkerTrajectoryWidget").then(m => ({ default: m.BiomarkerTrajectoryWidget })));
 
 /**
  * Dashboard - The primary clinical analytics view.
@@ -516,6 +518,16 @@ export default function Dashboard({
             </p>
           </div>
         </div>
+
+        {/* Pillar 2: 3D Organ Health Avatar & 30-60-90 Day Trajectory Engine */}
+        <motion.div variants={tileVariants} className="space-y-8 mb-8">
+          <Suspense fallback={<div className="h-[200px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading 3D Organ Avatar...</div>}>
+            <OrganHealthAvatar labObservations={keyLabs.map(l => ({ name: l.markerName, value: l.value, unit: l.unit, status: l.status }))} />
+          </Suspense>
+          <Suspense fallback={<div className="h-[300px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading Trajectory Forecasting...</div>}>
+            <BiomarkerTrajectoryWidget />
+          </Suspense>
+        </motion.div>
 
         {/* Trends Section */}
         <div className="lg:col-span-2 w-full h-[350px] min-h-[300px] relative">
