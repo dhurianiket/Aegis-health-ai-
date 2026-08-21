@@ -2,11 +2,34 @@
 
 > Automatically generated knowledge graph for Aegis Health AI.
 > Used by AI Coding Assistants for high-accuracy, low-token context retrieval.
+> Powered by [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) — local deterministic AST parsing, every edge explained, no vector store.
+
+## 📊 Graph Statistics (Last Run: 2026-08-21)
+| Metric | Value |
+|---|---|
+| **Total Nodes** | 1,235 |
+| **Total Edges** | 3,081 |
+| **Communities** | 98 |
+| **Source Files Indexed** | 182 (TSX/TS) |
+| **Key God Nodes** | `useAuth()`, `dependencies`, `devDependencies` |
+| **Pillar 1, 2 & 3 Nodes** | `AbdmScanShareModal`, `regionalVoiceService`, `snomedService`, `biomarkerTrajectoryService`, `organHealthService`, `foodInteractionService`, `opdConsultationPdfService` |
+
+## 🗺️ Interactive Graph Artifacts
+| Artifact | Description |
+|---|---|
+| **[graphify-out/graph.html](./graphify-out/graph.html)** | 🌐 Interactive visual graph — click nodes, search, filter by community |
+| **[graphify-out/GRAPH_REPORT.md](./graphify-out/GRAPH_REPORT.md)** | 📋 God nodes, community analysis, knowledge gaps, suggested questions |
+| **[graphify-out/graph.json](./graphify-out/graph.json)** | 🗄️ Persistent JSON graph (1,235 nodes, 3,081 edges) for programmatic queries |
 
 ## 🚀 Architecture Overview
 - **Stack**: React 19 + Vite 6 + TypeScript 5.8 + Tailwind CSS 4 + Firebase Cloud Functions & Firestore.
 - **AI Engine**: Dual Gemini SDK pipeline via `geminiClient.ts` with model normalization & 503 retry interceptors.
 - **Routing**: Single-Page App with state-driven auth routing (`onAuthStateChanged`).
+- **ABDM Stack**: ABHA M1/M2/M3 Gateway (`abdmService.ts` + `AbdmConnectModal.tsx` + `AbdmScanShareModal.tsx`) + FHIR R4 (`fhirService.ts`).
+- **Clinical Intelligence**: 30-60-90 Day Trajectory Engine (`biomarkerTrajectoryService.ts`) + 3D Organ Avatar (`organHealthService.ts`).
+- **Pharmacology & OPD Exporter**: Food-Drug Contraindication Matrix (`foodInteractionService.ts`) + 1-Page Printable OPD PDF (`opdConsultationPdfService.ts`).
+- **Clinical Terminology**: SNOMED CT (`snomedService.ts`) + LOINC (`fhirService.ts`).
+- **Regional Narration**: 10+ Indian Language Speech Engine (`regionalVoiceService.ts` + `RegionalAudioPlayer.tsx`).
 
 ## 🌐 Module Node Index
 
