@@ -7,6 +7,17 @@
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
 
+function escapeHtml(unsafe: string | number | undefined | null): string {
+  if (unsafe == null) return '';
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
 export interface OpdPdfInputData {
   patientName: string;
   age?: number | string;
@@ -52,8 +63,8 @@ export async function exportOpdConsultationPdf(
   ]).map(
     (v) => `
       <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 8px 12px; border-radius: 8px;">
-        <div style="font-size: 10px; color: #64748B; font-weight: bold; text-transform: uppercase;">${v.name}</div>
-        <div style="font-size: 14px; color: #0F172A; font-weight: bold; margin-top: 2px;">${v.value} <span style="font-size: 10px; color: #64748B;">${v.unit || ''}</span></div>
+        <div style="font-size: 10px; color: #64748B; font-weight: bold; text-transform: uppercase;">${escapeHtml(v.name)}</div>
+        <div style="font-size: 14px; color: #0F172A; font-weight: bold; margin-top: 2px;">${escapeHtml(v.value)} <span style="font-size: 10px; color: #64748B;">${escapeHtml(v.unit || '')}</span></div>
       </div>
     `
   ).join('');
@@ -64,9 +75,9 @@ export async function exportOpdConsultationPdf(
   ]).map(
     (m) => `
       <tr style="border-bottom: 1px solid #E2E8F0;">
-        <td style="padding: 8px; font-size: 12px; font-weight: bold; color: #0F172A;">${m.name}</td>
-        <td style="padding: 8px; font-size: 12px; color: #334155;">${m.dosage || 'N/A'}</td>
-        <td style="padding: 8px; font-size: 12px; color: #334155;">${m.frequency || 'Daily'}</td>
+        <td style="padding: 8px; font-size: 12px; font-weight: bold; color: #0F172A;">${escapeHtml(m.name)}</td>
+        <td style="padding: 8px; font-size: 12px; color: #334155;">${escapeHtml(m.dosage || 'N/A')}</td>
+        <td style="padding: 8px; font-size: 12px; color: #334155;">${escapeHtml(m.frequency || 'Daily')}</td>
       </tr>
     `
   ).join('');
@@ -77,11 +88,11 @@ export async function exportOpdConsultationPdf(
   container.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0F2647; padding-bottom: 16px; margin-bottom: 20px;">
       <div>
-        <h1 style="font-size: 20px; color: #0F2647; margin: 0; font-weight: 900; letter-spacing: -0.5px;">${clinic}</h1>
+        <h1 style="font-size: 20px; color: #0F2647; margin: 0; font-weight: 900; letter-spacing: -0.5px;">${escapeHtml(clinic)}</h1>
         <p style="font-size: 11px; color: #475569; margin: 4px 0 0 0;">National Health Authority (NHA) ABDM M1/M2 Standard Handover</p>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 12px; font-weight: bold; color: #0F2647;">DATE: ${dateStr}</div>
+        <div style="font-size: 12px; font-weight: bold; color: #0F2647;">DATE: ${escapeHtml(dateStr)}</div>
         <div style="font-size: 10px; color: #059669; font-weight: bold; margin-top: 2px;">VERIFIED OPD RECORD</div>
       </div>
     </div>
@@ -90,15 +101,15 @@ export async function exportOpdConsultationPdf(
     <div style="background-color: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
       <div>
         <div style="font-size: 10px; color: #64748B; text-transform: uppercase; font-weight: bold;">PATIENT NAME</div>
-        <div style="font-size: 15px; font-weight: 800; color: #0F172A;">${data.patientName || 'Aniket Dhuri'}</div>
+        <div style="font-size: 15px; font-weight: 800; color: #0F172A;">${escapeHtml(data.patientName || 'Aniket Dhuri')}</div>
       </div>
       <div>
         <div style="font-size: 10px; color: #64748B; text-transform: uppercase; font-weight: bold;">AGE / GENDER</div>
-        <div style="font-size: 13px; font-weight: 700; color: #0F172A;">${data.age || '30'} YRS / ${data.gender || 'Male'}</div>
+        <div style="font-size: 13px; font-weight: 700; color: #0F172A;">${escapeHtml(data.age || '30')} YRS / ${escapeHtml(data.gender || 'Male')}</div>
       </div>
       <div>
         <div style="font-size: 10px; color: #64748B; text-transform: uppercase; font-weight: bold;">ABHA ADDRESS</div>
-        <div style="font-size: 12px; font-family: monospace; font-weight: 700; color: #EA580C;">${data.abhaId || 'aniket.dhuri@abdm'}</div>
+        <div style="font-size: 12px; font-family: monospace; font-weight: 700; color: #EA580C;">${escapeHtml(data.abhaId || 'aniket.dhuri@abdm')}</div>
       </div>
     </div>
 
@@ -131,7 +142,7 @@ export async function exportOpdConsultationPdf(
     <div style="margin-bottom: 20px;">
       <h3 style="font-size: 12px; color: #0F2647; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px 0; font-weight: 800;">SBAR Clinical Situation & Recommendation</h3>
       <div style="background-color: #FAFAFA; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; font-size: 11px; color: #334155; line-height: 1.5; white-space: pre-wrap;">
-        ${sbarClean}
+        ${escapeHtml(sbarClean)}
       </div>
     </div>
 
