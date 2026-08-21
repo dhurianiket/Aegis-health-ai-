@@ -32,6 +32,8 @@ import AbdmConnectModal from "./AbdmConnectModal";
 import { AbdmScanShareModal } from "../ABDM/AbdmScanShareModal";
 import { getAbdmProfile, AbhaProfile } from "../../services/abdmService";
 import { QrCode, ShieldCheck } from "lucide-react";
+import { ZeroKnowledgeVaultModal } from "./ZeroKnowledgeVaultModal";
+import { SecurityAuditViewer } from "./SecurityAuditViewer";
 
 interface IntegrationsPanelProps {
   activeProfile: any;
@@ -481,6 +483,12 @@ export default function IntegrationsPanel({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Pillar 4: WebCrypto Zero-Knowledge Vault & Security Audit Viewer */}
+      <div className="space-y-8">
+        <ZeroKnowledgeVaultModal />
+        <SecurityAuditViewer />
       </div>
 
       <HealthConnectModal
