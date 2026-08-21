@@ -11,7 +11,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "graphify": "tsx scripts/graphify.ts"
+    "graphify": "tsx scripts/graphify.ts",
+    "graphify:full": "npm run graphify && graphify . --code-only"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.7",
