@@ -5,6 +5,7 @@ import { SBARSummary } from "../../types/medical";
 import { exportToPDF } from "../../services/pdfExportService";
 import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
 import { RegionalAudioPlayer } from "../Common/RegionalAudioPlayer";
+import { exportOpdConsultationPdf } from "../../services/opdConsultationPdfService";
 
 export interface SBARPreviewProps {
   isOpen: boolean;
@@ -50,6 +51,24 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
       setTimeout(() => setFhirExportSuccess(false), 3000);
     } catch (err) {
       console.error("FHIR Export failed:", err);
+    }
+  };
+
+  const handleOpdPrint = async () => {
+    if (!sbar) return;
+    setIsExporting(true);
+    try {
+      await exportOpdConsultationPdf({
+        patientName: "Aniket Dhuri",
+        abhaId: "aniket.dhuri@abdm",
+        sbarSummary: sbar,
+      });
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 3000);
+    } catch (err) {
+      console.error("OPD PDF export failed:", err);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -157,6 +176,15 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
             </div>
 
             <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-bg)] shrink-0 flex flex-col-reverse md:flex-row justify-end gap-3 rounded-b-[32px] flex-wrap">
+              <button
+                onClick={handleOpdPrint}
+                disabled={!sbar || isLoading || isExporting}
+                className="px-5 py-3 rounded-full text-sm font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors focus:outline-none w-full md:w-auto flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                <FileDown size={16} className="text-emerald-500" />
+                Print 1-Page OPD Copy
+              </button>
+
               <button
                 onClick={handleExportFhir}
                 disabled={!sbar || isLoading || isExporting}

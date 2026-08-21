@@ -2,33 +2,11 @@
 
 > Automatically generated knowledge graph for Aegis Health AI.
 > Used by AI Coding Assistants for high-accuracy, low-token context retrieval.
-> Powered by [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) — local deterministic AST parsing, every edge explained, no vector store.
-
-## 📊 Graph Statistics (Last Run: 2026-08-21)
-| Metric | Value |
-|---|---|
-| **Total Nodes** | 1,220 |
-| **Total Edges** | 3,057 |
-| **Communities** | 96 |
-| **Source Files Indexed** | 179 (TSX/TS) |
-| **Key God Nodes** | `useAuth()`, `dependencies`, `devDependencies` |
-| **Pillar 1 & 2 Nodes** | `AbdmScanShareModal`, `regionalVoiceService`, `snomedService`, `biomarkerTrajectoryService`, `organHealthService` |
-
-## 🗺️ Interactive Graph Artifacts
-| Artifact | Description |
-|---|---|
-| **[graphify-out/graph.html](./graphify-out/graph.html)** | 🌐 Interactive visual graph — click nodes, search, filter by community |
-| **[graphify-out/GRAPH_REPORT.md](./graphify-out/GRAPH_REPORT.md)** | 📋 God nodes, community analysis, knowledge gaps, suggested questions |
-| **[graphify-out/graph.json](./graphify-out/graph.json)** | 🗄️ Persistent JSON graph (1,220 nodes, 3,057 edges) for programmatic queries |
 
 ## 🚀 Architecture Overview
 - **Stack**: React 19 + Vite 6 + TypeScript 5.8 + Tailwind CSS 4 + Firebase Cloud Functions & Firestore.
 - **AI Engine**: Dual Gemini SDK pipeline via `geminiClient.ts` with model normalization & 503 retry interceptors.
 - **Routing**: Single-Page App with state-driven auth routing (`onAuthStateChanged`).
-- **ABDM Stack**: ABHA M1/M2/M3 Gateway (`abdmService.ts` + `AbdmConnectModal.tsx` + `AbdmScanShareModal.tsx`) + FHIR R4 (`fhirService.ts`).
-- **Clinical Intelligence**: 30-60-90 Day Trajectory Engine (`biomarkerTrajectoryService.ts`) + 3D Organ Avatar (`organHealthService.ts`).
-- **Clinical Terminology**: SNOMED CT (`snomedService.ts`) + LOINC (`fhirService.ts`).
-- **Regional Narration**: 10+ Indian Language Speech Engine (`regionalVoiceService.ts` + `RegionalAudioPlayer.tsx`).
 
 ## 🌐 Module Node Index
 
@@ -111,7 +89,7 @@
   - *Imports*: `../../lib/firebase/config`, `../../context/AuthContext`, `../../utils/reportComparison`
 - **[`src/components/Dashboard/SBARPreview.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SBARPreview.tsx)**
   - *Exports*: `SBARPreviewProps`, `SBARPreview`
-  - *Imports*: `../../types/medical`, `../../services/pdfExportService`, `../../services/fhirService`, `../Common/RegionalAudioPlayer`
+  - *Imports*: `../../types/medical`, `../../services/pdfExportService`, `../../services/fhirService`, `../Common/RegionalAudioPlayer`, `../../services/opdConsultationPdfService`
 - **[`src/components/Dashboard/SmartAlertCard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlertCard.tsx)**
   - *Exports*: `SmartAlertCardProps`, `SmartAlertCard`
 - **[`src/components/Dashboard/SmartAlerts.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlerts.tsx)**
@@ -187,6 +165,9 @@
   - *Exports*: `PrivacyPolicy`, `default`
 - **[`src/components/Legal/TermsOfService.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Legal/TermsOfService.tsx)**
   - *Exports*: `TermsOfService`, `default`
+- **[`src/components/Medications/FoodInteractionMatrix.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Medications/FoodInteractionMatrix.tsx)**
+  - *Exports*: `FoodInteractionMatrix`
+  - *Imports*: `../../services/foodInteractionService`
 - **[`src/components/Medications/InteractionMatrix.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Medications/InteractionMatrix.tsx)**
   - *Exports*: `InteractionMatrix`, `default`
   - *Imports*: `../../types/health`, `../../services/drugLabEngine`, `../../services/drugInteractionService`
@@ -360,6 +341,8 @@
 - **[`src/services/fhirService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/fhirService.ts)**
   - *Exports*: `FHIRResource`, `FHIRBundle`, `LoincMapping`, `LOINC_DICTIONARY`, `lookupLoincCode`, `mapProfileToPatient`, `mapLabToObservation`, `mapReportToDiagnosticReport`, `mapSbarToDocumentReference`, `exportToFhirBundle`, `validateFhirBundle`, `downloadFhirJson`, `convertToFHIRPatient`, `convertToFHIRObservation`, `convertReportToFHIRBundle`, `downloadFHIRBundle`
   - *Imports*: `../types/fhir`, `./snomedService`
+- **[`src/services/foodInteractionService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/foodInteractionService.ts)**
+  - *Exports*: `FoodSeverity`, `FoodContraindicationRule`, `DetectedFoodInteraction`, `FOOD_RULES`, `evaluateFoodInteractions`
 - **[`src/services/googleFormsService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/googleFormsService.ts)**
   - *Exports*: `FormResponse`, `FormMetadata`, `getForm`, `getFormResponses`
   - *Imports*: `../context/AuthContext`
@@ -377,6 +360,8 @@
   - *Imports*: `../types/medical`, `../types/alerts`, `../lib/medicationInteractionDB`
 - **[`src/services/medicationService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/medicationService.ts)**
   - *Imports*: `../types/health`, `../lib/firebase/config`, `./ai/promptFramework`, `./drugInteractionService`
+- **[`src/services/opdConsultationPdfService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/opdConsultationPdfService.ts)**
+  - *Exports*: `OpdPdfInputData`
 - **[`src/services/organHealthService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/organHealthService.ts)**
   - *Exports*: `OrganSystemKey`, `OrganHealthStatus`, `OrganSystemScore`, `OrganHealthOverview`, `LabObservationItem`, `calculateOrganSystemScores`
 - **[`src/services/pdfExportService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/pdfExportService.ts)**
