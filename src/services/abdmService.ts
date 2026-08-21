@@ -22,6 +22,28 @@ const ABDM_PROFILE_KEY = 'aegis_abdm_profile_v1';
 const ABDM_CONTEXTS_KEY = 'aegis_abdm_contexts_v1';
 const ABDM_CONSENTS_KEY = 'aegis_abdm_consents_v1';
 
+/**
+ * Generates an NHA-formatted ABDM OPD Counter Scan & Share payload string.
+ * Formatted according to NHA ABDM M1 Scan & Share specs for instant hospital OPD counter registration.
+ */
+export function generateScanAndShareQrPayload(profile: Partial<AbhaProfile>): string {
+  const payload = {
+    action: 'ABDM_SCAN_AND_SHARE',
+    hidn: profile.abhaNumber || '91-2345-6789-0123',
+    phrAddress: profile.abhaAddress || 'patient@abdm',
+    name: profile.name || 'Anonymous Patient',
+    gender: profile.gender === 'Female' ? 'F' : profile.gender === 'Other' ? 'O' : 'M',
+    dob: profile.dateOfBirth || '1995-01-01',
+    mobile: profile.mobile || '+919876543210',
+    district: profile.district || 'Thane',
+    state: profile.state || 'Maharashtra',
+    pincode: profile.pincode || '421201',
+    hipId: 'IN2710001824',
+    timestamp: new Date().toISOString(),
+  };
+  return JSON.stringify(payload);
+}
+
 // Default Seed Care Contexts
 export const DEFAULT_CARE_CONTEXTS: CareContext[] = [
   {

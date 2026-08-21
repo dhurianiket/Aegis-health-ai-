@@ -15,6 +15,7 @@ import {
   FhirValidationIssue,
   FhirCoding,
 } from '../types/fhir';
+import { getSnomedCoding } from './snomedService';
 
 export * from '../types/fhir';
 
@@ -426,6 +427,7 @@ export function mapLabToObservation(
           code: loinc.code,
           display: loinc.display || testName,
         },
+        getSnomedCoding(testName),
       ],
       text: testName,
     },
@@ -668,15 +670,17 @@ export function exportToFhirBundle(
     },
   ];
 
-  // Process all lab reports and nested biomarkers
+  // Process lab reports or raw biomarker items
   labReports.forEach((rep) => {
     if (!rep) return;
-    const rawBiomarkers =
-      rep.biomarkers ||
-      rep.extractedData?.observations ||
-      rep.extractedData?.lab_values ||
-      rep.labValues ||
-      [];
+    const isSingleObservation = rep.name || rep.markerName || rep.testName;
+    const rawBiomarkers = isSingleObservation
+      ? [rep]
+      : rep.biomarkers ||
+        rep.extractedData?.observations ||
+        rep.extractedData?.lab_values ||
+        rep.labValues ||
+        [];
 
     const observations: FhirObservation[] = rawBiomarkers.map((b: any) =>
       mapLabToObservation(b, patientId)

@@ -29,6 +29,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import HealthConnectModal from "./HealthConnectModal";
 import AbdmConnectModal from "./AbdmConnectModal";
+import { AbdmScanShareModal } from "../ABDM/AbdmScanShareModal";
 import { getAbdmProfile, AbhaProfile } from "../../services/abdmService";
 import { QrCode, ShieldCheck } from "lucide-react";
 
@@ -50,6 +51,7 @@ export default function IntegrationsPanel({
   );
   const [modalProvider, setModalProvider] = useState<HealthProvider | null>(null);
   const [isAbdmModalOpen, setIsAbdmModalOpen] = useState(false);
+  const [isScanShareOpen, setIsScanShareOpen] = useState(false);
   const [abhaProfile, setAbhaProfile] = useState<AbhaProfile | null>(() =>
     getAbdmProfile(userId)
   );
@@ -395,7 +397,14 @@ export default function IntegrationsPanel({
             )}
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 relative z-10 flex justify-end">
+          <div className="pt-4 border-t border-slate-800/80 relative z-10 flex flex-wrap items-center justify-end gap-3">
+            <button
+              onClick={() => setIsScanShareOpen(true)}
+              className="py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 text-orange-300 border border-orange-500/30 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <QrCode className="w-4 h-4 text-orange-400" />
+              Scan & Share OPD Check-In
+            </button>
             <button
               onClick={() => setIsAbdmModalOpen(true)}
               className="py-3 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
@@ -405,6 +414,13 @@ export default function IntegrationsPanel({
           </div>
         </motion.div>
       </div>
+
+      {/* ABDM Scan & Share Modal */}
+      <AbdmScanShareModal
+        isOpen={isScanShareOpen}
+        onClose={() => setIsScanShareOpen(false)}
+        profile={abhaProfile}
+      />
 
       {/* Data Portability Section */}
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl overflow-hidden shadow-sm">

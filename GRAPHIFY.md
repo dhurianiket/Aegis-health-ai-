@@ -2,44 +2,11 @@
 
 > Automatically generated knowledge graph for Aegis Health AI.
 > Used by AI Coding Assistants for high-accuracy, low-token context retrieval.
-> Powered by [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) — local deterministic AST parsing, every edge explained, no vector store.
-
-## 📊 Graph Statistics (Last Run: 2026-08-21)
-| Metric | Value |
-|---|---|
-| **Total Nodes** | 1,164 |
-| **Total Edges** | 2,963 |
-| **Communities** | 89 |
-| **Source Files Indexed** | 171 (TSX/TS) |
-| **Key God Nodes** | `useAuth()`, `dependencies`, `devDependencies` |
-| **Lowest-Cohesion Modules** | `medical.ts` (0.08), `gemini.ts` (0.07), `useClinicalContext.ts` (0.06) |
-
-## 🗺️ Interactive Graph Artifacts
-| Artifact | Description |
-|---|---|
-| **[graphify-out/graph.html](./graphify-out/graph.html)** | 🌐 Interactive visual graph — click nodes, search, filter by community |
-| **[graphify-out/GRAPH_REPORT.md](./graphify-out/GRAPH_REPORT.md)** | 📋 God nodes, community analysis, knowledge gaps, suggested questions |
-| **[graphify-out/graph.json](./graphify-out/graph.json)** | 🗄️ Persistent JSON graph (1164 nodes, 2963 edges) for programmatic queries |
-
-## 🔄 Regenerating the Graph
-Run after any major refactor or new feature addition:
-```bash
-# Local AST-only fast regen (171 source files → GRAPHIFY.md):
-npm run graphify
-
-# Full deep regen with Graphify tool (1164 nodes → graphify-out/):
-graphify . --code-only
-# Then cluster and generate report:
-graphify cluster-only .
-```
-
-> **Agent Rule (from AGENTS.md):** Always read this file FIRST before navigating the codebase. Use `graphify-out/GRAPH_REPORT.md` for cross-community dependency analysis and to find God Nodes.
 
 ## 🚀 Architecture Overview
 - **Stack**: React 19 + Vite 6 + TypeScript 5.8 + Tailwind CSS 4 + Firebase Cloud Functions & Firestore.
 - **AI Engine**: Dual Gemini SDK pipeline via `geminiClient.ts` with model normalization & 503 retry interceptors.
 - **Routing**: Single-Page App with state-driven auth routing (`onAuthStateChanged`).
-- **ABDM Stack**: ABHA M1/M2/M3 Gateway (`abdmService.ts` + `AbdmConnectModal.tsx`) + FHIR R4 (`fhirService.ts`).
 
 ## 🌐 Module Node Index
 
@@ -47,6 +14,9 @@ graphify cluster-only .
 - **[`src/components/ABDM/AbdmConnectModal.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ABDM/AbdmConnectModal.tsx)**
   - *Exports*: `AbdmConnectModal`, `default`
   - *Imports*: `../../context/AuthContext`, `../../services/abdmService`, `../../services/fhirService`
+- **[`src/components/ABDM/AbdmScanShareModal.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/ABDM/AbdmScanShareModal.tsx)**
+  - *Exports*: `AbdmScanShareModal`
+  - *Imports*: `../../services/abdmService`
 - **[`src/components/AIHelper/ChatCoach.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/AIHelper/ChatCoach.tsx)**
   - *Exports*: `ChatCoach`, `default`
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../hooks/useClinicalContext`, `../../services/ai/voiceService`, `../../lib/geminiUtils...`
@@ -71,6 +41,9 @@ graphify cluster-only .
 - **[`src/components/Common/CitationBadge.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Common/CitationBadge.tsx)**
   - *Exports*: `renderCitationLink`
   - *Imports*: `../../services/sourceGroundedService`
+- **[`src/components/Common/RegionalAudioPlayer.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Common/RegionalAudioPlayer.tsx)**
+  - *Exports*: `RegionalAudioPlayer`
+  - *Imports*: `../../services/ai/regionalVoiceService`
 - **[`src/components/Dashboard/ComparativeAnalysis.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ComparativeAnalysis.tsx)**
   - *Exports*: `default`
   - *Imports*: `../../types/medical`, `../../utils/dateUtils`
@@ -110,7 +83,7 @@ graphify cluster-only .
   - *Imports*: `../../lib/firebase/config`, `../../context/AuthContext`, `../../utils/reportComparison`
 - **[`src/components/Dashboard/SBARPreview.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SBARPreview.tsx)**
   - *Exports*: `SBARPreviewProps`, `SBARPreview`
-  - *Imports*: `../../types/medical`, `../../services/pdfExportService`, `../../services/fhirService`
+  - *Imports*: `../../types/medical`, `../../services/pdfExportService`, `../../services/fhirService`, `../Common/RegionalAudioPlayer`
 - **[`src/components/Dashboard/SmartAlertCard.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlertCard.tsx)**
   - *Exports*: `SmartAlertCardProps`, `SmartAlertCard`
 - **[`src/components/Dashboard/SmartAlerts.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/SmartAlerts.tsx)**
@@ -277,7 +250,7 @@ graphify cluster-only .
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
   - *Imports*: `./config`, `../../types/medical`, `../../types/wearables`
 - **[`src/services/abdmService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/abdmService.ts)**
-  - *Exports*: `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`
+  - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`
   - *Imports*: `../types/abdm`, `./fhirService`
 - **[`src/services/ai/coachService.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/coachService.test.ts)**
   - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
@@ -299,6 +272,8 @@ graphify cluster-only .
 - **[`src/services/ai/promptFramework.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/promptFramework.ts)**
   - *Exports*: `CORE_SYSTEM_PROMPT`, `OUTPUT_FORMAT_JSON`, `LabExtractionSchema`, `LabExtraction`, `normalizeObservation`, `GeminiQuotaError`, `GeminiInputError`, `GeminiTimeoutError`, `UnifiedLabValueSchema`, `UnifiedPrescriptionSchema`, `UnifiedExtractionResultSchema`, `UnifiedLabValue`, `UnifiedPrescription`, `UnifiedExtractionResult`
   - *Imports*: `../../lib/geminiClient`, `../../utils/aiUtils`, `../../lib/firebase/config`, `../usageService`, `../cacheService`
+- **[`src/services/ai/regionalVoiceService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/regionalVoiceService.ts)**
+  - *Exports*: `IndianLanguageOption`, `INDIAN_LANGUAGES`, `SpeechState`, `regionalVoiceService`
 - **[`src/services/ai/safetyGuardrail.test.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/safetyGuardrail.test.ts)**
   - *Imports*: `./safetyGuardrail`
 - **[`src/services/ai/safetyGuardrail.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/ai/safetyGuardrail.ts)**
@@ -354,7 +329,7 @@ graphify cluster-only .
   - *Imports*: `../types/health`
 - **[`src/services/fhirService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/fhirService.ts)**
   - *Exports*: `FHIRResource`, `FHIRBundle`, `LoincMapping`, `LOINC_DICTIONARY`, `lookupLoincCode`, `mapProfileToPatient`, `mapLabToObservation`, `mapReportToDiagnosticReport`, `mapSbarToDocumentReference`, `exportToFhirBundle`, `validateFhirBundle`, `downloadFhirJson`, `convertToFHIRPatient`, `convertToFHIRObservation`, `convertReportToFHIRBundle`, `downloadFHIRBundle`
-  - *Imports*: `../types/fhir`
+  - *Imports*: `../types/fhir`, `./snomedService`
 - **[`src/services/googleFormsService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/googleFormsService.ts)**
   - *Exports*: `FormResponse`, `FormMetadata`, `getForm`, `getFormResponses`
   - *Imports*: `../context/AuthContext`
@@ -386,6 +361,8 @@ graphify cluster-only .
 - **[`src/services/sbarGenerationService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/sbarGenerationService.ts)**
   - *Exports*: `generateSBAR`
   - *Imports*: `../types/medical`, `../lib/geminiClient`, `./ai/contextService`, `./cacheService`, `../lib/firebase/config...`
+- **[`src/services/snomedService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/snomedService.ts)**
+  - *Exports*: `SnomedConcept`, `SNOMED_DICTIONARY`, `getSnomedCoding`, `mapToSnomedCodeableConcepts`
 - **[`src/services/sourceGroundedService.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/sourceGroundedService.ts)**
   - *Exports*: `MedicalSource`, `getSourceForMarker`, `UrgencyInfo`, `getUrgencyAndNextStep`, `ClinicalGuideline`, `CLINICAL_GUIDELINES`, `lookupRelevantGuidelines`, `buildGuidelinePromptAugmentation`
 - **[`src/services/uploadPipeline.ts`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/services/uploadPipeline.ts)**
