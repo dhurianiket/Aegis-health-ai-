@@ -813,30 +813,37 @@ export default function UploadCenter({
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
 
-      const matchesFileName = docItem.fileName?.toLowerCase().includes(q);
-      const matchesDocType = docItem.type?.toLowerCase().includes(q);
-      const matchesDoctor = docItem.doctorName?.toLowerCase().includes(q);
-      const matchesHospital = docItem.hospitalName?.toLowerCase().includes(q);
-      const matchesDate = docItem.date?.toLowerCase().includes(q);
-      const matchesTags = docTags.some((t: string) => t.toLowerCase().includes(q));
+      // ⚡ Bolt: Performance optimization
+      // Replaced eager evaluation of all match variables with early returns.
+      // This short-circuits the evaluation process and prevents redundant .toLowerCase()
+      // string allocations and expensive nested array loops if a match is already found.
+      if (docItem.fileName?.toLowerCase().includes(q)) return true;
+      if (docItem.type?.toLowerCase().includes(q)) return true;
+      if (docItem.doctorName?.toLowerCase().includes(q)) return true;
+      if (docItem.hospitalName?.toLowerCase().includes(q)) return true;
+      if (docItem.date?.toLowerCase().includes(q)) return true;
+      if (docTags.some((t: string) => t.toLowerCase().includes(q))) return true;
+
+      const ext = docItem.extractedData;
+      if (!ext) return false;
 
       // Check inside extracted summary
-      const matchesSummary = docItem.extractedData?.summary?.toLowerCase().includes(q);
+      if (ext.summary?.toLowerCase().includes(q)) return true;
 
       // Check inside medications
-      const matchesMedications = docItem.extractedData?.medications?.some((m: any) => {
+      if (ext.medications?.some((m: any) => {
         const name = typeof m === 'string' ? m : (m.name || '');
         return name.toLowerCase().includes(q);
-      });
+      })) return true;
 
       // Check inside lab values
-      const matchesLabs = (docItem.extractedData?.lab_values || docItem.extractedData?.observations || [])?.some((l: any) => {
+      if ((ext.lab_values || ext.observations || [])?.some((l: any) => {
         const marker = (l.marker || l.testName || '').toLowerCase();
         const status = (l.status || '').toLowerCase();
         return marker.includes(q) || status.includes(q);
-      });
+      })) return true;
 
-      return matchesFileName || matchesDocType || matchesDoctor || matchesHospital || matchesDate || matchesTags || matchesSummary || matchesMedications || matchesLabs;
+      return false;
     });
   }, [documents, selectedTagFilter, searchQuery]);
 

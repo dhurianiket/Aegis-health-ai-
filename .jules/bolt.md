@@ -41,3 +41,7 @@
 ## 2026-08-23 - Verify Downstream Data Order Dependencies Before Removing Sort
 **Learning:** Replacing an O(N log N) full sort with an O(N) single-pass search (to just find top items) can inadvertently destroy the expected data order of an array. In this case, removing the full sort of a `history` array broke downstream chart components that implicitly required chronologically ordered data.
 **Action:** Before removing an expensive `.sort()`, explicitly verify that the fully sorted array isn't being passed to downstream components (like charts, lists, or tables) that depend on strict ordering. If the full sort is necessary for downstream consumption, optimize the sort itself (e.g., Schwartzian transform) rather than removing it.
+
+## 2026-08-25 - Prevent Redundant Evaluation with Short-Circuit Array Filtering
+**Learning:** Eagerly evaluating all boolean conditions inside an array `.filter()` (e.g. evaluating 10 properties with `toLowerCase()` and `.some()`) before placing them in a final return statement creates an O(N * M) performance bottleneck because Javascript cannot short-circuit the execution.
+**Action:** When filtering complex arrays based on multiple matching criteria, construct the filter logic with sequential `if (match) return true;` statements (an early-exit flow) to short-circuit the evaluation the moment a fast/cheap check succeeds, bypassing expensive nested array loops and redundant string allocations.
