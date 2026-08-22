@@ -69,6 +69,7 @@ vi.mock("recharts", () => ({
   Bar: () => <div data-testid="bar" />,
   LineChart: ({ children }: any) => <div data-testid="line-chart">{children}</div>,
   Line: () => <div data-testid="line" />,
+  AreaChart: ({ children }: any) => <div data-testid="area-chart">{children}</div>,
   ComposedChart: ({ children }: any) => <div data-testid="composed-chart">{children}</div>,
   CartesianGrid: () => <div />,
   Area: () => <div />,
