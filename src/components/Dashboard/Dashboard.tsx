@@ -55,6 +55,8 @@ const CycleTrackingWidget = lazy(() => import("./CycleTrackingWidget"));
 const OrganHealthAvatar = lazy(() => import("./OrganHealthAvatar").then(m => ({ default: m.OrganHealthAvatar })));
 const BiomarkerTrajectoryWidget = lazy(() => import("./BiomarkerTrajectoryWidget").then(m => ({ default: m.BiomarkerTrajectoryWidget })));
 const FoodInteractionMatrix = lazy(() => import("../Medications/FoodInteractionMatrix").then(m => ({ default: m.FoodInteractionMatrix })));
+const Canvas3DMesh = lazy(() => import("../Common/Canvas3DMesh").then(m => ({ default: m.Canvas3DMesh })));
+const Hero3DHealthGauge = lazy(() => import("./Hero3DHealthGauge").then(m => ({ default: m.Hero3DHealthGauge })));
 
 /**
  * Dashboard - The primary clinical analytics view.
@@ -377,7 +379,30 @@ export default function Dashboard({
       )}
 
       {!loading && !error && (keyLabs.length > 0 || healthScores.length > 0 || latestInsights.length > 0) && (
-        <div className="flex flex-col lg:flex-none">
+        <div className="flex flex-col lg:flex-none relative">
+          <Suspense fallback={null}>
+            <Canvas3DMesh />
+          </Suspense>
+
+          {/* Top Hero 3D Health Biometric Ring & Telemetry Strip */}
+          <motion.div variants={tileVariants} className="w-full mb-8 relative z-10">
+            <Suspense fallback={<div className="h-48 w-full animate-pulse bg-surface/50 rounded-3xl" />}>
+              <Hero3DHealthGauge
+                score={latestScore?.overall ?? 85}
+                userName={activeProfile?.name || 'Aniket Dhuri'}
+                heartRate={liveWearable?.heartRate}
+                hrv={liveWearable?.hrv}
+                spo2={liveWearable?.spo2}
+                onOpenScanShare={() => {
+                  window.location.hash = 'settings';
+                }}
+                onOpenSbar={() => {
+                  window.location.hash = 'sbar';
+                }}
+              />
+            </Suspense>
+          </motion.div>
+
           <motion.div variants={tileVariants} className="order-first lg:order-none w-full mb-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="space-y-6">

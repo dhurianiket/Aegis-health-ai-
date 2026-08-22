@@ -70,17 +70,20 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
   };
 
   const getScoreColor = (score: number) => {
-    if (score < 65) return 'text-rose-400 border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.3)] bg-rose-500/10';
-    if (score < 85) return 'text-amber-400 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.3)] bg-amber-500/10';
-    return 'text-emerald-400 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-emerald-500/10';
+    if (score < 65) return 'text-rose-400 border-rose-500/50 glow-rose-3d bg-rose-500/10';
+    if (score < 85) return 'text-amber-400 border-amber-500/50 bg-amber-500/10';
+    return 'text-emerald-400 border-emerald-500/50 glow-emerald-3d bg-emerald-500/10';
   };
 
   return (
-    <div className="w-full bg-slate-900/95 backdrop-blur-2xl border border-emerald-500/30 shadow-[0_16px_40px_-8px_rgba(16,185,129,0.25)] rounded-[32px] p-5 sm:p-7 md:p-8 space-y-6">
+    <div className="w-full glass-card-ultra-3d p-5 sm:p-7 md:p-8 space-y-6 relative overflow-hidden">
+      {/* Ambient Lighting Glow */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0">
+          <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 glow-emerald-3d shrink-0">
             <Activity className="w-6 h-6" />
           </div>
           <div>
@@ -114,8 +117,8 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
         </div>
       </div>
 
-      {/* 6 Organ System Responsive Grid (1 col mobile, 2 col tablet, 3 col desktop) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+      {/* 6 Organ System Responsive Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 relative z-10">
         {Object.values(overview.organSystems).map((organ) => {
           const Icon = getOrganIcon(organ.key);
           const scoreClass = getScoreColor(organ.score);
@@ -124,7 +127,7 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
             <div
               key={organ.key}
               onClick={() => setSelectedOrgan(organ)}
-              className="bg-slate-950/80 hover:bg-slate-950 border border-white/10 hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-4 shadow-md min-h-[160px]"
+              className="bg-slate-950/85 hover:bg-slate-950 border border-white/10 hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-4 shadow-md hover:-translate-y-1 min-h-[160px]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">

@@ -38,6 +38,8 @@
 - **[`src/components/Chat/VirtualizedChatList.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Chat/VirtualizedChatList.tsx)**
   - *Exports*: `ChatMessage`, `VirtualizedChatListProps`, `VirtualizedChatList`, `default`
   - *Imports*: `../../lib/pretext`, `../Common/CitationBadge`
+- **[`src/components/Common/Canvas3DMesh.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Common/Canvas3DMesh.tsx)**
+  - *Exports*: `Canvas3DMesh`
 - **[`src/components/Common/CitationBadge.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Common/CitationBadge.tsx)**
   - *Exports*: `renderCitationLink`
   - *Imports*: `../../services/sourceGroundedService`
@@ -68,6 +70,8 @@
   - *Exports*: `FeedbackWidget`, `default`
 - **[`src/components/Dashboard/HealthRadarChart.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/HealthRadarChart.tsx)**
   - *Exports*: `default`
+- **[`src/components/Dashboard/Hero3DHealthGauge.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/Hero3DHealthGauge.tsx)**
+  - *Exports*: `Hero3DHealthGauge`
 - **[`src/components/Dashboard/HeroMetric.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/HeroMetric.tsx)**
   - *Exports*: `HeroMetricProps`, `HeroMetric`
 - **[`src/components/Dashboard/LabReportsSection.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/LabReportsSection.tsx)**

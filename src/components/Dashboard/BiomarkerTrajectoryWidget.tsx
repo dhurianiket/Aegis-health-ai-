@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
-  LineChart,
+  AreaChart,
+  Area,
   Line,
   XAxis,
   YAxis,
@@ -109,11 +110,14 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
   }
 
   return (
-    <div className="w-full bg-slate-900/95 backdrop-blur-2xl border border-indigo-500/30 shadow-[0_16px_40px_-8px_rgba(99,102,241,0.25)] rounded-[32px] p-5 sm:p-7 md:p-8 space-y-6">
-      {/* Header — Clean flex wrap for title & dropdown */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+    <div className="w-full glass-card-ultra-3d p-5 sm:p-7 md:p-8 space-y-6 relative overflow-hidden">
+      {/* Ambient Radial Lighting */}
+      <div className="absolute top-0 left-1/3 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
+          <div className="p-3.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 glow-indigo-3d shrink-0">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
@@ -144,7 +148,7 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
       </div>
 
       {/* Stats KPI Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 relative z-10">
         {/* Baseline / Current */}
         <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 flex flex-col justify-between">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Current Baseline</span>
@@ -190,7 +194,7 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
       </div>
 
       {/* Timeline Controls (30d / 60d / 90d) */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs relative z-10">
         <span className="text-slate-300 font-semibold flex items-center gap-1.5">
           <Calendar className="w-4 h-4 text-indigo-400" /> Forecast Horizon Window
         </span>
@@ -211,10 +215,16 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
         </div>
       </div>
 
-      {/* Recharts Chart Container — Enforced h-[300px] Pixel Boundary */}
-      <div className="w-full h-[300px] min-h-[300px] bg-slate-950/90 rounded-2xl p-3 sm:p-4 border border-white/10 relative overflow-hidden">
+      {/* Recharts Area Chart Container with 3D Gradient Fill — Enforced h-[300px] Pixel Boundary */}
+      <div className="w-full h-[300px] min-h-[300px] bg-slate-950/90 rounded-2xl p-3 sm:p-4 border border-white/10 relative overflow-hidden z-10">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
+          <AreaChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
+            <defs>
+              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#38BDF8" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#38BDF8" stopOpacity={0.0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
             <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
             <YAxis stroke="#94a3b8" fontSize={11} domain={['dataMin - 1', 'dataMax + 1']} />
@@ -235,13 +245,15 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
                 label={{ value: `Upper Ref: ${selectedItem.referenceHigh}`, fill: '#F43F5E', fontSize: 10, position: 'insideTopRight' }}
               />
             )}
-            {/* Historical Line */}
-            <Line
+            {/* Historical Area */}
+            <Area
               type="monotone"
               dataKey="historical"
               name="Actual Biomarker"
               stroke="#38BDF8"
               strokeWidth={3}
+              fillOpacity={1}
+              fill="url(#areaGradient)"
               dot={{ r: 5, fill: '#0284C7' }}
               connectNulls={true}
             />
@@ -256,12 +268,12 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
               dot={{ r: 4, fill: '#6366F1' }}
               connectNulls={true}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* Clinical Summary & Actions */}
-      <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-2.5 text-xs">
+      <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-2.5 text-xs relative z-10">
         <div className="flex items-center gap-2 text-indigo-300 font-bold">
           <Sparkles className="w-4 h-4 text-indigo-400" />
           <span>Clinical Recommendation & Guidance</span>

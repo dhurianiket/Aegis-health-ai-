@@ -26,7 +26,7 @@ export const FoodInteractionMatrix: React.FC<FoodInteractionMatrixProps> = ({
   const getSeverityBadge = (sev: 'critical' | 'warning' | 'info') => {
     if (sev === 'critical') {
       return (
-        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center gap-1 shrink-0">
+        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center gap-1 shrink-0 glow-rose-3d">
           <AlertTriangle className="w-3.5 h-3.5" /> Critical Severe
         </span>
       );
@@ -46,11 +46,14 @@ export const FoodInteractionMatrix: React.FC<FoodInteractionMatrixProps> = ({
   };
 
   return (
-    <div className="w-full bg-slate-900/95 backdrop-blur-2xl border border-rose-500/30 shadow-[0_16px_40px_-8px_rgba(244,63,94,0.2)] rounded-[32px] p-5 sm:p-7 md:p-8 space-y-6">
+    <div className="w-full glass-card-ultra-3d p-5 sm:p-7 md:p-8 space-y-6 relative overflow-hidden">
+      {/* Ambient Lighting Glow */}
+      <div className="absolute top-0 right-1/3 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.3)] shrink-0">
+          <div className="p-3.5 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 glow-rose-3d shrink-0">
             <Utensils className="w-6 h-6" />
           </div>
           <div>
@@ -86,7 +89,7 @@ export const FoodInteractionMatrix: React.FC<FoodInteractionMatrixProps> = ({
 
       {/* Detected Contraindications List */}
       {filteredInteractions.length === 0 ? (
-        <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-6 text-center space-y-2">
+        <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-6 text-center space-y-2 relative z-10">
           <ShieldCheck className="w-8 h-8 text-emerald-400 mx-auto" />
           <h4 className="text-sm font-bold text-white">No Active Food-Drug Contraindications</h4>
           <p className="text-xs text-slate-400 font-light">
@@ -94,11 +97,11 @@ export const FoodInteractionMatrix: React.FC<FoodInteractionMatrixProps> = ({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 relative z-10">
           {filteredInteractions.map((item, idx) => (
             <div
               key={idx}
-              className="bg-slate-950/80 border border-white/10 hover:border-rose-500/40 rounded-2xl p-4 sm:p-5 transition-all space-y-3.5 shadow-md"
+              className="bg-slate-950/85 border border-white/10 hover:border-rose-500/40 rounded-2xl p-4 sm:p-5 transition-all space-y-3.5 shadow-md hover:-translate-y-0.5"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
                 <div className="flex items-center gap-2 flex-wrap">
