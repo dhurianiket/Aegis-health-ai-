@@ -146,7 +146,7 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                3D Holographic Anatomical Body Scanner
+                Interactive 3D Holographic Anatomical Body Scanner
               </h3>
               <span className="px-3 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 font-mono text-[11px] font-bold uppercase tracking-wider glow-cyan-3d">
                 Live Spatial HUD
