@@ -47,15 +47,7 @@
   - *Exports*: `RegionalAudioPlayer`
   - *Imports*: `../../services/ai/regionalVoiceService`
 - **[`src/components/Dashboard/BiomarkerTrajectoryWidget.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/BiomarkerTrajectoryWidget.tsx)**
-  -## 📊 Graph Statistics (Last Run: 2026-08-22)
-| Metric | Value |
-|---|---|
-| **Total Nodes** | 1,294 |
-| **Total Edges** | 3,233 |
-| **Communities** | 114 |
-| **Source Files Indexed** | 190 (TSX/TS) |
-| **Key God Nodes** | `useAuth()`, `dependencies`, `devDependencies` |
-| **New 3D HUD & Visual Nodes** | `HolographicBodyScanner`, `VisualLabReportCard`, `Canvas3DMesh`, `Hero3DHealthGauge`, `OrganHealthAvatar`, `BiomarkerTrajectoryWidget`, `FoodInteractionMatrix` |
+  - *Exports*: `BiomarkerTrajectoryWidget`
   - *Imports*: `../../services/biomarkerTrajectoryService`
 - **[`src/components/Dashboard/ComparativeAnalysis.tsx`](file:////Users/pavanwagh/antigravity/Aegis-Health-Intelligence/src/components/Dashboard/ComparativeAnalysis.tsx)**
   - *Exports*: `default`

@@ -9,7 +9,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `71834649`
+- Built from commit: `0b5c375c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -86,9 +86,8 @@
 - vite.config.ts
 - fetch-test.js
 - test2.js
-- @chenglou/pretext
 - date-fns
-- react-router-dom
+- dotenv
 - express
 - express-rate-limit
 - @firebase/eslint-plugin-security-rules
@@ -101,6 +100,7 @@
 - react-dom
 - react-dropzone
 - react-markdown
+- react-router-dom
 - react-window
 - recharts
 - tailwind-merge
@@ -339,7 +339,7 @@ Nodes (7): LabReportsSection, LabReport, LabReportsSection(), ReportCard(), down
 
 ### Community 47 - "dependencies"
 Cohesion: 0.22
-Nodes (9): clsx, dotenv, firebase, html-to-image, dependencies, clsx, dotenv, firebase (+1 more)
+Nodes (9): @chenglou/pretext, clsx, firebase, html-to-image, dependencies, @chenglou/pretext, clsx, firebase (+1 more)
 
 ### Community 48 - "ReportHistory.tsx"
 Cohesion: 0.39
@@ -402,7 +402,7 @@ Cohesion: 0.67
 Nodes (3): vite, vite, vite
 
 ## Knowledge Gaps
-- **339 isolated node(s):** `VirtualizedChatListProps`, `CachedReport`, `FirestoreErrorInfo`, `OperationType`, `ClinicalGuideline` (+334 more)
+- **339 isolated node(s):** `VirtualizedChatListProps`, `LabCardData`, `MasonryLabCardsProps`, `AutoSizeTextareaProps`, `FixedSizeTextProps` (+334 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **42 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -410,12 +410,12 @@ Nodes (3): vite, vite, vite
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `useAuth()` connect `useAuth` to `SpecialistLounge.tsx`, `Settings/IntegrationsPanel.tsx`, `AlertsContext.tsx`, `abdmService.ts`, `App.tsx`, `Dashboard.tsx`, `parseSafeTimestamp`, `AuthContext.tsx`, `getAI`, `InfoPageLayout.tsx`, `typography_contrast.test.tsx`, `useProfile`, `LandingPage.tsx`, `PricingModal.tsx`, `Timeline.tsx`, `theme_typography_stress.test.tsx`, `UploadCenter.tsx`, `contextService.ts`, `ProfileContext.tsx`, `config.ts`, `Reports/LabReportsSection.tsx`, `ReportHistory.tsx`, `AppNav.tsx`, `react`?**
-  _High betweenness centrality (0.092) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `Dashboard/SBARPreview.tsx`, `package.json`, `react`, `vite`, `@chenglou/pretext`, `date-fns`, `react-router-dom`, `express`, `express-rate-limit`, `@google/genai`, `html2canvas`, `lucide-react`, `motion`, `qrcode.react`, `react-dom`, `react-dropzone`, `react-markdown`, `react-window`, `recharts`, `tailwind-merge`, `@tailwindcss/typography`, `@tailwindcss/vite`, `@vis.gl/react-google-maps`, `@vitejs/plugin-react`, `zod`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `Dashboard/SBARPreview.tsx`, `package.json`, `react`, `vite`, `date-fns`, `dotenv`, `express`, `express-rate-limit`, `@google/genai`, `html2canvas`, `lucide-react`, `motion`, `qrcode.react`, `react-dom`, `react-dropzone`, `react-markdown`, `react-router-dom`, `react-window`, `recharts`, `tailwind-merge`, `@tailwindcss/typography`, `@tailwindcss/vite`, `@vis.gl/react-google-maps`, `@vitejs/plugin-react`, `zod`?**
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `devDependencies` to `tailwindcss`, `@testing-library/react`, `tsx`, `@types/react-dom`, `@types/react-window`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`, `vite`, `vitest`, `@firebase/eslint-plugin-security-rules`, `jsdom`, `package.json`?**
   _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **What connects `VirtualizedChatListProps`, `CachedReport`, `FirestoreErrorInfo` to the rest of the system?**
+- **What connects `VirtualizedChatListProps`, `LabCardData`, `MasonryLabCardsProps` to the rest of the system?**
   _339 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `SpecialistLounge.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.0563165905631659 - nodes in this community are weakly interconnected._
