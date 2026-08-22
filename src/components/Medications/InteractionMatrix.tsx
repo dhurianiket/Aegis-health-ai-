@@ -345,11 +345,11 @@ export default function InteractionMatrix({
                           ringColor = "border-transparent";
                         } else if (inter) {
                           if (inter.severity === "severe") {
-                            cellBg = "bg-red-500/10 hover:bg-red-500/20 cursor-pointer";
+                            cellBg = "bg-red-500/10 hover:bg-red-500/20 cursor-pointer glow-rose-3d";
                             dotColor = "bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]";
                             ringColor = isSelected ? "border-red-500 ring-2 ring-red-500/20" : "border-red-500/25 hover:border-red-500/50";
                           } else if (inter.severity === "moderate") {
-                            cellBg = "bg-amber-500/10 hover:bg-amber-500/20 cursor-pointer";
+                            cellBg = "bg-amber-500/10 hover:bg-amber-500/20 cursor-pointer glow-amber-3d";
                             dotColor = "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)]";
                             ringColor = isSelected ? "border-amber-500 ring-2 ring-amber-500/20" : "border-amber-500/25 hover:border-amber-500/50";
                           }
@@ -361,15 +361,15 @@ export default function InteractionMatrix({
                             onClick={() => handleDrugCellClick(mRow, mCol)}
                             className={`h-16 flex items-center justify-center border-r border-white/5 last:border-0 transition-all ${cellBg} ${ringColor} border-2 m-[2px] rounded-xl`}
                           >
-                            {isSelf ? (
-                              <div className="w-1.5 h-1.5 rounded-full bg-slate-600 opacity-20" />
-                            ) : (
+                            {!isSelf && (
                               <div className="flex flex-col items-center gap-1 justify-center">
                                 <span className={`w-3 h-3 rounded-full flex items-center justify-center border border-white/10 ${dotColor}`} />
-                                {inter && (
-                                  <span className="text-[10px] font-bold uppercase tracking-tighter px-1 rounded bg-black/40 text-white">
+                                {inter ? (
+                                  <span className="text-[10px] font-bold uppercase tracking-tighter px-1.5 py-0.5 rounded bg-black/40 text-white">
                                     {inter.severity}
                                   </span>
+                                ) : (
+                                  <span className="text-[10px] font-semibold text-emerald-400 opacity-60">Safe</span>
                                 )}
                               </div>
                             )}
@@ -393,11 +393,11 @@ export default function InteractionMatrix({
                       <div
                         key={`mob-${mRow.id}-${mCol.id}`}
                         onClick={() => handleDrugCellClick(mRow, mCol)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 ${
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2.5 min-h-[44px] ${
                           inter?.severity === "severe"
-                            ? "bg-red-500/10 border-red-500/30 text-red-300"
+                            ? "bg-red-500/10 border-red-500/30 text-red-300 glow-rose-3d"
                             : inter?.severity === "moderate"
-                            ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                            ? "bg-amber-500/10 border-amber-500/30 text-amber-300 glow-amber-3d"
                             : "bg-surface border-surface hover:border-border text-theme"
                         }`}
                       >
@@ -406,22 +406,25 @@ export default function InteractionMatrix({
                             {mRow.genericName} + {mCol.genericName}
                           </div>
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                            inter?.severity === "severe" ? "bg-red-500 text-white" : inter?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
+                            inter?.severity === "severe" ? "bg-red-500 text-white glow-rose-3d" : inter?.severity === "moderate" ? "bg-amber-500 text-black glow-amber-3d" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
                           }`}>
                             {inter ? inter.severity : "Compatible"}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
                           {cuiA && (
-                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-semibold">
+                            <span className="text-[9px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold">
                               {mRow.genericName}: RxCUI {cuiA}
                             </span>
                           )}
                           {cuiB && (
-                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 font-semibold">
+                            <span className="text-[9px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold">
                               {mCol.genericName}: RxCUI {cuiB}
                             </span>
                           )}
+                          <span className="text-[9px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 font-semibold">
+                            Timing: Separate by 2-3 hrs
+                          </span>
                         </div>
                         <div className="text-xs text-muted">
                           {inter ? inter.plainSummary : "No known direct interaction"}
@@ -531,27 +534,35 @@ export default function InteractionMatrix({
                           <div
                             key={`mob-lab-${med.id}-${bIdx}`}
                             onClick={() => handleLabCellClick(med, bio)}
-                            className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                            className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2.5 min-h-[44px] ${
                               contra?.severity === "critical"
-                                ? "bg-red-500/10 border-red-500/30 text-red-300"
+                                ? "bg-red-500/10 border-red-500/30 text-red-300 glow-rose-3d"
                                 : contra?.severity === "moderate"
-                                ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                                ? "bg-amber-500/10 border-amber-500/30 text-amber-300 glow-amber-3d"
                                 : "bg-surface border-surface hover:border-border text-theme"
                             }`}
                           >
-                            <div>
+                            <div className="flex items-center justify-between">
                               <div className="font-bold text-sm text-slate-900 dark:text-white">
                                 {med.genericName} + {bio.testName} ({bio.value} {bio.unit || ""})
                               </div>
-                              <div className="text-xs text-muted mt-0.5">
-                                {contra ? contra.plainSummary : "No clinical contraindication detected"}
-                              </div>
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                                contra?.severity === "critical" ? "bg-red-500 text-white glow-rose-3d" : contra?.severity === "moderate" ? "bg-amber-500 text-black glow-amber-3d" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
+                              }`}>
+                                {contra ? contra.severity : "Safe"}
+                              </span>
                             </div>
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                              contra?.severity === "critical" ? "bg-red-500 text-white" : contra?.severity === "moderate" ? "bg-amber-500 text-black" : "bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
-                            }`}>
-                              {contra ? contra.severity : "Safe"}
-                            </span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[9px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold">
+                                {med.genericName}: Active Rx
+                              </span>
+                              <span className="text-[9px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 font-semibold">
+                                Lab Biomarker Audit
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted">
+                              {contra ? contra.plainSummary : "No clinical contraindication detected"}
+                            </div>
                           </div>
                         );
                       })

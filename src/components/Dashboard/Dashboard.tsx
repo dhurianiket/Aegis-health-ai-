@@ -52,6 +52,7 @@ const HealthRadarChart = lazy(() => import("./HealthRadarChart"));
 const WearableCoachWidget = React.lazy(() => import('../AIHelper/WearableCoachWidget'));
 
 const CycleTrackingWidget = lazy(() => import("./CycleTrackingWidget"));
+const HolographicBodyScanner = lazy(() => import("./HolographicBodyScanner").then(m => ({ default: m.HolographicBodyScanner })));
 const OrganHealthAvatar = lazy(() => import("./OrganHealthAvatar").then(m => ({ default: m.OrganHealthAvatar })));
 const BiomarkerTrajectoryWidget = lazy(() => import("./BiomarkerTrajectoryWidget").then(m => ({ default: m.BiomarkerTrajectoryWidget })));
 const FoodInteractionMatrix = lazy(() => import("../Medications/FoodInteractionMatrix").then(m => ({ default: m.FoodInteractionMatrix })));
@@ -553,8 +554,24 @@ export default function Dashboard({
         </div>
       </motion.div>
 
-      {/* Pillar 2 & 3 Full-Width Suite: 3D Organ Avatar, Trajectory Engine & Food Interaction Matrix */}
+      {/* Pillar 1, 2 & 3 Full-Width Suite: 3D Holographic Body Scanner, Organ Avatar, Trajectory Engine & Food Interaction Matrix */}
       <motion.div variants={tileVariants} className="space-y-8 my-8 w-full">
+        <Suspense fallback={<div className="h-[480px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading 3D Holographic Body Scanner...</div>}>
+          <HolographicBodyScanner
+            labObservations={keyLabs.map(l => ({
+              name: l.markerName,
+              value: l.value,
+              unit: l.unit,
+              status: l.status,
+              referenceLow: (l as any).refLow,
+              referenceHigh: (l as any).refHigh,
+            }))}
+            telemetry={liveWearable ?? undefined}
+            onSelectSpecialist={(spec) => {
+              window.location.hash = 'specialists';
+            }}
+          />
+        </Suspense>
         <Suspense fallback={<div className="h-[200px] w-full animate-pulse bg-surface/50 rounded-3xl flex items-center justify-center text-muted">Loading 3D Organ Avatar...</div>}>
           <OrganHealthAvatar labObservations={keyLabs.map(l => ({ name: l.markerName, value: l.value, unit: l.unit, status: l.status }))} />
         </Suspense>

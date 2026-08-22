@@ -26,21 +26,21 @@ export const FoodInteractionMatrix: React.FC<FoodInteractionMatrixProps> = ({
   const getSeverityBadge = (sev: 'critical' | 'warning' | 'info') => {
     if (sev === 'critical') {
       return (
-        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center gap-1 shrink-0 glow-rose-3d">
-          <AlertTriangle className="w-3.5 h-3.5" /> Critical Severe
+        <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/50 text-[11px] font-bold flex items-center gap-1.5 shrink-0 glow-rose-3d">
+          <AlertTriangle className="w-3.5 h-3.5" /> Critical Severe Risk
         </span>
       );
     }
     if (sev === 'warning') {
       return (
-        <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 shrink-0">
-          <AlertTriangle className="w-3.5 h-3.5" /> Moderate Risk
+        <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-[11px] font-bold flex items-center gap-1.5 shrink-0 glow-amber-3d">
+          <AlertTriangle className="w-3.5 h-3.5" /> Moderate Contraindication
         </span>
       );
     }
     return (
-      <span className="px-2.5 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[11px] font-bold flex items-center gap-1 shrink-0">
-        <Info className="w-3.5 h-3.5" /> Dietary Timing
+      <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 text-[11px] font-bold flex items-center gap-1.5 shrink-0 glow-cyan-3d">
+        <Info className="w-3.5 h-3.5" /> Dietary Spacing Advisory
       </span>
     );
   };
@@ -130,10 +130,20 @@ export const FoodInteractionMatrix: React.FC<FoodInteractionMatrixProps> = ({
                 </p>
               </div>
 
-              {/* Timing Advice Banner */}
-              <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3.5 flex items-start sm:items-center gap-3 text-xs text-rose-200 font-medium">
-                <Clock className="w-4 h-4 text-rose-400 shrink-0 mt-0.5 sm:mt-0" />
-                <span>{item.timingAdvice}</span>
+              {/* Timing Advice & Dietary Spacing Chips */}
+              <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-rose-200 font-medium">
+                <div className="flex items-start sm:items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-rose-400 shrink-0 mt-0.5 sm:mt-0" />
+                  <span>{item.timingAdvice}</span>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2.5 py-0.5 rounded-md bg-white/10 border border-white/15 text-[10px] font-mono text-white font-bold">
+                    Dietary Spacing
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-[10px] font-mono text-amber-200 font-bold">
+                    2-3 hr Window
+                  </span>
+                </div>
               </div>
             </div>
           ))}

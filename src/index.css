@@ -10,10 +10,33 @@
   --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
 
   --animate-shimmer: shimmer 2s infinite linear;
+  --animate-hologram-scan: hologramScan 3s ease-in-out infinite;
+  --animate-ecg-dash: ecgDash 2.5s linear infinite;
 
   @keyframes shimmer {
     100% {
       transform: translateX(100%);
+    }
+  }
+
+  @keyframes hologramScan {
+    0% {
+      transform: translateY(0px);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translateY(480px);
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(0px);
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes ecgDash {
+    to {
+      stroke-dashoffset: -600;
     }
   }
 }
@@ -170,6 +193,10 @@
 
   .glow-rose-3d {
     box-shadow: 0 0 30px -5px rgba(244, 63, 94, 0.35);
+  }
+
+  .glow-amber-3d {
+    box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.35);
   }
 
   .glow-indigo-3d {

@@ -16,10 +16,13 @@ import {
   Stethoscope,
   Activity,
   Search,
-  Filter
+  Filter,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import { format } from "date-fns";
 import LabTrendChart from "../Dashboard/LabTrendChart"; // We can reuse this or copy its logic for Trends View
+import VisualLabReportCard from "../LabReports/VisualLabReportCard";
 
 import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
 
@@ -323,6 +326,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
   const [isLoading, setIsLoading] = useState(true);
   
   const [activeTab, setActiveTab] = useState<'list'|'trends'|'history'|'share'>('list');
+  const [viewFormat, setViewFormat] = useState<'visual'|'tabular'>('visual');
   const [filterType, setFilterType] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -423,43 +427,84 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
 
       {activeTab === 'list' && (
         <>
-           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-wrap gap-2">
-                 {['All', 'Lab Reports', 'Consultations', 'Other'].map(f => (
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {['All', 'Lab Reports', 'Consultations', 'Other'].map(f => (
                     <button key={f} onClick={() => setFilterType(f)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filterType === f ? 'bg-primary text-white dark:text-slate-950 font-bold' : 'bg-surface text-muted hover:bg-border/50 border border-border'}`}>
-                       {f}
+                      {f}
                     </button>
-                 ))}
-              </div>
-              <div className="relative w-full sm:w-64">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                 <input 
-                    type="text" 
-                    aria-label="Search lab reports"
-                    placeholder="Search markers, doctors..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-surface border border-border rounded-full pl-9 pr-4 py-2 text-sm text-[var(--color-text)] placeholder-muted focus:outline-none focus:border-primary/50 transition-colors"
-                 />
-              </div>
-           </div>
+                  ))}
+                </div>
 
-           <div className="space-y-4">
+                {/* View Format Switcher */}
+                <div className="flex bg-surface border border-border p-1 rounded-xl items-center">
+                  <button
+                    onClick={() => setViewFormat('visual')}
+                    title="Visual 4-Zone Range Cards"
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                      viewFormat === 'visual'
+                        ? 'bg-primary text-white dark:text-slate-950 shadow-sm'
+                        : 'text-muted hover:text-theme'
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>Visual Cards</span>
+                  </button>
+                  <button
+                    onClick={() => setViewFormat('tabular')}
+                    title="Tabular Grid View"
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                      viewFormat === 'tabular'
+                        ? 'bg-primary text-white dark:text-slate-950 shadow-sm'
+                        : 'text-muted hover:text-theme'
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    <span>Tabular Grid</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <input 
+                  type="text" 
+                  aria-label="Search lab reports"
+                  placeholder="Search markers, doctors..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-surface border border-border rounded-full pl-9 pr-4 py-2 text-sm text-[var(--color-text)] placeholder-muted focus:outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
               {isLoading ? (
-                 [...Array(3)].map((_, i) => (
-                 <div key={i} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-4 animate-pulse">
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-4 animate-pulse">
                     <div className="flex gap-4">
-                       <div className="w-12 h-12 bg-[var(--color-bg)] rounded-xl" />
-                       <div className="flex-1 space-y-3">
-                       <div className="w-1/3 h-5 bg-[var(--color-bg)] rounded" />
-                       <div className="w-1/4 h-3 bg-[var(--color-bg)] rounded" />
-                       </div>
+                      <div className="w-12 h-12 bg-[var(--color-bg)] rounded-xl" />
+                      <div className="flex-1 space-y-3">
+                        <div className="w-1/3 h-5 bg-[var(--color-bg)] rounded" />
+                        <div className="w-1/4 h-3 bg-[var(--color-bg)] rounded" />
+                      </div>
                     </div>
-                 </div>
-                 ))
+                  </div>
+                ))
               ) : filteredReports.length > 0 ? (
-                  <div className="flex flex-col gap-4">
-                    {filteredReports.map((report) => (
+                <div className="flex flex-col gap-5">
+                  {filteredReports.map((report) => (
+                    viewFormat === 'visual' ? (
+                      <VisualLabReportCard
+                        key={report.id}
+                        report={report}
+                        historicalReports={reports}
+                        showCheckbox={reports.length >= 2}
+                        isSelected={selectedReports.includes(report.id)}
+                        onToggleSelection={toggleSelection}
+                      />
+                    ) : (
                       <ReportCard 
                         key={report.id} 
                         report={report} 
@@ -467,8 +512,9 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                         isSelected={selectedReports.includes(report.id)}
                         onToggleSelection={toggleSelection}
                       />
-                    ))}
-                  </div>
+                    )
+                  ))}
+                </div>
               ) : (
                  <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-12 text-center flex flex-col items-center">
                  <div className="w-20 h-20 bg-[var(--color-bg)] rounded-full flex items-center justify-center mb-6">
