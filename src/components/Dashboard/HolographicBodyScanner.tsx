@@ -402,7 +402,7 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
                 <Heart className="w-4 h-4 text-rose-400 animate-pulse" />
                 <span className="text-xs font-bold text-white">Cardio ECG Waveform</span>
               </div>
-              <span className="font-mono text-base font-black text-rose-300">{heartRate} <span className="text-xs font-normal text-slate-400">bpm</span></span>
+              <span className="font-mono text-base font-black text-rose-300">{heartRate} bpm</span>
             </div>
             {/* SVG Animated Dynamic ECG Wave */}
             <div className="w-full h-14 bg-slate-900/90 rounded-xl overflow-hidden relative flex items-center px-2 border border-rose-500/20">
