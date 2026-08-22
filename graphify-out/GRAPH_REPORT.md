@@ -9,7 +9,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0b5c375c`
+- Built from commit: `7847ab44`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -86,10 +86,11 @@
 - vite.config.ts
 - fetch-test.js
 - test2.js
+- @chenglou/pretext
 - date-fns
 - dotenv
 - express
-- express-rate-limit
+- react-dom
 - @firebase/eslint-plugin-security-rules
 - @google/genai
 - html2canvas
@@ -97,7 +98,6 @@
 - lucide-react
 - motion
 - qrcode.react
-- react-dom
 - react-dropzone
 - react-markdown
 - react-router-dom
@@ -339,7 +339,7 @@ Nodes (7): LabReportsSection, LabReport, LabReportsSection(), ReportCard(), down
 
 ### Community 47 - "dependencies"
 Cohesion: 0.22
-Nodes (9): @chenglou/pretext, clsx, firebase, html-to-image, dependencies, @chenglou/pretext, clsx, firebase (+1 more)
+Nodes (9): clsx, express-rate-limit, firebase, html-to-image, dependencies, clsx, express-rate-limit, firebase (+1 more)
 
 ### Community 48 - "ReportHistory.tsx"
 Cohesion: 0.39
@@ -410,8 +410,8 @@ Nodes (3): vite, vite, vite
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `useAuth()` connect `useAuth` to `SpecialistLounge.tsx`, `Settings/IntegrationsPanel.tsx`, `AlertsContext.tsx`, `abdmService.ts`, `App.tsx`, `Dashboard.tsx`, `parseSafeTimestamp`, `AuthContext.tsx`, `getAI`, `InfoPageLayout.tsx`, `typography_contrast.test.tsx`, `useProfile`, `LandingPage.tsx`, `PricingModal.tsx`, `Timeline.tsx`, `theme_typography_stress.test.tsx`, `UploadCenter.tsx`, `contextService.ts`, `ProfileContext.tsx`, `config.ts`, `Reports/LabReportsSection.tsx`, `ReportHistory.tsx`, `AppNav.tsx`, `react`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `Dashboard/SBARPreview.tsx`, `package.json`, `react`, `vite`, `date-fns`, `dotenv`, `express`, `express-rate-limit`, `@google/genai`, `html2canvas`, `lucide-react`, `motion`, `qrcode.react`, `react-dom`, `react-dropzone`, `react-markdown`, `react-router-dom`, `react-window`, `recharts`, `tailwind-merge`, `@tailwindcss/typography`, `@tailwindcss/vite`, `@vis.gl/react-google-maps`, `@vitejs/plugin-react`, `zod`?**
+  _High betweenness centrality (0.075) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `Dashboard/SBARPreview.tsx`, `package.json`, `react`, `vite`, `@chenglou/pretext`, `date-fns`, `dotenv`, `express`, `react-dom`, `@google/genai`, `html2canvas`, `lucide-react`, `motion`, `qrcode.react`, `react-dropzone`, `react-markdown`, `react-router-dom`, `react-window`, `recharts`, `tailwind-merge`, `@tailwindcss/typography`, `@tailwindcss/vite`, `@vis.gl/react-google-maps`, `@vitejs/plugin-react`, `zod`?**
   _High betweenness centrality (0.052) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `devDependencies` to `tailwindcss`, `@testing-library/react`, `tsx`, `@types/react-dom`, `@types/react-window`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`, `vite`, `vitest`, `@firebase/eslint-plugin-security-rules`, `jsdom`, `package.json`?**
   _High betweenness centrality (0.050) - this node is a cross-community bridge._

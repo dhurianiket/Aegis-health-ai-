@@ -12,6 +12,13 @@
   --animate-shimmer: shimmer 2s infinite linear;
   --animate-hologram-scan: hologramScan 3s ease-in-out infinite;
   --animate-ecg-dash: ecgDash 2.5s linear infinite;
+  --animate-cardiac-pulse: cardiacPulse 0.85s ease-in-out infinite;
+  --animate-pulmonary-breathing: pulmonaryBreathing 3.75s ease-in-out infinite;
+  --animate-vascular-flow: vascularFlow 2s linear infinite;
+  --animate-floor-ring-spin: floorRingSpin 12s linear infinite;
+  --animate-neural-impulse: neuralImpulse 3s ease-in-out infinite;
+  --animate-reticle-rotate: reticleRotate 4s linear infinite;
+  --animate-volumetric-pulse: volumetricPulse 3s ease-in-out infinite;
 
   @keyframes shimmer {
     100% {
@@ -38,6 +45,42 @@
     to {
       stroke-dashoffset: -600;
     }
+  }
+
+  @keyframes cardiacPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.4)); }
+    15% { transform: scale(1.09); filter: drop-shadow(0 0 16px rgba(244, 63, 94, 0.8)); }
+    30% { transform: scale(0.98); }
+    45% { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.6)); }
+  }
+
+  @keyframes pulmonaryBreathing {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.7)); }
+  }
+
+  @keyframes vascularFlow {
+    to { stroke-dashoffset: -100; }
+  }
+
+  @keyframes floorRingSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes neuralImpulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.98); }
+    50% { opacity: 0.9; transform: scale(1.04); filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)); }
+  }
+
+  @keyframes reticleRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes volumetricPulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.04); }
   }
 }
 
@@ -201,6 +244,49 @@
 
   .glow-indigo-3d {
     box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.35);
+  }
+
+  /* Cyber HUD Card with Corner Bracket Decorations */
+  .cyber-hud-card {
+    position: relative;
+    background: rgba(2, 6, 23, 0.95);
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.2),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .cyber-hud-card::before,
+  .cyber-hud-card::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: rgba(34, 211, 238, 0.7);
+    pointer-events: none;
+  }
+
+  .cyber-hud-card::before {
+    top: 6px;
+    left: 6px;
+    border-top: 2px solid;
+    border-left: 2px solid;
+    border-color: inherit;
+  }
+
+  .cyber-hud-card::after {
+    bottom: 6px;
+    right: 6px;
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+    border-color: inherit;
+  }
+
+  .holographic-body-glow {
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5))
+            drop-shadow(0 0 25px rgba(34, 211, 238, 0.25))
+            drop-shadow(0 0 60px rgba(34, 211, 238, 0.1));
   }
 
   .glass-card-3d {

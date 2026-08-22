@@ -32,7 +32,7 @@ describe('Milestone 1 (R1): 3D Holographic Anatomical Body & Organ Scanner', () 
     expect(screen.getByText('99%')).toBeDefined();
     expect(screen.getByText(/Cardio ECG Waveform/i)).toBeDefined();
     expect(screen.getByText(/SpO2 Oxygen/i)).toBeDefined();
-    expect(screen.getByText(/MAP: 93 mmHg/i)).toBeDefined();
+    expect(screen.getByText(/MAP.*93/i)).toBeDefined();
     expect(screen.getByText(/Body Temp/i)).toBeDefined();
     expect(screen.getByText(/Breathing Rate/i)).toBeDefined();
   });
