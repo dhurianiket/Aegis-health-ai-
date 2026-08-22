@@ -14,3 +14,7 @@
 **Vulnerability:** `crypto.timingSafeEqual` was used without verifying that input buffers have the exact same length.
 **Learning:** Node.js throws an exception ('Input buffers must have the same byte length') if the lengths differ, which can lead to Denial of Service (DoS) vulnerabilities or unhandled rejections if not properly caught.
 **Prevention:** Always verify that input buffers have the exact same length before comparing them with `crypto.timingSafeEqual` (e.g., `if (a.length !== b.length) return false;`).
+## 2024-05-18 - [DOM-based XSS in PDF Exporter]
+**Vulnerability:** Dynamic inputs like patient demographics and clinical records were directly interpolated into a hidden DOM element via `innerHTML` during PDF generation (html-to-image). This allowed malicious payloads in input fields to execute in the browser context.
+**Learning:** Even though the DOM is hidden and only used for generating a PDF, standard DOM injection vulnerabilities still apply because `innerHTML` executes inline scripts and fetches assets.
+**Prevention:** Always sanitize or HTML-escape dynamic content before injecting it into `innerHTML`, even if the element is not visibly appended to the main document body.
