@@ -121,6 +121,7 @@ export default function NoteAnalyzer() {
         <button
           onClick={handleAnalyze}
           disabled={!note.trim() || isAnalyzing || !isAlAvailable}
+          title={!isAlAvailable ? 'AI Services Offline' : !note.trim() ? 'Enter a clinical note to extract' : isAnalyzing ? 'Analyzing...' : ''}
           className="w-full bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition-all shadow-xl shadow-[var(--color-primary)]/20 flex items-center justify-center gap-2 group"
         >
           {isAnalyzing ? (
@@ -278,6 +279,7 @@ export default function NoteAnalyzer() {
               <button
                 onClick={handleSave}
                 disabled={isSaving}
+                title={isSaving ? 'Saving...' : ''}
                 className="w-full bg-[var(--color-surface)] hover:bg-[var(--color-bg)] border border-[var(--color-border)] disabled:opacity-50 text-[var(--color-text)] py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 group"
               >
                 {isSaving ? (
