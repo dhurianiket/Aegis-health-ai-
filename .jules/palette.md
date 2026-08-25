@@ -16,3 +16,6 @@
 ## 2026-08-24 - Explain Disabled States visually
 **Learning:** Users often encounter disabled buttons without understanding why they cannot click them. Providing visual feedback on hover is critical for accessibility and usability for non-screen-reader users. (Related to previous finding about `aria-label`).
 **Action:** Always add a `title` or tooltip attribute to disabled buttons explaining the reason they are disabled and how the user can enable them.
+## 2025-03-09 - Accessible Focus States for Integrations
+**Learning:** Some custom integration panel buttons lack visual focus indicators when navigating via keyboard, making them inaccessible for keyboard-only users.
+**Action:** Always add `focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]` (or specific colors like `focus-visible:ring-indigo-500`) to custom buttons and interactive labels to ensure keyboard accessibility while maintaining a clean look for mouse users.
