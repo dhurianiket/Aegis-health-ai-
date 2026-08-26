@@ -197,12 +197,11 @@ export default function ReportHistory() {
     if (!searchQuery.trim()) return allReports;
     const q = searchQuery.toLowerCase();
     return allReports.filter((report) => {
-      const nameMatch = (report.fileName || "").toLowerCase().includes(q);
-      const markerMatch = (report.observations || []).some((obs: any) => {
+      if ((report.fileName || "").toLowerCase().includes(q)) return true;
+      return (report.observations || []).some((obs: any) => {
         const markerName = (obs.marker || obs.testName || obs.name || "").toLowerCase();
         return markerName.includes(q);
       });
-      return nameMatch || markerMatch;
     });
   }, [allReports, searchQuery]);
 
