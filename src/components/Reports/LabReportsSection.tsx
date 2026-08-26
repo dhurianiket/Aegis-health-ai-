@@ -390,10 +390,10 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
            if (!typeMatch) return false;
         }
         if (queryStr.length > 0) {
-           const hospMatch = (r.hospitalName || '').toLowerCase().includes(queryStr);
-           const docMatch = (r.doctorName || '').toLowerCase().includes(queryStr);
-           const markerMatch = (r.extractedData?.lab_values || []).some(l => (l.marker || l.testName || '').toLowerCase().includes(queryStr));
-           if (!hospMatch && !docMatch && !markerMatch) return false;
+           if ((r.hospitalName || '').toLowerCase().includes(queryStr)) return true;
+           if ((r.doctorName || '').toLowerCase().includes(queryStr)) return true;
+           if ((r.extractedData?.lab_values || []).some(l => (l.marker || l.testName || '').toLowerCase().includes(queryStr))) return true;
+           return false;
         }
         return true;
      });
