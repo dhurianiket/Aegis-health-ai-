@@ -442,6 +442,12 @@ export default function UploadCenter({
   }, [activeTab, loadSearchDocs]);
 
   const [results, setResults] = useState<any[] | null>(null);
+
+  const extractedLabsCount = useMemo(() => {
+    if (!results) return 0;
+    return results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0);
+  }, [results]);
+
   const [confirmedLabIndices, setConfirmedLabIndices] = useState<Set<string>>(
     new Set(),
   );
@@ -1070,9 +1076,9 @@ export default function UploadCenter({
                  </motion.div>
                  <h3 className="text-2xl font-bold mb-2">Extraction complete</h3>
                  <p className="text-muted">
-                    Successfully extracted {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0)} lab values and saved to your health vault.
+                    Successfully extracted {extractedLabsCount} lab values and saved to your health vault.
                  </p>
-                 {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0) === 0 && (
+                 {extractedLabsCount === 0 && (
                     <div className="mt-4 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 text-sm max-w-lg text-left inline-flex">
                        <AlertCircle className="shrink-0 w-5 h-5 mr-3 mt-0.5" />
                        <span>We couldn't read any numeric lab values from this file. It was saved to your vault, but dashboards and charts may stay empty.</span>
