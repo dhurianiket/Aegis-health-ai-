@@ -197,11 +197,19 @@ export default function ReportHistory() {
     if (!searchQuery.trim()) return allReports;
     const q = searchQuery.toLowerCase();
     return allReports.filter((report) => {
-      if ((report.fileName || "").toLowerCase().includes(q)) return true;
-      return (report.observations || []).some((obs: any) => {
-        const markerName = (obs.marker || obs.testName || obs.name || "").toLowerCase();
-        return markerName.includes(q);
-      });
+      if (report.fileName && report.fileName.toLowerCase().includes(q)) return true;
+
+      const obsList = report.observations;
+      if (obsList && obsList.length > 0) {
+        for (let i = 0; i < obsList.length; i++) {
+          const obs = obsList[i];
+          const markerName = obs.marker || obs.testName || obs.name;
+          if (markerName && markerName.toLowerCase().includes(q)) {
+             return true;
+          }
+        }
+      }
+      return false;
     });
   }, [allReports, searchQuery]);
 

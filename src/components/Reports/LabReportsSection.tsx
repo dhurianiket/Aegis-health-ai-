@@ -381,18 +381,39 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
 
   const filteredReports = useMemo(() => {
      const queryStr = searchQuery.trim().toLowerCase();
+     const hasQuery = queryStr.length > 0;
+     const isFilterAll = filterType === 'All';
+     const isLabReports = filterType === 'Lab Reports';
+     const isConsultations = filterType === 'Consultations';
+
      return reports.filter(r => {
-        if (filterType !== 'All') {
-           const rType = r.type?.toLowerCase();
-           const typeMatch = filterType === 'Lab Reports' ? rType?.includes('lab') || rType?.includes('blood') || rType?.includes('pathology')
-              : filterType === 'Consultations' ? rType?.includes('consult') || rType?.includes('visit')
-              : true;
+        if (!isFilterAll) {
+           const rType = r.type ? r.type.toLowerCase() : '';
+           let typeMatch = false;
+           if (isLabReports) {
+              typeMatch = rType.includes('lab') || rType.includes('blood') || rType.includes('pathology');
+           } else if (isConsultations) {
+              typeMatch = rType.includes('consult') || rType.includes('visit');
+           } else {
+              typeMatch = true;
+           }
            if (!typeMatch) return false;
         }
-        if (queryStr.length > 0) {
-           if ((r.hospitalName || '').toLowerCase().includes(queryStr)) return true;
-           if ((r.doctorName || '').toLowerCase().includes(queryStr)) return true;
-           if ((r.extractedData?.lab_values || []).some(l => (l.marker || l.testName || '').toLowerCase().includes(queryStr))) return true;
+
+        if (hasQuery) {
+           if (r.hospitalName && r.hospitalName.toLowerCase().includes(queryStr)) return true;
+           if (r.doctorName && r.doctorName.toLowerCase().includes(queryStr)) return true;
+
+           const labValues = r.extractedData?.lab_values;
+           if (labValues && labValues.length > 0) {
+              for (let i = 0; i < labValues.length; i++) {
+                 const l = labValues[i];
+                 const markerName = l.marker || l.testName;
+                 if (markerName && markerName.toLowerCase().includes(queryStr)) {
+                    return true;
+                 }
+              }
+           }
            return false;
         }
         return true;
