@@ -96,7 +96,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={toggleTheme}
-              className="px-4 py-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium hover:bg-[var(--color-bg)]/80 transition"
+              className="px-4 py-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium hover:bg-[var(--color-bg)]/80 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
             >
               Toggle {theme === "dark" ? "Light" : "Dark"}
             </button>
@@ -120,7 +120,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium transition text-[var(--color-text)]">
+              <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium transition text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]">
                 <Download className="w-4 h-4" /> Export
               </button>
             </div>
@@ -139,7 +139,7 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={handleEmergencyMode}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-xl text-sm font-medium transition border border-amber-500/20"
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-xl text-sm font-medium transition border border-amber-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
               >
                 Enable Mode
               </button>
@@ -162,7 +162,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleDeleteProfile}
                 disabled={profiles.length <= 1}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-critical)]"
               >
                 Delete Profile
               </button>
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                     logOut();
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-critical)]"
               >
                 Delete Data
               </button>
@@ -225,7 +225,7 @@ export default function SettingsPage() {
         <div className="flex justify-center pt-6">
           <button
             onClick={logOut}
-            className="px-6 py-2 border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] rounded-full text-sm font-medium transition"
+            className="px-6 py-2 border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] rounded-full text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
           >
             Sign Out
           </button>
