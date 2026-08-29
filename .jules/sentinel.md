@@ -18,3 +18,7 @@
 **Vulnerability:** Dynamic inputs like patient demographics and clinical records were directly interpolated into a hidden DOM element via `innerHTML` during PDF generation (html-to-image). This allowed malicious payloads in input fields to execute in the browser context.
 **Learning:** Even though the DOM is hidden and only used for generating a PDF, standard DOM injection vulnerabilities still apply because `innerHTML` executes inline scripts and fetches assets.
 **Prevention:** Always sanitize or HTML-escape dynamic content before injecting it into `innerHTML`, even if the element is not visibly appended to the main document body.
+## 2026-08-29 - [Privilege Escalation via Missing Grouping in Firestore Rules]
+**Vulnerability:** A missing grouping structure in the Firestore rules 'allow create' condition could bypass ownership checks if evaluated incorrectly by the rules engine.
+**Learning:** In Firestore rules (CEL), operator precedence issues can be prevented by explicitly wrapping compound logic with parentheses (e.g., `isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role != 'admin')`). Additionally, checking for key existence via `'key' in map` is a concise alternative to `.keys().hasAny()`.
+**Prevention:** Always use explicit parentheses for compound conditional checks in `firestore.rules` to strictly enforce operator precedence, and use idiomatic CEL checks.
