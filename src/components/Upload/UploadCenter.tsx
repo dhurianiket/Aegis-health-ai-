@@ -837,17 +837,26 @@ export default function UploadCenter({
       if (ext.summary?.toLowerCase().includes(q)) return true;
 
       // Check inside medications
-      if (ext.medications?.some((m: any) => {
-        const name = typeof m === 'string' ? m : (m.name || '');
-        return name.toLowerCase().includes(q);
-      })) return true;
+      if (ext.medications && ext.medications.length > 0) {
+        for (let i = 0; i < ext.medications.length; i++) {
+          const m = ext.medications[i];
+          const name = typeof m === 'string' ? m : (m.name || '');
+          if (name && name.toLowerCase().includes(q)) return true;
+        }
+      }
 
       // Check inside lab values
-      if ((ext.lab_values || ext.observations || [])?.some((l: any) => {
-        const marker = (l.marker || l.testName || '').toLowerCase();
-        const status = (l.status || '').toLowerCase();
-        return marker.includes(q) || status.includes(q);
-      })) return true;
+      const labValues = ext.lab_values || ext.observations;
+      if (labValues && labValues.length > 0) {
+        for (let i = 0; i < labValues.length; i++) {
+          const l = labValues[i];
+          const marker = l.marker || l.testName;
+          const status = l.status;
+
+          if (marker && marker.toLowerCase().includes(q)) return true;
+          if (status && status.toLowerCase().includes(q)) return true;
+        }
+      }
 
       return false;
     });

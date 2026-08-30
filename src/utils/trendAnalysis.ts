@@ -66,10 +66,14 @@ export function computeTrend(
         obs.collectedAt != null &&
         obs.valueCanonical != null,
     )
-    .sort(
-      (a, b) =>
-        new Date(a.collectedAt).getTime() - new Date(b.collectedAt).getTime(),
-    );
+    // ⚡ Bolt: Performance optimization
+    // Applied Schwartzian transform to prevent O(N log N) redundant date parsing allocations.
+    .map((obs) => ({
+      obs,
+      time: new Date(obs.collectedAt).getTime(),
+    }))
+    .sort((a, b) => a.time - b.time)
+    .map(({ obs }) => obs);
 
   if (validObs.length < 2) return null;
 
