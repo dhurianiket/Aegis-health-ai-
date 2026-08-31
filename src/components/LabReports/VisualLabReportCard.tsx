@@ -387,8 +387,12 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
       });
     });
 
-    history.sort((a, b) => (parseSafeTimestamp(a.date)?.getTime() || 0) - (parseSafeTimestamp(b.date)?.getTime() || 0));
-    return history;
+    const mappedHistory = history.map(item => ({
+      item,
+      time: parseSafeTimestamp(item.date)?.getTime() || 0
+    }));
+    mappedHistory.sort((a, b) => a.time - b.time);
+    return mappedHistory.map(m => m.item);
   };
 
   return (
