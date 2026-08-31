@@ -303,6 +303,7 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
           </div>
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
