@@ -1,78 +1,71 @@
-# Graph Report - Aegis-Health-Intelligence  (2026-08-22)
+# Graph Report - Aegis-Health-Intelligence  (2026-08-31)
 
 ## Corpus Check
 - cluster-only mode — file stats not available
 
 ## Summary
-- 1294 nodes · 3233 edges · 114 communities (72 shown, 42 thin omitted)
+- 1298 nodes · 3239 edges · 106 communities (65 shown, 41 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 9 edges (avg confidence: 0.65)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7847ab44`
+- Built from commit: `8c5a252f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- SpecialistLounge.tsx
-- drugInteractionService.ts
+- firestore.ts
+- gemini.ts
+- Dashboard.tsx
 - Settings/IntegrationsPanel.tsx
+- SpecialistLounge.tsx
 - AlertsContext.tsx
 - abdmService.ts
-- HolographicBodyScanner.tsx
 - App.tsx
-- Dashboard.tsx
-- gemini.ts
-- parseSafeTimestamp
+- HolographicBodyScanner.tsx
 - PaperclipJulesCoordinator
 - fhir.ts
-- functions/package.json
 - compilerOptions
-- AuthContext.tsx
-- medical.ts
 - PaperclipJulesCoordinator
-- getAI
-- InfoPageLayout.tsx
+- milestone3_4_empirical_stress.spec.tsx
+- health.ts
+- AuthContext.tsx
+- drugInteractionService.ts
 - auditLogService.ts
-- typography_contrast.test.tsx
-- Dashboard/SBARPreview.tsx
 - useProfile
+- ErrorBoundary.tsx
+- Reports/LabReportsSection.tsx
 - fhirService.ts
-- LandingPage.tsx
-- firestore.ts
-- devDependencies
-- PricingModal.tsx
-- Timeline.tsx
-- useAuth
-- RegionalVoiceService
-- theme_typography_stress.test.tsx
-- alertService.ts
-- UploadCenter.tsx
-- measurementProtocolService.ts
-- contextService.ts
-- milestone3_empirical_stress.spec.tsx
-- compilerOptions
-- ProfileContext.tsx
-- config.ts
-- coachService.ts
-- AIErrorBoundary
 - usageService.ts
-- VisualLabReportCard.tsx
+- ClinicalHandover.tsx
+- PricingModal.tsx
+- measurementProtocolService.ts
+- devDependencies
+- compilerOptions
+- useAuth
+- Medications.tsx
+- typography_contrast.test.tsx
+- useClinicalContext.ts
+- theme_typography_stress.test.tsx
+- functions/package.json
+- ExportModal.tsx
+- pillar1_abdm_audio_snomed.test.ts
+- dependencies
+- dependencies
 - scripts
 - graphify.ts
-- Reports/LabReportsSection.tsx
-- dependencies
-- ReportHistory.tsx
-- ai.ts
+- LandingPage.tsx
+- Dashboard/SBARPreview.tsx
+- RegionalVoiceService
+- overrides
 - manifest.json
-- AppNav.tsx
+- ReportComparison.tsx
 - SectionErrorBoundary
 - package.json
-- react
+- MainApp
 - overrides
-- CareMap.tsx
-- VoiceService
-- pillar1_abdm_audio_snomed.test.ts
+- react
+- SkeletonLoader.tsx
 - jules-sync-staging.sh
 - ui.ts
 - MedicalSafetyBanner.tsx
@@ -86,20 +79,17 @@
 - vite.config.ts
 - fetch-test.js
 - test2.js
-- @chenglou/pretext
+- clsx
 - date-fns
 - dotenv
 - express
-- react-dom
-- @firebase/eslint-plugin-security-rules
-- @google/genai
+- express-rate-limit
+- firebase
+- eslint
 - html2canvas
-- jsdom
-- lucide-react
+- html-to-image
 - motion
 - qrcode.react
-- react-dropzone
-- react-markdown
 - react-router-dom
 - react-window
 - recharts
@@ -111,7 +101,9 @@
 - zod
 - tailwindcss
 - @testing-library/react
-- tsx
+- @types/express
+- @types/node
+- @types/react
 - @types/react-dom
 - @types/react-window
 - @typescript-eslint/eslint-plugin
@@ -139,287 +131,259 @@
   src/services/pdfExportService.ts → package.json
 - `SplashScreen()` --references--> `react`  [EXTRACTED]
   src/components/Onboarding/SplashScreen.tsx → package.json
-- `ComparativeAnalysisProps` --references--> `LabResult`  [EXTRACTED]
-  src/components/Dashboard/ComparativeAnalysis.tsx → src/types/medical.ts
-- `CorrelationMatrixProps` --references--> `LabResult`  [EXTRACTED]
-  src/components/Dashboard/CorrelationMatrix.tsx → src/types/medical.ts
+- `SpecialistLounge()` --indirect_call--> `renderCitationLink()`  [INFERRED]
+  src/components/Specialists/SpecialistLounge.tsx → src/components/Common/CitationBadge.tsx
+- `CycleTrackingSettings()` --calls--> `useAuth()`  [EXTRACTED]
+  src/components/Profile/CycleTrackingSettings.tsx → src/context/AuthContext.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (114 total, 42 thin omitted)
+## Communities (106 total, 41 thin omitted)
 
-### Community 0 - "SpecialistLounge.tsx"
+### Community 0 - "firestore.ts"
+Cohesion: 0.05
+Nodes (67): Timeline, UploadCenter, ShareReport, ShareReport(), loadDocuments(), fetchDocs(), TYPE_CONFIG, compressImageIfNeeded() (+59 more)
+
+### Community 1 - "gemini.ts"
 Cohesion: 0.06
-Nodes (48): ChatMessage, VirtualizedChatList(), VirtualizedChatListProps, renderCitationLink(), LabCardData, MasonryLabCards(), MasonryLabCardsProps, AutoSizeTextarea() (+40 more)
+Nodes (60): ChatCoach, ChatCoach(), ChatCoachProps, SpecialistLounge(), NoteAnalyzer(), getAI(), streamGenerate(), Type (+52 more)
 
-### Community 1 - "drugInteractionService.ts"
-Cohesion: 0.07
-Nodes (48): FoodInteractionMatrix, DEFAULT_SAMPLE_MEDS, FoodInteractionMatrix(), FoodInteractionMatrixProps, InteractionMatrix(), loadOpenFdaData(), InteractionMatrixProps, calculateContrastRatio() (+40 more)
+### Community 2 - "Dashboard.tsx"
+Cohesion: 0.06
+Nodes (49): Particle, ComparativeAnalysis(), ComparativeAnalysisProps, simpleHash(), CorrelationMatrix(), CorrelationMatrixProps, CycleTrackingWidget(), aggregateLabs() (+41 more)
 
-### Community 2 - "Settings/IntegrationsPanel.tsx"
+### Community 3 - "Settings/IntegrationsPanel.tsx"
 Cohesion: 0.11
-Nodes (45): WearableCoachWidget(), WearableCoachWidgetProps, HealthConnectModal(), HealthConnectModalProps, IntegrationsPanel(), IntegrationsPanelProps, useWearableTelemetry(), UseWearableTelemetryResult (+37 more)
+Nodes (47): WearableCoachWidget(), WearableCoachWidgetProps, HealthConnectModal(), HealthConnectModalProps, IntegrationsPanel(), IntegrationsPanelProps, useWearableTelemetry(), UseWearableTelemetryResult (+39 more)
 
-### Community 3 - "AlertsContext.tsx"
+### Community 4 - "SpecialistLounge.tsx"
 Cohesion: 0.06
-Nodes (37): App(), NotificationCenter, SmartAlerts, RemindersWidget(), RemindersWidgetProps, SmartAlerts(), NotificationCategory, NotificationDropdown() (+29 more)
+Nodes (43): SpecialistLounge, ChatMessage, VirtualizedChatList(), VirtualizedChatListProps, renderCitationLink(), LabCardData, MasonryLabCards(), MasonryLabCardsProps (+35 more)
 
-### Community 4 - "abdmService.ts"
+### Community 5 - "AlertsContext.tsx"
+Cohesion: 0.06
+Nodes (42): App(), NotificationCenter, SmartAlerts, RemindersWidget(), RemindersWidgetProps, SmartAlerts(), NotificationCategory, NotificationDropdown() (+34 more)
+
+### Community 6 - "abdmService.ts"
 Cohesion: 0.13
 Nodes (43): AbdmConnectModal(), AbdmConnectModalProps, AbdmScanShareModal(), AbdmScanShareModalProps, checkAbhaAddressAvailability(), confirmAbdmOtp(), createAbhaAddress(), DEFAULT_CARE_CONTEXTS (+35 more)
 
-### Community 5 - "HolographicBodyScanner.tsx"
+### Community 7 - "App.tsx"
+Cohesion: 0.07
+Nodes (17): AboutUs, BlogCBC, BlogHbA1c, Dashboard, EngineeringPlaybook, FeedbackWidget, HowItWorks, IntegrationsPanel (+9 more)
+
+### Community 8 - "HolographicBodyScanner.tsx"
 Cohesion: 0.09
 Nodes (29): BiomarkerTrajectoryWidget(), BiomarkerTrajectoryWidgetProps, DEFAULT_SAMPLE_DATA, BiomarkerTrajectoryWidget, HolographicBodyScanner, OrganHealthAvatar, HolographicBodyScanner(), HolographicBodyScannerProps (+21 more)
 
-### Community 6 - "App.tsx"
-Cohesion: 0.08
-Nodes (15): AdminDashboard, ChatCoach, FeedbackWidget, IntegrationsPanel, Medications, PrivacyPolicy, ProtectedRoute(), PublicLandingPageRoute() (+7 more)
-
-### Community 7 - "Dashboard.tsx"
-Cohesion: 0.08
-Nodes (16): Dashboard, Particle, ATTENTION_STATUSES, Canvas3DMesh, EmptyDashboard, HealthRadarChart, Hero3DHealthGauge, TRACKED_NAMES (+8 more)
-
-### Community 8 - "gemini.ts"
-Cohesion: 0.14
-Nodes (24): auth, analyzeWithSpecialist(), ExtractedReportResponse, extractMedicalReports(), SAFETY_GUARDRAIL(), SPECIALIST_PROMPTS, SpecialistAnalysisResponse, extractLabData() (+16 more)
-
-### Community 9 - "parseSafeTimestamp"
-Cohesion: 0.11
-Nodes (19): ComparativeAnalysis(), ComparativeAnalysisProps, simpleHash(), CorrelationMatrix(), CorrelationMatrixProps, CycleTrackingWidget(), aggregateLabs(), ComparativeAnalysis (+11 more)
-
-### Community 10 - "PaperclipJulesCoordinator"
+### Community 9 - "PaperclipJulesCoordinator"
 Cohesion: 0.12
 Nodes (10): app_1, https_1, crypto, firestore_1, https_1, firestore_1, genai_1, getAiClient() (+2 more)
 
-### Community 11 - "fhir.ts"
+### Community 10 - "fhir.ts"
 Cohesion: 0.10
 Nodes (23): FhirAddress, FhirAttachment, FhirBundle, FhirBundleEntry, FhirBundleType, FhirCodeableConcept, FhirCoding, FhirContactPoint (+15 more)
 
-### Community 12 - "functions/package.json"
-Cohesion: 0.09
-Nodes (22): firebase-admin, firebase-functions, dependencies, firebase-admin, firebase-functions, @google/genai, uuid, devDependencies (+14 more)
-
-### Community 13 - "compilerOptions"
+### Community 11 - "compilerOptions"
 Cohesion: 0.09
 Nodes (22): DOM, DOM.Iterable, ES2022, functions, compilerOptions, allowImportingTsExtensions, allowJs, experimentalDecorators (+14 more)
 
-### Community 14 - "AuthContext.tsx"
-Cohesion: 0.15
-Nodes (16): CalendarSync, AdminDashboard(), COLORS, CalendarEvent, CalendarSync(), SYMPTOMS_LIST, VisitPrepWidget(), PostLoginTransition() (+8 more)
-
-### Community 15 - "medical.ts"
-Cohesion: 0.23
-Nodes (15): COACH_SYSTEM_INSTRUCTION, ActivityFilter, BiometricDiagnosticCorrelation, calculateCompositeReadinessScore(), evaluateBiometricDiagnosticCorrelation(), MetabolicAdaptation, normalizeImagingTexts(), RecoveryOverride (+7 more)
-
-### Community 16 - "PaperclipJulesCoordinator"
+### Community 12 - "PaperclipJulesCoordinator"
 Cohesion: 0.15
 Nodes (7): verifyRecaptcha, handleGitHubWebhook, getAiClient(), getDb(), JulesSessionConfig, PaperclipJulesCoordinator, ValidationResult
 
-### Community 17 - "getAI"
-Cohesion: 0.17
-Nodes (14): FamilyHub, FamilyHub(), NoteAnalyzer(), getAI(), streamGenerate(), Type, mockGenerateContent, mockGenerateContentStream (+6 more)
+### Community 13 - "milestone3_4_empirical_stress.spec.tsx"
+Cohesion: 0.13
+Nodes (15): FoodInteractionMatrix, DEFAULT_SAMPLE_MEDS, FoodInteractionMatrix(), FoodInteractionMatrixProps, calculateContrastRatio(), getRelativeLuminance(), hexToRgb(), MOCK_12_MEDICATIONS (+7 more)
 
-### Community 18 - "InfoPageLayout.tsx"
-Cohesion: 0.12
-Nodes (8): AboutUs, BlogCBC, BlogHbA1c, EngineeringPlaybook, HowItWorks, SecurityFirst, InfoPageLayout(), InfoPageLayoutProps
+### Community 14 - "health.ts"
+Cohesion: 0.23
+Nodes (15): InteractionMatrix(), InteractionMatrixProps, BioRegimenSafetySummary, buildBioRegimenSafetySummary(), DRUG_CATEGORIES, DrugLabContraindication, evaluateDrugLabContraindications(), isMedInCategory() (+7 more)
 
-### Community 19 - "auditLogService.ts"
+### Community 15 - "AuthContext.tsx"
+Cohesion: 0.16
+Nodes (15): ProfileManagement, CycleTrackingSettings(), ProfileManagement(), AuthContextType, Profile, ProfileContextType, app, auth (+7 more)
+
+### Community 16 - "drugInteractionService.ts"
+Cohesion: 0.19
+Nodes (18): loadOpenFdaData(), AdverseEventReaction, BlackBoxWarning, cacheOpenFdaSummary(), cacheRxCuiMatch(), cleanDrugQuery(), ClinicalCitation, CURATED_FDA_KNOWLEDGE_BASE (+10 more)
+
+### Community 17 - "auditLogService.ts"
 Cohesion: 0.23
 Nodes (16): SecurityAuditViewer(), ZeroKnowledgeVaultModal(), AuditActionType, clearAuditLogs(), computeSha256(), getAuditLogs(), getDefaultSampleLogs(), logSecurityEvent() (+8 more)
 
-### Community 20 - "typography_contrast.test.tsx"
-Cohesion: 0.14
-Nodes (9): HeroMetric(), HeroMetricProps, ReportComparison(), fetchData(), ReportComparisonProps, MOCK_PROFILE, MOCK_USER, compareReports() (+1 more)
+### Community 18 - "useProfile"
+Cohesion: 0.12
+Nodes (15): CareMap, FamilyHub, CareMap(), DEFAULT_CENTER, PlaceMarker, ALL_DESKTOP_TABS, AppNav(), AppNavProps (+7 more)
 
-### Community 21 - "Dashboard/SBARPreview.tsx"
-Cohesion: 0.14
-Nodes (14): jspdf, jspdf, ExportModal, SBARPreview(), SBARPreviewProps, DateRange, ExportModal(), ExportModalProps (+6 more)
+### Community 19 - "ErrorBoundary.tsx"
+Cohesion: 0.12
+Nodes (8): ErrorBoundary, Props, State, AIErrorBoundary, Props, State, logger, TODO: Send to remote observability platform
 
-### Community 22 - "useProfile"
+### Community 20 - "Reports/LabReportsSection.tsx"
+Cohesion: 0.25
+Nodes (14): BiomarkerSparkline(), FourZoneRangeBar(), getPlainEnglishSummary(), LabObservationItem, LabReport, PLAIN_ENGLISH_EXPLANATIONS, VisualLabReportCard(), VisualLabReportCardProps (+6 more)
+
+### Community 21 - "fhirService.ts"
+Cohesion: 0.23
+Nodes (16): convertReportToFHIRBundle(), convertToFHIRObservation(), convertToFHIRPatient(), downloadFHIRBundle(), exportToFhirBundle(), FHIRBundle, FHIRResource, LOINC_DICTIONARY (+8 more)
+
+### Community 22 - "usageService.ts"
 Cohesion: 0.22
-Nodes (13): ConsentScreen, SBARPreview(), SBARPreviewProps, ConsentScreen(), ConsentScreenProps, steps, ClinicalHandover(), useProfile() (+5 more)
+Nodes (12): AdminDashboard, AdminDashboard(), COLORS, AuthProvider(), getAllUsersUsage(), getEstCost(), markUserActive(), SubscriptionPlanId (+4 more)
 
-### Community 23 - "fhirService.ts"
-Cohesion: 0.29
-Nodes (15): convertReportToFHIRBundle(), convertToFHIRObservation(), convertToFHIRPatient(), exportToFhirBundle(), FHIRBundle, FHIRResource, LOINC_DICTIONARY, LoincMapping (+7 more)
+### Community 23 - "ClinicalHandover.tsx"
+Cohesion: 0.21
+Nodes (12): ConsentScreen, SBARPreview(), SBARPreviewProps, ConsentScreen(), ConsentScreenProps, steps, ClinicalHandover(), logAuditEvent() (+4 more)
 
-### Community 24 - "LandingPage.tsx"
-Cohesion: 0.12
-Nodes (10): LandingPage, ErrorBoundary, Props, State, BENTO_LABS, CHAOS_TEXT, EXPLORE_PAGES, LandingPage() (+2 more)
-
-### Community 25 - "firestore.ts"
-Cohesion: 0.24
-Nodes (17): ClinicalSummaryRecord, FirestoreErrorInfo, getConversations(), getFamilyRelations(), getHealthScores(), getWearableHistory(), handleFirestoreError(), OperationType (+9 more)
-
-### Community 26 - "devDependencies"
-Cohesion: 0.12
-Nodes (17): autoprefixer, eslint, devDependencies, autoprefixer, eslint, @playwright/test, @testing-library/dom, @types/express (+9 more)
-
-### Community 27 - "PricingModal.tsx"
+### Community 24 - "PricingModal.tsx"
 Cohesion: 0.20
 Nodes (12): PricingModal, PricingModal(), PricingModalProps, CouponData, DEFAULT_LAUNCH_COUPON, redeemCoupon(), RedeemCouponResult, initiateRazorpayPayment() (+4 more)
 
-### Community 28 - "Timeline.tsx"
-Cohesion: 0.21
-Nodes (14): Timeline, fetchDocs(), TYPE_CONFIG, classifyDocument(), createReminder(), generateRemindersFromAlerts(), executeFullUploadPipeline(), logAuditEvent() (+6 more)
-
-### Community 29 - "useAuth"
-Cohesion: 0.34
-Nodes (12): ChatCoach(), ChatCoachProps, Medications(), useAuth(), useClinicalContext(), explainInteraction(), checkInteractions(), getActiveMedications() (+4 more)
-
-### Community 30 - "RegionalVoiceService"
-Cohesion: 0.17
-Nodes (6): RegionalAudioPlayer(), RegionalAudioPlayerProps, INDIAN_LANGUAGES, IndianLanguageOption, RegionalVoiceService, SpeechState
-
-### Community 31 - "theme_typography_stress.test.tsx"
-Cohesion: 0.19
-Nodes (9): SettingsPage, SettingsPage(), ThemeToggleHarness(), applyTheme(), Theme, ThemeContext, ThemeContextType, ThemeProvider() (+1 more)
-
-### Community 32 - "alertService.ts"
-Cohesion: 0.24
-Nodes (11): DRUG_INTERACTIONS, InteractionRule, isDuplicateClass(), isMedInCategory(), MED_CATEGORIES, checkLabResultForAlerts(), DEFAULT_THRESHOLDS, getConsolidatedAlerts() (+3 more)
-
-### Community 33 - "UploadCenter.tsx"
-Cohesion: 0.23
-Nodes (13): UploadCenter, compressImageIfNeeded(), EXTRACTION_STEPS, FileItem, generateSuggestedTags(), getMimeType(), isSafari, readFileAsSafeBase64() (+5 more)
-
-### Community 34 - "measurementProtocolService.ts"
+### Community 25 - "measurementProtocolService.ts"
 Cohesion: 0.25
 Nodes (11): GA_API_SECRET, GA_MEASUREMENT_ID, getOrCreateClientId(), MeasurementProtocolEvent, sendMeasurementProtocolEvent(), SendTelemetryOptions, GA_MEASUREMENT_ID, getGtag() (+3 more)
 
-### Community 35 - "contextService.ts"
-Cohesion: 0.33
-Nodes (11): MainApp(), fetchData(), ShareReport, ShareReport(), getClinicalSummary(), getDocuments(), getLabHistory(), getLatestInsights() (+3 more)
-
-### Community 36 - "milestone3_empirical_stress.spec.tsx"
+### Community 26 - "devDependencies"
 Cohesion: 0.15
-Nodes (6): AuthContext, ProfileContext, mockAuthContextValue, mockProfileContextValue, mockAuthContextValue, mockProfileContextValue
+Nodes (13): autoprefixer, @firebase/eslint-plugin-security-rules, jsdom, devDependencies, autoprefixer, @firebase/eslint-plugin-security-rules, jsdom, @playwright/test (+5 more)
 
-### Community 37 - "compilerOptions"
+### Community 27 - "compilerOptions"
 Cohesion: 0.15
 Nodes (12): compileOnSave, compilerOptions, module, noImplicitReturns, noUnusedLocals, outDir, skipLibCheck, sourceMap (+4 more)
 
-### Community 38 - "ProfileContext.tsx"
-Cohesion: 0.24
-Nodes (8): ProfileManagement, ProfileManagement(), Profile, ProfileContextType, isRequired(), validateProfileName(), Gender, UserProfile
+### Community 28 - "useAuth"
+Cohesion: 0.19
+Nodes (10): CalendarSync, ProtectedRoute(), PublicLandingPageRoute(), SettingsPage, CalendarEvent, CalendarSync(), PostLoginTransition(), PostLoginTransitionProps (+2 more)
 
-### Community 39 - "config.ts"
-Cohesion: 0.18
-Nodes (9): CycleTrackingSettings(), app, db, firebaseConfig, getDynamicAuthDomain(), googleProvider, sanitizeDomain(), storage (+1 more)
-
-### Community 40 - "coachService.ts"
+### Community 29 - "Medications.tsx"
 Cohesion: 0.32
-Nodes (9): useCoach(), buildCoachPromptAugmentation(), CoachResponse, getCoachResponse(), FORBIDDEN_PHRASES, MANDATORY_DISCLAIMERS, runSafetyCheck(), SafetyCheckResult (+1 more)
+Nodes (9): Medications, Medications(), db, checkInteractions(), getActiveMedications(), getInteractions(), lookupRxCUI(), saveMedication() (+1 more)
 
-### Community 41 - "AIErrorBoundary"
+### Community 30 - "typography_contrast.test.tsx"
 Cohesion: 0.18
-Nodes (5): AIErrorBoundary, Props, State, logger, TODO: Send to remote observability platform
+Nodes (4): HeroMetric(), HeroMetricProps, MOCK_PROFILE, MOCK_USER
 
-### Community 42 - "usageService.ts"
-Cohesion: 0.39
-Nodes (9): getAllUsersUsage(), getEstCost(), getUserUsageStats(), markUserActive(), SubscriptionPlanId, trackStorageUsage(), trackUsage(), updateGlobalStats() (+1 more)
+### Community 31 - "useClinicalContext.ts"
+Cohesion: 0.32
+Nodes (9): SYMPTOMS_LIST, VisitPrepWidget(), getAccessToken(), useClinicalContext(), FormMetadata, FormResponse, getForm(), getFormResponses() (+1 more)
 
-### Community 43 - "VisualLabReportCard.tsx"
-Cohesion: 0.40
-Nodes (8): BiomarkerSparkline(), FourZoneRangeBar(), getPlainEnglishSummary(), LabObservationItem, LabReport, PLAIN_ENGLISH_EXPLANATIONS, VisualLabReportCard(), VisualLabReportCardProps
+### Community 32 - "theme_typography_stress.test.tsx"
+Cohesion: 0.23
+Nodes (7): ThemeToggleHarness(), applyTheme(), Theme, ThemeContext, ThemeContextType, ThemeProvider(), useTheme()
 
-### Community 44 - "scripts"
+### Community 33 - "functions/package.json"
+Cohesion: 0.17
+Nodes (11): devDependencies, typescript, engines, node, main, name, private, scripts (+3 more)
+
+### Community 34 - "ExportModal.tsx"
+Cohesion: 0.20
+Nodes (9): jspdf, jspdf, ExportModal, DateRange, ExportModal(), ExportModalProps, ExportButton(), ExportButtonProps (+1 more)
+
+### Community 35 - "pillar1_abdm_audio_snomed.test.ts"
+Cohesion: 0.27
+Nodes (8): RegionalAudioPlayerProps, INDIAN_LANGUAGES, IndianLanguageOption, SpeechState, getSnomedCoding(), mapToSnomedCodeableConcepts(), SNOMED_DICTIONARY, SnomedConcept
+
+### Community 36 - "dependencies"
+Cohesion: 0.18
+Nodes (11): @chenglou/pretext, lucide-react, dependencies, @chenglou/pretext, lucide-react, react-dom, react-dropzone, react-markdown (+3 more)
+
+### Community 37 - "dependencies"
+Cohesion: 0.20
+Nodes (10): firebase-admin, firebase-functions, dependencies, firebase-admin, firebase-functions, @google/genai, uuid, @google/genai (+2 more)
+
+### Community 38 - "scripts"
 Cohesion: 0.20
 Nodes (10): scripts, build, clean, dev, graphify, graphify:full, lint, preview (+2 more)
 
-### Community 45 - "graphify.ts"
+### Community 39 - "graphify.ts"
 Cohesion: 0.29
 Nodes (9): generateGraphifyMarkdown(), getCategory(), GraphNode, LESSONS_FILE, main(), OUTPUT_FILE, parseFile(), scanDirectory() (+1 more)
 
-### Community 46 - "Reports/LabReportsSection.tsx"
-Cohesion: 0.24
-Nodes (7): LabReportsSection, LabReport, LabReportsSection(), ReportCard(), downloadFHIRBundle(), downloadFhirJson(), exportToFHIR()
+### Community 40 - "LandingPage.tsx"
+Cohesion: 0.20
+Nodes (7): LandingPage, BENTO_LABS, CHAOS_TEXT, EXPLORE_PAGES, LandingPage(), SPECIALISTS_SHOWCASE, LegalModalProps
 
-### Community 47 - "dependencies"
+### Community 41 - "Dashboard/SBARPreview.tsx"
+Cohesion: 0.27
+Nodes (8): SBARPreview, RegionalAudioPlayer(), SBARPreview(), SBARPreviewProps, escapeHtml(), exportOpdConsultationPdf(), OpdPdfInputData, SBARSummary
+
+### Community 43 - "overrides"
 Cohesion: 0.22
-Nodes (9): clsx, express-rate-limit, firebase, html-to-image, dependencies, clsx, express-rate-limit, firebase (+1 more)
+Nodes (9): overrides, dompurify, esbuild, ip-address, js-yaml, nanoid, protobufjs, qs (+1 more)
 
-### Community 48 - "ReportHistory.tsx"
-Cohesion: 0.39
-Nodes (8): Dashboard(), ReportHistory(), loadData(), Timeline(), getReportHistory(), getSourceForMarker(), getUrgencyAndNextStep(), ReportHistoryEntry
-
-### Community 49 - "ai.ts"
-Cohesion: 0.28
-Nodes (8): ChatMessage, ChatRole, Conversation, PatientContext, SpecialistId, SpecialistProfile, Medication, SpecialistInsight
-
-### Community 50 - "manifest.json"
+### Community 44 - "manifest.json"
 Cohesion: 0.25
 Nodes (7): background_color, display, icons, name, short_name, start_url, theme_color
 
-### Community 51 - "AppNav.tsx"
-Cohesion: 0.29
-Nodes (6): ALL_DESKTOP_TABS, AppNav(), AppNavProps, bottomTabs, BottomSheet(), BottomSheetProps
+### Community 45 - "ReportComparison.tsx"
+Cohesion: 0.36
+Nodes (6): ReportComparison(), fetchData(), ReportComparisonProps, compareReports(), ComparisonRow, CLINICAL_STABILITY_THRESHOLDS
 
-### Community 52 - "SectionErrorBoundary"
+### Community 46 - "SectionErrorBoundary"
 Cohesion: 0.25
 Nodes (3): Props, SectionErrorBoundary, State
 
-### Community 53 - "package.json"
+### Community 47 - "package.json"
 Cohesion: 0.29
 Nodes (6): engines, node, name, private, type, version
 
-### Community 54 - "react"
+### Community 48 - "MainApp"
+Cohesion: 0.33
+Nodes (5): MainApp(), isRequired(), validateProfileName(), checkCanUploadReport(), getUserSubscription()
+
+### Community 49 - "overrides"
+Cohesion: 0.33
+Nodes (6): overrides, body-parser, protobufjs, qs, uuid, ws
+
+### Community 50 - "react"
 Cohesion: 0.33
 Nodes (5): react, react, SplashScreen(), SplashScreenProps, ProfileProvider()
 
-### Community 55 - "overrides"
+### Community 51 - "SkeletonLoader.tsx"
 Cohesion: 0.33
-Nodes (6): overrides, esbuild, ip-address, protobufjs, qs, ws
+Nodes (4): DashboardSkeleton(), SkeletonLoader(), SkeletonLoaderProps, TimelineSkeleton()
 
-### Community 56 - "CareMap.tsx"
-Cohesion: 0.33
-Nodes (4): CareMap, CareMap(), DEFAULT_CENTER, PlaceMarker
-
-### Community 58 - "pillar1_abdm_audio_snomed.test.ts"
-Cohesion: 0.60
-Nodes (4): getSnomedCoding(), mapToSnomedCodeableConcepts(), SNOMED_DICTIONARY, SnomedConcept
-
-### Community 59 - "jules-sync-staging.sh"
+### Community 52 - "jules-sync-staging.sh"
 Cohesion: 0.70
 Nodes (4): log_error(), log_info(), log_warn(), jules-sync-staging.sh script
 
-### Community 60 - "ui.ts"
+### Community 53 - "ui.ts"
 Cohesion: 0.60
 Nodes (4): BaseComponentProps, ButtonProps, CardProps, StatusBadgeProps
 
-### Community 62 - "api.ts"
+### Community 55 - "api.ts"
 Cohesion: 0.50
 Nodes (3): AIExtractionResponse, ApiResponse, SpecialistAnalysisResponse
 
-### Community 63 - "vite-env.d.ts"
+### Community 56 - "vite-env.d.ts"
 Cohesion: 0.50
 Nodes (3): ImportMeta, ImportMetaEnv, Window
 
-### Community 64 - "vite"
+### Community 57 - "vite"
 Cohesion: 0.67
 Nodes (3): vite, vite, vite
 
 ## Knowledge Gaps
-- **339 isolated node(s):** `VirtualizedChatListProps`, `LabCardData`, `MasonryLabCardsProps`, `AutoSizeTextareaProps`, `FixedSizeTextProps` (+334 more)
+- **339 isolated node(s):** `Toast`, `ToastContextType`, `ToastType`, `TrendSummary`, `FileItem` (+334 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **42 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **41 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useAuth()` connect `useAuth` to `SpecialistLounge.tsx`, `Settings/IntegrationsPanel.tsx`, `AlertsContext.tsx`, `abdmService.ts`, `App.tsx`, `Dashboard.tsx`, `parseSafeTimestamp`, `AuthContext.tsx`, `getAI`, `InfoPageLayout.tsx`, `typography_contrast.test.tsx`, `useProfile`, `LandingPage.tsx`, `PricingModal.tsx`, `Timeline.tsx`, `theme_typography_stress.test.tsx`, `UploadCenter.tsx`, `contextService.ts`, `ProfileContext.tsx`, `config.ts`, `Reports/LabReportsSection.tsx`, `ReportHistory.tsx`, `AppNav.tsx`, `react`?**
-  _High betweenness centrality (0.075) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `Dashboard/SBARPreview.tsx`, `package.json`, `react`, `vite`, `@chenglou/pretext`, `date-fns`, `dotenv`, `express`, `react-dom`, `@google/genai`, `html2canvas`, `lucide-react`, `motion`, `qrcode.react`, `react-dropzone`, `react-markdown`, `react-router-dom`, `react-window`, `recharts`, `tailwind-merge`, `@tailwindcss/typography`, `@tailwindcss/vite`, `@vis.gl/react-google-maps`, `@vitejs/plugin-react`, `zod`?**
-  _High betweenness centrality (0.052) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `tailwindcss`, `@testing-library/react`, `tsx`, `@types/react-dom`, `@types/react-window`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`, `vite`, `vitest`, `@firebase/eslint-plugin-security-rules`, `jsdom`, `package.json`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **What connects `VirtualizedChatListProps`, `LabCardData`, `MasonryLabCardsProps` to the rest of the system?**
+- **Why does `useAuth()` connect `useAuth` to `firestore.ts`, `gemini.ts`, `Dashboard.tsx`, `Settings/IntegrationsPanel.tsx`, `SpecialistLounge.tsx`, `AlertsContext.tsx`, `abdmService.ts`, `App.tsx`, `AuthContext.tsx`, `useProfile`, `Reports/LabReportsSection.tsx`, `usageService.ts`, `ClinicalHandover.tsx`, `PricingModal.tsx`, `Medications.tsx`, `useClinicalContext.ts`, `LandingPage.tsx`, `ReportComparison.tsx`, `MainApp`, `react`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `ExportModal.tsx`, `dependencies`, `package.json`, `react`, `vite`, `clsx`, `date-fns`, `dotenv`, `express`, `express-rate-limit`, `firebase`, `html2canvas`, `html-to-image`, `motion`, `qrcode.react`, `react-router-dom`, `react-window`, `recharts`, `tailwind-merge`, `@tailwindcss/typography`, `@tailwindcss/vite`, `@vis.gl/react-google-maps`, `@vitejs/plugin-react`, `zod`?**
+  _High betweenness centrality (0.077) - this node is a cross-community bridge._
+- **Why does `devDependencies` connect `devDependencies` to `functions/package.json`, `eslint`, `package.json`, `vitest`, `tailwindcss`, `@testing-library/react`, `@types/express`, `@types/node`, `@types/react`, `@types/react-dom`, `@types/react-window`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`, `vite`?**
+  _High betweenness centrality (0.057) - this node is a cross-community bridge._
+- **What connects `Toast`, `ToastContextType`, `ToastType` to the rest of the system?**
   _339 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `SpecialistLounge.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.0563165905631659 - nodes in this community are weakly interconnected._
-- **Should `drugInteractionService.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.0679563492063492 - nodes in this community are weakly interconnected._
-- **Should `Settings/IntegrationsPanel.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.1115811739820201 - nodes in this community are weakly interconnected._
+- **Should `firestore.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.050156739811912224 - nodes in this community are weakly interconnected._
+- **Should `gemini.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.06358024691358025 - nodes in this community are weakly interconnected._
+- **Should `Dashboard.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.05974124809741248 - nodes in this community are weakly interconnected._
