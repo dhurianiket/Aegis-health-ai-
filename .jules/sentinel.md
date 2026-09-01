@@ -22,3 +22,7 @@
 **Vulnerability:** A missing grouping structure in the Firestore rules 'allow create' condition could bypass ownership checks if evaluated incorrectly by the rules engine.
 **Learning:** In Firestore rules (CEL), operator precedence issues can be prevented by explicitly wrapping compound logic with parentheses (e.g., `isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role != 'admin')`). Additionally, checking for key existence via `'key' in map` is a concise alternative to `.keys().hasAny()`.
 **Prevention:** Always use explicit parentheses for compound conditional checks in `firestore.rules` to strictly enforce operator precedence, and use idiomatic CEL checks.
+## 2026-09-01 - [Missing Input Length Limit on API Endpoint]
+**Vulnerability:** The `/api/generate-visit-prep` endpoint in `server.ts` accepted a `prompt` without validating its type or enforcing a maximum length limit.
+**Learning:** This exposes the endpoint to resource exhaustion attacks where maliciously large prompts can tie up server memory, increase latency, and abuse external API quotas (e.g., Gemini API keys).
+**Prevention:** Always enforce strict type checking (`typeof param === 'string'`) and maximum length limits on user inputs, especially before proxying requests to external backend services.
