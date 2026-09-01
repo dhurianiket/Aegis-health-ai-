@@ -34,6 +34,8 @@ async function startServer() {
     try {
        const prompt = req.body.prompt;
        if (!prompt) return res.status(400).json({ error: "No prompt provided" });
+       if (typeof prompt !== 'string') return res.status(400).json({ error: "Prompt must be a string" });
+       if (prompt.length > 5000) return res.status(400).json({ error: "Prompt is too long (maximum 5000 characters)" });
        
        const gApiKey = process.env.GEMINI_API_KEY;
        if (!gApiKey) return res.status(500).json({ error: "Gemini API key is not configured on server" });
