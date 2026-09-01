@@ -365,31 +365,37 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
     downloadFhirJson(bundle, `fhir_r4_${report.fileName || report.id || 'report'}.json`);
   };
 
-  // Build history lookup for sparklines from previous reports
-  const getHistoricalValuesForMarker = (markerName: string): { date: string; value: number }[] => {
-    const history: { date: string; value: number }[] = [];
-    const target = markerName.toLowerCase().trim();
+  // Build history lookup for sparklines from previous reports using useMemo
+  const historicalDataByMarker = useMemo(() => {
+    const historyMap = new Map<string, { date: string; value: number; timestamp: number }[]>();
 
     historicalReports.forEach((hr) => {
       if (hr.id === report.id) return;
       const obs = hr.extractedData?.observations || hr.extractedData?.lab_values || [];
       obs.forEach((o: any) => {
         const oName = (o.marker || o.testName || '').toLowerCase().trim();
-        if (oName === target || oName.includes(target) || target.includes(oName)) {
-          const num = parseFloat(String(o.valueCanonical ?? o.valueOriginal ?? o.value).replace(/[^0-9.-]/g, ''));
-          if (!isNaN(num)) {
-            history.push({
-              date: hr.date || hr.uploadedAt,
-              value: num,
-            });
+        const num = parseFloat(String(o.valueCanonical ?? o.valueOriginal ?? o.value).replace(/[^0-9.-]/g, ''));
+        if (!isNaN(num)) {
+          const dateStr = hr.date || hr.uploadedAt;
+          const ts = parseSafeTimestamp(dateStr)?.getTime() || 0;
+          const entry = { date: dateStr, value: num, timestamp: ts };
+
+          if (!historyMap.has(oName)) {
+            historyMap.set(oName, [entry]);
+          } else {
+            historyMap.get(oName)!.push(entry);
           }
         }
       });
     });
 
-    history.sort((a, b) => (parseSafeTimestamp(a.date)?.getTime() || 0) - (parseSafeTimestamp(b.date)?.getTime() || 0));
-    return history;
-  };
+    // Sort all arrays
+    historyMap.forEach((historyArr) => {
+      historyArr.sort((a, b) => a.timestamp - b.timestamp);
+    });
+
+    return historyMap;
+  }, [historicalReports, report.id]);
 
   return (
     <div
@@ -514,7 +520,17 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                 const source = getSourceForMarker(markerName);
                 const urgency = getUrgencyAndNextStep(markerName, flag, String(numVal));
                 const plainExplanation = getPlainEnglishSummary(markerName);
-                const history = getHistoricalValuesForMarker(markerName);
+
+                // Find matching history from pre-computed map
+                const target = markerName.toLowerCase().trim();
+                let history: { date: string; value: number; timestamp?: number }[] = [];
+                for (const [key, values] of historicalDataByMarker.entries()) {
+                  if (key === target || key.includes(target) || target.includes(key)) {
+                    history = history.concat(values);
+                  }
+                }
+                history.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
+                history = history.map((h: any) => ({ date: h.date, value: h.value }));
 
                 const refLow = m.referenceLow !== undefined && m.referenceLow !== null ? Number(m.referenceLow) : null;
                 const refHigh = m.referenceHigh !== undefined && m.referenceHigh !== null ? Number(m.referenceHigh) : null;
