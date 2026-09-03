@@ -294,7 +294,7 @@ describe('Challenger 2: ABDM Gateway Adversarial & Cryptographic Stress Suite', 
     it('M3.2: Generates valid SHA256withECDSA digital signature and sets status GRANTED', async () => {
       const artifact = await simulateConsentApproval('CR-2026-9481', TEST_USER);
       expect(artifact.status).toBe('GRANTED');
-      expect(artifact.consentId).toMatch(/^ART-\d{6}-\d{4}$/);
+      expect(artifact.consentId).toMatch(/^ART-\d{6}-[0-9a-f]{8}$/);
       expect(artifact.signature).toMatch(/^SHA256withECDSA:MEQCIE/);
       expect(artifact.permission.accessMode).toBe('VIEW');
 
