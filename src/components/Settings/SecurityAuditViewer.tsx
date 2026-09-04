@@ -73,15 +73,17 @@ export const SecurityAuditViewer: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={reloadLogs}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             title="Refresh logs"
+            aria-label="Refresh logs"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
           <button
             onClick={handleClear}
-            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
             title="Clear logs"
+            aria-label="Clear logs"
           >
             <Trash2 className="w-4 h-4" />
           </button>
