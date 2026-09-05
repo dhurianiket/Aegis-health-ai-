@@ -445,7 +445,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
           <button
             onClick={handleExportFhir}
             title="Export as HL7 FHIR R4 JSON Bundle"
-            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/40 transition-all min-h-[44px] cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/40 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
             <Activity size={14} className="text-indigo-400" />
             <span>FHIR R4</span>
@@ -457,7 +457,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
               else setShowSbarModal(true);
             }}
             title="View Structured SBAR Clinical Summary"
-            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 text-xs font-bold rounded-xl border border-teal-500/40 transition-all min-h-[44px] cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 text-xs font-bold rounded-xl border border-teal-500/40 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <FileCheck size={14} className="text-teal-400" />
             <span>SBAR View</span>
@@ -468,14 +468,14 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
               href={report.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all min-h-[44px]"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <Download size={14} /> PDF
             </a>
           ) : (
             <button
               onClick={downloadSummary}
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all min-h-[44px] cursor-pointer"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <Download size={14} /> JSON
             </button>
@@ -484,7 +484,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
           {observationCount > 0 && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-xl transition-all border border-cyan-500/30 min-h-[44px] cursor-pointer"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-xl transition-all border border-cyan-500/30 min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
               aria-label={expanded ? 'Hide Visual Range Cards' : 'View Visual Range Cards'}
             >
               <span>{expanded ? 'Hide Range Cards' : `View ${observationCount} Cards`}</span>
@@ -639,7 +639,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                 </h3>
                 <button
                   onClick={() => setShowSbarModal(false)}
-                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold min-h-[44px] cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 >
                   Close
                 </button>
