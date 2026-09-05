@@ -19,3 +19,6 @@
 ## 2025-03-09 - Accessible Focus States for Integrations
 **Learning:** Some custom integration panel buttons lack visual focus indicators when navigating via keyboard, making them inaccessible for keyboard-only users.
 **Action:** Always add `focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]` (or specific colors like `focus-visible:ring-indigo-500`) to custom buttons and interactive labels to ensure keyboard accessibility while maintaining a clean look for mouse users.
+## 2025-03-09 - Ensure keyboard accessibility in toolbars and modals
+**Learning:** Found multiple instances of buttons in `VisualLabReportCard` (e.g., Export FHIR, PDF, Close) missing visual focus indicators for keyboard users. Adding standard `focus:ring-2` can be distracting for mouse users.
+**Action:** Consistently add `focus:outline-none focus-visible:ring-2 focus-visible:ring-*` to interactive elements across toolbars and modals to ensure screen reader / keyboard accessibility without degrading the mouse click experience.
