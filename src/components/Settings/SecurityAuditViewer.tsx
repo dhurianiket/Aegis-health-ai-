@@ -75,6 +75,7 @@ export const SecurityAuditViewer: React.FC = () => {
             onClick={reloadLogs}
             className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
             title="Refresh logs"
+            aria-label="Refresh logs"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -82,6 +83,7 @@ export const SecurityAuditViewer: React.FC = () => {
             onClick={handleClear}
             className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
             title="Clear logs"
+            aria-label="Clear logs"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -119,6 +121,7 @@ export const SecurityAuditViewer: React.FC = () => {
                     <button
                       onClick={() => copyHash(log.sha256Checksum, log.id)}
                       className="px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 hover:border-indigo-400 font-mono text-[10px] text-indigo-300 cursor-pointer transition-colors inline-flex items-center gap-1.5"
+                      aria-label={`Copy SHA-256 checksum ${log.sha256Checksum.slice(0, 12)}`}
                     >
                       <span>{log.sha256Checksum.slice(0, 12)}...</span>
                       {copiedId === log.id ? (
