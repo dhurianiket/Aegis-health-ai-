@@ -70,6 +70,7 @@ export const AbdmScanShareModal: React.FC<AbdmScanShareModalProps> = ({ isOpen, 
             </button>
             <button
               onClick={onClose}
+              aria-label="Close modal"
               className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors border border-white/10"
             >
               <X className="w-5 h-5" />
