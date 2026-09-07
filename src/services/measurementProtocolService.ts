@@ -34,7 +34,7 @@ export function getOrCreateClientId(): string {
   if (typeof window === 'undefined') return 'server_session_node';
   let clientId = localStorage.getItem('aegis_ga_client_id');
   if (!clientId) {
-    clientId = 'client_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
+    clientId = 'client_' + crypto.randomUUID();
     localStorage.setItem('aegis_ga_client_id', clientId);
   }
   return clientId;

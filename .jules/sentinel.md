@@ -31,3 +31,7 @@
 **Vulnerability:** The `/api/generate-visit-prep` endpoint in `server.ts` accepted a `prompt` without validating its type or enforcing a maximum length limit.
 **Learning:** This exposes the endpoint to resource exhaustion attacks where maliciously large prompts can tie up server memory, increase latency, and abuse external API quotas (e.g., Gemini API keys).
 **Prevention:** Always enforce strict type checking (`typeof param === 'string'`) and maximum length limits on user inputs, especially before proxying requests to external backend services.
+## 2025-03-08 - [Insecure Randomness for Unique IDs]
+**Vulnerability:** Weak pseudo-random number generators (`Math.random()`) were used to generate unique identifiers (clientId, obsId, docRefId).
+**Learning:** Using predictable randomness can lead to ID collisions or allow attackers to predict identifiers, failing SAST checks. While the specific IDs modified in this patch were not security-critical tokens, uniformly enforcing cryptographically secure generation is best practice to pass automated security scanners. Note that extracting substrings from hexadecimal UUIDs reduces entropy compared to base-36 strings, but is acceptable when combined with timestamps.
+**Prevention:** Always use cryptographically secure methods like `crypto.randomUUID()` for unique identifiers.
