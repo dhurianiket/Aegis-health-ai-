@@ -182,7 +182,7 @@ export default function IntegrationsPanel({
           </div>
           <button
             onClick={() => setSyncFeedback(null)}
-            className="text-xs font-bold opacity-70 hover:opacity-100 uppercase tracking-widest px-2 py-1 cursor-pointer"
+            className="text-xs font-bold opacity-70 hover:opacity-100 uppercase tracking-widest px-2 py-1 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
           >
             Dismiss
           </button>
@@ -249,7 +249,7 @@ export default function IntegrationsPanel({
               <button
                 onClick={() => setModalProvider("apple")}
                 disabled={syncingProvider === "apple"}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-slate-800/90 to-slate-950/90 border border-slate-700/70 hover:border-slate-500/80 text-slate-50 font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 disabled:opacity-50 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-slate-800/90 to-slate-950/90 border border-slate-700/70 hover:border-slate-500/80 text-slate-50 font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <RefreshCw
                   className={`w-4 h-4 ${syncingProvider === "apple" ? "animate-spin" : ""}`}
@@ -333,7 +333,7 @@ export default function IntegrationsPanel({
               <button
                 onClick={() => setModalProvider("google")}
                 disabled={syncingProvider === "google"}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-blue-600/90 to-indigo-900/90 border border-blue-400/50 hover:border-blue-300/70 text-white font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] active:scale-95 disabled:opacity-50 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-blue-600/90 to-indigo-900/90 border border-blue-400/50 hover:border-blue-300/70 text-white font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] active:scale-95 disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
               >
                 <RefreshCw
                   className={`w-4 h-4 ${syncingProvider === "google" ? "animate-spin" : ""}`}
@@ -402,14 +402,14 @@ export default function IntegrationsPanel({
           <div className="pt-4 border-t border-slate-800/80 relative z-10 flex flex-wrap items-center justify-end gap-3">
             <button
               onClick={() => setIsScanShareOpen(true)}
-              className="py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 text-orange-300 border border-orange-500/30 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer"
+              className="py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 text-orange-300 border border-orange-500/30 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
             >
               <QrCode className="w-4 h-4 text-orange-400" />
               Scan & Share OPD Check-In
             </button>
             <button
               onClick={() => setIsAbdmModalOpen(true)}
-              className="py-3 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
+              className="py-3 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
             >
               {abhaProfile ? "Manage ABHA & Consent Hub" : "Connect & Verify ABHA ID"}
             </button>

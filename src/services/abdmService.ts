@@ -266,7 +266,7 @@ export async function requestAbdmOtp(
       : `+91 ******${cleanId.slice(-4)}`;
 
   return {
-    txnId: `txn-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    txnId: `txn-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
     authMode,
     maskedTarget: masked,
     success: true,
@@ -287,7 +287,7 @@ export async function confirmAbdmOtp(
 
   await new Promise((res) => setTimeout(res, 300));
 
-  const random14 = Array.from({ length: 14 }, () => Math.floor(Math.random() * 10)).join('');
+  const random14 = crypto.randomUUID().replace(/\D/g, '').padEnd(14, '0').slice(0, 14);
   const formattedAbha = formatAbhaNumber(random14);
   const handleClean = (preferredAddress || `patient_${userId.substring(0, 6)}`)
     .replace(/@abdm$/, '')
@@ -315,8 +315,8 @@ export async function confirmAbdmOtp(
       gender: 'Male',
       dateOfBirth: '1992-05-15',
     }),
-    token: `abdm-jwt-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-    refreshToken: `abdm-ref-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    token: `abdm-jwt-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+    refreshToken: `abdm-ref-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
     createdAt: new Date().toISOString(),
     lastLinkedAt: new Date().toISOString(),
   };
@@ -482,7 +482,7 @@ export async function simulateConsentApproval(
   );
   saveConsentRequests(userId, updatedRequests);
 
-  const artifactId = `ART-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const artifactId = `ART-${Date.now().toString().slice(-6)}-${crypto.randomUUID().slice(0, 8)}`;
   const artifact: ConsentArtifact = {
     consentId: artifactId,
     consentRequestId: target.id,
@@ -490,7 +490,7 @@ export async function simulateConsentApproval(
     hiuId: target.hiu.id,
     hipId: target.hip?.id || 'HIP-AEGIS-001',
     status: 'GRANTED',
-    signature: `SHA256withECDSA:MEQCIEy8${Math.random().toString(36).substring(2, 10)}TAgIdR5k0${Math.random().toString(36).substring(2, 10)}=`,
+    signature: `SHA256withECDSA:MEQCIEy8${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}TAgIdR5k0${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}=`,
     grantedAt: new Date().toISOString(),
     expiresAt: target.permission.dataEraseAt,
     permission: target.permission,
@@ -568,9 +568,9 @@ export async function simulateEncryptedDataTransfer(
     dhPublicKey: {
       expiry: new Date(Date.now() + 86400000).toISOString(),
       parameters: 'Curve25519/ECDH-AES-GCM-256',
-      keyValue: `MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+      keyValue: `MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE${crypto.randomUUID().replace(/-/g, '')}`,
     },
-    nonce: `nonce-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
+    nonce: `nonce-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
   };
 
   // 3. Simulated AES-GCM-256 Ciphertext & Checksum

@@ -10,14 +10,27 @@ interface CorrelationMatrixProps {
 
 function CorrelationMatrix({ labs }: CorrelationMatrixProps) {
   // Simple Pearson correlation coefficient calculation
+  // ⚡ Bolt: Performance optimization
+  // Replaced 5 individual O(N) array.reduce() calls with a single O(N) forward loop.
+  // This reduces array iterations from 5 passes to 1 pass and eliminates callback allocation overhead.
   const calculateCorrelation = (x: number[], y: number[]) => {
     if (x.length !== y.length || x.length === 0) return 0;
     const n = x.length;
-    const sumX = x.reduce((a, b) => a + b, 0);
-    const sumY = y.reduce((a, b) => a + b, 0);
-    const sumXY = x.reduce((a, b, i) => a + b * y[i], 0);
-    const sumX2 = x.reduce((a, b) => a + b * b, 0);
-    const sumY2 = y.reduce((a, b) => a + b * b, 0);
+    let sumX = 0;
+    let sumY = 0;
+    let sumXY = 0;
+    let sumX2 = 0;
+    let sumY2 = 0;
+
+    for (let i = 0; i < n; i++) {
+      const xi = x[i];
+      const yi = y[i];
+      sumX += xi;
+      sumY += yi;
+      sumXY += xi * yi;
+      sumX2 += xi * xi;
+      sumY2 += yi * yi;
+    }
 
     const numerator = n * sumXY - sumX * sumY;
     const denominator = Math.sqrt(

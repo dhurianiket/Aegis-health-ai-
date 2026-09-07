@@ -108,7 +108,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] transition-all duration-200 focus:outline-none relative group cursor-pointer ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] relative group cursor-pointer ${
                   isActive
                     ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)] font-semibold shadow-sm shadow-[var(--color-primary)]/10"
                     : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] font-medium"
@@ -155,7 +155,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   aria-label="Upload Document"
-                className="flex flex-col items-center justify-center -mt-6 focus:outline-none relative z-10 pointer-events-auto"
+                className="flex flex-col items-center justify-center -mt-6 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] relative z-10 pointer-events-auto"
                 >
                   <div
                     className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 bg-[var(--color-primary)] text-white`}
@@ -171,7 +171,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-colors focus:outline-none relative pointer-events-auto ${
+                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] relative pointer-events-auto ${
                   isActive
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"

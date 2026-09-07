@@ -34,12 +34,12 @@ export default function EmptyDashboard({
               <h3 className="font-semibold text-sm mb-1 text-[var(--color-text)]">Upload Report</h3>
               <p className="text-xs text-[var(--color-text-muted)]">PDFs or images of test results</p>
             </button>
-            <button disabled aria-label="Complete Profile (Coming Soon)" className="flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[20px] transition-all group text-left cursor-not-allowed opacity-70">
+            <button disabled title="Complete Profile (Coming Soon)" aria-label="Complete Profile (Coming Soon)" className="flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[20px] transition-all group text-left cursor-not-allowed opacity-70">
               <Target className="w-8 h-8 text-emerald-500 mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold text-sm mb-1 text-[var(--color-text)]">Complete Profile</h3>
               <p className="text-xs text-[var(--color-text-muted)]">Add medical history & goals</p>
             </button>
-            <button disabled aria-label="Try AURA AI (Unlock by uploading a report)" className="flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[20px] transition-all group text-left cursor-not-allowed opacity-70">
+            <button disabled title="Try AURA AI (Unlock by uploading a report)" aria-label="Try AURA AI (Unlock by uploading a report)" className="flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[20px] transition-all group text-left cursor-not-allowed opacity-70">
               <SparklesIcon className="w-8 h-8 text-indigo-500 mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold text-sm mb-1 text-[var(--color-text)]">Try AURA AI</h3>
               <p className="text-xs text-[var(--color-text-muted)]">Synthesize insights instantly</p>

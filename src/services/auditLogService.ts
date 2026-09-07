@@ -49,7 +49,7 @@ export async function logSecurityEvent(
   details: string,
   actor: string = 'Current User (ABHA Verified)'
 ): Promise<SecurityAuditRecord> {
-  const id = `AUDIT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const id = `AUDIT-${Date.now()}-${crypto.randomUUID()}`;
   const timestamp = new Date().toISOString();
   const ipAddressHash = '127.0.0.1 (WebCrypto Verified)';
 

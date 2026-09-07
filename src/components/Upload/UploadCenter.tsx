@@ -442,6 +442,12 @@ export default function UploadCenter({
   }, [activeTab, loadSearchDocs]);
 
   const [results, setResults] = useState<any[] | null>(null);
+
+  const extractedLabsCount = useMemo(() => {
+    if (!results) return 0;
+    return results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0);
+  }, [results]);
+
   const [confirmedLabIndices, setConfirmedLabIndices] = useState<Set<string>>(
     new Set(),
   );
@@ -831,17 +837,26 @@ export default function UploadCenter({
       if (ext.summary?.toLowerCase().includes(q)) return true;
 
       // Check inside medications
-      if (ext.medications?.some((m: any) => {
-        const name = typeof m === 'string' ? m : (m.name || '');
-        return name.toLowerCase().includes(q);
-      })) return true;
+      if (ext.medications && ext.medications.length > 0) {
+        for (let i = 0; i < ext.medications.length; i++) {
+          const m = ext.medications[i];
+          const name = typeof m === 'string' ? m : (m.name || '');
+          if (name && name.toLowerCase().includes(q)) return true;
+        }
+      }
 
       // Check inside lab values
-      if ((ext.lab_values || ext.observations || [])?.some((l: any) => {
-        const marker = (l.marker || l.testName || '').toLowerCase();
-        const status = (l.status || '').toLowerCase();
-        return marker.includes(q) || status.includes(q);
-      })) return true;
+      const labValues = ext.lab_values || ext.observations;
+      if (labValues && labValues.length > 0) {
+        for (let i = 0; i < labValues.length; i++) {
+          const l = labValues[i];
+          const marker = l.marker || l.testName;
+          const status = l.status;
+
+          if (marker && marker.toLowerCase().includes(q)) return true;
+          if (status && status.toLowerCase().includes(q)) return true;
+        }
+      }
 
       return false;
     });
@@ -1070,9 +1085,9 @@ export default function UploadCenter({
                  </motion.div>
                  <h3 className="text-2xl font-bold mb-2">Extraction complete</h3>
                  <p className="text-muted">
-                    Successfully extracted {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0)} lab values and saved to your health vault.
+                    Successfully extracted {extractedLabsCount} lab values and saved to your health vault.
                  </p>
-                 {results.reduce((acc, r) => acc + (r.lab_values?.length || 0), 0) === 0 && (
+                 {extractedLabsCount === 0 && (
                     <div className="mt-4 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 text-sm max-w-lg text-left inline-flex">
                        <AlertCircle className="shrink-0 w-5 h-5 mr-3 mt-0.5" />
                        <span>We couldn't read any numeric lab values from this file. It was saved to your vault, but dashboards and charts may stay empty.</span>
