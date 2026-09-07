@@ -121,6 +121,7 @@ export const SecurityAuditViewer: React.FC = () => {
                     <button
                       onClick={() => copyHash(log.sha256Checksum, log.id)}
                       className="px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 hover:border-indigo-400 font-mono text-[10px] text-indigo-300 cursor-pointer transition-colors inline-flex items-center gap-1.5"
+                      aria-label={`Copy SHA-256 checksum ${log.sha256Checksum.slice(0, 12)}`}
                     >
                       <span>{log.sha256Checksum.slice(0, 12)}...</span>
                       {copiedId === log.id ? (
