@@ -56,7 +56,10 @@
 ## $(date +%Y-%m-%d) - Schwartzian Transform and Short-Circuit Filtering Optimizations
 **Learning:** Parsing dates (e.g. `new Date(str)`) redundantly inside a `.sort()` comparator creates severe O(N log N) performance bottlenecks. Additionally, using eagerly-evaluated methods like `.some()` combined with inline string manipulations (like `.toLowerCase()`) inside `useMemo` filter blocks generates significant garbage collection overhead and blocks the main thread when iterating over large datasets.
 **Action:** When sorting by expensive computed values, apply a Schwartzian transform (decorate-sort-undecorate) to execute computations exactly once per item (O(N)). For array filtering, replace inline closures like `.some()` with standard `for` loops and hoist/guard string methods (like checking truthiness before calling `.toLowerCase()`) to ensure short-circuit evaluation.
-
 ## 2024-06-10 - O(N log N) Date Parsing Bottleneck
 **Learning:** Parsing dates inside inline `Array.sort()` comparators creates a hidden O(N log N) bottleneck, particularly blocking the main thread during component re-renders. This occurs because date parsing functions like `parseSafeTimestamp` are expensive and the comparator parses the exact same date strings multiple times during the sort process.
 **Action:** Use a Schwartzian transform (decorate-sort-undecorate) to parse and cache dates during a single O(N) forward pass before sorting. This executes the expensive operation exactly once per item, caches the result in a mapped object, performs the sort on the cached value, and finally maps back to the original objects.
+
+## 2024-05-24 - Inline Filter Iteration vs HashMap
+**Learning:** Calling `.filter` inside a map of a React Component and scanning O(M) external sets on every iteration creates severe re-renders when data lists are long (like Lab Reports tracking histories). The combination of date parsing and looping can cause blocking re-renders.
+**Action:** Always extract invariant mapping and multi-lookup filters into a `useMemo`, employing dictionaries (`new Map()`) or Sets, specifically replacing redundant O(N) evaluations with O(1) reads.
