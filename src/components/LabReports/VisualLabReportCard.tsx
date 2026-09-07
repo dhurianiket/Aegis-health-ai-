@@ -397,6 +397,23 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
     return historyMap;
   }, [historicalReports, report.id]);
 
+  const markerHistories = useMemo(() => {
+    const historyCache = new Map<string, { date: string; value: number }[]>();
+    observations.forEach((m: any, idx: number) => {
+      const markerName = m.testName || m.marker || `Biomarker ${idx + 1}`;
+      const target = markerName.toLowerCase().trim();
+      let history: { date: string; value: number; timestamp?: number }[] = [];
+      for (const [key, values] of historicalDataByMarker.entries()) {
+        if (key === target || key.includes(target) || target.includes(key)) {
+          history = history.concat(values);
+        }
+      }
+      history.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
+      historyCache.set(markerName, history.map((h: any) => ({ date: h.date, value: h.value })));
+    });
+    return historyCache;
+  }, [observations, historicalDataByMarker]);
+
   return (
     <div
       className={`w-full glass-card-ultra-3d p-5 sm:p-7 space-y-6 relative overflow-hidden transition-all duration-200 ${
@@ -521,16 +538,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                 const urgency = getUrgencyAndNextStep(markerName, flag, String(numVal));
                 const plainExplanation = getPlainEnglishSummary(markerName);
 
-                // Find matching history from pre-computed map
-                const target = markerName.toLowerCase().trim();
-                let history: { date: string; value: number; timestamp?: number }[] = [];
-                for (const [key, values] of historicalDataByMarker.entries()) {
-                  if (key === target || key.includes(target) || target.includes(key)) {
-                    history = history.concat(values);
-                  }
-                }
-                history.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
-                history = history.map((h: any) => ({ date: h.date, value: h.value }));
+                const history = markerHistories.get(markerName) || [];
 
                 const refLow = m.referenceLow !== undefined && m.referenceLow !== null ? Number(m.referenceLow) : null;
                 const refHigh = m.referenceHigh !== undefined && m.referenceHigh !== null ? Number(m.referenceHigh) : null;
