@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "./config";
 export { auth, db };
+import { parseSafeTimestamp } from "../../utils/dateUtils";
 import {
   MedicalDocument,
   LabResult,
@@ -127,7 +128,12 @@ export async function getDocuments(userId: string, profileId?: string) {
     const snapshot = await getDocs(q);
     const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as MedicalDocument,
-    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+    )
+    // Performance optimization (Schwartzian transform): Precompute parsed dates in O(N) before sorting
+    // to prevent redundant parsing and allocation on every O(N log N) comparator step.
+    .map(doc => ({ doc, t: parseSafeTimestamp(doc.date)?.getTime() || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(item => item.doc);
     
     return docs;
   } catch (error) {
@@ -152,7 +158,12 @@ export async function getLabHistory(
     const snapshot = await getDocs(q);
     const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as LabResult,
-    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+    )
+    // Performance optimization (Schwartzian transform): Precompute parsed dates in O(N) before sorting
+    // to prevent redundant parsing and allocation on every O(N log N) comparator step.
+    .map(doc => ({ doc, t: parseSafeTimestamp(doc.date)?.getTime() || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(item => item.doc);
     
     return docs;
   } catch (error) {
@@ -245,11 +256,12 @@ export async function getLatestInsights(userId: string, profileId?: string) {
     const snapshot = await getDocs(q);
     const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as SpecialistInsight,
-    ).sort((a: any, b: any) => {
-       const tA = a.timestamp?.toMillis ? a.timestamp.toMillis() : new Date(a.timestamp || 0).getTime();
-       const tB = b.timestamp?.toMillis ? b.timestamp.toMillis() : new Date(b.timestamp || 0).getTime();
-       return tB - tA;
-    });
+    )
+    // Performance optimization (Schwartzian transform): Precompute parsed dates in O(N) before sorting
+    // to prevent redundant parsing and allocation on every O(N log N) comparator step.
+    .map((doc: any) => ({ doc, t: doc.timestamp?.toMillis ? doc.timestamp.toMillis() : parseSafeTimestamp(doc.timestamp)?.getTime() || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(item => item.doc);
     
     return docs;
   } catch (error) {
@@ -284,7 +296,12 @@ export async function getHealthScores(userId: string, profileId?: string) {
     const snapshot = await getDocs(q);
     const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as any,
-    ).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+    )
+    // Performance optimization (Schwartzian transform): Precompute parsed dates in O(N) before sorting
+    // to prevent redundant parsing and allocation on every O(N log N) comparator step.
+    .map((doc: any) => ({ doc, t: parseSafeTimestamp(doc.date)?.getTime() || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(item => item.doc);
     
     return docs;
   } catch (error) {
@@ -339,11 +356,12 @@ export async function getClinicalSummary(userId: string, profileId?: string) {
     const snapshot = await getDocs(q);
     const docs = snapshot.docs.map(
       (doc) => ({ id: doc.id, ...doc.data() }) as ClinicalSummaryRecord,
-    ).sort((a: any, b: any) => {
-       const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime();
-       const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt || 0).getTime();
-       return tB - tA;
-    });
+    )
+    // Performance optimization (Schwartzian transform): Precompute parsed dates in O(N) before sorting
+    // to prevent redundant parsing and allocation on every O(N log N) comparator step.
+    .map((doc: any) => ({ doc, t: doc.createdAt?.toMillis ? doc.createdAt.toMillis() : parseSafeTimestamp(doc.createdAt)?.getTime() || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(item => item.doc);
     
     return docs[0]; // return latest
   } catch (error) {
@@ -381,11 +399,12 @@ export async function getConversations(userId: string, profileId?: string) {
       where("profileId", "==", profileId || "Myself")
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any).sort((a: any, b: any) => {
-       const tA = a.lastUpdated?.toMillis ? a.lastUpdated.toMillis() : new Date(a.lastUpdated || 0).getTime();
-       const tB = b.lastUpdated?.toMillis ? b.lastUpdated.toMillis() : new Date(b.lastUpdated || 0).getTime();
-       return tB - tA;
-    });
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as any)
+    // Performance optimization (Schwartzian transform): Precompute parsed dates in O(N) before sorting
+    // to prevent redundant parsing and allocation on every O(N log N) comparator step.
+    .map((doc: any) => ({ doc, t: doc.lastUpdated?.toMillis ? doc.lastUpdated.toMillis() : parseSafeTimestamp(doc.lastUpdated)?.getTime() || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(item => item.doc);
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);
   }
@@ -491,7 +510,12 @@ export async function getReportHistory(
       const snapshot = await getDocs(qFallback);
       const allHistory = snapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() }) as ReportHistoryEntry
-      ).sort((a, b) => new Date(b.date || b.uploadedAt || 0).getTime() - new Date(a.date || a.uploadedAt || 0).getTime());
+      )
+      // Performance optimization (Schwartzian transform): Precompute parsed dates in O(N) before sorting
+      // to prevent redundant parsing and allocation on every O(N log N) comparator step.
+      .map((doc: any) => ({ doc, t: parseSafeTimestamp(doc.date || doc.uploadedAt)?.getTime() || 0 }))
+      .sort((a, b) => b.t - a.t)
+      .map(item => item.doc);
 
       let startIndex = 0;
       if (lastDoc) {
