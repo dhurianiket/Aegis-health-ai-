@@ -26,3 +26,8 @@
 **Vulnerability:** Weak pseudo-random number generators (`Math.random()`) were used to generate cryptographic nonces, tokens, and IDs in ABDM integration, allowing an attacker to predict tokens and bypass data consent validation on ABDM endpoints.
 **Learning:** Using predictable randomness for cryptographic payloads can lead to potential token collisions and signature forgery, severely compromising system security.
 **Prevention:** Always use cryptographically secure methods like `crypto.randomUUID()` or `crypto.getRandomValues()` for identifiers and tokens that require high entropy and uniqueness.
+
+## 2026-09-01 - [Missing Input Length Limit on API Endpoint]
+**Vulnerability:** The `/api/generate-visit-prep` endpoint in `server.ts` accepted a `prompt` without validating its type or enforcing a maximum length limit.
+**Learning:** This exposes the endpoint to resource exhaustion attacks where maliciously large prompts can tie up server memory, increase latency, and abuse external API quotas (e.g., Gemini API keys).
+**Prevention:** Always enforce strict type checking (`typeof param === 'string'`) and maximum length limits on user inputs, especially before proxying requests to external backend services.
