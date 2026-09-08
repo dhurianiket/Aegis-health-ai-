@@ -31,3 +31,8 @@
 **Vulnerability:** The `/api/generate-visit-prep` endpoint in `server.ts` accepted a `prompt` without validating its type or enforcing a maximum length limit.
 **Learning:** This exposes the endpoint to resource exhaustion attacks where maliciously large prompts can tie up server memory, increase latency, and abuse external API quotas (e.g., Gemini API keys).
 **Prevention:** Always enforce strict type checking (`typeof param === 'string'`) and maximum length limits on user inputs, especially before proxying requests to external backend services.
+
+## 2024-05-18 - JSON Body Parser DoS and Insecure Randomness
+**Vulnerability:** The Express server used an overly permissive 50mb limit for JSON body parsing, making it vulnerable to Denial of Service (DoS) attacks via memory exhaustion. In addition, `Math.random()` was used for identifier generation, which fails SAST checks for secure randomness.
+**Learning:** Default configurations or overly generous limits (like 50mb for an endpoint only expecting strings) increase attack surface. Similarly, `Math.random()` should never be used for ID generation in security-sensitive contexts like FHIR resources or Client IDs.
+**Prevention:** Always restrict request body sizes to the minimum necessary for the expected payload (e.g., 1mb). Use `crypto.randomUUID()` for generating robust, secure unique identifiers.
