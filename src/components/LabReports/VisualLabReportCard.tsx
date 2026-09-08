@@ -492,6 +492,8 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
               onClick={() => setExpanded(!expanded)}
               className="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-xl transition-all border border-cyan-500/30 min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
               aria-label={expanded ? 'Hide Visual Range Cards' : 'View Visual Range Cards'}
+              aria-expanded={expanded}
+              aria-controls={`range-cards-${report.id}`}
             >
               <span>{expanded ? 'Hide Range Cards' : `View ${observationCount} Cards`}</span>
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -504,6 +506,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
       <AnimatePresence>
         {expanded && observationCount > 0 && (
           <motion.div
+            id={`range-cards-${report.id}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
