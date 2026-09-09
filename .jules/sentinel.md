@@ -31,3 +31,7 @@
 **Vulnerability:** The `/api/generate-visit-prep` endpoint in `server.ts` accepted a `prompt` without validating its type or enforcing a maximum length limit.
 **Learning:** This exposes the endpoint to resource exhaustion attacks where maliciously large prompts can tie up server memory, increase latency, and abuse external API quotas (e.g., Gemini API keys).
 **Prevention:** Always enforce strict type checking (`typeof param === 'string'`) and maximum length limits on user inputs, especially before proxying requests to external backend services.
+## 2025-03-08 - [Insecure Randomness in Core Telemetry and FHIR IDs]
+**Vulnerability:** Predictable randomness via `Math.random()` was used to generate Client IDs for telemetry and resource IDs (`obsId`, `docRefId`) in FHIR.
+**Learning:** Using predictable randomness can lead to identifier collisions and allows tracking manipulation.
+**Prevention:** Always use cryptographically secure methods like `crypto.randomUUID()` for unique identifier generation instead of `Math.random()`.
