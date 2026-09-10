@@ -343,7 +343,7 @@ export function mapLabToObservation(
   },
   patientRef: string
 ): FhirObservation {
-  const obsId = biomarker.id || `obs-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  const obsId = biomarker.id || `obs-${Date.now()}-${crypto.randomUUID().split('-')[0]}`;
   const testName = biomarker.name || biomarker.markerName || biomarker.testName || 'Lab Observation';
   const loinc = biomarker.loincCode
     ? { code: biomarker.loincCode, display: testName, system: 'http://loinc.org', defaultUnit: biomarker.unit || '', category: 'laboratory' as const, panel: 'General' }
@@ -563,7 +563,7 @@ export function mapSbarToDocumentReference(
   patientRef: string,
   date?: string
 ): FhirDocumentReference {
-  const docRefId = `docref-sbar-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  const docRefId = `docref-sbar-${Date.now()}-${crypto.randomUUID().split('-')[0]}`;
   const subjectRef = patientRef.startsWith('Patient/') ? patientRef : `Patient/${patientRef}`;
 
   let fullNarrative = '';
