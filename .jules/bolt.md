@@ -63,3 +63,6 @@
 ## 2024-05-24 - Inline Filter Iteration vs HashMap
 **Learning:** Calling `.filter` inside a map of a React Component and scanning O(M) external sets on every iteration creates severe re-renders when data lists are long (like Lab Reports tracking histories). The combination of date parsing and looping can cause blocking re-renders.
 **Action:** Always extract invariant mapping and multi-lookup filters into a `useMemo`, employing dictionaries (`new Map()`) or Sets, specifically replacing redundant O(N) evaluations with O(1) reads.
+## 2024-05-15 - [Preventing Render Loop Sorting]
+**Learning:** Found a component (`VisualLabReportCard`) where an array `.sort()` was being executed inside a `.map()` callback directly in the JSX render cycle. This caused a heavy performance hit because it re-calculated an O(N log N) sort for every element *on every single re-render* (e.g. when toggling expand/collapse states).
+**Action:** Always extract sorting and heavy dataset transformations out of the render loop and into a `useMemo` block to memoize the results and only re-calculate when the underlying dependencies change.

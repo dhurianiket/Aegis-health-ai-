@@ -347,24 +347,6 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
     return report.extractedData?.observations || report.extractedData?.lab_values || [];
   }, [report]);
 
-  const observationCount = observations.length;
-
-  const downloadSummary = () => {
-    const dataStr =
-      'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(report.extractedData, null, 2));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute('href', dataStr);
-    dlAnchorElem.setAttribute('download', `aegis_extraction_${report.fileName || 'report'}.json`);
-    dlAnchorElem.click();
-  };
-
-  const handleExportFhir = () => {
-    const patient = { id: report.profileId || 'patient-user', name: 'Patient' };
-    const bundle = exportToFhirBundle(patient, [report]);
-    downloadFhirJson(bundle, `fhir_r4_${report.fileName || report.id || 'report'}.json`);
-  };
-
   // Build history lookup for sparklines from previous reports using useMemo
   const historicalDataByMarker = useMemo(() => {
     const historyMap = new Map<string, { date: string; value: number; timestamp: number }[]>();
@@ -396,6 +378,67 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
 
     return historyMap;
   }, [historicalReports, report.id]);
+
+  const decoratedObservations = useMemo(() => {
+    return observations.map((m: any, idx: number) => {
+      const markerName = m.testName || m.marker || `Biomarker ${idx + 1}`;
+      const valRaw = m.valueCanonical ?? m.valueOriginal ?? m.value ?? 0;
+      const numVal = parseFloat(String(valRaw).replace(/[^0-9.-]/g, '')) || 0;
+      const unit = m.unitCanonical || m.unit || '';
+      const flag = m.flag || m.status || 'NORMAL';
+
+      const source = getSourceForMarker(markerName);
+      const urgency = getUrgencyAndNextStep(markerName, flag, String(numVal));
+      const plainExplanation = getPlainEnglishSummary(markerName);
+
+      // Find matching history from pre-computed map
+      const target = markerName.toLowerCase().trim();
+      let history: { date: string; value: number; timestamp?: number }[] = [];
+      for (const [key, values] of historicalDataByMarker.entries()) {
+        if (key === target || key.includes(target) || target.includes(key)) {
+          history = history.concat(values);
+        }
+      }
+      history.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
+      history = history.map((h: any) => ({ date: h.date, value: h.value }));
+
+      const refLow = m.referenceLow !== undefined && m.referenceLow !== null ? Number(m.referenceLow) : null;
+      const refHigh = m.referenceHigh !== undefined && m.referenceHigh !== null ? Number(m.referenceHigh) : null;
+
+      return {
+        ...m,
+        _idx: idx,
+        markerName,
+        numVal,
+        unit,
+        flag,
+        source,
+        urgency,
+        plainExplanation,
+        history,
+        refLow,
+        refHigh
+      };
+    });
+  }, [observations, historicalDataByMarker]);
+
+  const observationCount = observations.length;
+
+  const downloadSummary = () => {
+    const dataStr =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify(report.extractedData, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute('href', dataStr);
+    dlAnchorElem.setAttribute('download', `aegis_extraction_${report.fileName || 'report'}.json`);
+    dlAnchorElem.click();
+  };
+
+  const handleExportFhir = () => {
+    const patient = { id: report.profileId || 'patient-user', name: 'Patient' };
+    const bundle = exportToFhirBundle(patient, [report]);
+    downloadFhirJson(bundle, `fhir_r4_${report.fileName || report.id || 'report'}.json`);
+  };
 
   return (
     <div
@@ -510,30 +553,20 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
             className="space-y-4 overflow-hidden pt-2"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {observations.map((m: any, idx: number) => {
-                const markerName = m.testName || m.marker || `Biomarker ${idx + 1}`;
-                const valRaw = m.valueCanonical ?? m.valueOriginal ?? m.value ?? 0;
-                const numVal = parseFloat(String(valRaw).replace(/[^0-9.-]/g, '')) || 0;
-                const unit = m.unitCanonical || m.unit || '';
-                const flag = m.flag || m.status || 'NORMAL';
-
-                const source = getSourceForMarker(markerName);
-                const urgency = getUrgencyAndNextStep(markerName, flag, String(numVal));
-                const plainExplanation = getPlainEnglishSummary(markerName);
-
-                // Find matching history from pre-computed map
-                const target = markerName.toLowerCase().trim();
-                let history: { date: string; value: number; timestamp?: number }[] = [];
-                for (const [key, values] of historicalDataByMarker.entries()) {
-                  if (key === target || key.includes(target) || target.includes(key)) {
-                    history = history.concat(values);
-                  }
-                }
-                history.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
-                history = history.map((h: any) => ({ date: h.date, value: h.value }));
-
-                const refLow = m.referenceLow !== undefined && m.referenceLow !== null ? Number(m.referenceLow) : null;
-                const refHigh = m.referenceHigh !== undefined && m.referenceHigh !== null ? Number(m.referenceHigh) : null;
+              {decoratedObservations.map((m: any) => {
+                const {
+                  _idx: idx,
+                  markerName,
+                  numVal,
+                  unit,
+                  flag,
+                  source,
+                  urgency,
+                  plainExplanation,
+                  history,
+                  refLow,
+                  refHigh
+                } = m;
 
                 return (
                   <div
