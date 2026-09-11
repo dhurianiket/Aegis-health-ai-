@@ -31,3 +31,7 @@
 **Vulnerability:** The `/api/generate-visit-prep` endpoint in `server.ts` accepted a `prompt` without validating its type or enforcing a maximum length limit.
 **Learning:** This exposes the endpoint to resource exhaustion attacks where maliciously large prompts can tie up server memory, increase latency, and abuse external API quotas (e.g., Gemini API keys).
 **Prevention:** Always enforce strict type checking (`typeof param === 'string'`) and maximum length limits on user inputs, especially before proxying requests to external backend services.
+## 2026-09-11 - [Insecure Randomness for Sensitive IDs]
+**Vulnerability:** Weak pseudo-random number generators (`Math.random()`) were used to generate IDs across multiple services including `fhirService.ts` and `measurementProtocolService.ts`.
+**Learning:** The use of `Math.random()` is not cryptographically secure and using it for sensitive values such as FHIR IDs, health sync identifiers, and telemetry clients is a security risk.
+**Prevention:** Always use `crypto.randomUUID()` in place of `Math.random()` for secure and reliable ID generation.
