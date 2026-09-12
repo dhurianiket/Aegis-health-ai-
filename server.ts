@@ -23,7 +23,7 @@ async function startServer() {
   // Apply rate limiter globally
   app.use(limiter);
 
-  app.use(express.json({ limit: "50mb" }));
+  app.use(express.json({ limit: "1mb" }));
 
   // API routes
   app.get("/api/health", (req, res) => {
