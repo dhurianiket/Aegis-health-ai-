@@ -31,3 +31,7 @@
 **Vulnerability:** The `/api/generate-visit-prep` endpoint in `server.ts` accepted a `prompt` without validating its type or enforcing a maximum length limit.
 **Learning:** This exposes the endpoint to resource exhaustion attacks where maliciously large prompts can tie up server memory, increase latency, and abuse external API quotas (e.g., Gemini API keys).
 **Prevention:** Always enforce strict type checking (`typeof param === 'string'`) and maximum length limits on user inputs, especially before proxying requests to external backend services.
+## 2026-09-01 - [Missing Input Length Limit on Global Express Server]
+**Vulnerability:** The Express server configuration (`server.ts`) was using `app.use(express.json({ limit: "50mb" }))`, which is dangerously permissive.
+**Learning:** This exposes the entire application backend to Denial of Service (DoS) attacks where a malicious actor can send massive JSON payloads, exhausting server memory and blocking the Node.js event loop during JSON parsing.
+**Prevention:** Always enforce strict and appropriate request body limits globally (e.g., `app.use(express.json({ limit: "1mb" }))`) unless a specific endpoint explicitly requires larger payloads, which should be handled via targeted middleware.
