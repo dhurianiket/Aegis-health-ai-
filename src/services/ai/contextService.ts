@@ -192,7 +192,12 @@ export const formatContextForPrompt = (context: any): string => {
     for (const [marker, labs] of labsByMarker.entries()) {
       // Map to include time so we avoid parsing repeatedly during reduce
       const labsWithTime = labs.map((l: any) => ({ lab: l, time: getT(l) }));
-      const latestObj = labsWithTime.reduce((latest: any, current: any) => current.time > latest.time ? current : latest);
+      let latestObj = labsWithTime[0];
+      for (let i = 1; i < labsWithTime.length; i++) {
+         if (labsWithTime[i].time > latestObj.time || isNaN(latestObj.time)) {
+             latestObj = labsWithTime[i];
+         }
+      }
       markerSeverities.set(marker, severityScore(latestObj.lab.status));
     }
 
