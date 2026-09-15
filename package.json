@@ -47,7 +47,10 @@
   "overrides": {
     "protobufjs": "^7.6.5",
     "ws": "^8.20.1",
-    "qs": "^6.15.2",
+    "qs": "^6.16.0",
+    "browserslist": "^4.28.9",
+    "fflate": "^0.8.3",
+    "baseline-browser-mapping": "^2.11.23",
     "esbuild": "0.25.12",
     "ip-address": "^10.3.0",
     "dompurify": "^3.2.4",

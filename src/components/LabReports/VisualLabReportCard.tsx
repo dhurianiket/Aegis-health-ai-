@@ -397,6 +397,26 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
     return historyMap;
   }, [historicalReports, report.id]);
 
+  // Pre-compute histories for each observation to avoid O(N log N) sorting inside the render loop
+  const precomputedHistories = useMemo(() => {
+    const map = new Map<string, { date: string; value: number }[]>();
+    observations.forEach((m: any) => {
+      const markerName = m.testName || m.marker || '';
+      const target = markerName.toLowerCase().trim();
+      if (!map.has(target)) {
+        let history: { date: string; value: number; timestamp?: number }[] = [];
+        for (const [key, values] of historicalDataByMarker.entries()) {
+          if (key === target || key.includes(target) || target.includes(key)) {
+            history = history.concat(values);
+          }
+        }
+        history.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
+        map.set(target, history.map((h: any) => ({ date: h.date, value: h.value })));
+      }
+    });
+    return map;
+  }, [observations, historicalDataByMarker]);
+
   return (
     <div
       className={`w-full glass-card-ultra-3d p-5 sm:p-7 space-y-6 relative overflow-hidden transition-all duration-200 ${
@@ -492,6 +512,8 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
               onClick={() => setExpanded(!expanded)}
               className="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-xl transition-all border border-cyan-500/30 min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
               aria-label={expanded ? 'Hide Visual Range Cards' : 'View Visual Range Cards'}
+              aria-expanded={expanded}
+              aria-controls={`range-cards-${report.id}`}
             >
               <span>{expanded ? 'Hide Range Cards' : `View ${observationCount} Cards`}</span>
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -504,6 +526,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
       <AnimatePresence>
         {expanded && observationCount > 0 && (
           <motion.div
+            id={`range-cards-${report.id}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -523,14 +546,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
 
                 // Find matching history from pre-computed map
                 const target = markerName.toLowerCase().trim();
-                let history: { date: string; value: number; timestamp?: number }[] = [];
-                for (const [key, values] of historicalDataByMarker.entries()) {
-                  if (key === target || key.includes(target) || target.includes(key)) {
-                    history = history.concat(values);
-                  }
-                }
-                history.sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
-                history = history.map((h: any) => ({ date: h.date, value: h.value }));
+                const history = precomputedHistories.get(target) || [];
 
                 const refLow = m.referenceLow !== undefined && m.referenceLow !== null ? Number(m.referenceLow) : null;
                 const refHigh = m.referenceHigh !== undefined && m.referenceHigh !== null ? Number(m.referenceHigh) : null;
