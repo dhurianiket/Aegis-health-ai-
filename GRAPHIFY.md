@@ -277,6 +277,7 @@
 - **[`src/lib/firebase/firestore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/firestore.ts)**
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
   - *Imports*: `./config`, `../../utils/dateUtils`, `../../types/medical`, `../../types/wearables`
+- **[`src/services/._biomarkerTrajectoryService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._biomarkerTrajectoryService.ts)**
 - **[`src/services/._fhirService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._fhirService.ts)**
 - **[`src/services/._measurementProtocolService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._measurementProtocolService.ts)**
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
@@ -342,6 +343,7 @@
   - *Exports*: `AuditActionType`, `SecurityAuditRecord`, `getAuditLogs`, `clearAuditLogs`
 - **[`src/services/biomarkerTrajectoryService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/biomarkerTrajectoryService.ts)**
   - *Exports*: `HistoricalPoint`, `TrajectoryDirection`, `TrajectoryRiskLevel`, `ForecastWindow`, `BiomarkerTrajectory`, `TrajectoryInput`, `computeBiomarkerTrajectory`
+  - *Imports*: `../utils/dateUtils`
 - **[`src/services/biometricDiagnosticEngine.stress.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/biometricDiagnosticEngine.stress.test.ts)**
   - *Imports*: `./biometricDiagnosticEngine`, `../types/wearables`, `../types/medical`
 - **[`src/services/biometricDiagnosticEngine.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/biometricDiagnosticEngine.test.ts)**

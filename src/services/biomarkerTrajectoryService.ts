@@ -4,6 +4,8 @@
  * to forecast future biomarker values, clinical drift risk, and mitigation recommendations.
  */
 
+import { parseSafeTimestamp } from "../utils/dateUtils";
+
 export interface HistoricalPoint {
   date: string; // ISO 8601 or YYYY-MM-DD
   value: number;
@@ -133,12 +135,26 @@ export function computeBiomarkerTrajectory(input: TrajectoryInput): BiomarkerTra
     };
   }
 
-  // Sort history chronologically
-  const sorted = [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  const baselineDate = new Date(sorted[0].date).getTime();
+  // Sort history chronologically with Schwartzian transform to prevent redundant date allocations
+  const cachedPoints = [...history]
+    .map(pt => {
+      const parsed = parseSafeTimestamp(pt.date);
+      return {
+        pt,
+        time: parsed ? parsed.getTime() : NaN
+      };
+    })
+    .sort((a, b) => {
+      if (isNaN(a.time)) return 1;
+      if (isNaN(b.time)) return -1;
+      return a.time - b.time;
+    });
 
-  const pointsWithOffsets = sorted.map((pt) => ({
-    dayOffset: Math.max(0, Math.round((new Date(pt.date).getTime() - baselineDate) / (1000 * 60 * 60 * 24))),
+  const sorted = cachedPoints.map(({ pt }) => pt);
+  const baselineDate = cachedPoints[0].time;
+
+  const pointsWithOffsets = cachedPoints.map(({ pt, time }) => ({
+    dayOffset: Math.max(0, Math.round((time - baselineDate) / (1000 * 60 * 60 * 24))),
     value: pt.value,
     date: pt.date,
   }));
