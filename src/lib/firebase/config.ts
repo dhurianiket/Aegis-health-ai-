@@ -20,12 +20,12 @@ const getDynamicAuthDomain = () => {
 };
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForTestingTesting12345678",
   authDomain: getDynamicAuthDomain(),
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "aegis-health-app-90697",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "aegis-health-app-90697.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1234567890",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1234567890:web:1234567890abcdef",
 };
 
 const app = initializeApp(firebaseConfig);

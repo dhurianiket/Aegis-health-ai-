@@ -30,4 +30,8 @@ graphify-out/.graphify_labels.json
 graphify-out/.graphify_labels.json.sig
 graphify-out/.graphify_root
 graphify-out/2026-*/
+.graphify/
 # DO TRACK: graphify-out/graph.html, graphify-out/GRAPH_REPORT.md
+
+# macOS AppleDouble metadata on exFAT/FAT volumes
+._*

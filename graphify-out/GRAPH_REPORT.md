@@ -1,389 +1,390 @@
-# Graph Report - Aegis-Health-Intelligence  (2026-08-31)
+# Graph Report - .  (2026-09-15)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 293 files · ~361,514 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1298 nodes · 3239 edges · 106 communities (65 shown, 41 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 9 edges (avg confidence: 0.65)
+- 1292 nodes · 3325 edges · 74 communities detected
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
+- Edge kinds: imports: 866 · contains: 784 · imports_from: 635 · MODIFIES: 371 · PARENT_OF: 243 · ON_BRANCH: 200 · calls: 161 · method: 45 · inherits: 12 · re_exports: 8
+
+
+## Input Scope
+- Requested: auto
+- Resolved: committed (source: default-auto)
+- Included files: 293 · Candidates: 319
+- Excluded: 0 untracked · 388 ignored · 1 sensitive · 0 missing committed
+- Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from commit: `8c5a252f`
-- Run `git rev-parse HEAD` and compare to check if the graph is stale.
-- Run `graphify update .` after code changes (no API cost).
-
-## Community Hubs (Navigation)
-- firestore.ts
-- gemini.ts
-- Dashboard.tsx
-- Settings/IntegrationsPanel.tsx
-- SpecialistLounge.tsx
-- AlertsContext.tsx
-- abdmService.ts
-- App.tsx
-- HolographicBodyScanner.tsx
-- PaperclipJulesCoordinator
-- fhir.ts
-- compilerOptions
-- PaperclipJulesCoordinator
-- milestone3_4_empirical_stress.spec.tsx
-- health.ts
-- AuthContext.tsx
-- drugInteractionService.ts
-- auditLogService.ts
-- useProfile
-- ErrorBoundary.tsx
-- Reports/LabReportsSection.tsx
-- fhirService.ts
-- usageService.ts
-- ClinicalHandover.tsx
-- PricingModal.tsx
-- measurementProtocolService.ts
-- devDependencies
-- compilerOptions
-- useAuth
-- Medications.tsx
-- typography_contrast.test.tsx
-- useClinicalContext.ts
-- theme_typography_stress.test.tsx
-- functions/package.json
-- ExportModal.tsx
-- pillar1_abdm_audio_snomed.test.ts
-- dependencies
-- dependencies
-- scripts
-- graphify.ts
-- LandingPage.tsx
-- Dashboard/SBARPreview.tsx
-- RegionalVoiceService
-- overrides
-- manifest.json
-- ReportComparison.tsx
-- SectionErrorBoundary
-- package.json
-- MainApp
-- overrides
-- react
-- SkeletonLoader.tsx
-- jules-sync-staging.sh
-- ui.ts
-- MedicalSafetyBanner.tsx
-- api.ts
-- vite-env.d.ts
-- vite
-- server.ts
-- ConditionTile.tsx
-- SmartAlertCard.tsx
-- LoadingSpinner.tsx
-- vite.config.ts
-- fetch-test.js
-- test2.js
-- clsx
-- date-fns
-- dotenv
-- express
-- express-rate-limit
-- firebase
-- eslint
-- html2canvas
-- html-to-image
-- motion
-- qrcode.react
-- react-router-dom
-- react-window
-- recharts
-- tailwind-merge
-- @tailwindcss/typography
-- @tailwindcss/vite
-- @vis.gl/react-google-maps
-- @vitejs/plugin-react
-- zod
-- tailwindcss
-- @testing-library/react
-- @types/express
-- @types/node
-- @types/react
-- @types/react-dom
-- @types/react-window
-- @typescript-eslint/eslint-plugin
-- @typescript-eslint/parser
-- vitest
-- replace-colors.ts
-- test-req.cjs
-
+- Built from Git commit: `e8b619b`
+- Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
-1. `useAuth()` - 74 edges
-2. `useProfile()` - 45 edges
-3. `parseSafeTimestamp()` - 33 edges
-4. `getAI()` - 27 edges
-5. `exportToFhirBundle()` - 26 edges
-6. `LabResult` - 25 edges
-7. `WearableBiometrics` - 23 edges
-8. `getDocuments()` - 22 edges
-9. `handleFirestoreError()` - 21 edges
-10. `downloadFhirJson()` - 20 edges
+1. `useAuth()` - 37 edges
+2. `useProfile()` - 23 edges
+3. `LabResult` - 22 edges
+4. `handleFirestoreError()` - 21 edges
+5. `WearableBiometrics` - 21 edges
+6. `db` - 17 edges
+7. `parseSafeTimestamp()` - 17 edges
+8. `exportToFhirBundle()` - 16 edges
+9. `UserProfile` - 15 edges
+10. `getDocuments()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `NoteAnalyzer()` --references--> `react`  [EXTRACTED]
-  src/components/Upload/NoteAnalyzer.tsx → package.json
-- `generateDoctorReport()` --references--> `jspdf`  [EXTRACTED]
-  src/services/pdfExportService.ts → package.json
-- `SplashScreen()` --references--> `react`  [EXTRACTED]
-  src/components/Onboarding/SplashScreen.tsx → package.json
-- `SpecialistLounge()` --indirect_call--> `renderCitationLink()`  [INFERRED]
-  src/components/Specialists/SpecialistLounge.tsx → src/components/Common/CitationBadge.tsx
-- `CycleTrackingSettings()` --calls--> `useAuth()`  [EXTRACTED]
-  src/components/Profile/CycleTrackingSettings.tsx → src/context/AuthContext.tsx
+- `025a577 feat(health-sync): 3D glassmorphic redesign, permission toggles, drag-drop file import, enhanced XML/JSON parsing, sleep architecture inputs, live connection badges` --ON_BRANCH--> `main`  [EXTRACTED]
+  git → git  _Bridges community 0 → community 3_
+- `025a577 feat(health-sync): 3D glassmorphic redesign, permission toggles, drag-drop file import, enhanced XML/JSON parsing, sleep architecture inputs, live connection badges` --PARENT_OF--> `f622d7c docs: record Snapshot XLIV — 3D glassmorphic health sync redesign with permission toggles, drag-drop, enhanced parsing`  [EXTRACTED]
+  git → git  _Bridges community 0 → community 31_
+- `02b8b11 docs: update CURRENT_STATE.md with Snapshot XXXIV teamwork feature and test suite completion` --ON_BRANCH--> `main`  [EXTRACTED]
+  git → git  _Bridges community 47 → community 3_
+- `04542bb feat(a11y): add aria-label and focus states to CycleTrackingWidget Settings button` --ON_BRANCH--> `main`  [EXTRACTED]
+  git → git  _Bridges community 23 → community 3_
+- `0531e0c 🎨 Palette: [Accessibility improvements]` --ON_BRANCH--> `main`  [EXTRACTED]
+  git → git  _Bridges community 48 → community 3_
 
-## Import Cycles
-- None detected.
+## Communities
 
-## Communities (106 total, 41 thin omitted)
-
-### Community 0 - "firestore.ts"
-Cohesion: 0.05
-Nodes (67): Timeline, UploadCenter, ShareReport, ShareReport(), loadDocuments(), fetchDocs(), TYPE_CONFIG, compressImageIfNeeded() (+59 more)
-
-### Community 1 - "gemini.ts"
-Cohesion: 0.06
-Nodes (60): ChatCoach, ChatCoach(), ChatCoachProps, SpecialistLounge(), NoteAnalyzer(), getAI(), streamGenerate(), Type (+52 more)
-
-### Community 2 - "Dashboard.tsx"
-Cohesion: 0.06
-Nodes (49): Particle, ComparativeAnalysis(), ComparativeAnalysisProps, simpleHash(), CorrelationMatrix(), CorrelationMatrixProps, CycleTrackingWidget(), aggregateLabs() (+41 more)
-
-### Community 3 - "Settings/IntegrationsPanel.tsx"
-Cohesion: 0.11
-Nodes (47): WearableCoachWidget(), WearableCoachWidgetProps, HealthConnectModal(), HealthConnectModalProps, IntegrationsPanel(), IntegrationsPanelProps, useWearableTelemetry(), UseWearableTelemetryResult (+39 more)
-
-### Community 4 - "SpecialistLounge.tsx"
-Cohesion: 0.06
-Nodes (43): SpecialistLounge, ChatMessage, VirtualizedChatList(), VirtualizedChatListProps, renderCitationLink(), LabCardData, MasonryLabCards(), MasonryLabCardsProps (+35 more)
-
-### Community 5 - "AlertsContext.tsx"
-Cohesion: 0.06
-Nodes (42): App(), NotificationCenter, SmartAlerts, RemindersWidget(), RemindersWidgetProps, SmartAlerts(), NotificationCategory, NotificationDropdown() (+34 more)
-
-### Community 6 - "abdmService.ts"
-Cohesion: 0.13
-Nodes (43): AbdmConnectModal(), AbdmConnectModalProps, AbdmScanShareModal(), AbdmScanShareModalProps, checkAbhaAddressAvailability(), confirmAbdmOtp(), createAbhaAddress(), DEFAULT_CARE_CONTEXTS (+35 more)
-
-### Community 7 - "App.tsx"
-Cohesion: 0.07
-Nodes (17): AboutUs, BlogCBC, BlogHbA1c, Dashboard, EngineeringPlaybook, FeedbackWidget, HowItWorks, IntegrationsPanel (+9 more)
-
-### Community 8 - "HolographicBodyScanner.tsx"
+### Community 0 - "Community 0"
 Cohesion: 0.09
-Nodes (29): BiomarkerTrajectoryWidget(), BiomarkerTrajectoryWidgetProps, DEFAULT_SAMPLE_DATA, BiomarkerTrajectoryWidget, HolographicBodyScanner, OrganHealthAvatar, HolographicBodyScanner(), HolographicBodyScannerProps (+21 more)
+Nodes (48): 025a577 feat(health-sync): 3D glassmorphic redesign, permission toggles, drag-drop file import, enhanced XML/JSON parsing, sleep architecture inputs, live connection badges, 0cf9961 fix(health-sync): resolve Apple & Google Health sync state persistence and fix Apple Health banner styling, 2f420cb feat(integrations): implement Apple Health (HealthKit) and Google Health Connect live synchronization engine and file importers, 3676bdd Merge pull request #189 from dhurianiket/palette-a11y-healthconnect-close-16586726464144134397, 392a8d4 feat(wearable-sync): persist and live-sync wearable telemetry via Firestore, 3a89129 🎨 Palette: Add ARIA label and focus styles to Health Connect modal close button, 42a74a1 docs: update CURRENT_STATE.md with Snapshot XLII release, 5531d62 fix(wearable-plan): close implementation plan gaps (+40 more)
 
-### Community 9 - "PaperclipJulesCoordinator"
+### Community 1 - "Community 1"
+Cohesion: 0.07
+Nodes (44): SBARPreviewProps, FoodInteractionMatrix(), InteractionMatrixProps, AdverseEventReaction, BlackBoxWarning, cacheOpenFdaSummary(), cacheRxCuiMatch(), cleanDrugQuery() (+36 more)
+
+### Community 2 - "Community 2"
+Cohesion: 0.08
+Nodes (27): COLORS, 443b45e Merge pull request #182 from dhurianiket/bolt/single-forward-pass-9005716069439111533, a064be0 refactor: Replace .sort()[0] with single forward pass, SYMPTOMS_LIST, SharedProfileProps, app, db, firebaseConfig (+19 more)
+
+### Community 3 - "Community 3"
+Cohesion: 0.08
+Nodes (45): main, 05d41a9 feat(graphify): update knowledge graph with Pillar 3 nodes (1,235 nodes, 3,081 edges, 98 communities), 08633f7 ⚡ Bolt: [performance improvement] Optimize global stats aggregation, 09898fa feat(landing): showcase India pricing plans & AEGIS100 1-month free trial promo banner, 0b5c375 docs: finalize Victory Audit verification handoff (57 test suites, 565 tests passing, 100% clean build), 0f3d105 docs: update CURRENT_STATE.md with Snapshot XXVII Aura AI Chat contrast fix, 1529b26 fix(security): add Google Analytics GA4 & GTM domains to Content-Security-Policy to unblock analytics data collection, 21b3761 Merge pull request #206 from dhurianiket/palette-accessible-focus-states-9254562616176228183 (+37 more)
+
+### Community 4 - "Community 4"
+Cohesion: 0.05
+Nodes (31): AboutUs, AdminDashboard, BlogCBC, BlogHbA1c, CalendarSync, CareMap, ChatCoach, ConsentScreen (+23 more)
+
+### Community 5 - "Community 5"
+Cohesion: 0.09
+Nodes (37): convertReportToFHIRBundle(), convertToFHIRObservation(), convertToFHIRPatient(), exportToFhirBundle(), FHIRResource, LOINC_DICTIONARY, LoincMapping, lookupLoincCode() (+29 more)
+
+### Community 6 - "Community 6"
+Cohesion: 0.09
+Nodes (24): RemindersContext, RemindersContextType, RemindersProvider(), RemindersWidgetProps, checkAppointmentsForReminders(), createReminder(), generateRemindersFromAlerts(), getUpcomingReminders() (+16 more)
+
+### Community 7 - "Community 7"
+Cohesion: 0.19
+Nodes (20): buildCoachPromptAugmentation(), CoachResponse, getCoachResponse(), WearableCoachWidgetProps, 0e21ec0 fix(ui-ux): enhance text readability, accessibility contrast (WCAG AA), and remove mock demo telemetry buttons, e2ef66b feat(wearable-fusion): add AI Health Coach wearable telemetry engine, ActivityFilter, BiometricDiagnosticCorrelation (+12 more)
+
+### Community 8 - "Community 8"
+Cohesion: 0.16
+Nodes (25): ClinicalSummaryRecord, deleteDocumentRecord(), FirestoreErrorInfo, getClinicalSummary(), getConversations(), getDocuments(), getFamilyRelations(), getHealthScores() (+17 more)
+
+### Community 9 - "Community 9"
+Cohesion: 0.21
+Nodes (24): AbdmConnectModalProps, checkAbhaAddressAvailability(), confirmAbdmOtp(), createAbhaAddress(), DEFAULT_CARE_CONTEXTS, DEFAULT_CONSENT_REQUESTS, disconnectAbdm(), discoverCareContexts() (+16 more)
+
+### Community 10 - "Community 10"
+Cohesion: 0.07
+Nodes (21): becbaba style(apple-design): enhance dark mode surface contrast, typography legibility, and Recharts tick visibility per Apple HIG, ATTENTION_STATUSES, BiomarkerTrajectoryWidget, Canvas3DMesh, ComparativeAnalysis, CorrelationMatrix, CycleTrackingWidget, EmptyDashboard (+13 more)
+
+### Community 11 - "Community 11"
+Cohesion: 0.12
+Nodes (25): analyzeWithSpecialist(), ExtractedReportResponse, extractMedicalReports(), generateClinicalSummary(), SAFETY_GUARDRAIL(), SPECIALIST_PROMPTS, SpecialistAnalysisResponse, classifyDocument() (+17 more)
+
+### Community 12 - "Community 12"
+Cohesion: 0.14
+Nodes (14): getCardiologistPrompt(), getDermatologistPrompt(), getEndocrinologistPrompt(), getGastroenterologistPrompt(), getNephrologistPrompt(), getNeurologistPrompt(), getOncologistPrompt(), getOrthopedistPrompt() (+6 more)
+
+### Community 13 - "Community 13"
+Cohesion: 0.14
+Nodes (13): 0b02af7 ⚡ Bolt: Optimize date parsing in sort comparators, 33c2695 fix(wearable-sync): update existing test mocks with subscribeToLatestTelemetry, 5fdde1b perf(reporthistory): replace redundant sort with reverse, 724215a Merge pull request #196 from dhurianiket/bolt-date-parsing-optimization-5165813967283112652, d97e7a9 Merge pull request #183 from dhurianiket/bolt/optimize-redundant-sort-6088375815037320292, e69b18b docs: update CURRENT_STATE.md for wearable Firestore sync milestone (XIX), useProfile(), LabTrendChartProps (+5 more)
+
+### Community 14 - "Community 14"
 Cohesion: 0.12
 Nodes (10): app_1, https_1, crypto, firestore_1, https_1, firestore_1, genai_1, getAiClient() (+2 more)
 
-### Community 10 - "fhir.ts"
-Cohesion: 0.10
-Nodes (23): FhirAddress, FhirAttachment, FhirBundle, FhirBundleEntry, FhirBundleType, FhirCodeableConcept, FhirCoding, FhirContactPoint (+15 more)
+### Community 15 - "Community 15"
+Cohesion: 0.13
+Nodes (11): extractClinicalEntities(), ExtractedClinicalEntities, VoiceService, VoiceServiceOptions, ChatCoachProps, getAI(), streamGenerate(), Type (+3 more)
 
-### Community 11 - "compilerOptions"
-Cohesion: 0.09
-Nodes (22): DOM, DOM.Iterable, ES2022, functions, compilerOptions, allowImportingTsExtensions, allowJs, experimentalDecorators (+14 more)
+### Community 16 - "Community 16"
+Cohesion: 0.13
+Nodes (21): 0863013 Merge PR 215: 🎨 Palette: Add aria-labels to icon-only buttons, 0cccfb6 Merge pull request #214 from dhurianiket/bolt-optimize-date-parsing-2095263978117173248, 1387585 Merge PR 223: 🎨 Palette: Add keyboard focus indicators to lab report buttons, 14a61c2 Merge PR 216: ⚡ Bolt: [performance improvement] Optimize date parsing sort in VisualLabReportCard, 2945c4b Merge PR 225: 🎨 Palette: [UX improvement] Add aria-labels to SecurityAuditViewer buttons, 37a06ea Add aria-label to icon-only close buttons in modals, 4faea42 Merge remote-tracking branch 'origin/sentinel/add-input-validation-server-16290129917808450155', 56069d7 Merge PR 217: 🛡️ Sentinel: [MEDIUM] Fix missing input validation on user data (+13 more)
 
-### Community 12 - "PaperclipJulesCoordinator"
+### Community 17 - "Community 17"
+Cohesion: 0.14
+Nodes (15): AbdmScanShareModal(), AbdmScanShareModalProps, INDIAN_LANGUAGES, IndianLanguageOption, SpeechState, c7830ba feat(pillar-1): implement ABDM OPD Scan & Share, 10+ Regional Language Audio & SNOMED CT Mapper, RegionalAudioPlayer(), RegionalAudioPlayerProps (+7 more)
+
+### Community 18 - "Community 18"
+Cohesion: 0.17
+Nodes (12): getPatientContext(), analyzeSharedRisks(), GeneticRiskAnalysis, f075e77 feat(ai): integrate live wearable telemetry into clinical AI patient context service, ChatMessage, ChatRole, Conversation, PatientContext (+4 more)
+
+### Community 19 - "Community 19"
+Cohesion: 0.21
+Nodes (17): a87820d feat(pillar-4): implement WebCrypto Zero-Knowledge Vault & Immutable SHA-256 Security Audit Trail, AuditActionType, clearAuditLogs(), computeSha256(), getAuditLogs(), getDefaultSampleLogs(), logSecurityEvent(), SecurityAuditRecord (+9 more)
+
+### Community 20 - "Community 20"
 Cohesion: 0.15
 Nodes (7): verifyRecaptcha, handleGitHubWebhook, getAiClient(), getDb(), JulesSessionConfig, PaperclipJulesCoordinator, ValidationResult
 
-### Community 13 - "milestone3_4_empirical_stress.spec.tsx"
-Cohesion: 0.13
-Nodes (15): FoodInteractionMatrix, DEFAULT_SAMPLE_MEDS, FoodInteractionMatrix(), FoodInteractionMatrixProps, calculateContrastRatio(), getRelativeLuminance(), hexToRgb(), MOCK_12_MEDICATIONS (+7 more)
+### Community 21 - "Community 21"
+Cohesion: 0.12
+Nodes (15): Toast, ToastContext, ToastContextType, ToastProvider(), ToastType, useToast(), checkCanUploadReport(), getUserSubscription() (+7 more)
 
-### Community 14 - "health.ts"
-Cohesion: 0.23
-Nodes (15): InteractionMatrix(), InteractionMatrixProps, BioRegimenSafetySummary, buildBioRegimenSafetySummary(), DRUG_CATEGORIES, DrugLabContraindication, evaluateDrugLabContraindications(), isMedInCategory() (+7 more)
-
-### Community 15 - "AuthContext.tsx"
+### Community 22 - "Community 22"
 Cohesion: 0.16
-Nodes (15): ProfileManagement, CycleTrackingSettings(), ProfileManagement(), AuthContextType, Profile, ProfileContextType, app, auth (+7 more)
+Nodes (13): PricingModalProps, 1a238e0 feat(monetization): implement B2C & B2B Razorpay pricing plans, usage limit enforcement, and interactive checkout modal, 6248211 docs: update CURRENT_STATE.md with Snapshot XXXVIII Apple and Google Health sync engine, 8dc18e5 docs: update CURRENT_STATE.md with Snapshot XXXIX monetization release, e5cb548 feat(admin-access): grant dhurianiket@gmail.com master access & add AEGIS100 100-user 1-month launch coupon, CouponData, DEFAULT_LAUNCH_COUPON, redeemCoupon() (+5 more)
 
-### Community 16 - "drugInteractionService.ts"
-Cohesion: 0.19
-Nodes (18): loadOpenFdaData(), AdverseEventReaction, BlackBoxWarning, cacheOpenFdaSummary(), cacheRxCuiMatch(), cleanDrugQuery(), ClinicalCitation, CURATED_FDA_KNOWLEDGE_BASE (+10 more)
-
-### Community 17 - "auditLogService.ts"
-Cohesion: 0.23
-Nodes (16): SecurityAuditViewer(), ZeroKnowledgeVaultModal(), AuditActionType, clearAuditLogs(), computeSha256(), getAuditLogs(), getDefaultSampleLogs(), logSecurityEvent() (+8 more)
-
-### Community 18 - "useProfile"
-Cohesion: 0.12
-Nodes (15): CareMap, FamilyHub, CareMap(), DEFAULT_CENTER, PlaceMarker, ALL_DESKTOP_TABS, AppNav(), AppNavProps (+7 more)
-
-### Community 19 - "ErrorBoundary.tsx"
-Cohesion: 0.12
-Nodes (8): ErrorBoundary, Props, State, AIErrorBoundary, Props, State, logger, TODO: Send to remote observability platform
-
-### Community 20 - "Reports/LabReportsSection.tsx"
-Cohesion: 0.25
-Nodes (14): BiomarkerSparkline(), FourZoneRangeBar(), getPlainEnglishSummary(), LabObservationItem, LabReport, PLAIN_ENGLISH_EXPLANATIONS, VisualLabReportCard(), VisualLabReportCardProps (+6 more)
-
-### Community 21 - "fhirService.ts"
-Cohesion: 0.23
-Nodes (16): convertReportToFHIRBundle(), convertToFHIRObservation(), convertToFHIRPatient(), downloadFHIRBundle(), exportToFhirBundle(), FHIRBundle, FHIRResource, LOINC_DICTIONARY (+8 more)
-
-### Community 22 - "usageService.ts"
-Cohesion: 0.22
-Nodes (12): AdminDashboard, AdminDashboard(), COLORS, AuthProvider(), getAllUsersUsage(), getEstCost(), markUserActive(), SubscriptionPlanId (+4 more)
-
-### Community 23 - "ClinicalHandover.tsx"
-Cohesion: 0.21
-Nodes (12): ConsentScreen, SBARPreview(), SBARPreviewProps, ConsentScreen(), ConsentScreenProps, steps, ClinicalHandover(), logAuditEvent() (+4 more)
-
-### Community 24 - "PricingModal.tsx"
-Cohesion: 0.20
-Nodes (12): PricingModal, PricingModal(), PricingModalProps, CouponData, DEFAULT_LAUNCH_COUPON, redeemCoupon(), RedeemCouponResult, initiateRazorpayPayment() (+4 more)
-
-### Community 25 - "measurementProtocolService.ts"
-Cohesion: 0.25
-Nodes (11): GA_API_SECRET, GA_MEASUREMENT_ID, getOrCreateClientId(), MeasurementProtocolEvent, sendMeasurementProtocolEvent(), SendTelemetryOptions, GA_MEASUREMENT_ID, getGtag() (+3 more)
-
-### Community 26 - "devDependencies"
+### Community 23 - "Community 23"
 Cohesion: 0.15
-Nodes (13): autoprefixer, @firebase/eslint-plugin-security-rules, jsdom, devDependencies, autoprefixer, @firebase/eslint-plugin-security-rules, jsdom, @playwright/test (+5 more)
+Nodes (12): CalendarEvent, 04542bb feat(a11y): add aria-label and focus states to CycleTrackingWidget Settings button, 2eff559 docs: update CURRENT_STATE.md with Snapshot XXXVII, 690b2af Merge pull request #186 from dhurianiket/palette/a11y-cycle-tracking-widget-5743654541532804775, 9debfe4 Merge pull request #185 from dhurianiket/jules-phi-leakage-fix-16042077112561976483, bff1ad4 fix: wrap sensitive console logs with environment checks, AuthContextType, AuthProvider() (+4 more)
 
-### Community 27 - "compilerOptions"
-Cohesion: 0.15
-Nodes (12): compileOnSave, compilerOptions, module, noImplicitReturns, noUnusedLocals, outDir, skipLibCheck, sourceMap (+4 more)
-
-### Community 28 - "useAuth"
-Cohesion: 0.19
-Nodes (10): CalendarSync, ProtectedRoute(), PublicLandingPageRoute(), SettingsPage, CalendarEvent, CalendarSync(), PostLoginTransition(), PostLoginTransitionProps (+2 more)
-
-### Community 29 - "Medications.tsx"
-Cohesion: 0.32
-Nodes (9): Medications, Medications(), db, checkInteractions(), getActiveMedications(), getInteractions(), lookupRxCUI(), saveMedication() (+1 more)
-
-### Community 30 - "typography_contrast.test.tsx"
-Cohesion: 0.18
-Nodes (4): HeroMetric(), HeroMetricProps, MOCK_PROFILE, MOCK_USER
-
-### Community 31 - "useClinicalContext.ts"
-Cohesion: 0.32
-Nodes (9): SYMPTOMS_LIST, VisitPrepWidget(), getAccessToken(), useClinicalContext(), FormMetadata, FormResponse, getForm(), getFormResponses() (+1 more)
-
-### Community 32 - "theme_typography_stress.test.tsx"
-Cohesion: 0.23
-Nodes (7): ThemeToggleHarness(), applyTheme(), Theme, ThemeContext, ThemeContextType, ThemeProvider(), useTheme()
-
-### Community 33 - "functions/package.json"
+### Community 24 - "Community 24"
 Cohesion: 0.17
-Nodes (11): devDependencies, typescript, engines, node, main, name, private, scripts (+3 more)
+Nodes (8): 1a6172b feat(ui-ux): add global ThemeContext light/dark mode sync & fix text readability contrast (WCAG AA), 9027bf2 feat(ui-ux): site-wide light/dark mode theme sync & WCAG AA contrast polish across all components, Theme, ThemeContext, ThemeContextType, ThemeProvider(), useTheme(), rootElement
 
-### Community 34 - "ExportModal.tsx"
-Cohesion: 0.20
-Nodes (9): jspdf, jspdf, ExportModal, DateRange, ExportModal(), ExportModalProps, ExportButton(), ExportButtonProps (+1 more)
+### Community 25 - "Community 25"
+Cohesion: 0.16
+Nodes (17): 3b0df16 Merge PR 220: Fix insecure randomness in ABDM service, f97bcaf Fix insecure randomness in ABDM service, AbdmAuthMode, AbdmAuthResponse, AbhaProfile, AccessMode, CareContext, CareContextType (+9 more)
 
-### Community 35 - "pillar1_abdm_audio_snomed.test.ts"
-Cohesion: 0.27
-Nodes (8): RegionalAudioPlayerProps, INDIAN_LANGUAGES, IndianLanguageOption, SpeechState, getSnomedCoding(), mapToSnomedCodeableConcepts(), SNOMED_DICTIONARY, SnomedConcept
+### Community 26 - "Community 26"
+Cohesion: 0.12
+Nodes (10): AuthContext, Profile, ProfileContext, ProfileContextType, ProfileProvider(), UserProfile, mockAuthContextValue, mockProfileContextValue (+2 more)
 
-### Community 36 - "dependencies"
+### Community 27 - "Community 27"
+Cohesion: 0.14
+Nodes (7): fb34bcf feat(teamwork): complete comprehensive clinical AI features, 3D glassmorphic styling, and empirical stress test suite, HeroMetric(), HeroMetricProps, mockGenerateContent, mockGenerateContentStream, MOCK_PROFILE, MOCK_USER
+
+### Community 28 - "Community 28"
 Cohesion: 0.18
-Nodes (11): @chenglou/pretext, lucide-react, dependencies, @chenglou/pretext, lucide-react, react-dom, react-dropzone, react-markdown (+3 more)
+Nodes (10): LabCardData, MasonryLabCardsProps, AutoSizeTextareaProps, cache, measureHeight(), measureLines(), measureWidth(), prepareText() (+2 more)
 
-### Community 37 - "dependencies"
+### Community 29 - "Community 29"
+Cohesion: 0.18
+Nodes (11): ChatMessage, VirtualizedChatListProps, renderCitationLink(), buildGuidelinePromptAugmentation(), CLINICAL_GUIDELINES, ClinicalGuideline, lookupRelevantGuidelines(), MedicalSource (+3 more)
+
+### Community 30 - "Community 30"
+Cohesion: 0.17
+Nodes (13): 0cc07d9 Add keyboard focus states to BottomSheet nav items, 12f827e Merge pull request #190 from dhurianiket/sentinel/fix-math-random-id-2172922096459184170, 1725d0f Merge pull request #192 from dhurianiket/palette/appnav-focus-states-14077769143390987877, 24e3f65 ⚡ Bolt: Optimize labHistory sorting with Schwartzian transform, 57cabea Merge pull request #194 from dhurianiket/bolt-optimize-timeline-sort-16433978497707150647, 8a96d1b perf: extract trends sorting to useMemo in Timeline, 8dcd75e Merge pull request #193 from dhurianiket/bolt-gemini-sort-optimization-5427309086640202675, 8e65a94 Merge pull request #195 from dhurianiket/palette-focus-visible-dashboard-2416701932977582511 (+5 more)
+
+### Community 31 - "Community 31"
+Cohesion: 0.17
+Nodes (11): 33a2694 Merge pull request #187 from dhurianiket/palette-focus-rings-9512996096297832596, 5f86e69 perf: optimize search filter loop in LabReportsSection, 93fd7d4 Add keyboard focus styles to icon-only close buttons, bb297c7 Merge pull request #188 from dhurianiket/bolt/optimize-lab-reports-search-14797524277834754908, f622d7c docs: record Snapshot XLIV — 3D glassmorphic health sync redesign with permission toggles, drag-drop, enhanced parsing, ReportComparisonProps, BottomSheetProps, NotificationCenterProps (+3 more)
+
+### Community 32 - "Community 32"
+Cohesion: 0.13
+Nodes (12): 07a7557 feat(landing): elevate Landing Page with ultra-premium 3D glassmorphism, glowing typography gradients, and state-of-the-art visual design, 0b8e7af feat(landing): redesign How It Works page with interactive 4-step workflow showcase, Apple-inspired 3D glassmorphism, and crisp typography, 0f97ca4 docs: update CURRENT_STATE.md with Snapshot XXXII How It Works redesign, 788ce96 refactor: memoize expensive array mapping in Dashboard, 8519880 docs: update CURRENT_STATE.md with Snapshot XXXIII Landing Page 3D glassmorphic redesign, 985a8cc docs: update CURRENT_STATE.md with Snapshot XXXI, e4408a3 Merge pull request #184 from dhurianiket/bolt-dashboard-optimization-11590176005061791133, BENTO_LABS (+4 more)
+
+### Community 33 - "Community 33"
+Cohesion: 0.24
+Nodes (13): 119bbec Merge remote-tracking branch 'origin/bolt-optimize-historical-values-sort-8610816908347628216', 27cb726 Merge remote-tracking branch 'origin/bolt/optimize-visual-lab-report-card-history-16106325536300056041', 3604be1 perf: apply schwartzian transform to history sorting, a438e61 refactor(performance): optimize historical lab report lookup with useMemo map, d04a621 feat(3d-hologram-visual-reports): implement 3D Holographic Body Scanner & Visual Biomarker Safety Meters, BiomarkerSparkline(), FourZoneRangeBar(), getPlainEnglishSummary() (+5 more)
+
+### Community 34 - "Community 34"
+Cohesion: 0.14
+Nodes (9): 194726a docs: record Snapshot XLV release for FHIR R4 & ABDM ABHA Gateway, 235fb43 feat(fhir-abdm): implement FHIR R4 bundle exporter, ABDM ABHA Gateway simulator, and 3D glassmorphic card refinements, 319410f feat(clinical-standards): complete FHIR R4 JSON Exporters, RxNav/OpenFDA Pharmacology Matrix, ABDM ABHA Gateway Hub, and 3D Glassmorphic UI polish, DateRange, ExportModalProps, downloadFHIRBundle(), downloadFhirJson(), exportToCSV() (+1 more)
+
+### Community 35 - "Community 35"
+Cohesion: 0.24
+Nodes (12): 2b0eef5 fix(analytics): resolve Google Analytics GA4 & GTM tracking for Single Page Application (SPA) routes and events, 32246c5 feat(analytics): integrate GA4 Measurement Protocol API secret aegisanalytic (7_vWiTUqR8yMwi7YZ-NglA) for backend telemetry, d4a9f84 fix(analytics): enable standard GA4 data collection on initial page load to resolve stream inactive status, db80099 security(analytics): sanitize Measurement Protocol secret loading to environment variables and prevent bundling secrets in frontend JavaScript, getOrCreateClientId(), MeasurementProtocolEvent, sendMeasurementProtocolEvent(), SendTelemetryOptions (+4 more)
+
+### Community 36 - "Community 36"
+Cohesion: 0.18
+Nodes (12): 30e36d8 fix(security): resolve root and functions vulnerabilities, synchronize package-lock.json files, update graphify AST, 6f498d3 feat(3d-hologram-model): overhaul 3D Holographic Body Scanner with high-fidelity translucent anatomical model & spatial hologram platform, 7847ab4 fix(tests): update title in HolographicBodyScanner.tsx to match test regex, 800c537 Merge pull request #203 from dhurianiket/bolt-correlation-matrix-optimization-9970654191168527559, 8c5a252 feat(ui): complete overhaul of 3D Holographic Body Scanner with multi-layer SVG anatomy, physiological animations, rotating base rings, and cyber HUD biometrics, dd6a99f ⚡ Bolt: Optimize array math aggregations in calculateCorrelation, eb411b6 fix(tests): align heartRate text node in HolographicBodyScanner.tsx for 100% test compatibility, CorrelationMatrixProps (+4 more)
+
+### Community 37 - "Community 37"
+Cohesion: 0.18
+Nodes (11): BiomarkerTrajectoryWidgetProps, DEFAULT_SAMPLE_DATA, BiomarkerTrajectory, computeBiomarkerTrajectory(), evaluateRiskLevel(), fitLinearRegression(), ForecastWindow, HistoricalPoint (+3 more)
+
+### Community 38 - "Community 38"
+Cohesion: 0.13
+Nodes (1): InfoPageLayoutProps
+
+### Community 39 - "Community 39"
+Cohesion: 0.18
+Nodes (10): checkLabResultForAlerts(), DEFAULT_THRESHOLDS, getConsolidatedAlerts(), AlertContextType, AlertSeverity, AlertThreshold, AlertType, HealthAlert (+2 more)
+
+### Community 40 - "Community 40"
+Cohesion: 0.19
+Nodes (12): 109a2d8 Merge pull request #207 from dhurianiket/bolt/short-circuit-array-filtering-13179201463970398894, 1f4d278 perf: short-circuit array filtering in ReportHistory and LabReportsSection, 815948a perf: memoize redundant lab values count reduction in UploadCenter, 8a7f11c feat: Add keyboard navigation focus styles to AppNav buttons, 9159ad4 Merge pull request #209 from dhurianiket/bolt/memoize-upload-reduce-286324318131671775, b8d1f41 Merge pull request #208 from dhurianiket/palette/appnav-focus-rings-14606812323672119005, cc83c13 perf(reports): optimize array filtering in useMemo loops, ALL_DESKTOP_TABS (+4 more)
+
+### Community 41 - "Community 41"
+Cohesion: 0.26
+Nodes (8): 272ec47 feat(pillar-2): implement 30-60-90 Day Risk Trajectory Engine & 3D Interactive Organ Health Avatar, OrganHealthAvatarProps, calculateOrganSystemScores(), LabObservationItem, OrganHealthOverview, OrganHealthStatus, OrganSystemKey, OrganSystemScore
+
+### Community 42 - "Community 42"
+Cohesion: 0.23
+Nodes (10): 57fefa6 feat(graphify): update knowledge graph & CURRENT_STATE.md with Pillar 2 nodes (1,220 nodes, 3,057 edges, 96 communities), 6a0f5ab docs: record Snapshot LII in CURRENT_STATE.md, e38e912 feat(pillar-3): implement Food-Drug Contraindication Matrix & 1-Page Printable Doctor OPD Consultation PDF, DEFAULT_SAMPLE_MEDS, FoodInteractionMatrixProps, DetectedFoodInteraction, evaluateFoodInteractions(), FOOD_RULES (+2 more)
+
+### Community 43 - "Community 43"
+Cohesion: 0.21
+Nodes (6): AlertsContext, AlertsContextType, AlertsProvider(), useAlerts(), NotificationCategory, NotificationDropdownProps
+
+### Community 44 - "Community 44"
+Cohesion: 0.35
+Nodes (10): getAllUsersUsage(), getEstCost(), getUserUsageStats(), markUserActive(), SubscriptionPlanId, trackStorageUsage(), trackUsage(), updateGlobalStats() (+2 more)
+
+### Community 45 - "Community 45"
+Cohesion: 0.26
+Nodes (9): formatContextForPrompt(), CachedReport, FirestoreErrorInfo, generateSourceHash(), getCachedReport(), handleFirestoreError(), OperationType, saveCachedReport() (+1 more)
+
+### Community 46 - "Community 46"
 Cohesion: 0.20
-Nodes (10): firebase-admin, firebase-functions, dependencies, firebase-admin, firebase-functions, @google/genai, uuid, @google/genai (+2 more)
+Nodes (6): DEFAULT_CENTER, PlaceMarker, 376c82d docs: update CURRENT_STATE.md with Snapshot XXVI 13-tab accessibility audit, 55513e6 fix(accessibility): resolve WCAG AA contrast for light-mode warning tokens, amber badges, and status delta indicators, 5fe6da2 fix(contrast): resolve all remaining low contrast text classes across CareMap, CalendarSync, MasonryLabCards, TrendSparklines, ProfileManagement, and Timeline, TrendSparklinesProps
 
-### Community 38 - "scripts"
+### Community 47 - "Community 47"
 Cohesion: 0.20
-Nodes (10): scripts, build, clean, dev, graphify, graphify:full, lint, preview (+2 more)
+Nodes (9): 02b8b11 docs: update CURRENT_STATE.md with Snapshot XXXIV teamwork feature and test suite completion, 06a2db1 docs: update CURRENT_STATE.md with Snapshot XXXVI, 3e697af docs: confirm final victory audit and full test suite passing in CURRENT_STATE.md, 49ae0b4 fix(ci): update Node.js actions to v4, add FORCE_JAVASCRIPT_ACTIONS_TO_NODE20, and increase smoke test timeouts, 5d23629 fix(ci): target direct Firebase Hosting endpoint to bypass Cloudflare bot challenge on headless CI runners, 6d39262 fix(ci): add CDN propagation delay and filter third-party network noise in Playwright smoke test, 748659f docs: update CURRENT_STATE.md with Snapshot XXXV GitHub Actions workflow fix, 783855a fix(ci): trigger smoke test workflow after deployment completes to eliminate race condition check failures (+1 more)
 
-### Community 39 - "graphify.ts"
+### Community 48 - "Community 48"
 Cohesion: 0.29
+Nodes (8): 0531e0c 🎨 Palette: [Accessibility improvements], 1a79d8c Merge pull request #198 from dhurianiket/palette-ux-improvements-14009109037605028381, bdd1404 Merge pull request #205 from dhurianiket/palette/disabled-tooltips-3132111819375758759, c3aac85 🎨 Palette: Add hover titles to disabled buttons, d3b5918 Merge pull request #199 from dhurianiket/bolt-optimize-filter-sets-9452934895080612040, d88c046 feat(ui): add aria-labels and focus states to dashboard buttons, df57864 Merge pull request #197 from dhurianiket/palette-a11y-dashboard-buttons-17849235882835041170, fa8603d perf(dashboard): extract static arrays to Sets for O(1) filtering
+
+### Community 49 - "Community 49"
+Cohesion: 0.29
+Nodes (1): RegionalVoiceService
+
+### Community 50 - "Community 50"
+Cohesion: 0.27
+Nodes (6): 3af7cb6 Merge pull request #181 from dhurianiket/palette/a11y-profile-management-15703925130740763613, 3e8fa9a 🎨 Palette: [UX improvement] Improve accessibility of Profile Management buttons, auth, isRequired(), validateProfileName(), Gender
+
+### Community 51 - "Community 51"
+Cohesion: 0.31
+Nodes (7): DRUG_INTERACTIONS, InteractionRule, isDuplicateClass(), isMedInCategory(), MED_CATEGORIES, checkMedicationInteractions(), MedicationStatus
+
+### Community 52 - "Community 52"
+Cohesion: 0.27
 Nodes (9): generateGraphifyMarkdown(), getCategory(), GraphNode, LESSONS_FILE, main(), OUTPUT_FILE, parseFile(), scanDirectory() (+1 more)
 
-### Community 40 - "LandingPage.tsx"
-Cohesion: 0.20
-Nodes (7): LandingPage, BENTO_LABS, CHAOS_TEXT, EXPLORE_PAGES, LandingPage(), SPECIALISTS_SHOWCASE, LegalModalProps
+### Community 53 - "Community 53"
+Cohesion: 0.33
+Nodes (8): 2d614dd Merge pull request #201 from dhurianiket/bolt/optimize-upload-filter-896614611142847168, 792000d 🛡️ Sentinel: [HIGH] Fix XSS vulnerability in PDF Generation, a4991f2 Merge pull request #202 from dhurianiket/sentinel-fix-pdf-xss-11065736594836799695, a995a45 fix(ui-responsive): fix Dashboard layout grid compression and refine mobile-responsive 3D glassmorphism, de2386e refactor: short-circuit array filter logic for UploadCenter search, escapeHtml(), exportOpdConsultationPdf(), OpdPdfInputData
 
-### Community 41 - "Dashboard/SBARPreview.tsx"
-Cohesion: 0.27
-Nodes (8): SBARPreview, RegionalAudioPlayer(), SBARPreview(), SBARPreviewProps, escapeHtml(), exportOpdConsultationPdf(), OpdPdfInputData, SBARSummary
-
-### Community 43 - "overrides"
-Cohesion: 0.22
-Nodes (9): overrides, dompurify, esbuild, ip-address, js-yaml, nanoid, protobufjs, qs (+1 more)
-
-### Community 44 - "manifest.json"
+### Community 54 - "Community 54"
 Cohesion: 0.25
-Nodes (7): background_color, display, icons, name, short_name, start_url, theme_color
+Nodes (4): Component, ErrorBoundary, Props, State
 
-### Community 45 - "ReportComparison.tsx"
+### Community 55 - "Community 55"
 Cohesion: 0.36
-Nodes (6): ReportComparison(), fetchData(), ReportComparisonProps, compareReports(), ComparisonRow, CLINICAL_STABILITY_THRESHOLDS
+Nodes (8): 2939618 🛡️ Sentinel: Fix insecure randomness in auditLogService, 5572b6f Merge pull request #211 from dhurianiket/sentinel-fix-audit-log-id-8306300698070896645, 8465af8 ⚡ Bolt: Optimize date parsing in sort comparator using Schwartzian transform, a68e2e5 Merge pull request #212 from dhurianiket/palette/focus-visible-settings-14773763513275308991, b2329a3 🛡️ Sentinel: [CRITICAL] Fix privilege escalation in firestore rules, b859df5 Merge pull request #213 from dhurianiket/sentinel/fix-firestore-privilege-escalation-15940020795618893858, df9ac7f Add keyboard focus visibility to settings buttons, fa09cb6 Merge pull request #210 from dhurianiket/bolt-optimize-array-filter-12301290249497449695
 
-### Community 46 - "SectionErrorBoundary"
+### Community 56 - "Community 56"
+Cohesion: 0.36
+Nodes (6): 2f5b70c Merge pull request #200 from dhurianiket/sentinel-fix-stack-trace-6159085393350306254, 39c2534 fix: remove stack trace from error response in logger, 81b0bc9 docs: record Snapshot XLVIII — CSP fix for GA4 data collection, logger, Props, State
+
+### Community 57 - "Community 57"
 Cohesion: 0.25
-Nodes (3): Props, SectionErrorBoundary, State
+Nodes (4): Component, Props, SectionErrorBoundary, State
 
-### Community 47 - "package.json"
+### Community 58 - "Community 58"
 Cohesion: 0.29
-Nodes (6): engines, node, name, private, type, version
+Nodes (3): 7ff7d21 feat(ui-ux-3d): implement Apple-inspired 3D glassmorphic design system overhaul & canvas particle mesh, Particle, Hero3DHealthGaugeProps
 
-### Community 48 - "MainApp"
+### Community 59 - "Community 59"
+Cohesion: 0.40
+Nodes (4): FORBIDDEN_PHRASES, MANDATORY_DISCLAIMERS, runSafetyCheck(), SafetyCheckResult
+
+### Community 60 - "Community 60"
 Cohesion: 0.33
-Nodes (5): MainApp(), isRequired(), validateProfileName(), checkCanUploadReport(), getUserSubscription()
+Nodes (2): AIErrorBoundary, Component
 
-### Community 49 - "overrides"
-Cohesion: 0.33
-Nodes (6): overrides, body-parser, protobufjs, qs, uuid, ws
+### Community 61 - "Community 61"
+Cohesion: 0.40
+Nodes (2): ComparativeAnalysisProps, LabStatus
 
-### Community 50 - "react"
-Cohesion: 0.33
-Nodes (5): react, react, SplashScreen(), SplashScreenProps, ProfileProvider()
+### Community 62 - "Community 62"
+Cohesion: 0.40
+Nodes (2): Component, GlobalErrorBoundary
 
-### Community 51 - "SkeletonLoader.tsx"
-Cohesion: 0.33
-Nodes (4): DashboardSkeleton(), SkeletonLoader(), SkeletonLoaderProps, TimelineSkeleton()
-
-### Community 52 - "jules-sync-staging.sh"
-Cohesion: 0.70
-Nodes (4): log_error(), log_info(), log_warn(), jules-sync-staging.sh script
-
-### Community 53 - "ui.ts"
+### Community 63 - "Community 63"
 Cohesion: 0.60
 Nodes (4): BaseComponentProps, ButtonProps, CardProps, StatusBadgeProps
 
-### Community 55 - "api.ts"
+### Community 64 - "Community 64"
 Cohesion: 0.50
-Nodes (3): AIExtractionResponse, ApiResponse, SpecialistAnalysisResponse
+Nodes (3): 218454d fix(test): update App smoke test text matcher for 100% test suite pass, 41759fe docs: record Snapshot LI in CURRENT_STATE.md, eb2fca5 feat(graphify): update codebase knowledge graph with Pillar 1 AST nodes (1,191 nodes, 3,008 edges, 91 communities)
 
-### Community 56 - "vite-env.d.ts"
+### Community 65 - "Community 65"
 Cohesion: 0.50
 Nodes (3): ImportMeta, ImportMetaEnv, Window
 
-### Community 57 - "vite"
+### Community 66 - "Community 66"
+Cohesion: 0.50
+Nodes (3): AIExtractionResponse, ApiResponse, SpecialistAnalysisResponse
+
+### Community 67 - "Community 67"
+Cohesion: 0.50
+Nodes (2): MedicalSafetyBannerProps, SafetyLevel
+
+### Community 69 - "Community 69"
 Cohesion: 0.67
-Nodes (3): vite, vite, vite
+Nodes (1): SplashScreenProps
+
+### Community 70 - "Community 70"
+Cohesion: 0.67
+Nodes (1): LoadingSpinnerProps
+
+### Community 71 - "Community 71"
+Cohesion: 0.67
+Nodes (2): __dirname, __filename
+
+### Community 72 - "Community 72"
+Cohesion: 1.00
+Nodes (1): http
+
+### Community 73 - "Community 73"
+Cohesion: 1.00
+Nodes (1): http
+
+### Community 76 - "Community 76"
+Cohesion: 1.00
+Nodes (1): content
 
 ## Knowledge Gaps
-- **339 isolated node(s):** `Toast`, `ToastContextType`, `ToastType`, `TrendSummary`, `FileItem` (+334 more)
+- **280 isolated node(s):** `http`, `http`, `https_1`, `app_1`, `https_1` (+275 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **41 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **Thin community `Community 38`** (1 nodes): `InfoPageLayoutProps`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 49`** (1 nodes): `RegionalVoiceService`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 60`** (2 nodes): `AIErrorBoundary`, `Component`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 61`** (2 nodes): `ComparativeAnalysisProps`, `LabStatus`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 62`** (2 nodes): `Component`, `GlobalErrorBoundary`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 67`** (2 nodes): `MedicalSafetyBannerProps`, `SafetyLevel`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 69`** (1 nodes): `SplashScreenProps`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 70`** (1 nodes): `LoadingSpinnerProps`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 71`** (2 nodes): `__dirname`, `__filename`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 72`** (1 nodes): `http`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 73`** (1 nodes): `http`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 76`** (1 nodes): `content`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useAuth()` connect `useAuth` to `firestore.ts`, `gemini.ts`, `Dashboard.tsx`, `Settings/IntegrationsPanel.tsx`, `SpecialistLounge.tsx`, `AlertsContext.tsx`, `abdmService.ts`, `App.tsx`, `AuthContext.tsx`, `useProfile`, `Reports/LabReportsSection.tsx`, `usageService.ts`, `ClinicalHandover.tsx`, `PricingModal.tsx`, `Medications.tsx`, `useClinicalContext.ts`, `LandingPage.tsx`, `ReportComparison.tsx`, `MainApp`, `react`?**
-  _High betweenness centrality (0.082) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `ExportModal.tsx`, `dependencies`, `package.json`, `react`, `vite`, `clsx`, `date-fns`, `dotenv`, `express`, `express-rate-limit`, `firebase`, `html2canvas`, `html-to-image`, `motion`, `qrcode.react`, `react-router-dom`, `react-window`, `recharts`, `tailwind-merge`, `@tailwindcss/typography`, `@tailwindcss/vite`, `@vis.gl/react-google-maps`, `@vitejs/plugin-react`, `zod`?**
-  _High betweenness centrality (0.077) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `functions/package.json`, `eslint`, `package.json`, `vitest`, `tailwindcss`, `@testing-library/react`, `@types/express`, `@types/node`, `@types/react`, `@types/react-dom`, `@types/react-window`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`, `vite`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **What connects `Toast`, `ToastContextType`, `ToastType` to the rest of the system?**
-  _339 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `firestore.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.050156739811912224 - nodes in this community are weakly interconnected._
-- **Should `gemini.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06358024691358025 - nodes in this community are weakly interconnected._
-- **Should `Dashboard.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.05974124809741248 - nodes in this community are weakly interconnected._
+- **Why does `useAuth()` connect `Community 23` to `Community 9`, `Community 2`, `Community 15`, `Community 7`, `Community 22`, `Community 43`, `Community 26`, `Community 6`, `Community 10`, `Community 13`, `Community 31`, `Community 1`, `Community 8`, `Community 40`, `Community 0`, `Community 38`, `Community 32`, `Community 18`, `Community 24`, `Community 29`, `Community 4`, `Community 21`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `RegionalVoiceService` connect `Community 49` to `Community 17`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **What connects `http`, `http`, `https_1` to the rest of the system?**
+  _280 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 0` be split into smaller, more focused modules?**
+  _Cohesion score 0.08605769230769231 - nodes in this community are weakly interconnected._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.06696428571428571 - nodes in this community are weakly interconnected._
+- **Should `Community 2` be split into smaller, more focused modules?**
+  _Cohesion score 0.0782608695652174 - nodes in this community are weakly interconnected._
+- **Should `Community 3` be split into smaller, more focused modules?**
+  _Cohesion score 0.07878787878787878 - nodes in this community are weakly interconnected._
