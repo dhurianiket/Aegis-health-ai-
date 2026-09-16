@@ -343,7 +343,7 @@ function MainApp() {
         className="flex-1 flex flex-col min-w-0 h-full relative pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 pointer-events-auto touch-auto"
       >
         {/* Top Header */}
-        <header className="sticky top-0 z-50 bg-theme/80 backdrop-blur-3xl border-b border-surface px-6 md:px-10 py-5 flex items-center justify-between shrink-0">
+        <header className="sticky top-0 z-50 apple-blur-nav px-4 sm:px-6 md:px-10 py-3.5 sm:py-4 flex items-center justify-between shrink-0 transition-colors">
           <div className="flex items-center gap-4">
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight capitalize text-theme">
               {activeTab === "profile"
@@ -383,7 +383,7 @@ function MainApp() {
             )}
           </div>
 
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
             <div className="hidden md:flex relative group">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
@@ -393,7 +393,7 @@ function MainApp() {
               />
             </div>
             <button
-              className="p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors relative focus:outline-none cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center text-muted hover:text-theme bg-surface/50 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
               onClick={toggleTheme}
               aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
@@ -402,14 +402,14 @@ function MainApp() {
             </button>
             <div className="relative">
               <button
-                className="p-2 text-muted hover:text-theme bg-surface/50 rounded-full transition-colors relative focus:outline-none"
+                className="w-10 h-10 flex items-center justify-center text-muted hover:text-theme bg-surface/50 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 aria-label={`View notifications. ${activeAlertsCount} unread.`}
                 title="Notifications"
               >
                 <Bell className="w-5 h-5" />
                 {activeAlertsCount > 0 && (
-                  <span className="absolute top-0 right-0 w-3 h-3 bg-[var(--color-critical)] rounded-full border-2 border-theme"></span>
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[var(--color-critical)] rounded-full border-2 border-theme"></span>
                 )}
               </button>
 
@@ -431,7 +431,7 @@ function MainApp() {
             {/* Upgrade / Plan Badge */}
             <button
               onClick={() => setIsPricingModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 shadow-md transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 shadow-md transition-all active:scale-95 duration-100 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
               {userSub && userSub.planId !== 'free' ? userSub.planName : 'Upgrade (₹99)'}
@@ -440,7 +440,7 @@ function MainApp() {
             {user ? (
               <div className="relative">
                 <div
-                  className="w-10 h-10 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 text-[var(--color-primary)] flex items-center justify-center font-extrabold cursor-pointer hover:scale-105 transition-transform"
+                  className="w-10 h-10 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 text-[var(--color-primary)] flex items-center justify-center font-extrabold cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-100"
                   onClick={() => setShowLogout(!showLogout)}
                   title="Profile Action"
                 >

@@ -544,12 +544,12 @@ ${remindersContext}`;
                   </div>
                 )}
                 {messages.length > 0 && !isTyping && (
-                  <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-none -mx-1 px-1">
+                  <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-none -mx-1 px-1 scroll-mask-right">
                     {suggestedQuestions.map((q, i) => (
                       <button
                         key={i}
                         onClick={() => handleSendMessage(q)}
-                        className="shrink-0 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap hover:border-teal-400 hover:text-teal-600 dark:hover:text-teal-300 transition-colors duration-200"
+                        className="shrink-0 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap hover:border-teal-400 hover:text-teal-600 dark:hover:text-teal-300 active:scale-95 transition-all duration-100 ease-out cursor-pointer"
                       >
                         {q}
                       </button>

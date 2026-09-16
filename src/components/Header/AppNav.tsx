@@ -108,7 +108,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] relative group cursor-pointer ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] relative group cursor-pointer active:scale-[0.98] ${
                   isActive
                     ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)] font-semibold shadow-sm shadow-[var(--color-primary)]/10"
                     : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] font-medium"
@@ -133,7 +133,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
         </nav>
       </aside>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/80 backdrop-blur-xl border-t border-[var(--color-border)] z-50 pb-safe pointer-events-auto">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 apple-blur-dock z-50 pb-safe pointer-events-auto">
         <div className="flex items-center justify-around px-2 py-2 relative pointer-events-auto">
           {bottomTabs.map((tab) => {
             const isActive =
@@ -155,10 +155,10 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   aria-label="Upload Document"
-                className="flex flex-col items-center justify-center -mt-6 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] relative z-10 pointer-events-auto"
+                  className="flex flex-col items-center justify-center -mt-6 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] relative z-10 pointer-events-auto active:scale-90 transition-transform duration-100 ease-out"
                 >
                   <div
-                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 bg-[var(--color-primary)] text-white`}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform bg-[var(--color-primary)] text-white shadow-[var(--color-primary)]/30`}
                   >
                     <Upload size={24} strokeWidth={2} />
                   </div>
@@ -171,7 +171,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] relative pointer-events-auto ${
+                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-all duration-100 ease-out active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] relative pointer-events-auto ${
                   isActive
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
@@ -201,7 +201,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => handleTabChange("settings")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <Settings className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -215,7 +215,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           </button>
           <button
             onClick={() => handleTabChange("caremap")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <Map className="w-8 h-8 text-[var(--color-primary)] animate-pulse" style={{ animationDuration: "3s" }} />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -224,7 +224,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           </button>
           <button
             onClick={() => handleTabChange("calendar")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <Calendar className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -233,7 +233,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           </button>
           <button
             onClick={() => handleTabChange("trends")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <TrendingUp className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -242,7 +242,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           </button>
           <button
             onClick={() => handleTabChange("sbar")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <FileText className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -251,7 +251,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           </button>
           <button
             onClick={() => handleTabChange("specialist")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <Stethoscope className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -260,7 +260,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           </button>
           <button
             onClick={() => handleTabChange("medications")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <Pill className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -269,7 +269,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           </button>
           <button
             onClick={() => handleTabChange("profile")}
-            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
           >
             <User className="w-8 h-8 text-[var(--color-primary)]" />
             <span className="font-medium text-sm text-[var(--color-text)]">
@@ -279,7 +279,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
           {user?.email === "dhurianiket@gmail.com" && (
              <button
               onClick={() => handleTabChange("admin")}
-              className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+              className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
             >
               <ShieldAlert className="w-8 h-8 text-[var(--color-primary)]" />
               <span className="font-medium text-sm text-[var(--color-text)]">
