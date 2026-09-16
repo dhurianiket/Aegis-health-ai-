@@ -121,23 +121,23 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
           <button
             onClick={handleExportFhir}
             title="Export as HL7 FHIR R4 JSON Bundle"
-            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-lg border border-indigo-500/20 transition-colors"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/20 transition-all active:scale-95 cursor-pointer"
           >
-            <Activity size={14} className="text-indigo-500" /> FHIR R4
+            <Activity size={15} className="text-indigo-500" /> FHIR R4
           </button>
           {report.fileUrl ? (
-             <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-lg border border-border transition-colors">
-                <Download size={14} /> PDF
+             <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-xl border border-border transition-all active:scale-95">
+                <Download size={15} /> PDF
              </a>
           ) : (
-             <button onClick={downloadSummary} className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-lg border border-border transition-colors">
-                <Download size={14} /> JSON
+             <button onClick={downloadSummary} className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-xl border border-border transition-all active:scale-95 cursor-pointer">
+                <Download size={15} /> JSON
              </button>
           )}
           {observationCount > 0 && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-[var(--color-primary)] hover:underline focus:outline-none bg-[var(--color-primary)]/5 rounded-lg transition-colors border border-[var(--color-primary)]/10"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] text-xs font-bold text-[var(--color-primary)] hover:underline focus:outline-none bg-[var(--color-primary)]/10 rounded-xl transition-all border border-[var(--color-primary)]/20 active:scale-95 cursor-pointer"
             >
               {expanded ? "Hide Results" : "View Details"}
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -426,22 +426,22 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[var(--color-border)] pb-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-[var(--color-text)] mb-2">Vault & Analytics</h2>
-          <div className="flex bg-[var(--color-bg)] border border-[var(--color-border)] p-1 rounded-[14px] inline-flex">
-             <button id="tab-btn-docs" onClick={() => setActiveTab('list')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'list' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+          <div className="flex bg-[var(--color-bg)] border border-[var(--color-border)] p-1 rounded-[16px] inline-flex overflow-x-auto max-w-full scrollbar-none">
+             <button id="tab-btn-docs" onClick={() => setActiveTab('list')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'list' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 Documents
              </button>
-             <button id="tab-btn-trends" onClick={() => setActiveTab('trends')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'trends' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-trends" onClick={() => setActiveTab('trends')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'trends' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 Trends & Charts
              </button>
-             <button id="tab-btn-history" onClick={() => setActiveTab('history')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-history" onClick={() => setActiveTab('history')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'history' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 History
              </button>
-             <button id="tab-btn-share" onClick={() => setActiveTab('share')} className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'share' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
-                Share With Doctor
+             <button id="tab-btn-share" onClick={() => setActiveTab('share')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'share' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+                Share
              </button>
           </div>
         </div>
-        <button onClick={() => onNavigateToUpload && onNavigateToUpload()} className="px-6 py-3 rounded-[14px] text-xs font-bold uppercase tracking-widest transition-colors bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 shadow-lg">
+        <button onClick={() => onNavigateToUpload && onNavigateToUpload()} className="px-6 py-3 min-h-[44px] rounded-[14px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 shadow-lg flex items-center justify-center">
           Upload New Report
         </button>
       </div>

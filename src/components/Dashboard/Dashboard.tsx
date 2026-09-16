@@ -366,7 +366,7 @@ export default function Dashboard({
           <button
             onClick={() => setRetryCount(c => c + 1)}
             aria-label="Retry Connection"
-            className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20 transition-transform active:scale-95"
+            className="px-8 py-3 min-h-[44px] bg-[var(--color-primary)] text-white rounded-full font-bold text-sm shadow-xl shadow-[var(--color-primary)]/20 transition-transform active:scale-95 cursor-pointer inline-flex items-center justify-center"
           >
             Retry Connection
           </button>
@@ -439,21 +439,21 @@ export default function Dashboard({
           {/* Top Banner Stats */}
       <motion.div
         variants={tileVariants}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6"
       >
         <motion.div
           whileHover={{ y: -4 }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-6"
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-5 sm:p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-4 sm:gap-6"
         >
-          <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0">
-            <ShieldCheck className="w-8 h-8" />
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0">
+            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <div>
             <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider mb-1">
               Health Index
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
+              <span className="text-3xl sm:text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
                 {latestScore.overall}
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">/100</span>
               </span>
@@ -466,17 +466,17 @@ export default function Dashboard({
 
         <motion.div
           whileHover={{ y: -4 }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-6"
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-5 sm:p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-4 sm:gap-6"
         >
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-            <Zap className="w-8 h-8" />
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Zap className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <div>
             <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider mb-1">
               Metabolic
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
+              <span className="text-3xl sm:text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
                 {safeSystems.metabolic}
               </span>
               <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">
@@ -492,17 +492,17 @@ export default function Dashboard({
 
         <motion.div
           whileHover={{ y: -4 }}
-          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-6"
+          className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-5 sm:p-6 rounded-3xl shadow-sm hover:shadow-md transition-all flex items-center gap-4 sm:gap-6"
         >
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-            <Droplets className="w-8 h-8" />
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+            <Droplets className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <div>
             <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider mb-1">
               Blood Quality
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
+              <span className="text-3xl sm:text-4xl font-extrabold text-[var(--color-text)] tracking-tight">
                 {safeSystems.blood}
               </span>
               <span className="text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center">

@@ -343,7 +343,7 @@ function MainApp() {
         className="flex-1 flex flex-col min-w-0 h-full relative pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 pointer-events-auto touch-auto"
       >
         {/* Top Header */}
-        <header className="sticky top-0 z-50 apple-blur-nav px-4 sm:px-6 md:px-10 py-3.5 sm:py-4 flex items-center justify-between shrink-0 transition-colors">
+        <header className="sticky top-0 z-50 apple-blur-nav pt-safe px-4 sm:px-6 md:px-10 py-3.5 sm:py-4 flex items-center justify-between shrink-0 transition-colors">
           <div className="flex items-center gap-4">
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight capitalize text-theme">
               {activeTab === "profile"
@@ -511,7 +511,7 @@ function MainApp() {
                                   setSbarError(null);
                                 }
                               }}
-                              className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-surface/80 rounded-[12px] text-xs font-semibold transition-colors"
+                              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-surface hover:bg-surface/80 rounded-[14px] text-xs font-semibold transition-all border border-surface active:scale-95 cursor-pointer shadow-xs"
                             >
                               <FileText className="w-4 h-4 text-muted" /> Handover
                               Report
@@ -519,7 +519,7 @@ function MainApp() {
                             <button
                               onClick={() => setIsChatOpen(true)}
                               aria-label="Consult AI"
-                              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 rounded-[12px] text-xs font-semibold transition-colors"
+                              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-[var(--color-primary)]/15 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/25 rounded-[14px] text-xs font-semibold transition-all border border-[var(--color-primary)]/20 active:scale-95 cursor-pointer shadow-xs"
                             >
                               <Sparkles className="w-4 h-4" /> 
                               <span className="hidden sm:inline">Consult AI</span>

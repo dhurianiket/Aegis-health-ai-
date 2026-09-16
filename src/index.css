@@ -115,22 +115,39 @@
     --color-text-faint: #94a3b8;
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply font-sans antialiased selection:bg-teal-500/30;
     background-color: var(--color-bg);
     color: var(--color-text);
     -webkit-tap-highlight-color: transparent;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    min-height: 100dvh;
   }
 
-  /* Typography Apple Standard */
+  #root {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Typography Apple Standard & Modern Web Guidance */
   input, textarea, select {
     font-size: 16px;
   }
   
   p, div, span, label {
     line-height: 1.5;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  h1, h2, h3, h4, .section-title {
+    text-wrap: balance;
   }
 
 
@@ -446,6 +463,20 @@
   .apple-squircle {
     border-radius: 24px;
     corner-shape: squircle; /* Future-ready CSS Houdini / Safari */
+  }
+
+  /* Accessible Touch Target & Containment (WCAG 2.2 & Apple HIG) */
+  .touch-target-44 {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overscroll-contain {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Apple Design System - Scroll Edge Fading Masks */

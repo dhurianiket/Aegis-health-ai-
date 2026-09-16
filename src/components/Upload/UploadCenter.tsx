@@ -871,10 +871,10 @@ export default function UploadCenter({
             Upload records or paste clinical notes.
           </p>
         </div>
-        <div className="flex bg-surface p-1 rounded-xl">
+        <div className="flex bg-surface p-1 rounded-2xl border border-[var(--color-border)] shadow-xs">
           <button
             onClick={() => setActiveTab("files")}
-            className={`px-6 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-colors ${
+            className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold uppercase tracking-widest transition-all active:scale-95 cursor-pointer flex items-center justify-center ${
               activeTab === "files"
                 ? "bg-[var(--color-primary)] text-slate-900 font-bold shadow-sm"
                 : "text-muted hover:text-theme"
@@ -884,7 +884,7 @@ export default function UploadCenter({
           </button>
           <button
             onClick={() => setActiveTab("notes")}
-            className={`px-6 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-colors ${
+            className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold uppercase tracking-widest transition-all active:scale-95 cursor-pointer flex items-center justify-center ${
               activeTab === "notes"
                 ? "bg-[var(--color-primary)] text-slate-900 font-bold shadow-sm"
                 : "text-muted hover:text-theme"
@@ -894,7 +894,7 @@ export default function UploadCenter({
           </button>
           <button
             onClick={() => setActiveTab("search")}
-            className={`px-6 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-colors ${
+            className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold uppercase tracking-widest transition-all active:scale-95 cursor-pointer flex items-center justify-center ${
               activeTab === "search"
                 ? "bg-[var(--color-primary)] text-slate-900 font-bold shadow-sm"
                 : "text-muted hover:text-theme"

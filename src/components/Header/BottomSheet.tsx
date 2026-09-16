@@ -37,7 +37,7 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
             animate={{ y: 0 }}
             exit={{ y: "100%", pointerEvents: "none" }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/95 backdrop-blur-2xl rounded-t-[32px] z-50 md:hidden border-t border-white/20 dark:border-white/10 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] pb-safe pointer-events-auto"
+            className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/95 backdrop-blur-2xl rounded-t-[32px] z-50 md:hidden border-t border-white/20 dark:border-white/10 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] pb-safe pointer-events-auto overscroll-contain max-h-[85dvh] overflow-y-auto"
           >
             <div className="flex justify-center p-3 cursor-grab" onClick={onClose}>
               <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full" />
@@ -45,7 +45,7 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
             <button
               onClick={onClose}
               aria-label="Close menu"
-              className="absolute top-3.5 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] active:scale-90 transition-all duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
+              className="absolute top-3.5 right-4 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] active:scale-90 transition-all duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
