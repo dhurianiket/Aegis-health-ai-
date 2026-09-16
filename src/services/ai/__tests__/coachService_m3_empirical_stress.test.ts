@@ -325,7 +325,7 @@ describe("Milestone 3 Empirical Stress Test Suite: Safety Triage Alerts & AI Pro
       expect(chunks.join("")).toBe("Fallback response successful");
     });
 
-    it("should retry secondary fallback 'gemini-2.5-flash' when BOTH primary model AND 'gemini-3.6-flash' throw 503 Unavailable error", async () => {
+    it("should retry secondary fallback 'gemini-3.5-flash' when BOTH primary model AND 'gemini-3.6-flash' throw 503 Unavailable error", async () => {
       let callCount = 0;
       const calledModels: string[] = [];
 
@@ -344,7 +344,7 @@ describe("Milestone 3 Empirical Stress Test Suite: Safety Triage Alerts & AI Pro
           throw err;
         }
         return (async function* () {
-          yield { text: "Secondary fallback gemini-2.5-flash succeeded" };
+          yield { text: "Secondary fallback gemini-3.5-flash succeeded" };
         })();
       };
 
@@ -355,11 +355,16 @@ describe("Milestone 3 Empirical Stress Test Suite: Safety Triage Alerts & AI Pro
         if (
           params.model === "gemini-3-flash-preview" ||
           params.model === "gemini-3.5-flash" ||
+          params.model === "gemini-2.5-flash" ||
+          params.model === "gemini-2.5-flash-lite" ||
           params.model === "gemini-2.0-flash" ||
           params.model === "gemini-1.5-flash"
         ) {
           effectiveModel = "gemini-3.6-flash";
-        } else if (params.model === "gemini-1.5-pro") {
+        } else if (
+          params.model === "gemini-2.5-pro" ||
+          params.model === "gemini-1.5-pro"
+        ) {
           effectiveModel = "gemini-3.1-pro-preview";
         }
         const activeParams = { ...params, model: effectiveModel };
@@ -391,7 +396,7 @@ describe("Milestone 3 Empirical Stress Test Suite: Safety Triage Alerts & AI Pro
                   retryMsg.toLowerCase().includes("unavailable");
 
                 if (isRetryUnavailable) {
-                  const secondaryParams = { ...params, model: "gemini-2.5-flash" };
+                  const secondaryParams = { ...params, model: "gemini-3.5-flash" };
                   return await originalGenerateContentStream(secondaryParams);
                 }
                 throw retryErr;
@@ -413,8 +418,8 @@ describe("Milestone 3 Empirical Stress Test Suite: Safety Triage Alerts & AI Pro
       }
 
       expect(callCount).toBe(3);
-      expect(calledModels).toEqual(["gemini-3.1-pro-preview", "gemini-3.6-flash", "gemini-2.5-flash"]);
-      expect(chunks.join("")).toBe("Secondary fallback gemini-2.5-flash succeeded");
+      expect(calledModels).toEqual(["gemini-3.1-pro-preview", "gemini-3.6-flash", "gemini-3.5-flash"]);
+      expect(chunks.join("")).toBe("Secondary fallback gemini-3.5-flash succeeded");
     });
   });
 });

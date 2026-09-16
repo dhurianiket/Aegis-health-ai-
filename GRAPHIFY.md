@@ -17,7 +17,6 @@
 - **[`src/components/ABDM/AbdmScanShareModal.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/ABDM/AbdmScanShareModal.tsx)**
   - *Exports*: `AbdmScanShareModal`
   - *Imports*: `../../services/abdmService`
-- **[`src/components/AIHelper/._ChatCoach.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/AIHelper/._ChatCoach.tsx)**
 - **[`src/components/AIHelper/ChatCoach.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/AIHelper/ChatCoach.tsx)**
   - *Exports*: `ChatCoach`, `default`
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../hooks/useClinicalContext`, `../../services/ai/voiceService`, `../../lib/geminiUtils...`
@@ -47,7 +46,6 @@
 - **[`src/components/Common/RegionalAudioPlayer.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Common/RegionalAudioPlayer.tsx)**
   - *Exports*: `RegionalAudioPlayer`
   - *Imports*: `../../services/ai/regionalVoiceService`
-- **[`src/components/Dashboard/._VisitPrepWidget.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Dashboard/._VisitPrepWidget.tsx)**
 - **[`src/components/Dashboard/BiomarkerTrajectoryWidget.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Dashboard/BiomarkerTrajectoryWidget.tsx)**
   - *Exports*: `BiomarkerTrajectoryWidget`
   - *Imports*: `../../services/biomarkerTrajectoryService`
@@ -130,9 +128,6 @@
 - **[`src/components/Form/AutoSizeTextarea.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Form/AutoSizeTextarea.tsx)**
   - *Exports*: `AutoSizeTextareaProps`, `AutoSizeTextarea`, `default`
   - *Imports*: `../../lib/pretext`
-- **[`src/components/Header/._AppNav.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Header/._AppNav.tsx)**
-- **[`src/components/Header/._BottomSheet.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Header/._BottomSheet.tsx)**
-- **[`src/components/Header/._NotificationDropdown.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Header/._NotificationDropdown.tsx)**
 - **[`src/components/Header/AppNav.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Header/AppNav.tsx)**
   - *Exports*: `AppNavProps`, `AppNav`
   - *Imports*: `./BottomSheet`, `../../context/ProfileContext`, `../../context/AuthContext`
@@ -164,11 +159,9 @@
   - *Imports*: `./InfoPageLayout`
 - **[`src/components/IntegrationsPanel.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/IntegrationsPanel.tsx)**
   - *Imports*: `./Settings/IntegrationsPanel`
-- **[`src/components/LabReports/._VisualLabReportCard.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/LabReports/._VisualLabReportCard.tsx)**
 - **[`src/components/LabReports/VisualLabReportCard.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/LabReports/VisualLabReportCard.tsx)**
   - *Exports*: `LabObservationItem`, `LabReport`, `VisualLabReportCardProps`, `PLAIN_ENGLISH_EXPLANATIONS`, `getPlainEnglishSummary`, `FourZoneRangeBar`, `BiomarkerSparkline`, `VisualLabReportCard`, `default`
   - *Imports*: `../../services/fhirService`, `../../services/sourceGroundedService`, `../../utils/dateUtils`
-- **[`src/components/LandingPage/._LandingPage.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/LandingPage/._LandingPage.tsx)**
 - **[`src/components/LandingPage/LandingPage.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/LandingPage/LandingPage.tsx)**
   - *Exports*: `LandingPage`, `default`
   - *Imports*: `../../context/AuthContext`, `../ErrorBoundary`, `./LegalModal`
@@ -248,18 +241,15 @@
 - **[`src/components/Text/FixedSizeText.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Text/FixedSizeText.tsx)**
   - *Exports*: `FixedSizeTextProps`, `FixedSizeText`, `default`
   - *Imports*: `../../lib/pretext`
-- **[`src/components/Timeline/._Timeline.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Timeline/._Timeline.tsx)**
 - **[`src/components/Timeline/Timeline.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Timeline/Timeline.tsx)**
   - *Exports*: `Timeline`, `default`
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical`, `../ui/SkeletonLoader...`
-- **[`src/components/Upload/._UploadCenter.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Upload/._UploadCenter.tsx)**
 - **[`src/components/Upload/NoteAnalyzer.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Upload/NoteAnalyzer.tsx)**
   - *Exports*: `NoteAnalyzer`, `default`
   - *Imports*: `../../services/ai/entityExtractorService`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical...`
 - **[`src/components/Upload/UploadCenter.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Upload/UploadCenter.tsx)**
   - *Exports*: `generateSuggestedTags`, `UploadCenter`, `default`
   - *Imports*: `../../services/ai/gemini`, `../../services/usageService`, `../../lib/firebase/firestore`, `./NoteAnalyzer`, `../../context/AuthContext...`
-- **[`src/components/ui/._ExportButton.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/ui/._ExportButton.tsx)**
 - **[`src/components/ui/AIErrorBoundary.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/ui/AIErrorBoundary.tsx)**
   - *Exports*: `AIErrorBoundary`
   - *Imports*: `../../lib/logger`
@@ -279,19 +269,14 @@
   - *Exports*: `SkeletonLoader`, `DashboardSkeleton`, `TimelineSkeleton`, `SpecialistsSkeleton`, `default`
 
 ### ⚙️ Services & API Providers
-- **[`src/lib/firebase/._config.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/._config.ts)**
 - **[`src/lib/firebase/config.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/config.ts)**
   - *Exports*: `auth`, `db`, `storage`, `googleProvider`, `default`
 - **[`src/lib/firebase/firestore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/firestore.ts)**
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
   - *Imports*: `./config`, `../../utils/dateUtils`, `../../types/medical`, `../../types/wearables`
-- **[`src/services/._biomarkerTrajectoryService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._biomarkerTrajectoryService.ts)**
-- **[`src/services/._fhirService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._fhirService.ts)**
-- **[`src/services/._measurementProtocolService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._measurementProtocolService.ts)**
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
   - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`
   - *Imports*: `../types/abdm`, `./fhirService`
-- **[`src/services/ai/._contextService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/._contextService.ts)**
 - **[`src/services/ai/coachService.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.test.ts)**
   - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
 - **[`src/services/ai/coachService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.ts)**
@@ -453,7 +438,6 @@
   - *Exports*: `ToastProvider`, `useToast`
 
 ### 🪝 Custom Hooks
-- **[`src/hooks/._useClinicalContext.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/._useClinicalContext.ts)**
 - **[`src/hooks/useClinicalContext.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/useClinicalContext.ts)**
   - *Exports*: `useClinicalContext`
   - *Imports*: `../context/ProfileContext`, `../context/AuthContext`, `../services/medicationService`, `../utils/calculateBMI`, `../services/googleFormsService...`
@@ -524,7 +508,6 @@
   - *Imports*: `../types/health`
 
 ### ⚙️ Configuration
-- **[`src/._App.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/._App.tsx)**
 - **[`src/App.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/App.tsx)**
   - *Exports*: `App`, `default`
   - *Imports*: `./lib/firebase/config`, `./components/Onboarding/SplashScreen`, `./components/Onboarding/PostLoginTransition`, `./context/AuthContext`, `./context/ProfileContext...`

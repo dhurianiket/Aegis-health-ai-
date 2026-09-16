@@ -19,6 +19,8 @@ const getAiClient = () => {
       } else if (
         params.model === "gemini-3-flash-preview" ||
         params.model === "gemini-3.5-flash" ||
+        params.model === "gemini-2.5-flash" ||
+        params.model === "gemini-2.5-flash-lite" ||
         params.model === "gemini-2.0-flash" ||
         params.model === "gemini-1.5-flash"
       ) {
@@ -56,15 +58,15 @@ const getAiClient = () => {
                 retryMsg.toLowerCase().includes("unavailable");
 
               if (isRetryUnavailable) {
-                console.warn(`[Paperclip Interceptor] Secondary fallback: "gemini-3.6-flash" was unavailable (503). Retrying with "gemini-2.5-flash"...`);
-                const secondaryParams = { ...params, model: "gemini-2.5-flash" };
+                console.warn(`[Paperclip Interceptor] Secondary fallback: "gemini-3.6-flash" was unavailable (503). Retrying with "gemini-3.5-flash"...`);
+                const secondaryParams = { ...params, model: "gemini-3.5-flash" };
                 return await originalGenerateContent(secondaryParams);
               }
               throw retryErr;
             }
           } else {
-            console.warn(`[Paperclip Interceptor] Model "gemini-3.6-flash" was unavailable (503/high-demand). Retrying with secondary fallback "gemini-2.5-flash"...`);
-            const secondaryParams = { ...params, model: "gemini-2.5-flash" };
+            console.warn(`[Paperclip Interceptor] Model "gemini-3.6-flash" was unavailable (503/high-demand). Retrying with secondary fallback "gemini-3.5-flash"...`);
+            const secondaryParams = { ...params, model: "gemini-3.5-flash" };
             return await originalGenerateContent(secondaryParams);
           }
         }

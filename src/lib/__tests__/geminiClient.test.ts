@@ -45,8 +45,10 @@ describe('geminiClient Resilience Interceptor & Model Normalization', () => {
       ['gemini-3.5-flash', 'gemini-3.6-flash'],
       ['gemini-2.0-flash', 'gemini-3.6-flash'],
       ['gemini-1.5-flash', 'gemini-3.6-flash'],
+      ['gemini-2.5-flash', 'gemini-3.6-flash'],
+      ['gemini-2.5-flash-lite', 'gemini-3.6-flash'],
       ['gemini-1.5-pro', 'gemini-3.1-pro-preview'],
-      ['gemini-2.5-flash', 'gemini-2.5-flash'],
+      ['gemini-2.5-pro', 'gemini-3.1-pro-preview'],
       ['gemini-3.6-flash', 'gemini-3.6-flash'],
     ])('maps model "%s" to "%s" for generateContent', async (inputModel, expectedModel) => {
       const ai = getAI();
@@ -67,8 +69,10 @@ describe('geminiClient Resilience Interceptor & Model Normalization', () => {
       ['gemini-3.5-flash', 'gemini-3.6-flash'],
       ['gemini-2.0-flash', 'gemini-3.6-flash'],
       ['gemini-1.5-flash', 'gemini-3.6-flash'],
+      ['gemini-2.5-flash', 'gemini-3.6-flash'],
+      ['gemini-2.5-flash-lite', 'gemini-3.6-flash'],
       ['gemini-1.5-pro', 'gemini-3.1-pro-preview'],
-      ['gemini-2.5-flash', 'gemini-2.5-flash'],
+      ['gemini-2.5-pro', 'gemini-3.1-pro-preview'],
     ])('maps model "%s" to "%s" for generateContentStream', async (inputModel, expectedModel) => {
       const ai = getAI();
       mockGenerateContentStream.mockResolvedValueOnce({ stream: 'chunk stream' });
@@ -100,13 +104,13 @@ describe('geminiClient Resilience Interceptor & Model Normalization', () => {
       expect(mockGenerateContent).toHaveBeenNthCalledWith(2, { model: 'gemini-3.6-flash', contents: 'test prompt' });
     });
 
-    it('retries with secondary fallback "gemini-2.5-flash" when primary AND primary-fallback both fail with 503', async () => {
+    it('retries with secondary fallback "gemini-3.5-flash" when primary AND primary-fallback both fail with 503', async () => {
       const ai = getAI();
       // 1st call (gemini-3.1-pro-preview) fails with 503
       mockGenerateContent.mockRejectedValueOnce({ status: 503, message: 'Overloaded' });
       // 2nd call (gemini-3.6-flash) fails with UNAVAILABLE status string
       mockGenerateContent.mockRejectedValueOnce({ status: 'UNAVAILABLE', message: 'High demand' });
-      // 3rd call (gemini-2.5-flash) succeeds
+      // 3rd call (gemini-3.5-flash) succeeds
       mockGenerateContent.mockResolvedValueOnce({ text: 'Secondary fallback success' });
 
       const result = await ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test prompt' });
@@ -115,10 +119,10 @@ describe('geminiClient Resilience Interceptor & Model Normalization', () => {
       expect(mockGenerateContent).toHaveBeenCalledTimes(3);
       expect(mockGenerateContent).toHaveBeenNthCalledWith(1, { model: 'gemini-3.1-pro-preview', contents: 'test prompt' });
       expect(mockGenerateContent).toHaveBeenNthCalledWith(2, { model: 'gemini-3.6-flash', contents: 'test prompt' });
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(3, { model: 'gemini-2.5-flash', contents: 'test prompt' });
+      expect(mockGenerateContent).toHaveBeenNthCalledWith(3, { model: 'gemini-3.5-flash', contents: 'test prompt' });
     });
 
-    it('retries directly with secondary fallback "gemini-2.5-flash" when model mapped to "gemini-3.6-flash" fails with 503', async () => {
+    it('retries directly with secondary fallback "gemini-3.5-flash" when model mapped to "gemini-3.6-flash" fails with 503', async () => {
       const ai = getAI();
       // gemini-3-flash-preview maps to gemini-3.6-flash
       mockGenerateContent.mockRejectedValueOnce({ message: 'The model is currently experiencing high demand (503)' });
@@ -129,7 +133,7 @@ describe('geminiClient Resilience Interceptor & Model Normalization', () => {
       expect(result).toEqual({ text: 'Direct secondary fallback success' });
       expect(mockGenerateContent).toHaveBeenCalledTimes(2);
       expect(mockGenerateContent).toHaveBeenNthCalledWith(1, { model: 'gemini-3.6-flash', contents: 'test' });
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(2, { model: 'gemini-2.5-flash', contents: 'test' });
+      expect(mockGenerateContent).toHaveBeenNthCalledWith(2, { model: 'gemini-3.5-flash', contents: 'test' });
     });
 
     it('re-throws error if all retries fail with 503', async () => {

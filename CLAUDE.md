@@ -11,7 +11,7 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - **Backend / Triggers:** Firebase Cloud Functions (Node.js) located in `/functions/src/`.
 - **Auth:** Firebase Google Sign-In (Authentication).
 - **Anti-Bot:** reCAPTCHA v3 (`VITE_RECAPTCHA_SITE_KEY`).
-- **AI:** Google Gemini API (@google/genai) with automated request interception in `geminiClient.ts`. Maps older preview model identifiers to stable, long-term options (`gemini-3.5-flash` and `gemini-3.1-pro-preview`) and retries using `gemini-3.5-flash` to handle 503 high-demand errors.
+- **AI:** Google Gemini API (@google/genai) with automated request interception in `geminiClient.ts` and `paperclipJulesCoordinator.ts`. Maps older/retired model identifiers (including Gemini 2.5 and 1.5 variants) to stable Gemini 3 series endpoints (`gemini-3.6-flash` and `gemini-3.1-pro-preview`) and retries using `gemini-3.6-flash` and `gemini-3.5-flash` to handle 503 high-demand errors.
 - **Voice Integration:** Powered by the Web Speech API transcription class `VoiceService.ts`. Programmatically mounted inside the `ChatCoach.tsx` conversational assistant for hands-free health logs.
 - **Care Map & Directions:** Powered by Google Maps Platform using `@vis.gl/react-google-maps` and global `Route.computeRoutes` overlays.
 - **Calendar Sync:** Direct Google Calendar API queries leveraging the Google Auth access token, syncing medical agendas with strict confirmation modals.
@@ -32,6 +32,13 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 - Implement new logic respecting the Vite boundaries. 
 - For backend logic, touch `/functions/` and run `npm run build` within that context.
 - Keep the `CURRENT_STATE.md` in sync whenever you complete a major structural change.
+
+## Session: September 16, 2026
+### Work Done:
+- **Gemini 2.5 Model Retirement Migration**: Migrated all model mappings and 503 fallback interceptors across both frontend (`src/lib/geminiClient.ts`) and backend Cloud Functions (`functions/src/paperclipJulesCoordinator.ts`) ahead of the Google Cloud October 2026 / January 2027 shutdown schedule.
+- Mapped deprecated `gemini-2.5-pro` &rarr; `gemini-3.1-pro-preview`, and `gemini-2.5-flash` / `gemini-2.5-flash-lite` &rarr; `gemini-3.6-flash`.
+- Replaced secondary 503 fallback from `gemini-2.5-flash` to GA-stable `gemini-3.5-flash`.
+- Verified entire Vitest test suite (57 test files, 569 tests passing at 100%), verified Cloud Functions build, and executed clean Vite production build.
 
 ## Session: June 09, 2026 (II)
 ### Work Done:
