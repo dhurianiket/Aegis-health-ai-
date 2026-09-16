@@ -157,7 +157,7 @@ export default function LandingPage() {
         
         {/* Persistent Sticky Navbar */}
         <nav className="fixed w-full z-50 top-0 left-0">
-          <div className="absolute inset-0 bg-[#0A192F]/70 backdrop-blur-md border-b border-white/5" />
+          <div className="absolute inset-0 bg-[#0A192F]/75 backdrop-blur-2xl border-b border-white/10 shadow-[0_1px_0_0_rgba(255,255,255,0.08)_inset,0_8px_32px_rgba(0,0,0,0.5)]" />
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between relative z-10">
             <div className="flex items-center gap-2 md:gap-3">
               <ShieldCheck className="w-5 h-5 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
@@ -173,7 +173,7 @@ export default function LandingPage() {
               <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
               
               <div className="relative group py-2">
-                <button className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none">
+                <button className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none cursor-pointer">
                   Articles <span className="text-xs">▾</span>
                 </button>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-[#0F2A4A] border border-white/10 rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -188,7 +188,7 @@ export default function LandingPage() {
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn}
-                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs md:text-xs font-semibold tracking-wide transition-colors disabled:opacity-50 items-center justify-center gap-2"
+                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs md:text-xs font-semibold tracking-wide transition-all duration-100 active:scale-95 disabled:opacity-50 items-center justify-center gap-2 cursor-pointer"
               >
                 <Activity className="w-3 md:w-4 h-3 md:h-4" />
                 <span>UPLOAD</span>
@@ -196,7 +196,7 @@ export default function LandingPage() {
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn}
-                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all duration-100 hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer"
               >
                 {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "GET STARTED"}
               </button>
@@ -205,7 +205,7 @@ export default function LandingPage() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle Menu"
-                className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors focus:outline-none"
+                className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-100 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
               >
                 {mobileMenuOpen ? (
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -227,8 +227,8 @@ export default function LandingPage() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="lg:hidden w-full bg-[#0A192F] border-b border-white/10 z-40 overflow-hidden shadow-2xl relative"
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="lg:hidden w-full bg-[#0A192F]/95 backdrop-blur-2xl border-b border-white/10 z-40 overflow-hidden shadow-2xl relative"
               >
                 <div className="px-6 py-6 flex flex-col gap-4">
                   <Link to="/how-it-works.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">How It Works</Link>

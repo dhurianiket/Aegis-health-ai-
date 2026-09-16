@@ -88,7 +88,7 @@ export default function NotificationDropdown({
         </div>
 
         {/* Categories */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none scroll-mask-right">
           {(
             [
               "all",
@@ -100,7 +100,7 @@ export default function NotificationDropdown({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 duration-100 ease-out border cursor-pointer ${
                 activeCategory === cat
                   ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                   : "bg-white/5 text-slate-300 border-transparent hover:border-white/10 hover:text-slate-300"

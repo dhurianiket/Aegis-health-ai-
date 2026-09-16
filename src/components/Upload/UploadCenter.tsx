@@ -1380,7 +1380,7 @@ export default function UploadCenter({
             </AnimatePresence>
 
             {/* Quick AI Tag Filters */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-none text-xs">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-none text-xs scroll-mask-right">
               <span className="text-muted font-bold flex items-center gap-1 shrink-0 text-xs uppercase tracking-wider mr-1">
                 <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                 AI Tags:
@@ -1396,7 +1396,7 @@ export default function UploadCenter({
                         showToast(`Filtered by AI tag: ${tag}`, "info");
                       }
                     }}
-                    className={`px-3 py-1.5 rounded-full font-semibold transition-all shrink-0 flex items-center gap-1.5 text-xs cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-full font-semibold transition-all duration-100 ease-out active:scale-95 shrink-0 flex items-center gap-1.5 text-xs cursor-pointer ${
                       isSelected
                         ? "bg-[var(--color-primary)] text-slate-950 shadow-sm font-bold"
                         : "bg-surface hover:bg-surface/80 text-muted hover:text-theme border border-[var(--color-border)]/20"
