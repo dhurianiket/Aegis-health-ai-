@@ -121,16 +121,16 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
           <button
             onClick={handleExportFhir}
             title="Export as HL7 FHIR R4 JSON Bundle"
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/20 transition-all active:scale-95 cursor-pointer"
+          className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/20 transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
             <Activity size={15} className="text-indigo-500" /> FHIR R4
           </button>
           {report.fileUrl ? (
-             <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-xl border border-border transition-all active:scale-95">
+           <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-xl border border-border transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]">
                 <Download size={15} /> PDF
              </a>
           ) : (
-             <button onClick={downloadSummary} className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-xl border border-border transition-all active:scale-95 cursor-pointer">
+           <button onClick={downloadSummary} className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-[var(--color-bg)] hover:bg-surface text-theme text-xs font-bold rounded-xl border border-border transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]">
                 <Download size={15} /> JSON
              </button>
           )}
@@ -427,21 +427,21 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-[var(--color-text)] mb-2">Vault & Analytics</h2>
           <div className="flex bg-[var(--color-bg)] border border-[var(--color-border)] p-1 rounded-[16px] inline-flex overflow-x-auto max-w-full scrollbar-none">
-             <button id="tab-btn-docs" onClick={() => setActiveTab('list')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'list' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-docs" onClick={() => setActiveTab('list')} className={`focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-bg)] px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'list' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 Documents
              </button>
-             <button id="tab-btn-trends" onClick={() => setActiveTab('trends')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'trends' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-trends" onClick={() => setActiveTab('trends')} className={`focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-bg)] px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'trends' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 Trends & Charts
              </button>
-             <button id="tab-btn-history" onClick={() => setActiveTab('history')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'history' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-history" onClick={() => setActiveTab('history')} className={`focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-bg)] px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'history' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 History
              </button>
-             <button id="tab-btn-share" onClick={() => setActiveTab('share')} className={`px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'share' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
+             <button id="tab-btn-share" onClick={() => setActiveTab('share')} className={`focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-bg)] px-4 sm:px-6 py-2.5 min-h-[44px] rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer whitespace-nowrap ${activeTab === 'share' ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm' : 'text-muted hover:text-[var(--color-text)]'}`}>
                 Share
              </button>
           </div>
         </div>
-        <button onClick={() => onNavigateToUpload && onNavigateToUpload()} className="px-6 py-3 min-h-[44px] rounded-[14px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 shadow-lg flex items-center justify-center">
+        <button onClick={() => onNavigateToUpload && onNavigateToUpload()} className="px-6 py-3 min-h-[44px] rounded-[14px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer bg-[var(--color-text)] text-[var(--color-bg)] hover:opacity-90 shadow-lg flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]">
           Upload New Report
         </button>
       </div>
@@ -463,7 +463,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                   <button
                     onClick={() => setViewFormat('visual')}
                     title="Visual 4-Zone Range Cards"
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    className={`focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                       viewFormat === 'visual'
                         ? 'bg-primary text-white dark:text-slate-950 shadow-sm'
                         : 'text-muted hover:text-theme'
@@ -475,7 +475,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                   <button
                     onClick={() => setViewFormat('tabular')}
                     title="Tabular Grid View"
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    className={`focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                       viewFormat === 'tabular'
                         ? 'bg-primary text-white dark:text-slate-950 shadow-sm'
                         : 'text-muted hover:text-theme'
@@ -546,7 +546,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
                     {reports.length === 0 ? "Upload your first lab report to generate insights and track your trends." : "Try adjusting your filters or search terms."}
                  </p>
                  {reports.length === 0 && (
-                    <button onClick={() => onNavigateToUpload && onNavigateToUpload()} className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
+                    <button onClick={() => onNavigateToUpload && onNavigateToUpload()} className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface)]">
                        Upload Report
                     </button>
                  )}
@@ -592,7 +592,7 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
               <span className="text-sm font-semibold text-text">2 reports selected for comparison</span>
               <button 
                 onClick={() => setShowComparison(true)}
-                className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold uppercase tracking-widest shadow-xl transition-colors text-center"
+                className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold uppercase tracking-widest shadow-xl transition-colors text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface)]"
               >
                 Compare Selected
               </button>
