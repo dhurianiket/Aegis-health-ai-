@@ -47,6 +47,7 @@
 - **[`src/components/Common/RegionalAudioPlayer.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Common/RegionalAudioPlayer.tsx)**
   - *Exports*: `RegionalAudioPlayer`
   - *Imports*: `../../services/ai/regionalVoiceService`
+- **[`src/components/Dashboard/._VisitPrepWidget.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Dashboard/._VisitPrepWidget.tsx)**
 - **[`src/components/Dashboard/BiomarkerTrajectoryWidget.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Dashboard/BiomarkerTrajectoryWidget.tsx)**
   - *Exports*: `BiomarkerTrajectoryWidget`
   - *Imports*: `../../services/biomarkerTrajectoryService`
@@ -290,6 +291,7 @@
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
   - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`
   - *Imports*: `../types/abdm`, `./fhirService`
+- **[`src/services/ai/._contextService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/._contextService.ts)**
 - **[`src/services/ai/coachService.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.test.ts)**
   - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
 - **[`src/services/ai/coachService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.ts)**
@@ -451,6 +453,7 @@
   - *Exports*: `ToastProvider`, `useToast`
 
 ### 🪝 Custom Hooks
+- **[`src/hooks/._useClinicalContext.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/._useClinicalContext.ts)**
 - **[`src/hooks/useClinicalContext.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/useClinicalContext.ts)**
   - *Exports*: `useClinicalContext`
   - *Imports*: `../context/ProfileContext`, `../context/AuthContext`, `../services/medicationService`, `../utils/calculateBMI`, `../services/googleFormsService...`
