@@ -63,3 +63,6 @@
 ## 2024-05-24 - Inline Filter Iteration vs HashMap
 **Learning:** Calling `.filter` inside a map of a React Component and scanning O(M) external sets on every iteration creates severe re-renders when data lists are long (like Lab Reports tracking histories). The combination of date parsing and looping can cause blocking re-renders.
 **Action:** Always extract invariant mapping and multi-lookup filters into a `useMemo`, employing dictionaries (`new Map()`) or Sets, specifically replacing redundant O(N) evaluations with O(1) reads.
+## 2026-09-15 - Date Parsing Overhead in Array Reduce Hooks
+**Learning:** When iterating through an array to find a maximum or latest item based on an expensive computation (like date parsing), using `.reduce()` can result in re-evaluating the accumulator's value on every single iteration, doubling the number of expensive operations (from N to 2N-1). Furthermore, starting without a safe initial value can introduce hidden `NaN` null-reference crashes if the array contains invalid elements.
+**Action:** Replace these `.reduce()` implementations with a standard `for` loop initialized securely with the first element. Cache the expensive maximum calculation (e.g., `maxTime`) outside the loop body to cut the computational overhead in half and properly handle `NaN` validation.

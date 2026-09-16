@@ -119,7 +119,16 @@ export function useClinicalContext() {
           const responses = await getFormResponses(activeProfile.googleFormId);
           
           if (responses?.responses?.length > 0) {
-             const latest = responses.responses.reduce((latest: any, current: any) => new Date(current.lastSubmittedTime).getTime() > new Date(latest.lastSubmittedTime).getTime() ? current : latest);
+             let latest = responses.responses[0];
+             let maxTime = new Date(latest.lastSubmittedTime).getTime();
+             for (let i = 1; i < responses.responses.length; i++) {
+                const current = responses.responses[i];
+                const time = new Date(current.lastSubmittedTime).getTime();
+                if (time > maxTime || isNaN(maxTime)) {
+                   maxTime = time;
+                   latest = current;
+                }
+             }
              
              let answersText = [];
              for (const [qId, answerObj] of Object.entries(latest.answers)) {
