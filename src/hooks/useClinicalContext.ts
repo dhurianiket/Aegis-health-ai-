@@ -35,7 +35,9 @@ export function useClinicalContext() {
       const activeMeds = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() as any }))
         .filter(med => !med.endDate)
-        .sort((a, b) => new Date(b.addedAt || 0).getTime() - new Date(a.addedAt || 0).getTime());
+        .map(med => ({ med, time: new Date(med.addedAt || 0).getTime() }))
+        .sort((a, b) => b.time - a.time)
+        .map(item => item.med);
       setMedications(activeMeds);
       setMedsLoading(false);
     }, (err) => {
