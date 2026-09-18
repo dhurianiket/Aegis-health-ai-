@@ -1322,8 +1322,9 @@ export default function UploadCenter({
                       setSearchQuery("");
                       showToast("Search cleared", "success");
                     }}
-                    className="p-1.5 hover:bg-surface rounded-full text-muted hover:text-theme transition-colors"
+                    className="p-1.5 hover:bg-surface rounded-full text-muted hover:text-theme transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                     title="Clear Search"
+                    aria-label="Clear Search"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1331,12 +1332,13 @@ export default function UploadCenter({
                 {isSpeechSupported ? (
                   <button
                     onClick={isListening ? stopVoiceSearch : startVoiceSearch}
-                    className={`p-3 rounded-full transition-all flex items-center justify-center relative ${
+                    className={`p-3 rounded-full transition-all flex items-center justify-center relative focus:outline-none focus-visible:ring-2 focus-visible:ring-current ${
                       isListening 
                         ? "bg-red-500 text-white animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]" 
                         : "bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
                     }`}
                     title={isListening ? "Stop Listening" : "Start Voice Search"}
+                    aria-label={isListening ? "Stop Listening" : "Start Voice Search"}
                   >
                     {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                   </button>
@@ -1462,7 +1464,16 @@ export default function UploadCenter({
                       {/* Document Header (click to expand/collapse) */}
                       <div 
                         onClick={() => setExpandedDocId(isExpanded ? null : docItem.id)}
-                        className="flex items-start justify-between gap-4 cursor-pointer"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setExpandedDocId(isExpanded ? null : docItem.id);
+                          }
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-expanded={isExpanded}
+                        className="flex items-start justify-between gap-4 cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                       >
                         <div className="flex items-start gap-3 min-w-0">
                           <div className="p-3 rounded-2xl bg-surface/80 shrink-0">

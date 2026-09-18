@@ -22,3 +22,6 @@
 ## 2025-03-09 - Ensure keyboard accessibility in toolbars and modals
 **Learning:** Found multiple instances of buttons in `VisualLabReportCard` (e.g., Export FHIR, PDF, Close) missing visual focus indicators for keyboard users. Adding standard `focus:ring-2` can be distracting for mouse users.
 **Action:** Consistently add `focus:outline-none focus-visible:ring-2 focus-visible:ring-*` to interactive elements across toolbars and modals to ensure screen reader / keyboard accessibility without degrading the mouse click experience.
+## 2025-05-18 - Accordion Keyboard Support Missing
+**Learning:** Found a pattern in this application where clickable `div` elements act as accordions (e.g., in the Document List of UploadCenter) but were implemented without keyboard access, `role="button"`, or `tabIndex`.
+**Action:** Always ensure custom accordion headers have `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (listening for Space/Enter), and focus indicators via `focus-visible`.
