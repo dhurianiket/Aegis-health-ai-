@@ -1,6 +1,7 @@
 import React from "react";
 import { ShieldCheck, ExternalLink, Activity, FileText, Sparkles } from "lucide-react";
 import { CLINICAL_GUIDELINES } from "../../services/sourceGroundedService";
+import { sanitizeHref } from "../../utils/security";
 
 /**
  * Custom ReactMarkdown Anchor component for rendering clickable, color-coded evidence pill badges.
@@ -80,7 +81,7 @@ export const renderCitationLink = ({ href, children }: { href?: string; children
 
     return (
       <a
-        href={guideline?.url || "#"}
+        href={sanitizeHref(guideline?.url)}
         target="_blank"
         rel="noopener noreferrer"
         title={guideline ? `${guideline.title} (${guideline.evidenceLevel})` : "Verified Clinical Guideline"}
@@ -94,7 +95,7 @@ export const renderCitationLink = ({ href, children }: { href?: string; children
   }
 
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline font-medium">
+    <a href={sanitizeHref(href)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline font-medium">
       {children}
     </a>
   );

@@ -158,7 +158,7 @@ Ensure your code adheres strictly to the invariants listed in AGENTS.md.
     }
     catch (error) {
         console.error("Critical Webhook Pipeline Failure:", error);
-        res.status(500).send(`Internal Webhook Error: ${error.message}`);
+        res.status(500).send("Internal Webhook Error.");
     }
 });
 //# sourceMappingURL=julesWebhook.js.map

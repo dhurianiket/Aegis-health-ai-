@@ -2,7 +2,16 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Read & Delete: Allow owner or verified admin
+      allow read, delete: if request.auth != null && (
+        request.auth.uid == userId ||
+        (request.auth.token.email == 'dhurianiket@gmail.com' && request.auth.token.email_verified == true)
+      );
+
+      // Create & Update: Restrict to owner with 25MB max size and safe medical document / media MIME types
+      allow create, update: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 25 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*|application/pdf|application/json|audio/.*|text/plain');
     }
   }
 }

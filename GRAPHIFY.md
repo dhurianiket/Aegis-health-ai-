@@ -42,7 +42,7 @@
   - *Exports*: `Canvas3DMesh`
 - **[`src/components/Common/CitationBadge.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Common/CitationBadge.tsx)**
   - *Exports*: `renderCitationLink`
-  - *Imports*: `../../services/sourceGroundedService`
+  - *Imports*: `../../services/sourceGroundedService`, `../../utils/security`
 - **[`src/components/Common/RegionalAudioPlayer.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Common/RegionalAudioPlayer.tsx)**
   - *Exports*: `RegionalAudioPlayer`
   - *Imports*: `../../services/ai/regionalVoiceService`
@@ -503,6 +503,8 @@
 - **[`src/utils/reportComparison.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/reportComparison.ts)**
   - *Exports*: `ComparisonRow`, `compareReports`
   - *Imports*: `./trendAnalysis`
+- **[`src/utils/security.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/security.ts)**
+  - *Exports*: `sanitizeHref`, `isSafeUrl`
 - **[`src/utils/trendAnalysis.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/trendAnalysis.ts)**
   - *Exports*: `CLINICAL_STABILITY_THRESHOLDS`, `TrendSummary`, `computeTrend`, `computeAllTrends`, `formatTrendForPrompt`
   - *Imports*: `../types/health`
