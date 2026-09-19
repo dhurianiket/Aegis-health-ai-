@@ -164,7 +164,11 @@ export default function AdminDashboard() {
          if (formId) {
             const resp = await getFormResponses(formId);
             if (resp && resp.responses) {
-               setFeedbackResponses(resp.responses.sort((a: any, b: any) => new Date(b.lastSubmittedTime).getTime() - new Date(a.lastSubmittedTime).getTime()));
+               const sortedResponses = resp.responses
+                  .map((r: any) => ({ r, time: new Date(r.lastSubmittedTime).getTime() }))
+                  .sort((a: any, b: any) => b.time - a.time)
+                  .map((item: any) => item.r);
+               setFeedbackResponses(sortedResponses);
             }
          }
       } catch (e: any) {
