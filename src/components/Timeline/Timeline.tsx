@@ -41,6 +41,13 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string }> = {
   default: { icon: FileText, color: "slate" },
 };
 
+const SEVERITY_MAP: Record<string, number> = {
+  CRITICAL: 0,
+  HIGH: 1,
+  LOW: 2,
+  NORMAL: 3,
+};
+
 export default function Timeline() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -101,16 +108,10 @@ export default function Timeline() {
   // This prevents an expensive O(N log N) re-sort of the trends array on every render cycle,
   // particularly when users interact with the Timeline filters or UI elements.
   const sortedTrends = useMemo(() => {
-    const severityMap: Record<string, number> = {
-      CRITICAL: 0,
-      HIGH: 1,
-      LOW: 2,
-      NORMAL: 3,
-    };
     return Object.values(trends).sort((a, b) => {
       return (
-        (severityMap[a.latestFlag || "NORMAL"] ?? 4) -
-        (severityMap[b.latestFlag || "NORMAL"] ?? 4)
+        (SEVERITY_MAP[a.latestFlag || "NORMAL"] ?? 4) -
+        (SEVERITY_MAP[b.latestFlag || "NORMAL"] ?? 4)
       );
     });
   }, [trends]);

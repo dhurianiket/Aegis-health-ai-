@@ -145,19 +145,19 @@ export function computeAllTrends(
 /**
  * Formats trends for inclusion in AI prompts.
  */
+const SEVERITY_MAP: Record<string, number> = {
+  CRITICAL: 0,
+  HIGH: 1,
+  LOW: 2,
+  NORMAL: 3,
+};
+
 export function formatTrendForPrompt(
   trends: Record<string, TrendSummary>,
 ): string {
-  const severityMap: Record<string, number> = {
-    CRITICAL: 0,
-    HIGH: 1,
-    LOW: 2,
-    NORMAL: 3,
-  };
-
   const sortedTrends = Object.values(trends).sort((a, b) => {
-    const severityA = a.currentFlag ? (severityMap[a.currentFlag] ?? 4) : 4;
-    const severityB = b.currentFlag ? (severityMap[b.currentFlag] ?? 4) : 4;
+    const severityA = a.currentFlag ? (SEVERITY_MAP[a.currentFlag] ?? 4) : 4;
+    const severityB = b.currentFlag ? (SEVERITY_MAP[b.currentFlag] ?? 4) : 4;
     return severityA - severityB;
   });
 
