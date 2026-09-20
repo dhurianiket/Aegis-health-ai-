@@ -1,161 +1,369 @@
-import { GoogleGenAI } from "@google/genai";
+/**
+ * Gemini client routed through Cloudflare Worker `aegishealthai-edge`.
+ * POST https://api.aegishealthai.co.in/api/ai/generate
+ *
+ * Auth v1: Authorization Bearer VITE_AEGIS_EDGE_BEARER (interim shared secret —
+ * still extractable from the SPA bundle; Firebase ID-token verify is the follow-up).
+ * Never embed GEMINI_API_KEY or EDGE secrets in source / commits.
+ */
 
-let aiInstance: GoogleGenAI | null = null;
+export interface GeminiGenerateConfig {
+  temperature?: number;
+  topP?: number;
+  topK?: number;
+  maxOutputTokens?: number;
+  responseMimeType?: string;
+  responseSchema?: unknown;
+  systemInstruction?: unknown;
+  safetySettings?: unknown;
+  [key: string]: unknown;
+}
 
-export function getAI(): GoogleGenAI {
-  if (!aiInstance) {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("VITE_GEMINI_API_KEY is not set");
+export interface GeminiGenerateParams {
+  model?: string;
+  contents: unknown;
+  config?: GeminiGenerateConfig;
+  generationConfig?: Record<string, unknown>;
+  safetySettings?: unknown;
+  systemInstruction?: unknown;
+}
+
+export interface GeminiGenerateResponse {
+  text: string;
+  candidates?: unknown[];
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+    [key: string]: unknown;
+  };
+  raw: unknown;
+}
+
+type EdgeErrorBody = {
+  error?: string;
+  message?: string;
+  request_id?: string;
+};
+
+const DEFAULT_EDGE_API_URL = 'https://api.aegishealthai.co.in';
+const DEFAULT_MODEL = 'gemini-3.6-flash';
+const SECONDARY_FALLBACK = 'gemini-3.5-flash';
+
+const FLASH_ALIASES = new Set([
+  'gemini-3-flash-preview',
+  'gemini-3.5-flash',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+]);
+
+const PRO_ALIASES = new Set(['gemini-2.5-pro', 'gemini-1.5-pro']);
+
+export function getEdgeApiBaseUrl(): string {
+  const raw =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EDGE_API_URL) ||
+    DEFAULT_EDGE_API_URL;
+  return String(raw).replace(/\/$/, '');
+}
+
+export function getEdgeBearer(): string {
+  const bearer =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AEGIS_EDGE_BEARER) ||
+    '';
+  return String(bearer);
+}
+
+export function normalizeModel(model: string | undefined): string {
+  if (!model) return DEFAULT_MODEL;
+  if (FLASH_ALIASES.has(model)) return DEFAULT_MODEL;
+  if (PRO_ALIASES.has(model)) return 'gemini-3.1-pro-preview';
+  return model;
+}
+
+function isUnavailableError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { status?: unknown; code?: unknown; message?: unknown };
+  const errorMsg = String(e.message || '');
+  const errorStatus = e.status ?? e.code;
+  return (
+    errorStatus === 503 ||
+    errorStatus === 'UNAVAILABLE' ||
+    errorMsg.includes('503') ||
+    errorMsg.toLowerCase().includes('demand') ||
+    errorMsg.toLowerCase().includes('unavailable')
+  );
+}
+
+function extractText(payload: unknown): string {
+  if (!payload || typeof payload !== 'object') return '';
+  const p = payload as {
+    text?: unknown;
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  if (typeof p.text === 'string') return p.text;
+  const parts = p.candidates?.[0]?.content?.parts;
+  if (Array.isArray(parts)) {
+    return parts.map((part) => (part && typeof part.text === 'string' ? part.text : '')).join('');
+  }
+  return '';
+}
+
+function buildEdgeBody(params: GeminiGenerateParams, model: string): Record<string, unknown> {
+  const config = params.config || {};
+  const {
+    systemInstruction: configSystemInstruction,
+    safetySettings: configSafetySettings,
+    ...generationFromConfig
+  } = config;
+
+  const generationConfig: Record<string, unknown> = {
+    ...(params.generationConfig || {}),
+    ...generationFromConfig,
+  };
+  // SDK uses `config`; edge contract uses `generationConfig`
+  delete generationConfig.systemInstruction;
+  delete generationConfig.safetySettings;
+
+  const body: Record<string, unknown> = {
+    model,
+    contents: params.contents,
+  };
+
+  if (Object.keys(generationConfig).length > 0) {
+    body.generationConfig = generationConfig;
+  }
+
+  const systemInstruction =
+    params.systemInstruction ?? configSystemInstruction;
+  if (systemInstruction !== undefined) {
+    body.systemInstruction = systemInstruction;
+  }
+
+  const safetySettings = params.safetySettings ?? configSafetySettings;
+  if (safetySettings !== undefined) {
+    body.safetySettings = safetySettings;
+  }
+
+  return body;
+}
+
+export class EdgeGeminiError extends Error {
+  status?: number | string;
+  code?: number | string;
+  requestId?: string;
+
+  constructor(message: string, init?: { status?: number | string; requestId?: string }) {
+    super(message);
+    this.name = 'EdgeGeminiError';
+    this.status = init?.status;
+    this.code = init?.status;
+    this.requestId = init?.requestId;
+  }
+}
+
+/** @internal exported for unit tests */
+export async function callEdgeGenerate(
+  params: GeminiGenerateParams,
+  model: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<GeminiGenerateResponse> {
+  const bearer = getEdgeBearer();
+  if (!bearer) {
+    throw new EdgeGeminiError(
+      'VITE_AEGIS_EDGE_BEARER is not set (interim edge shared secret for api.aegishealthai.co.in)',
+    );
+  }
+
+  const url = `${getEdgeApiBaseUrl()}/api/ai/generate`;
+  const response = await fetchImpl(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${bearer}`,
+    },
+    body: JSON.stringify(buildEdgeBody(params, model)),
+  });
+
+  const rawText = await response.text();
+  let parsed: unknown = null;
+  try {
+    parsed = rawText ? JSON.parse(rawText) : null;
+  } catch {
+    parsed = { raw: rawText };
+  }
+
+  if (!response.ok) {
+    const errBody = (parsed || {}) as EdgeErrorBody;
+    throw new EdgeGeminiError(
+      errBody.error || errBody.message || `Edge Gemini request failed (${response.status})`,
+      { status: response.status, requestId: errBody.request_id },
+    );
+  }
+
+  const usageMetadata =
+    parsed && typeof parsed === 'object' && 'usageMetadata' in parsed
+      ? (parsed as { usageMetadata?: GeminiGenerateResponse['usageMetadata'] }).usageMetadata
+      : undefined;
+
+  return {
+    text: extractText(parsed),
+    candidates:
+      parsed && typeof parsed === 'object' && 'candidates' in parsed
+        ? (parsed as { candidates?: unknown[] }).candidates
+        : undefined,
+    usageMetadata,
+    raw: parsed,
+  };
+}
+
+async function generateWithFallback(
+  params: GeminiGenerateParams,
+  fetchImpl: typeof fetch,
+): Promise<GeminiGenerateResponse> {
+  const originalModel = params.model;
+  const effectiveModel = normalizeModel(params.model);
+
+  const attempt = async (model: string) => callEdgeGenerate(params, model, fetchImpl);
+
+  try {
+    return await attempt(effectiveModel);
+  } catch (err: unknown) {
+    if (!isUnavailableError(err)) throw err;
+
+    if (effectiveModel !== DEFAULT_MODEL) {
+      console.warn(
+        `[Gemini Edge] Model "${originalModel}" (mapped to "${effectiveModel}") unavailable. Retrying with "${DEFAULT_MODEL}"...`,
+      );
+      try {
+        return await attempt(DEFAULT_MODEL);
+      } catch (retryErr: unknown) {
+        if (!isUnavailableError(retryErr)) throw retryErr;
+        console.warn(
+          `[Gemini Edge] "${DEFAULT_MODEL}" unavailable. Retrying with "${SECONDARY_FALLBACK}"...`,
+        );
+        return await attempt(SECONDARY_FALLBACK);
+      }
     }
-    
-    const realAI = new GoogleGenAI({ 
-      apiKey,
-      httpOptions: { baseUrl: import.meta.env.VITE_CLOUDFLARE_AI_GATEWAY_URL },
-    });
 
-    // Intercept generateContent
-    const originalGenerateContent = realAI.models.generateContent.bind(realAI.models);
-    realAI.models.generateContent = async function(params: any) {
-      if (!params) return originalGenerateContent(params);
-      
-      const originalModel = params.model;
-      // Pre-map deprecated/unstable models to stable highly-available ones (Gemini 3 series)
-      let effectiveModel = params.model;
-      if (
-        params.model === "gemini-3-flash-preview" || 
-        params.model === "gemini-3.5-flash" || 
-        params.model === "gemini-2.5-flash" ||
-        params.model === "gemini-2.5-flash-lite" ||
-        params.model === "gemini-2.0-flash" || 
-        params.model === "gemini-1.5-flash"
-      ) {
-        effectiveModel = "gemini-3.6-flash";
-      } else if (
-        params.model === "gemini-2.5-pro" ||
-        params.model === "gemini-1.5-pro"
-      ) {
-        effectiveModel = "gemini-3.1-pro-preview";
-      }
+    console.warn(
+      `[Gemini Edge] "${DEFAULT_MODEL}" unavailable. Retrying with "${SECONDARY_FALLBACK}"...`,
+    );
+    return await attempt(SECONDARY_FALLBACK);
+  }
+}
 
-      const activeParams = { ...params, model: effectiveModel };
+async function* streamAsSingleChunk(
+  params: GeminiGenerateParams,
+  fetchImpl: typeof fetch,
+): AsyncGenerator<GeminiGenerateResponse> {
+  const result = await generateWithFallback(params, fetchImpl);
+  yield result;
+}
 
-      try {
-        return await originalGenerateContent(activeParams);
-      } catch (err: any) {
-        const errorMsg = err?.message || "";
-        const errorStatus = err?.status || err?.code;
-        const isUnavailable = 
-          errorStatus === 503 || 
-          errorStatus === "UNAVAILABLE" ||
-          errorMsg.includes("503") || 
-          errorMsg.toLowerCase().includes("demand") || 
-          errorMsg.toLowerCase().includes("unavailable");
+export interface EdgeChatSession {
+  sendMessageStream: (input: { message: string } | string) => Promise<AsyncGenerator<GeminiGenerateResponse>>;
+  sendMessage: (input: { message: string } | string) => Promise<GeminiGenerateResponse>;
+}
 
-        if (isUnavailable) {
-          if (activeParams.model !== "gemini-3.6-flash") {
-            console.warn(`[Gemini Interceptor] Model "${originalModel}" (mapped to "${activeParams.model}") was unavailable (503/high-demand). Retrying with "gemini-3.6-flash"...`);
-            const retryParams = { ...params, model: "gemini-3.6-flash" };
-            try {
-              return await originalGenerateContent(retryParams);
-            } catch (retryErr: any) {
-              const retryMsg = retryErr?.message || "";
-              const retryStatus = retryErr?.status || retryErr?.code;
-              const isRetryUnavailable = 
-                retryStatus === 503 || 
-                retryStatus === "UNAVAILABLE" ||
-                retryMsg.includes("503") || 
-                retryMsg.toLowerCase().includes("demand") || 
-                retryMsg.toLowerCase().includes("unavailable");
+export interface EdgeChatCreateParams {
+  model?: string;
+  history?: unknown;
+  config?: GeminiGenerateConfig;
+}
 
-              if (isRetryUnavailable) {
-                console.warn(`[Gemini Interceptor] Secondary fallback: "gemini-3.6-flash" was unavailable (503). Retrying with "gemini-3.5-flash"...`);
-                const secondaryParams = { ...params, model: "gemini-3.5-flash" };
-                return await originalGenerateContent(secondaryParams);
-              }
-              throw retryErr;
-            }
-          } else {
-            console.warn(`[Gemini Interceptor] Model "gemini-3.6-flash" was unavailable (503/high-demand). Retrying with secondary fallback "gemini-3.5-flash"...`);
-            const secondaryParams = { ...params, model: "gemini-3.5-flash" };
-            return await originalGenerateContent(secondaryParams);
-          }
-        }
-        throw err;
-      }
+export interface AegisAI {
+  models: {
+    generateContent: (params: GeminiGenerateParams) => Promise<GeminiGenerateResponse>;
+    generateContentStream: (
+      params: GeminiGenerateParams,
+    ) => Promise<AsyncGenerator<GeminiGenerateResponse>>;
+  };
+  chats: {
+    create: (params?: EdgeChatCreateParams) => EdgeChatSession;
+  };
+}
+
+
+function messageToText(input: { message: string } | string): string {
+  return typeof input === 'string' ? input : input.message;
+}
+
+function buildChatContents(history: unknown, userMessage: string): unknown {
+  const contents: unknown[] = [];
+  if (Array.isArray(history)) {
+    for (const item of history) {
+      contents.push(item);
+    }
+  }
+  contents.push({ role: 'user', parts: [{ text: userMessage }] });
+  return contents;
+}
+
+function createChatSession(
+  createParams: EdgeChatCreateParams | undefined,
+  fetchImpl: typeof fetch,
+): EdgeChatSession {
+  const model = createParams?.model;
+  const history = createParams?.history;
+  const config = createParams?.config;
+
+  const run = (userMessage: string) =>
+    generateWithFallback(
+      {
+        model,
+        contents: buildChatContents(history, userMessage),
+        config,
+        systemInstruction: config?.systemInstruction,
+      },
+      fetchImpl,
+    );
+
+  return {
+    sendMessage: async (input) => run(messageToText(input)),
+    sendMessageStream: async (input) => streamAsSingleChunk(
+      {
+        model,
+        contents: buildChatContents(history, messageToText(input)),
+        config,
+        systemInstruction: config?.systemInstruction,
+      },
+      fetchImpl,
+    ),
+  };
+}
+
+let aiInstance: AegisAI | null = null;
+let fetchImplForTests: typeof fetch | null = null;
+
+/** Test-only: inject fetch and reset singleton */
+export function __setGeminiFetchForTests(fetchImpl: typeof fetch | null): void {
+  fetchImplForTests = fetchImpl;
+  aiInstance = null;
+}
+
+export function getAI(): AegisAI {
+  if (!aiInstance) {
+    if (!getEdgeBearer()) {
+      throw new Error(
+        'VITE_AEGIS_EDGE_BEARER is not set (interim edge shared secret for api.aegishealthai.co.in)',
+      );
+    }
+
+    const activeFetch = fetchImplForTests || fetch;
+
+    aiInstance = {
+      models: {
+        generateContent: (params: GeminiGenerateParams) =>
+          generateWithFallback(params, activeFetch),
+        generateContentStream: async (params: GeminiGenerateParams) =>
+          streamAsSingleChunk(params, activeFetch),
+      },
+      chats: {
+        create: (params?: EdgeChatCreateParams) => createChatSession(params, activeFetch),
+      },
     };
-
-    // Intercept generateContentStream
-    const originalGenerateContentStream = realAI.models.generateContentStream.bind(realAI.models);
-    realAI.models.generateContentStream = async function(params: any) {
-      if (!params) return originalGenerateContentStream(params);
-      
-      const originalModel = params.model;
-      let effectiveModel = params.model;
-      if (
-        params.model === "gemini-3-flash-preview" || 
-        params.model === "gemini-3.5-flash" || 
-        params.model === "gemini-2.5-flash" ||
-        params.model === "gemini-2.5-flash-lite" ||
-        params.model === "gemini-2.0-flash" || 
-        params.model === "gemini-1.5-flash"
-      ) {
-        effectiveModel = "gemini-3.6-flash";
-      } else if (
-        params.model === "gemini-2.5-pro" ||
-        params.model === "gemini-1.5-pro"
-      ) {
-        effectiveModel = "gemini-3.1-pro-preview";
-      }
-
-      const activeParams = { ...params, model: effectiveModel };
-
-      try {
-        return await originalGenerateContentStream(activeParams);
-      } catch (err: any) {
-        const errorMsg = err?.message || "";
-        const errorStatus = err?.status || err?.code;
-        const isUnavailable = 
-          errorStatus === 503 || 
-          errorStatus === "UNAVAILABLE" ||
-          errorMsg.includes("503") || 
-          errorMsg.toLowerCase().includes("demand") || 
-          errorMsg.toLowerCase().includes("unavailable");
-
-        if (isUnavailable) {
-          if (activeParams.model !== "gemini-3.6-flash") {
-            console.warn(`[Gemini Interceptor] Stream Model "${originalModel}" (mapped to "${activeParams.model}") was unavailable (503/high-demand). Retrying with "gemini-3.6-flash"...`);
-            const retryParams = { ...params, model: "gemini-3.6-flash" };
-            try {
-              return await originalGenerateContentStream(retryParams);
-            } catch (retryErr: any) {
-              const retryMsg = retryErr?.message || "";
-              const retryStatus = retryErr?.status || retryErr?.code;
-              const isRetryUnavailable = 
-                retryStatus === 503 || 
-                retryStatus === "UNAVAILABLE" ||
-                retryMsg.includes("503") || 
-                retryMsg.toLowerCase().includes("demand") || 
-                retryMsg.toLowerCase().includes("unavailable");
-
-              if (isRetryUnavailable) {
-                console.warn(`[Gemini Interceptor] Secondary Stream fallback: "gemini-3.6-flash" was unavailable (503). Retrying with "gemini-3.5-flash"...`);
-                const secondaryParams = { ...params, model: "gemini-3.5-flash" };
-                return await originalGenerateContentStream(secondaryParams);
-              }
-              throw retryErr;
-            }
-          } else {
-            console.warn(`[Gemini Interceptor] Stream Model "gemini-3.6-flash" was unavailable (503/high-demand). Retrying with secondary fallback "gemini-3.5-flash"...`);
-            const secondaryParams = { ...params, model: "gemini-3.5-flash" };
-            return await originalGenerateContentStream(secondaryParams);
-          }
-        }
-        throw err;
-      }
-    };
-
-    aiInstance = realAI;
   }
   return aiInstance;
 }

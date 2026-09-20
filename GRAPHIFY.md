@@ -4,9 +4,10 @@
 > Used by AI Coding Assistants for high-accuracy, low-token context retrieval.
 
 ## 🚀 Architecture Overview
-- **Stack**: React 19 + Vite 6 + TypeScript 5.8 + Tailwind CSS 4 + Firebase Cloud Functions & Firestore.
-- **AI Engine**: Dual Gemini SDK pipeline via `geminiClient.ts` with model normalization & 503 retry interceptors.
-- **Routing**: Single-Page App with state-driven auth routing (`onAuthStateChanged`).
+- **Stack**: React 19 + Vite 6 + TypeScript 5.8 + Tailwind CSS 4 + Firebase Cloud Functions & Firestore + Cloudflare Worker `aegishealthai-edge`.
+- **AI Engine**: SPA `src/lib/geminiClient.ts` → `POST https://api.aegishealthai.co.in/api/ai/generate` (AI Gateway `aegishealthai`). Model normalization + 503 retries retained; streaming polyfilled as single generate. Interim `VITE_AEGIS_EDGE_BEARER` (Firebase JWT follow-up).
+- **Routing**: Single-Page App with state-driven auth routing (`onAuthStateChanged`). Apex Hosting unchanged; AI on `api.` subdomain.
+- **Edge ops**: Health `/api/health`, status `/api/edge-status`. See `ARCHITECTURE.md` §2b and `SECRETS_MANAGEMENT.md`.
 
 ## 🌐 Module Node Index
 

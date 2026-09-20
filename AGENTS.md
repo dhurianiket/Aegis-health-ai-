@@ -20,8 +20,13 @@ npm run graphify:full     # deep: 1,164 nodes → graphify-out/
 
 ---
 
+## 0. Edge AI invariant
+- SPA Gemini traffic: `src/lib/geminiClient.ts` → Worker `POST /api/ai/generate`.
+- Env: `VITE_EDGE_API_URL`, `VITE_AEGIS_EDGE_BEARER` (interim). Never commit the bearer. Rotate after JWT cutover.
+- After changing AI routing, refresh Graphify (`npm run graphify`) and note the snapshot in `CURRENT_STATE.md`.
+
 ## 1. Foundational Architecture Constraints
-- **Stack Consistency:** We are strictly a **React + Vite + TypeScript** application backed by **Firebase Cloud Functions**. There is NO Next.js. There is NO Firebase App Hosting. All APIs are either Cloud Functions or direct Firebase client calls.
+- **Stack Consistency:** We are strictly a **React + Vite + TypeScript** application backed by **Firebase Cloud Functions** and the Cloudflare Worker **`aegishealthai-edge`** for Gemini. There is NO Next.js. There is NO Firebase App Hosting. Browser Gemini calls go through `https://api.aegishealthai.co.in` — never embed `GEMINI_API_KEY` in the SPA.
 - **Landing Page Stability:** Do NOT modify the landing page structure, styles, or content unless explicitly commanded to do so. It is the designated root entry point and highly tuned for brand messaging.
 - **Brand Fidelity:** Preserve the Aegis visual identity. Use the established Tailwind CSS semantic variables (like `bg-surface`, `text-theme`). Do not inject generic unbranded slate/gray designs or change global CSS variables unless requested.
 

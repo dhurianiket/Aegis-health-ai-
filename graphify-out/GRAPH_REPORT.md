@@ -1,5 +1,8 @@
 # Graph Report - .  (2026-09-15)
 
+
+> **LXIV note (2026-09-20):** Gemini traffic now egresses via Cloudflare Worker `aegishealthai-edge` (`api.aegishealthai.co.in`). Re-run `npm run graphify` / `graphify:full` after merge for a full AST refresh.
+
 ## Corpus Check
 - 293 files · ~277,535 words
 - Verdict: corpus is large enough that graph structure adds value.

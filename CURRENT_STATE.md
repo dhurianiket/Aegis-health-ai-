@@ -1,6 +1,18 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXIII — September 19, 2026
+## Current Snapshot LXIV — September 20, 2026
+### Completed by: Aegis (Lead Systems Architect) + FlareOps
+### Tasks Completed:
+- **Cloudflare Worker Gemini proxy cutover (SPA)**:
+  - FlareOps deployed Worker `aegishealthai-edge` on `https://api.aegishealthai.co.in` (AI Gateway `aegishealthai` → Google AI Studio).
+  - SPA `src/lib/geminiClient.ts` now calls `POST /api/ai/generate` with interim `VITE_AEGIS_EDGE_BEARER` (no client `VITE_GEMINI_API_KEY`).
+  - Hosting CSP `connect-src` allowlists `api.aegishealthai.co.in` (+ workers.dev fallback).
+  - Docs: `SECRETS_MANAGEMENT.md`, `ARCHITECTURE.md`, `AGENTS.md`, Graphify overview updated.
+  - CI/deploy workflows pass `VITE_EDGE_API_URL` + `VITE_AEGIS_EDGE_BEARER` instead of bundling Gemini keys.
+  - **Follow-ups:** Add GitHub Actions secrets for the edge bearer; rotate old Gemini Hosting secret; Firebase JWT on Worker; remove interim SPA bearer.
+- **Security note:** Shared bearer remains extractable from the bundle — mitigated by Worker rate limits + Gateway; not equivalent to server-only Gemini.
+
+## Previous Snapshot LXIII — September 19, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Cloudflare Edge SSL & Custom Domain Security Header Remediation (`www.aegishealthai.co.in` & `aegishealthai.co.in`)**:
