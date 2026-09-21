@@ -1,6 +1,28 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXXII — September 21, 2026
+## Current Snapshot LXXIII — September 21, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **WCAG Accessibility & Google Maps Deduplication (Audit Remediation)**:
+  - ♿ **WCAG 2.1 AA Form Accessibility**:
+    - Addressed Chrome DevTools / Lighthouse accessibility audit findings regarding missing accessible labels on interactive text inputs.
+    - Added explicit `aria-label="Search records"` to the main global navigation search bar in [`src/App.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/App.tsx).
+    - Associated `<label htmlFor="new-profile-name">` with `<input id="new-profile-name" aria-label="Profile Name" ... />` in the profile creation modal in [`src/App.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/App.tsx).
+    - Added explicit `aria-label="Search local clinics and laboratories"` to the facility search bar in [`src/components/CareMap/CareMap.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/CareMap/CareMap.tsx).
+    - Added explicit `aria-label="Search report titles or lab markers"` to the chronological timeline search bar in [`src/components/Reports/ReportHistory.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/Reports/ReportHistory.tsx).
+    - Added dynamic `aria-label="Message {Specialist Name}"` to the AI physician chat input in [`src/components/Specialists/SpecialistLounge.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/Specialists/SpecialistLounge.tsx).
+  - 🗺️ **Google Maps JavaScript API Script Deduplication**:
+    - Eliminated duplicate `<script>` injections identified in DevTools audit (`maps.googleapis.com/maps/api/js?libraries=`).
+    - Pre-declared static libraries `GOOGLE_MAPS_LIBRARIES = ["places", "routes", "marker", "geometry"]` and `region="IN"` at the module level in [`src/components/CareMap/CareMap.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/CareMap/CareMap.tsx).
+    - Configured `<APIProvider>` to load all required libraries simultaneously in a single network request, preventing secondary script injection warnings during runtime library imports.
+  - 🧪 **Verification & Deployment**:
+    - Vitest: **61/61 test files passed, 588/588 unit tests passed (100%)**.
+    - TypeScript: `npx tsc --noEmit` &rarr; 0 errors.
+    - Production build: `npm run build` &rarr; 8.16s clean bundle.
+    - Git commit `0c43c0c` pushed to `origin/main`.
+    - GitHub Actions Run [`35598519253`](https://github.com/dhurianiket/Aegis-health-ai-/actions/runs/35598519253) deployed cleanly to Firebase Hosting in 46s.
+
+## Previous Snapshot LXXII — September 21, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Comprehensive API Security Hardening & Client Exposure Removal**:
