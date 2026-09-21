@@ -110,6 +110,20 @@ function extractText(payload: unknown): string {
   return '';
 }
 
+export function normalizeSystemInstruction(si: unknown): unknown {
+  if (si === undefined || si === null) return undefined;
+  if (typeof si === 'string') {
+    return { role: 'user', parts: [{ text: si }] };
+  }
+  if (typeof si === 'object' && si !== null) {
+    const obj = si as Record<string, unknown>;
+    if (typeof obj.text === 'string' && !obj.parts) {
+      return { role: 'user', parts: [{ text: obj.text }] };
+    }
+  }
+  return si;
+}
+
 function buildEdgeBody(params: GeminiGenerateParams, model: string): Record<string, unknown> {
   const config = params.config || {};
   const {
@@ -135,8 +149,9 @@ function buildEdgeBody(params: GeminiGenerateParams, model: string): Record<stri
     body.generationConfig = generationConfig;
   }
 
-  const systemInstruction =
+  const rawSystemInstruction =
     params.systemInstruction ?? configSystemInstruction;
+  const systemInstruction = normalizeSystemInstruction(rawSystemInstruction);
   if (systemInstruction !== undefined) {
     body.systemInstruction = systemInstruction;
   }

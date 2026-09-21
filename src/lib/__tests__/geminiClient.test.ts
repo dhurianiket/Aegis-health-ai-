@@ -126,4 +126,59 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('System Instruction Normalization', () => {
+    it('normalizes string systemInstruction to Gemini Content object', async () => {
+      const ai = getAI();
+      await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: 'test',
+        config: {
+          systemInstruction: 'You are Aura AI.',
+        },
+      });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const body = JSON.parse(String((mockFetch.mock.calls[0][1] as RequestInit).body));
+      expect(body.systemInstruction).toEqual({
+        role: 'user',
+        parts: [{ text: 'You are Aura AI.' }],
+      });
+    });
+
+    it('normalizes string systemInstruction in chat sessions', async () => {
+      const ai = getAI();
+      const chat = ai.chats.create({
+        model: 'gemini-3.6-flash',
+        config: {
+          systemInstruction: 'You are Aura AI.',
+        },
+      });
+      await chat.sendMessage('Hello doctor');
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const body = JSON.parse(String((mockFetch.mock.calls[0][1] as RequestInit).body));
+      expect(body.systemInstruction).toEqual({
+        role: 'user',
+        parts: [{ text: 'You are Aura AI.' }],
+      });
+    });
+
+    it('preserves pre-structured Content objects without mutation', async () => {
+      const structuredSI = {
+        role: 'user',
+        parts: [{ text: 'Structured prompt' }],
+      };
+      const ai = getAI();
+      await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: 'test',
+        systemInstruction: structuredSI,
+      });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const body = JSON.parse(String((mockFetch.mock.calls[0][1] as RequestInit).body));
+      expect(body.systemInstruction).toEqual(structuredSI);
+    });
+  });
 });

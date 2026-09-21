@@ -118,36 +118,73 @@ export function getFriendlyErrorMessage(err: any): string {
   
   if (!rawMsg) return "An unexpected error occurred. Please try again in a moment.";
 
-  // Detect prepaid credits depleted / billing errors
+  const status = err.status ?? err.code;
+  const lowerMsg = rawMsg.toLowerCase();
+
+  // 1. Detect Network / Offline / Connection failed
+  if (
+    lowerMsg.includes("failed to fetch") ||
+    lowerMsg.includes("networkerror") ||
+    lowerMsg.includes("network request failed") ||
+    lowerMsg.includes("econnrefused") ||
+    lowerMsg.includes("net::err") ||
+    lowerMsg.includes("offline")
+  ) {
+    return "Unable to connect to Aura AI. Please check your internet connection and try again.";
+  }
+
+  // 2. Detect prepaid credits depleted / billing errors
   const isPrepaymentDepleted = 
-    rawMsg.toLowerCase().includes("prepayment credits are depleted") ||
-    rawMsg.toLowerCase().includes("prepayment") ||
-    rawMsg.toLowerCase().includes("credits are depleted") ||
-    rawMsg.toLowerCase().includes("billing#prepay");
+    lowerMsg.includes("prepayment credits are depleted") ||
+    lowerMsg.includes("prepayment") ||
+    lowerMsg.includes("credits are depleted") ||
+    lowerMsg.includes("billing#prepay");
 
   if (isPrepaymentDepleted) {
     return "Aura AI is currently under high load, or the developer's prepaid credits on Google AI Studio are depleted. Please try again later or contact support.";
   }
 
-  // Detect 429 quota exhaustion errors
+  // 3. Detect 429 quota exhaustion errors
   const isQuotaError = 
-    err.status === 429 || 
-    err.code === 429 || 
+    status === 429 || 
     rawMsg.includes("429") || 
-    rawMsg.toLowerCase().includes("quota") || 
-    rawMsg.toLowerCase().includes("resource_exhausted") ||
-    rawMsg.toLowerCase().includes("exhausted");
+    lowerMsg.includes("quota") || 
+    lowerMsg.includes("resource_exhausted") ||
+    lowerMsg.includes("exhausted") ||
+    lowerMsg.includes("rate limit");
 
   if (isQuotaError) {
     return "Aura AI is experiencing temporary high demand (Rate limit exceeded). Please wait a moment and try again. Your data is perfectly safe.";
   }
 
-  // Detect permission, credentials or API key configuration errors
-  if (rawMsg.includes("API key") || rawMsg.includes("VITE_GEMINI_API_KEY") || rawMsg.includes("VITE_AEGIS_EDGE_BEARER") || rawMsg.includes("API_KEY") || rawMsg.includes("Unauthorized")) {
-    return "Aura AI is temporarily offline (edge auth required). Please configure VITE_AEGIS_EDGE_BEARER for the Cloudflare Gemini proxy.";
+  // 4. Detect permission, credentials, edge proxy bearer or API key configuration errors
+  if (
+    status === 401 ||
+    status === 403 ||
+    rawMsg.includes("API key") ||
+    rawMsg.includes("VITE_GEMINI_API_KEY") ||
+    rawMsg.includes("VITE_AEGIS_EDGE_BEARER") ||
+    rawMsg.includes("API_KEY") ||
+    lowerMsg.includes("unauthorized") ||
+    lowerMsg.includes("forbidden")
+  ) {
+    return "Aura AI is temporarily offline (edge auth or security verification required). Please configure VITE_AEGIS_EDGE_BEARER for the Cloudflare Gemini proxy.";
   }
 
-  // Handle nested inner error JSON if possible
+  // 5. Detect edge service unavailable / gateway errors (502 / 503 / 504)
+  if (
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    lowerMsg.includes("service unavailable") ||
+    lowerMsg.includes("bad gateway") ||
+    lowerMsg.includes("gateway timeout") ||
+    lowerMsg.includes("overloaded")
+  ) {
+    return "Aura AI's clinical engine is temporarily undergoing high traffic or maintenance. Please try again in a few moments.";
+  }
+
+  // 6. Handle nested inner error JSON if possible
   try {
     const parsed = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg;
     if (parsed?.error?.message) {
@@ -155,10 +192,10 @@ export function getFriendlyErrorMessage(err: any): string {
       try {
         const innerParsed = JSON.parse(innerMsg);
         if (innerParsed?.error?.message) {
-          return getFriendlyErrorMessage({ message: innerParsed.error.message });
+          return getFriendlyErrorMessage({ message: innerParsed.error.message, status });
         }
       } catch {}
-      return getFriendlyErrorMessage({ message: innerMsg });
+      return getFriendlyErrorMessage({ message: innerMsg, status });
     }
   } catch {}
 

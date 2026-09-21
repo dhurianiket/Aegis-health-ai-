@@ -1,6 +1,29 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXV — September 21, 2026
+## Current Snapshot LXVI — September 21, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Aura AI Edge Connectivity, System Instruction Normalization & Resilient Error Handling**:
+  - 🤖 **Cloudflare AI Gateway 401 Remediation**:
+    - Identified that Cloudflare AI Gateway `aegishealthai` was configured with `"authentication": true` requiring a separate `cf-aig-authorization` token, causing Worker edge requests to fail with `AiGatewayError: Unauthorized (code 2009)`.
+    - Updated AI Gateway `aegishealthai` configuration to `"authentication": false` via authenticated Cloudflare API, allowing the Worker (which already enforces IP rate-limiting, IP quotas, and `EDGE_SHARED_SECRET`) to proxy requests directly to Google AI Studio.
+  - 🌐 **Worker CORS Allowlist Harmonization**:
+    - Added `https://aegis-health-app-90697.web.app` and `https://aegis-health-app-90697.firebaseapp.com` to `ALLOWED_ORIGINS` in Worker `aegishealthai-edge` so default Firebase hosting staging domains pass preflight OPTIONS cleanly.
+  - 🧩 **Edge & Client System Instruction Normalization**:
+    - Discovered Google Gemini v1beta REST API rejects string `systemInstruction` with HTTP 400 (`Invalid value at 'system_instruction' (Content object required)`).
+    - Patched Cloudflare Worker `aegishealthai-edge` to normalize string `systemInstruction` into `{ role: 'user', parts: [{ text: str }] }`.
+    - Added defensive `normalizeSystemInstruction` to [`src/lib/geminiClient.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/lib/geminiClient.ts) so client-side chat and generation requests format Content schemas consistently.
+  - 💬 **Empathetic & Resilient Error Handling in [`src/utils/aiUtils.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/utils/aiUtils.ts)**:
+    - Added explicit detection and patient-friendly messaging for network/offline issues (`Failed to fetch`, `NetworkError`), edge authentication failures (HTTP 401, 403), rate limits (HTTP 429), and edge gateway maintenance (HTTP 502, 503, 504).
+    - Created dedicated unit test suite in [`src/utils/__tests__/aiUtils.test.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/utils/__tests__/aiUtils.test.ts) covering `safeJsonParse` and `getFriendlyErrorMessage` (12/12 passing).
+    - Expanded [`src/lib/__tests__/geminiClient.test.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/lib/__tests__/geminiClient.test.ts) with system instruction normalization tests.
+- **Verification & Quality**:
+  - Vitest Test Suite: **59/59 test files passed, 574/574 tests passed (100%)**.
+  - TypeScript: **`npx tsc --noEmit` &rarr; 0 errors**.
+  - Production Build: **`npm run build` &rarr; 5.77s clean build with 0 map files**.
+  - Live Edge Verification: `https://api.aegishealthai.co.in/api/ai/generate` verified live and returns HTTP 200 with generated Aura AI response.
+
+## Previous Snapshot LXV — September 21, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Comprehensive GitHub PR Evaluation, Integration & Harmonization**:
