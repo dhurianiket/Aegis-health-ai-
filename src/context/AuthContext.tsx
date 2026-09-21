@@ -15,9 +15,12 @@ import { markUserActive } from "../services/usageService";
 
 let cachedAccessToken: string | null = null;
 try {
-  cachedAccessToken = localStorage.getItem("google_access_token");
+  cachedAccessToken = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("google_access_token") : null;
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem("google_access_token");
+  }
 } catch (e) {
-  console.warn("[Auth] Failed to load cachedAccessToken from localStorage:", e);
+  console.warn("[Auth] Failed to load cachedAccessToken from sessionStorage:", e);
 }
 export const getAccessToken = () => cachedAccessToken;
 
@@ -98,9 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (credential?.accessToken) {
             cachedAccessToken = credential.accessToken;
             try {
-              localStorage.setItem("google_access_token", credential.accessToken);
+              sessionStorage.setItem("google_access_token", credential.accessToken);
             } catch (e) {
-              console.warn("[Auth] Failed to persist google_access_token to localStorage:", e);
+              console.warn("[Auth] Failed to persist google_access_token to sessionStorage:", e);
             }
           }
           if (isMounted) {
@@ -167,9 +170,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (credential?.accessToken) {
           cachedAccessToken = credential.accessToken;
           try {
-            localStorage.setItem("google_access_token", credential.accessToken);
+            sessionStorage.setItem("google_access_token", credential.accessToken);
           } catch (e) {
-            console.warn("[Auth] Failed to persist google_access_token to localStorage:", e);
+            console.warn("[Auth] Failed to persist google_access_token to sessionStorage:", e);
           }
         }
       }
@@ -214,7 +217,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       await signOut(auth);
       cachedAccessToken = null;
       try {
-        localStorage.removeItem("google_access_token");
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.removeItem("google_access_token");
+        }
+        if (typeof localStorage !== "undefined") {
+          localStorage.removeItem("google_access_token");
+        }
       } catch (e) {}
     } catch (error) {
       console.error("Error signing out", error);

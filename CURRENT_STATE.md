@@ -1,6 +1,25 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXXI — September 21, 2026
+## Current Snapshot LXXII — September 21, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Comprehensive API Security Hardening & Client Exposure Removal**:
+  - 🛡️ **CareMap API Key Input & LocalStorage Elimination**:
+    - Addressed user security concern: API keys must never be managed through client browser inputs or stored in unencrypted browser storage (`localStorage`).
+    - Purged legacy `aegis_google_maps_key` `localStorage` entries upon container initialization.
+    - Completely removed the user-facing "Manage Google Maps Platform Key" setup card, input forms, "Key" toolbar button, and developer instructions from [`src/components/CareMap/CareMap.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/CareMap/CareMap.tsx).
+    - Established that Google Maps Platform credentials are strictly sourced via build-time injection (`VITE_GOOGLE_MAPS_PLATFORM_KEY`), protected by Google Cloud HTTP Referrer domain restrictions (`https://www.aegishealthai.co.in/*`) and API service quotas.
+    - Configured a graceful, professional clinical notice for environments without map connectivity without exposing technical credentials.
+  - 🔐 **Ephemeral OAuth Token Isolation**:
+    - Migrated Google OAuth temporary access token storage in [`src/context/AuthContext.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/context/AuthContext.tsx) from persistent `localStorage` to ephemeral `sessionStorage`.
+    - Added automated cleanup of any legacy `google_access_token` in `localStorage` on auth load and user logout.
+  - 🧪 **Verification & Tests**:
+    - Updated [`src/components/CareMap/__tests__/CareMap.test.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/CareMap/__tests__/CareMap.test.tsx) with explicit security assertions confirming no keys are accepted from `localStorage` and no credential input forms are rendered to patients (6/6 tests passing).
+    - Entire test suite: **61/61 test files passed, 588/588 unit tests passed (100%)**.
+    - TypeScript: `npx tsc --noEmit` &rarr; 0 errors.
+    - Production build: `npm run build` &rarr; 5.91s clean bundle.
+
+## Previous Snapshot LXXI — September 21, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Automated Google Cloud API Key & GitHub Secrets Synchronization**:

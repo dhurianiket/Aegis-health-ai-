@@ -32,13 +32,8 @@ describe("CareMap & Key Management", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns empty string when no key is configured in env or localStorage", () => {
+  it("returns empty string when no key is configured in env", () => {
     expect(getStoredMapsKey()).toBe("");
-  });
-
-  it("retrieves key from localStorage when stored", () => {
-    localStorage.setItem("aegis_google_maps_key", "test-local-storage-key");
-    expect(getStoredMapsKey()).toBe("test-local-storage-key");
   });
 
   it("retrieves key from process.env when present", () => {
@@ -46,34 +41,33 @@ describe("CareMap & Key Management", () => {
     expect(getStoredMapsKey()).toBe("test-env-key");
   });
 
-  it("renders interactive setup form with input and instructions when no key is configured", () => {
+  it("does not load keys from localStorage (security compliance)", () => {
+    localStorage.setItem("aegis_google_maps_key", "untrusted-local-key");
+    expect(getStoredMapsKey()).toBe("");
+  });
+
+  it("purges legacy localStorage key on container mount", () => {
+    localStorage.setItem("aegis_google_maps_key", "legacy-key-to-purge");
+    render(<CareMapContainer />);
+    expect(localStorage.getItem("aegis_google_maps_key")).toBeNull();
+  });
+
+  it("renders clinical fallback without any API key inputs or developer instructions when key is not configured", () => {
     render(<CareMapContainer />);
 
     expect(screen.getByText(/Localized Care Map/i)).toBeDefined();
-    expect(screen.getByPlaceholderText(/AIzaSy/i)).toBeDefined();
-    expect(screen.getByRole("button", { name: /Save & Launch Care Map/i })).toBeDefined();
-    expect(screen.getByText(/How to get an API Key/i)).toBeDefined();
+    expect(screen.getByText(/scheduled telemetry synchronization/i)).toBeDefined();
+    // Security assertion: Never render API key inputs, credentials forms, or developer guides to patients
+    expect(screen.queryByPlaceholderText(/AIzaSy/i)).toBeNull();
+    expect(screen.queryByText(/How to get an API Key/i)).toBeNull();
+    expect(screen.queryByRole("button", { name: /Save & Launch Care Map/i })).toBeNull();
   });
 
-  it("saves key to localStorage upon form submission and switches to APIProvider", () => {
+  it("renders APIProvider when valid key is configured via environment", () => {
+    process.env.GOOGLE_MAPS_PLATFORM_KEY = "AIzaSyTestPlatformKey123";
     render(<CareMapContainer />);
 
-    const input = screen.getByPlaceholderText(/AIzaSy/i);
-    fireEvent.change(input, { target: { value: "AIzaSyTestUserKey123" } });
-
-    const submitBtn = screen.getByRole("button", { name: /Save & Launch Care Map/i });
-    fireEvent.click(submitBtn);
-
-    expect(localStorage.getItem("aegis_google_maps_key")).toBe("AIzaSyTestUserKey123");
     expect(screen.getByTestId("api-provider")).toBeDefined();
   });
-
-  it("shows an error message if the user submits an empty key", () => {
-    render(<CareMapContainer />);
-
-    const submitBtn = screen.getByRole("button", { name: /Save & Launch Care Map/i });
-    fireEvent.click(submitBtn);
-
-    expect(screen.getByText(/Please enter a valid Google Maps Platform API key/i)).toBeDefined();
-  });
 });
+
