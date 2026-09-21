@@ -16,6 +16,7 @@ import getAI from "../../lib/geminiClient";
 import { getFriendlyErrorMessage } from "../../utils/aiUtils";
 import { db } from "../../lib/firebase/config";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { saveActiveReferral, getActiveReferrals, updateReferralStatus } from "../../lib/firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft } from "lucide-react";
@@ -29,6 +30,7 @@ export default function SpecialistLounge() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { contextString: globalClinicalContext } = useClinicalContext();
+  const [activeReferrals, setActiveReferrals] = useState<any[]>([]);
   
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; timestamp: Date }[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -36,6 +38,11 @@ export default function SpecialistLounge() {
   const [streamedText, setStreamedText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!user?.uid || !activeProfile?.id) return;
+    getActiveReferrals(user.uid, activeProfile.id).then(setActiveReferrals).catch(console.error);
+  }, [user?.uid, activeProfile?.id]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -160,6 +167,24 @@ export default function SpecialistLounge() {
         systemPrompt += guidelinePrompt;
       }
 
+      // Multidisciplinary Inter-Specialist Referral Instructions
+      systemPrompt += `\n\n### MULTIDISCIPLINARY INTER-SPECIALIST REFERRAL INSTRUCTIONS:
+You are part of an integrated, multidisciplinary AI clinical specialist team.
+If the patient's data, labs, or clinical signs point to an issue outside your domain that requires another specialist's expertise, you should explicitly refer the patient to that specialist using this exact tag:
+[REFERRAL: specialist_id | brief clinical rationale]
+
+Valid specialist_ids: cardiologist, endocrinologist, nephrologist, neurologist, gastroenterologist, pulmonologist, psychiatrist, dermatologist, orthopedist, oncologist.`;
+
+      // Check if there is an active pending referral targeting this specialist
+      const incomingReferral = activeReferrals.find(
+        (r) => r.toSpecialist === activeSpecialist && r.status === "pending"
+      );
+      if (incomingReferral) {
+        systemPrompt += `\n\n### INCOMING CLINICAL REFERRAL FROM ${incomingReferral.fromAgent?.toUpperCase() || "COLLEAGUE"}:
+Referral Reason: "${incomingReferral.reason}"
+Instructions: Acknowledge this referral warmly to the patient ("I see our colleague referred you...") and address the issue directly.`;
+      }
+
       if (isSummaryRequest) {
         systemPrompt += `
 ### HEALTH SUMMARY GENERATION RULES
@@ -247,6 +272,36 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         setMessages(finalMsgs);
         saveChatHistory(finalMsgs);
         setStreamedText("");
+
+        // Mark incoming referral as reviewed
+        if (incomingReferral && incomingReferral.id) {
+          updateReferralStatus(user.uid, activeProfile.id, incomingReferral.id, "reviewed").catch(console.error);
+          setActiveReferrals((prev) =>
+            prev.map((r) => (r.id === incomingReferral.id ? { ...r, status: "reviewed" } : r))
+          );
+        }
+
+        // Parse any outbound referrals
+        const referralRegex = /\[REFERRAL:\s*([a-zA-Z0-9_-]+)\s*\|\s*([^\]]+)\]/gi;
+        let match;
+        while ((match = referralRegex.exec(finalText)) !== null) {
+          const target = match[1].toLowerCase().trim();
+          const reason = match[2].trim();
+          if (target in SPECIALISTS) {
+            saveActiveReferral(user.uid, activeProfile.id, {
+              fromAgent: specialist.displayName,
+              toSpecialist: target,
+              reason,
+            }).then((id) => {
+              if (id) {
+                setActiveReferrals((prev) => [
+                  ...prev,
+                  { id, fromAgent: specialist.displayName, toSpecialist: target, reason, status: "pending" },
+                ]);
+              }
+            }).catch(console.error);
+          }
+        }
         
         if (isSummaryRequest && historyItems.length === 0 && sourceHashForCache) {
           await saveCachedReport(user.uid, {
@@ -274,12 +329,21 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     }
   };
 
+  const handleDismissReferral = async (referralId: string) => {
+    if (!user?.uid || !activeProfile?.id) return;
+    await updateReferralStatus(user.uid, activeProfile.id, referralId, "dismissed");
+    setActiveReferrals((prev) => prev.filter((r) => r.id !== referralId));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSendMessage(inputValue);
   };
 
   const activeSpecProfile = getSpecialist(activeSpecialist);
+  const currentReferral = activeReferrals.find(
+    (r) => r.toSpecialist === activeSpecialist && r.status === "pending"
+  );
 
   const chatAreaContent = (
     <>
@@ -301,6 +365,23 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
            </div>
         </div>
       </div>
+
+      {currentReferral && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between text-xs text-amber-700 dark:text-amber-300 z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+            <span className="truncate">
+              <strong>Referral from {currentReferral.fromAgent}:</strong> {currentReferral.reason}
+            </span>
+          </div>
+          <button
+            onClick={() => handleDismissReferral(currentReferral.id)}
+            className="underline hover:opacity-80 font-medium ml-3 shrink-0 text-amber-800 dark:text-amber-200"
+          >
+            Acknowledge
+          </button>
+        </div>
+      )}
       
       <div 
         className="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto min-h-0 bg-white dark:bg-[#0A0A0A]" 
@@ -434,7 +515,14 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                       <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-[var(--color-text)] dark:text-slate-100'}`}>{s.displayName}</div>
+                      <div className="flex items-center justify-between w-full gap-1">
+                        <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-[var(--color-text)] dark:text-slate-100'}`}>{s.displayName}</div>
+                        {activeReferrals.some((r) => r.toSpecialist === s.id && r.status === "pending") && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-500 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0">
+                            Referral
+                          </span>
+                        )}
+                      </div>
                       <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-slate-200' : 'text-[var(--color-text-muted)] dark:text-slate-300'}`}>
                         {s.expertise.slice(0, 2).join(' • ')}...
                       </div>

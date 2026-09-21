@@ -60,6 +60,9 @@ vi.mock("../../lib/firebase/firestore", () => ({
   getDocuments: vi.fn().mockResolvedValue([]),
   saveWearableTelemetry: vi.fn(),
   subscribeToLatestTelemetry: vi.fn().mockReturnValue(() => {}),
+  getActiveReferrals: vi.fn().mockResolvedValue([]),
+  saveActiveReferral: vi.fn().mockResolvedValue("ref-contrast-1"),
+  updateReferralStatus: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../../services/reminderService", () => ({

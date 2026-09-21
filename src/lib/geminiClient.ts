@@ -47,6 +47,7 @@ type EdgeErrorBody = {
 };
 
 const DEFAULT_EDGE_API_URL = 'https://api.aegishealthai.co.in';
+const WORKERS_DEV_FALLBACK_URL = 'https://aegishealthai-edge.dhurianiket.workers.dev';
 const DEFAULT_MODEL = 'gemini-3.6-flash';
 const SECONDARY_FALLBACK = 'gemini-3.5-flash';
 
@@ -198,6 +199,7 @@ export async function callEdgeGenerate(
   params: GeminiGenerateParams,
   model: string,
   fetchImpl: typeof fetch = fetch,
+  baseUrlOverride?: string,
 ): Promise<GeminiGenerateResponse> {
   const bearer = getEdgeBearer();
   if (!bearer) {
@@ -206,7 +208,8 @@ export async function callEdgeGenerate(
     );
   }
 
-  const url = `${getEdgeApiBaseUrl()}/api/ai/generate`;
+  const base = baseUrlOverride || getEdgeApiBaseUrl();
+  const url = `${base}/api/ai/generate`;
   const response = await fetchImpl(url, {
     method: 'POST',
     headers: {
@@ -254,13 +257,19 @@ export async function callEdgeWithPoPRetry(
   fetchImpl: typeof fetch = fetch,
 ): Promise<GeminiGenerateResponse> {
   let lastErr: unknown;
+  const primaryUrl = getEdgeApiBaseUrl();
+  const fallbackUrl =
+    primaryUrl !== WORKERS_DEV_FALLBACK_URL ? WORKERS_DEV_FALLBACK_URL : DEFAULT_EDGE_API_URL;
+
   for (let i = 0; i < 3; i++) {
     try {
-      return await callEdgeGenerate(params, model, fetchImpl);
+      // On retry 2, if location routing error was encountered, switch to alternate edge hostname
+      const urlToUse = i === 2 && isLocationRoutingError(lastErr) ? fallbackUrl : primaryUrl;
+      return await callEdgeGenerate(params, model, fetchImpl, urlToUse);
     } catch (err: unknown) {
       lastErr = err;
       if (isLocationRoutingError(err) && i < 2) {
-        await new Promise((r) => setTimeout(r, 150 * (i + 1) + Math.random() * 50));
+        await new Promise((r) => setTimeout(r, 180 * (i + 1) + Math.random() * 50));
         continue;
       }
       throw err;

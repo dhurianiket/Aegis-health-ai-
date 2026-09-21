@@ -48,6 +48,31 @@ export interface SpecialistProfile {
 
 import { WearableBiometrics } from "./wearables";
 
+export interface SpecialistConsultation {
+  specialistId: SpecialistId | string;
+  specialistName: string;
+  lastUpdated: string;
+  summary: string;
+  lastUserQuery?: string;
+  lastAssessment?: string;
+  activeReferrals?: string[];
+}
+
+export interface ClinicalReferral {
+  id: string;
+  fromAgent: string;
+  toSpecialist: SpecialistId;
+  reason: string;
+  timestamp: string;
+  status: 'pending' | 'reviewed' | 'dismissed';
+}
+
+export interface CoachSessionSummary {
+  lastInteractionDate: string;
+  recentTopics: string[];
+  lastTriageNote?: string;
+}
+
 export interface PatientContext {
   profile: UserProfile;
   labHistory: LabResult[];
@@ -62,4 +87,7 @@ export interface PatientContext {
   };
   extraContext?: string;
   wearableTelemetry?: WearableBiometrics;
+  specialistConsultations?: SpecialistConsultation[];
+  activeReferrals?: ClinicalReferral[];
+  coachSummary?: CoachSessionSummary;
 }

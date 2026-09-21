@@ -3,11 +3,21 @@ import {
   getMedications,
   getLatestInsights,
   getDocuments,
+  getAllSpecialistChats,
+  getCoachChat,
+  getActiveReferrals,
 } from "../../lib/firebase/firestore";
 import { getConsolidatedAlerts } from "../alertService";
-import { PatientContext } from "../../types/ai";
+import {
+  PatientContext,
+  SpecialistConsultation,
+  ClinicalReferral,
+  CoachSessionSummary,
+  SpecialistId,
+} from "../../types/ai";
 import { UserProfile, MedicalDocument } from "../../types/medical";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
+import { SPECIALISTS } from "./specialists/specialistFactory";
 
 import { WearableBiometrics } from "../../types/wearables";
 
@@ -21,12 +31,24 @@ export const getPatientContext = async (
   wearableTelemetry?: WearableBiometrics,
 ): Promise<PatientContext> => {
   const profileId = profile?.id === "Myself" ? undefined : profile?.id;
+  const targetProfileId = profile?.id || "Myself";
 
-  const [labHistory, medications, recentInsights, documents] = await Promise.all([
+  const [
+    labHistory,
+    medications,
+    recentInsights,
+    documents,
+    specialistChats,
+    coachMessages,
+    activeReferrals,
+  ] = await Promise.all([
     getLabHistory(userId, undefined, profileId),
     getMedications(userId, profileId),
     getLatestInsights(userId, profileId),
     getDocuments(userId, profileId),
+    getAllSpecialistChats(userId, targetProfileId),
+    getCoachChat(userId, targetProfileId),
+    getActiveReferrals(userId, targetProfileId),
   ]);
 
   // Extract from documents if possible
@@ -82,6 +104,63 @@ export const getPatientContext = async (
   const allMedications = Array.from(deduplicatedMeds.values());
   const alerts = getConsolidatedAlerts(labHistory || [], allMedications);
 
+  // Parse specialist consultations across all 10 specialists
+  const specialistConsultations: SpecialistConsultation[] = (specialistChats || [])
+    .filter((c: any) => Array.isArray(c.messages) && c.messages.length > 0)
+    .map((c: any) => {
+      const modelMsgs = c.messages.filter((m: any) => m.role === "assistant" || m.role === "model");
+      const userMsgs = c.messages.filter((m: any) => m.role === "user");
+      const lastModel = modelMsgs[modelMsgs.length - 1];
+      const lastUser = userMsgs[userMsgs.length - 1];
+      const specProfile = SPECIALISTS[c.specialistId as SpecialistId];
+      const content = String(lastModel?.content || "");
+
+      // Look for any outbound referral tags like [REFERRAL: specialistId | reason]
+      const referralMatches = content.match(/\[REFERRAL:\s*([a-zA-Z0-9_-]+)\s*\|\s*([^\]]+)\]/gi);
+      const activeRefs = referralMatches
+        ? referralMatches.map((r: string) => r.replace(/^\[REFERRAL:\s*/i, "").replace(/\]$/, "").trim())
+        : [];
+
+      return {
+        specialistId: c.specialistId,
+        specialistName: specProfile?.displayName || c.specialistId,
+        lastUpdated: lastModel?.createdAt || (c.updatedAt?.toMillis ? new Date(c.updatedAt.toMillis()).toISOString().split("T")[0] : "Recent"),
+        summary: content.slice(0, 350) + (content.length > 350 ? "..." : ""),
+        lastAssessment: content,
+        lastUserQuery: lastUser?.content,
+        activeReferrals: activeRefs,
+      };
+    });
+
+  // Parse Coach session summary
+  let coachSummary: CoachSessionSummary | undefined = undefined;
+  const coachUserQueries: string[] = [];
+  if (coachMessages && coachMessages.length > 0) {
+    const modelMsgs = coachMessages.filter((m: any) => m.role === "assistant");
+    const userMsgs = coachMessages.filter((m: any) => m.role === "user");
+    const lastModel = modelMsgs[modelMsgs.length - 1];
+    userMsgs.slice(-4).forEach((m: any) => {
+      if (m.content) coachUserQueries.push(String(m.content).slice(0, 80));
+    });
+    const lastTime = lastModel?.timestamp instanceof Date
+      ? lastModel.timestamp.toISOString().split("T")[0]
+      : "Recent";
+
+    coachSummary = {
+      lastInteractionDate: lastTime,
+      recentTopics: coachUserQueries,
+      lastTriageNote: lastModel ? String(lastModel.content).slice(0, 300) : undefined,
+    };
+  }
+
+  // Combine symptoms reported across coach and specialist chats
+  const reportedSymptoms: string[] = [...coachUserQueries];
+  specialistConsultations.forEach((sc) => {
+    if (sc.lastUserQuery && !reportedSymptoms.includes(sc.lastUserQuery)) {
+      reportedSymptoms.push(sc.lastUserQuery.slice(0, 80));
+    }
+  });
+
   return {
     profile,
     labHistory: labHistory || [],
@@ -90,7 +169,7 @@ export const getPatientContext = async (
     alerts,
     // Add raw SBAR text for extra context
     extraContext: docSbars.join("\n\n") + (docDates.length ? `\n\nUPLOADED REPORT DATES:\n${docDates.join(', ')}` : ''),
-    reportedSymptoms: [], // Populate from chat history if possible
+    reportedSymptoms,
     knownConditions: profile?.chronicConditions || [],
     demographics: {
       age: profile?.dob && parseSafeTimestamp(profile.dob) ? `${new Date().getFullYear() - parseSafeTimestamp(profile.dob)!.getFullYear()} years` : "Not provided",
@@ -100,6 +179,9 @@ export const getPatientContext = async (
     },
     clinicalNotes: profile?.clinicalNotes,
     wearableTelemetry,
+    specialistConsultations,
+    coachSummary,
+    activeReferrals: activeReferrals || [],
   } as PatientContext;
 };
 
@@ -107,7 +189,22 @@ export const getPatientContext = async (
  * Formats the patient context into a clean, prompt-friendly string.
  */
 export const formatContextForPrompt = (context: any): string => {
-  const { profile, labHistory, medications, alerts, extraContext, reportedSymptoms, knownConditions, demographics, clinicalNotes, wearableTelemetry } = context;
+  const {
+    profile,
+    labHistory,
+    medications,
+    alerts,
+    extraContext,
+    reportedSymptoms,
+    knownConditions,
+    demographics,
+    clinicalNotes,
+    wearableTelemetry,
+    specialistConsultations,
+    coachSummary,
+    activeReferrals,
+    recentInsights,
+  } = context;
 
   let prompt = `PATIENT PROFILE:\n`;
   prompt += `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`;
@@ -238,5 +335,46 @@ export const formatContextForPrompt = (context: any): string => {
     prompt += `\nPAST SBAR SUMMARIES / MEDICAL NOTES:\n${extraContext}\n`;
   }
 
+  if (recentInsights && recentInsights.length > 0) {
+    prompt += `\nSPECIALIST CLINICAL INSIGHTS:\n`;
+    recentInsights.slice(0, 5).forEach((ins: any) => {
+      prompt += `- [${ins.specialty || "Specialist"}] (${ins.timestamp || "Recent"}): ${ins.content || "Insight recorded"}\n`;
+    });
+  }
+
+  if (specialistConsultations && specialistConsultations.length > 0) {
+    prompt += `\nMULTI-SPECIALIST CROSS-CONSULTATIONS & TEAM ASSESSMENTS:\n`;
+    prompt += `(Direct multi-disciplinary awareness: Incorporate colleague assessments for holistic continuity of care)\n`;
+    specialistConsultations.forEach((sc: SpecialistConsultation) => {
+      prompt += `- [${sc.specialistName}] (Last consulted: ${sc.lastUpdated}):\n`;
+      if (sc.lastUserQuery) {
+        prompt += `  * Patient Question: "${sc.lastUserQuery.replace(/\n/g, ' ')}"\n`;
+      }
+      prompt += `  * Assessment & Plan: "${sc.summary.replace(/\n/g, ' ')}"\n`;
+      if (sc.activeReferrals && sc.activeReferrals.length > 0) {
+        prompt += `  * Referrals Issued: ${sc.activeReferrals.join("; ")}\n`;
+      }
+    });
+  }
+
+  if (coachSummary) {
+    prompt += `\nAURA AI HEALTH COACH SESSIONS & TRIAGE:\n`;
+    prompt += `- Last Interaction: ${coachSummary.lastInteractionDate}\n`;
+    if (coachSummary.recentTopics && coachSummary.recentTopics.length > 0) {
+      prompt += `- Topics / Inquiries Discussed: ${coachSummary.recentTopics.join("; ")}\n`;
+    }
+    if (coachSummary.lastTriageNote) {
+      prompt += `- Coach Triage Guidance: "${coachSummary.lastTriageNote.replace(/\n/g, ' ')}"\n`;
+    }
+  }
+
+  if (activeReferrals && activeReferrals.length > 0) {
+    prompt += `\nACTIVE INTER-AGENT CLINICAL REFERRALS:\n`;
+    activeReferrals.forEach((ref: any) => {
+      prompt += `- [${ref.status === "pending" ? "PENDING ACTION" : ref.status.toUpperCase()}] From ${ref.fromAgent || "Colleague"} to ${ref.toSpecialist}: "${ref.reason}" (Ref ID: ${ref.id || "N/A"})\n`;
+    });
+  }
+
   return prompt;
 };
+

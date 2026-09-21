@@ -7,6 +7,9 @@ vi.mock('../src/lib/firebase/firestore', () => ({
   getMedications: vi.fn(),
   getLatestInsights: vi.fn().mockResolvedValue([]),
   getDocuments: vi.fn(),
+  getAllSpecialistChats: vi.fn().mockResolvedValue([]),
+  getCoachChat: vi.fn().mockResolvedValue([]),
+  getActiveReferrals: vi.fn().mockResolvedValue([]),
 }));
 
 describe('ContextService Medication Deduplication', () => {

@@ -61,17 +61,17 @@ S - SITUATION
 [Current report type, date, and the main reason for attention]
 
 B - BACKGROUND
-[Relevant patient history, ongoing conditions, previous abnormal values, medication context, and trends]
+[Relevant patient history, ongoing conditions, previous abnormal values, medication context, multi-specialist team consultations, and biomarker trends]
 
 A - ASSESSMENT
-[Medical meaning of findings. Separate normal from abnormal/borderline. Explain how current results compare with prior results and likely clinical significance]
+[Medical meaning of findings. Synthesize multi-specialist assessments (Cardiology, Endocrinology, Nephrology, etc.) with current laboratory biomarkers. Separate normal from abnormal/borderline. Explain clinical significance and cross-system organ interactions]
 
 R - RECOMMENDATION
-[What should be reviewed next. Follow-up, repeat testing, specialist review. Concise and action-oriented]
+[What should be reviewed next. Include specialist follow-ups, pending referrals, repeat testing, and lifestyle modifications. Concise and action-oriented]
 
 --------------------------------------------------
 PART 2: AI DR SUMMARY (For the Patient)
-[Write a detailed, user-friendly doctor-style summary for the patient. Explain the report in clear language. Start with the most important findings. Explain what each abnormal result means in context. Include how this report fits into the patient's history. Explain trends, improvement, worsening, or stability. Detailed enough for the patient to understand. Avoid jargon where possible. Explain normal findings briefly.]
+[Write a detailed, user-friendly doctor-style summary for the patient. Synthesize the findings from your tests and the advice of your AI specialists into clear, actionable guidance. Start with the most important findings. Explain what each abnormal result means in context. Include how this report fits into the patient's history. Explain trends, improvement, worsening, or stability. Detailed enough for the patient to understand. Avoid jargon where possible. Explain normal findings briefly.]
 
 CLINICAL CONTEXT:
 ${formattedContext}

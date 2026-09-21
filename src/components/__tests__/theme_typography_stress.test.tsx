@@ -92,6 +92,9 @@ vi.mock("../../lib/firebase/firestore", () => ({
   getLatestInsights: vi.fn(() => Promise.resolve([])),
   getLabHistory: vi.fn(() => Promise.resolve([])),
   getDocuments: vi.fn(() => Promise.resolve([])),
+  getActiveReferrals: vi.fn(() => Promise.resolve([])),
+  saveActiveReferral: vi.fn(() => Promise.resolve("ref-stress-1")),
+  updateReferralStatus: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("../../services/medicationService", () => ({

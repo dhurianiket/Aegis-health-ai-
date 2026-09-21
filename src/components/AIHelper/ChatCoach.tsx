@@ -19,6 +19,8 @@ import { safeJsonParse, getFriendlyErrorMessage } from "../../utils/aiUtils";
 import { trackUsage } from "../../services/usageService";
 import { getActiveMedications } from "../../services/medicationService";
 import { getUpcomingReminders } from "../../services/reminderService";
+import { saveCoachChat, getCoachChat, saveActiveReferral } from "../../lib/firebase/firestore";
+import { SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
 
 interface ChatCoachProps {
   externalOpen?: boolean;
@@ -109,6 +111,12 @@ export default function ChatCoach({
     if (isOpen && user && activeProfile) {
       getPatientContext(user.uid, activeProfile).then(ctx => {
         setContextStats({ meds: ctx.medications?.length || 0, reports: ctx.labHistory?.length || 0 });
+      }).catch(console.error);
+
+      getCoachChat(user.uid, activeProfile.id || "Myself").then((saved) => {
+        if (saved && saved.length > 0) {
+          setMessages(saved);
+        }
       }).catch(console.error);
     }
   }, [isOpen, user, activeProfile]);
@@ -212,7 +220,7 @@ export default function ChatCoach({
           parts: [{ text: String(m.content || "") }],
         }))));
 
-      const sysInstruction = `You are Aegis Health AI. Today's date is ${new Date().toISOString().split("T")[0]}. 
+      const sysInstruction = `You are Aura AI, the primary clinical health coach for Aegis Health AI. Today's date is ${new Date().toISOString().split("T")[0]}. 
 Clinical Context is provided below. 
 
 STRICT RULES:
@@ -221,6 +229,14 @@ STRICT RULES:
 3. Prefer manually entered medications over extracted ones.
 4. If the user says a medication or result is "wrong", acknowledge it, do not repeat the incorrect data, and say: "I may be using outdated or incorrectly extracted data. Please update your records in the Medications/Profile section, or tell me the correct information and I will use that for our conversation."
 5. Be concise, empathetic, and always add a disclaimer to consult a doctor.
+
+TEAM MULTI-SPECIALIST AWARENESS:
+You have direct visibility into all consultations conducted with our 10 specialized AI physicians in the Specialist Lounge (Cardiologist, Endocrinologist, Nephrologist, etc.).
+When the user asks what a specialist said, about medication approval, or specific organ concerns, coordinate directly with their clinical notes.
+If the user presents symptoms or labs requiring specialized physician evaluation, you can issue an inter-specialist referral using:
+[REFERRAL: specialist_id | Reason for specialist evaluation]
+
+Valid specialist_ids: cardiologist, endocrinologist, nephrologist, neurologist, gastroenterologist, pulmonologist, psychiatrist, dermatologist, orthopedist, oncologist.
 
 GLOBAL CLINICAL CONTEXT:
 ${globalClinicalContext}
@@ -329,14 +345,32 @@ ${remindersContext}`;
       }
 
       if (cleaned.length > 0) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: cleaned,
-            timestamp: new Date(),
-          },
-        ]);
+        const assistantMsg: ChatMessage = {
+          role: "assistant",
+          content: cleaned,
+          timestamp: new Date(),
+        };
+        const updatedMsgs = [...messages, userMsg, assistantMsg];
+        setMessages(updatedMsgs);
+
+        if (user?.uid) {
+          saveCoachChat(user.uid, activeProfile?.id || "Myself", updatedMsgs).catch(console.error);
+        }
+
+        // Parse any outbound referrals
+        const referralRegex = /\[REFERRAL:\s*([a-zA-Z0-9_-]+)\s*\|\s*([^\]]+)\]/gi;
+        let match;
+        while ((match = referralRegex.exec(cleaned)) !== null) {
+          const target = match[1].toLowerCase().trim();
+          const reason = match[2].trim();
+          if (target in SPECIALISTS && user?.uid) {
+            saveActiveReferral(user.uid, activeProfile?.id || "Myself", {
+              fromAgent: "Aura AI Health Coach",
+              toSpecialist: target,
+              reason,
+            }).catch(console.error);
+          }
+        }
       }
       setStreamedText("");
     } catch (err: any) {

@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   setDoc,
+  updateDoc,
   query,
   where,
   getDocs,
@@ -633,3 +634,123 @@ export async function getWearableHistory(
     return [];
   }
 }
+
+/**
+ * Cross-Agent Clinical Context & Inter-Agent Consultation Helpers
+ */
+
+export async function getAllSpecialistChats(userId: string, profileId: string = "Myself") {
+  const pathString = `users/${userId}/profiles/${profileId}/specialistChats`;
+  try {
+    const q = collection(db, "users", userId, "profiles", profileId, "specialistChats");
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      specialistId: doc.id,
+      ...(doc.data() as any),
+    }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, pathString);
+    return [];
+  }
+}
+
+export async function saveCoachChat(
+  userId: string,
+  profileId: string = "Myself",
+  messages: Array<{ role: string; content: string; timestamp: Date | string }>
+) {
+  const pathString = `users/${userId}/profiles/${profileId}/coachChat/session`;
+  try {
+    const docRef = doc(db, "users", userId, "profiles", profileId, "coachChat", "session");
+    const serializable = messages.slice(-50).map((m) => ({
+      role: m.role,
+      content: m.content,
+      createdAt: m.timestamp instanceof Date ? m.timestamp.toISOString() : String(m.timestamp),
+    }));
+    await setDoc(docRef, {
+      userId,
+      profileId,
+      messages: serializable,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, pathString);
+  }
+}
+
+export async function getCoachChat(userId: string, profileId: string = "Myself") {
+  const pathString = `users/${userId}/profiles/${profileId}/coachChat/session`;
+  try {
+    const docRef = doc(db, "users", userId, "profiles", profileId, "coachChat", "session");
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return [];
+    const data = snap.data();
+    return (data.messages || []).map((m: any) => ({
+      role: m.role,
+      content: m.content,
+      timestamp: new Date(m.createdAt || Date.now()),
+    }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, pathString);
+    return [];
+  }
+}
+
+export async function saveActiveReferral(
+  userId: string,
+  profileId: string = "Myself",
+  referral: {
+    fromAgent: string;
+    toSpecialist: string;
+    reason: string;
+  }
+) {
+  const pathString = `users/${userId}/profiles/${profileId}/activeReferrals`;
+  try {
+    const colRef = collection(db, "users", userId, "profiles", profileId, "activeReferrals");
+    const docRef = await addDoc(colRef, sanitizeData({
+      ...referral,
+      userId,
+      profileId,
+      status: "pending",
+      timestamp: serverTimestamp(),
+    }));
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, pathString);
+  }
+}
+
+export async function getActiveReferrals(userId: string, profileId: string = "Myself") {
+  const pathString = `users/${userId}/profiles/${profileId}/activeReferrals`;
+  try {
+    const q = query(
+      collection(db, "users", userId, "profiles", profileId, "activeReferrals"),
+      where("status", "==", "pending")
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as any),
+    }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, pathString);
+    return [];
+  }
+}
+
+export async function updateReferralStatus(
+  userId: string,
+  profileId: string = "Myself",
+  referralId: string,
+  status: "reviewed" | "dismissed"
+) {
+  const pathString = `users/${userId}/profiles/${profileId}/activeReferrals/${referralId}`;
+  try {
+    const docRef = doc(db, "users", userId, "profiles", profileId, "activeReferrals", referralId);
+    await updateDoc(docRef, { status, resolvedAt: serverTimestamp() });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, pathString);
+  }
+}
+
