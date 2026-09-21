@@ -4,7 +4,9 @@
  * Measurement ID: G-KKGF16H7CY
  */
 
-export const GA_MEASUREMENT_ID = 'G-KKGF16H7CY';
+export const GA_MEASUREMENT_ID =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GA_MEASUREMENT_ID) ||
+  'G-KKGF16H7CY';
 
 declare global {
   interface Window {
