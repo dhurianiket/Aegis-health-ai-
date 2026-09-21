@@ -1,6 +1,31 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXXIII — September 21, 2026
+## Current Snapshot LXXIV — September 21, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Content-Security-Policy & Geolocation Unblocking for Google Maps API**:
+  - 🛡️ **Root Cause Analysis (`The Google Maps JavaScript API could not load`)**:
+    - Traced console error `CareMap-BB0cQ71n.js:16 The Google Maps JavaScript API failed to load. Error: The Google Maps JavaScript API could not load. at n.onerror`:
+    - In [`firebase.json`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/firebase.json), the production `Content-Security-Policy` header had restricted `script-src` to `https://www.googleapis.com` without `https://maps.googleapis.com` or `https://*.googleapis.com`.
+    - As a result, the browser's CSP engine immediately blocked dynamic script injection of `https://maps.googleapis.com/maps/api/js?...`, triggering `script.onerror()` inside `@googlemaps/js-api-loader`.
+    - Additionally, `Permissions-Policy` had `geolocation=()`, explicitly forbidding device GPS coordinates for the CareMap.
+  - 🔧 **Remediation**:
+    - Expanded `Content-Security-Policy` in [`firebase.json`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/firebase.json):
+      - `script-src`: added `https://maps.googleapis.com`, `https://*.googleapis.com`, `https://*.gstatic.com`, `https://www.google.com`.
+      - `worker-src` and `child-src`: added `'self' blob:` to permit vector map Web Workers.
+      - `img-src`: added `blob:` to permit rasterized canvas tiles.
+      - `connect-src`: verified `https://*.googleapis.com` and `https://maps.googleapis.com`.
+    - Fixed `Permissions-Policy`: changed `geolocation=()` to `geolocation=(self)`.
+    - Hardened [`src/components/CareMap/CareMap.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/CareMap/CareMap.tsx):
+      - Added `loadError` state and `onError` handler on `<APIProvider>` with user-friendly retry UI.
+      - Streamlined `getStoredMapsKey()` to use direct standard `import.meta.env` property access.
+  - 🧪 **Verification & Deployment**:
+    - Vitest: **61/61 suites passed, 588/588 unit tests passed (100%)**.
+    - TypeScript: `npx tsc --noEmit` &rarr; 0 errors.
+    - Production build: `npm run build` &rarr; 6.25s clean bundle.
+    - GitHub Actions Run [`35599667101`](https://github.com/dhurianiket/Aegis-health-ai-/actions/runs/35599667101) deployed to Firebase Hosting in 50s.
+
+## Previous Snapshot LXXIII — September 21, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **WCAG Accessibility & Google Maps Deduplication (Audit Remediation)**:
