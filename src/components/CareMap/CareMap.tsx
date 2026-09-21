@@ -36,8 +36,8 @@ export function getStoredMapsKey(): string {
   return "";
 }
 
-// Pre-defined default coordinates (e.g., Mount Sinai Hospital area, NY)
-const DEFAULT_CENTER = { lat: 40.7893, lng: -73.9544 };
+// Pre-defined default coordinates (Mumbai, Maharashtra, India)
+const DEFAULT_CENTER = { lat: 19.0760, lng: 72.8777 };
 
 interface PlaceMarker {
   id: string;
@@ -446,22 +446,20 @@ function CareMap() {
       </div>
 
       {/* Map Display View */}
-      <div className="lg:col-span-8 bg-surface border border-surface p-2 rounded-[32px] h-[450px] lg:h-auto shadow-2xl relative overflow-hidden flex flex-col">
-        <div className="w-full h-full relative" style={{ minHeight: "100%" }}>
+      <div className="lg:col-span-8 bg-surface border border-surface p-2 rounded-[32px] min-h-[500px] lg:min-h-[600px] h-full shadow-2xl relative overflow-hidden flex flex-col">
+        <div className="w-full h-full flex-1 min-h-[480px] lg:min-h-[580px] relative rounded-[26px] overflow-hidden">
           <Map
             defaultCenter={mapCenter}
             defaultZoom={zoom}
             center={mapCenter}
             mapId="DEMO_MAP_ID"
             internalUsageAttributionIds={["gmp_git_agentskills_v1"]}
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: "100%", height: "100%", minHeight: "480px" }}
             gestureHandling="greedy"
           >
             {/* User markerpin */}
             <AdvancedMarker position={mapCenter} title="Your Location">
-              <Pin background="#e11d48" glyphColor="#fff" borderColor="#e11d48">
-                <span className="text-xs font-bold">You</span>
-              </Pin>
+              <Pin background="#e11d48" glyphColor="#fff" borderColor="#e11d48" glyphText="You" />
             </AdvancedMarker>
 
             {/* Places clinical markers */}
