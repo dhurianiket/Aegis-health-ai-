@@ -126,7 +126,8 @@ export const RegionalAudioPlayer: React.FC<RegionalAudioPlayerProps> = ({
       <div className="bg-slate-950/80 rounded-2xl p-3 border border-white/10 flex items-center gap-3">
         <button
           onClick={handlePlayPause}
-          className="p-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-extrabold transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+          aria-label={isPlaying && !isPaused ? "Pause playback" : "Start playback"}
+          className="p-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-extrabold transition-all shadow-md active:scale-95 cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
         >
           {isPlaying && !isPaused ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
         </button>
@@ -134,7 +135,8 @@ export const RegionalAudioPlayer: React.FC<RegionalAudioPlayerProps> = ({
         {isPlaying && (
           <button
             onClick={handleStop}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-rose-400 transition-colors border border-white/10 shrink-0"
+            aria-label="Stop playback"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-rose-400 transition-colors border border-white/10 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             title="Stop Playback"
           >
             <Square className="w-3.5 h-3.5" />
@@ -158,7 +160,8 @@ export const RegionalAudioPlayer: React.FC<RegionalAudioPlayerProps> = ({
         {/* Speed Toggle Button */}
         <button
           onClick={handleRateToggle}
-          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono font-bold text-teal-300 transition-colors shrink-0"
+          aria-label={`Change playback speed, current is ${playbackRate}x`}
+          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono font-bold text-teal-300 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           title="Playback Speed"
         >
           {playbackRate}x
