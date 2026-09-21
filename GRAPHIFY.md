@@ -33,7 +33,7 @@
   - *Exports*: `CalendarSync`, `default`
   - *Imports*: `../../context/AuthContext`
 - **[`src/components/CareMap/CareMap.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/CareMap/CareMap.tsx)**
-  - *Exports*: `CareMapContainer`, `default`
+  - *Exports*: `getStoredMapsKey`, `CareMapContainer`, `default`
   - *Imports*: `../../context/ProfileContext`
 - **[`src/components/Chat/VirtualizedChatList.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Chat/VirtualizedChatList.tsx)**
   - *Exports*: `ChatMessage`, `VirtualizedChatListProps`, `VirtualizedChatList`, `default`
