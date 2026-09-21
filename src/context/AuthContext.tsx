@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (isMounted) {
             if (import.meta.env.DEV) console.log("[Auth] onAuthStateChanged fired with user:", u ? u.uid : "null");
             if (u) {
-              markUserActive(u.uid).catch((err) => console.error("Error marking user active:", err));
+              markUserActive(u.uid, u.email, u.displayName, u.photoURL).catch((err) => console.error("Error marking user active:", err));
             }
             resolveAuth(u ?? null);
           }

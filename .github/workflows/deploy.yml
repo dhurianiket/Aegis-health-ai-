@@ -61,10 +61,10 @@ jobs:
           projectId: aegis-health-app-90697
           firebaseToolsVersion: 14.4.0
 
-      - name: Deploy Firebase Functions
+      - name: Deploy Firebase Functions and Firestore Rules
         uses: w9jds/firebase-action@844c33e381350ae5c600052ba95188f40572d8e0
         with:
-          args: deploy --only functions --force
+          args: deploy --only functions,firestore:rules --force
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

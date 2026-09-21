@@ -192,11 +192,38 @@ const updateGlobalStats = async (updates: any) => {
   }
 };
 
-export const markUserActive = async (userId: string) => {
+export const markUserActive = async (
+  userId: string,
+  email?: string | null,
+  displayName?: string | null,
+  photoURL?: string | null
+) => {
   if (!userId) return;
+  const nowIso = new Date().toISOString();
+
+  // 1. Ensure root user document exists and is up-to-date
+  try {
+    const userDocRef = doc(db, `users/${userId}`);
+    const isMasterAdmin = email?.toLowerCase() === "dhurianiket@gmail.com";
+    const userProfileUpdates: Record<string, any> = {
+      lastActive: nowIso,
+    };
+    if (email) userProfileUpdates.email = email;
+    if (displayName) userProfileUpdates.displayName = displayName;
+    if (photoURL) userProfileUpdates.photoURL = photoURL;
+    if (isMasterAdmin) {
+      userProfileUpdates.role = "admin";
+    }
+
+    await setDoc(userDocRef, userProfileUpdates, { merge: true });
+  } catch {
+    // Non-critical, continue
+  }
+
+  // 2. Update usage stats subcollection
   const docRef = doc(db, `users/${userId}/usage/stats`);
   try {
-    await updateDoc(docRef, { lastActive: new Date().toISOString() });
+    await updateDoc(docRef, { lastActive: nowIso });
   } catch (error: any) {
     if (error.code === "not-found") {
       await setDoc(docRef, {
@@ -206,7 +233,7 @@ export const markUserActive = async (userId: string) => {
         thinkingTokens: 0,
         documentsUploaded: 0,
         totalStorageBytes: 0,
-        lastActive: new Date().toISOString(),
+        lastActive: nowIso,
         featureUsage: {},
         monthlyUsage: {},
       });
@@ -333,12 +360,13 @@ export const getAllUsersUsage = async () => {
   try {
     // 1. Batch fetch all registered root users
     const usersSnapshot = await getDocs(collection(db, "users"));
-    const usersMap = new Map<string, { email: string; role?: string }>();
+    const usersMap = new Map<string, { email: string; displayName?: string; role?: string }>();
 
     usersSnapshot.docs.forEach((docSnap) => {
       const data = docSnap.data();
       usersMap.set(docSnap.id, {
         email: data.email || "",
+        displayName: data.displayName || "",
         role: data.role,
       });
     });
@@ -349,11 +377,32 @@ export const getAllUsersUsage = async () => {
 
     for (const docSnap of usageSnapshot.docs) {
       if (docSnap.id === "stats") {
-        const userId = docSnap.ref.parent.parent?.id;
+        const userId = docSnap.ref.parent?.parent?.id;
         if (userId) {
           usageStatsMap.set(userId, docSnap.data());
         }
       }
+    }
+
+    // 3. Optional live cross-check with collectionGroup("documents")
+    const userDocsCountMap = new Map<string, number>();
+    const userStorageMap = new Map<string, number>();
+    try {
+      const docsSnapshot = await getDocs(collectionGroup(db, "documents"));
+      for (const dSnap of docsSnapshot.docs) {
+        if (dSnap.id !== "stats") {
+          const docData = dSnap.data();
+          const uId = dSnap.ref?.parent?.parent?.id || docData.userId || docData.patientId;
+          if (uId) {
+            userDocsCountMap.set(uId, (userDocsCountMap.get(uId) || 0) + 1);
+            if (docData.fileSize && typeof docData.fileSize === "number") {
+              userStorageMap.set(uId, (userStorageMap.get(uId) || 0) + docData.fileSize);
+            }
+          }
+        }
+      }
+    } catch {
+      // Swallowed if permission or test mock doesn't handle multiple collectionGroups
     }
 
     const now = Date.now();
@@ -361,8 +410,8 @@ export const getAllUsersUsage = async () => {
     const MONTH = 30 * DAY;
     const usageData: any[] = [];
 
-    // Combine user IDs from both collections
-    const allUserIds = new Set([...usersMap.keys(), ...usageStatsMap.keys()]);
+    // Combine user IDs from all collections
+    const allUserIds = new Set([...usersMap.keys(), ...usageStatsMap.keys(), ...userDocsCountMap.keys()]);
 
     for (const userId of allUserIds) {
       const rootUserInfo = usersMap.get(userId);
@@ -388,17 +437,22 @@ export const getAllUsersUsage = async () => {
       const isActiveToday = lastActiveTime > 0 && now - lastActiveTime < DAY;
       const isActiveThisMonth = lastActiveTime > 0 && now - lastActiveTime < MONTH;
 
+      const docsCount = Math.max(statsData.documentsUploaded || 0, userDocsCountMap.get(userId) || 0);
+      const storageBytes = Math.max(statsData.totalStorageBytes || 0, userStorageMap.get(userId) || 0);
+
       usageData.push({
         userId,
         email,
+        displayName: rootUserInfo?.displayName || "",
+        role: rootUserInfo?.role || (email.toLowerCase() === "dhurianiket@gmail.com" ? "admin" : "user"),
         isActiveToday,
         isActiveThisMonth,
         totalTokensUsed: statsData.totalTokensUsed || 0,
         promptTokens: statsData.promptTokens || 0,
         responseTokens: statsData.responseTokens || 0,
         thinkingTokens: statsData.thinkingTokens || 0,
-        documentsUploaded: statsData.documentsUploaded || 0,
-        totalStorageBytes: statsData.totalStorageBytes || 0,
+        documentsUploaded: docsCount,
+        totalStorageBytes: storageBytes,
         lastActive: statsData.lastActive || null,
         featureUsage: statsData.featureUsage || {},
         monthlyUsage: statsData.monthlyUsage || {},
@@ -423,6 +477,87 @@ export const getAllUsersUsage = async () => {
       console.error("Error fetching all users:", error);
     }
     return [];
+  }
+};
+
+export const syncGlobalStatsLive = async (
+  usersData?: any[],
+  totalDocumentsCount?: number,
+  totalStorageBytesCount?: number
+) => {
+  try {
+    const data = usersData || (await getAllUsersUsage());
+    const fallbackFeatureTokens: Record<string, number> = {
+      pdf_extraction: 0,
+      chat: 0,
+      sbar: 0,
+      summary: 0,
+      specialist: 0,
+    };
+    const monthlyPlatformUsage: Record<string, number> = {};
+
+    let activeUsersToday = 0;
+    let activeUsersThisMonth = 0;
+    let totalDocumentsUploaded = totalDocumentsCount ?? 0;
+    let totalStorageBytes = totalStorageBytesCount ?? 0;
+    let totalTokensUsed = 0;
+    let totalPromptTokens = 0;
+    let totalResponseTokens = 0;
+    let totalThinkingTokens = 0;
+    let estimatedCostUSD = 0;
+
+    data.forEach((u: any) => {
+      if (u.featureUsage) {
+        Object.entries(u.featureUsage).forEach(([feat, tokens]) => {
+          fallbackFeatureTokens[feat] = (fallbackFeatureTokens[feat] || 0) + ((tokens as number) || 0);
+        });
+      }
+      if (u.monthlyUsage) {
+        Object.entries(u.monthlyUsage).forEach(([month, tokens]) => {
+          monthlyPlatformUsage[month] = (monthlyPlatformUsage[month] || 0) + ((tokens as number) || 0);
+        });
+      }
+      if (u.isActiveToday) activeUsersToday++;
+      if (u.isActiveThisMonth) activeUsersThisMonth++;
+      if (totalDocumentsCount === undefined) {
+        totalDocumentsUploaded += u.documentsUploaded || 0;
+      }
+      if (totalStorageBytesCount === undefined) {
+        totalStorageBytes += u.totalStorageBytes || 0;
+      }
+      totalTokensUsed += u.totalTokensUsed || 0;
+      totalPromptTokens += u.promptTokens || 0;
+      totalResponseTokens += u.responseTokens || 0;
+      totalThinkingTokens += u.thinkingTokens || 0;
+      estimatedCostUSD += getEstCost(u.promptTokens, u.responseTokens, u.thinkingTokens);
+    });
+
+    const globalStats = {
+      totalUsers: data.length,
+      activeUsersToday,
+      activeUsersThisMonth,
+      totalDocumentsUploaded,
+      totalStorageBytes,
+      totalTokensUsed,
+      totalPromptTokens,
+      totalResponseTokens,
+      totalThinkingTokens,
+      estimatedCostUSD: Number(estimatedCostUSD.toFixed(5)),
+      featureTokens: fallbackFeatureTokens,
+      monthlyPlatformUsage,
+      lastUpdated: serverTimestamp(),
+    };
+
+    try {
+      const globalRef = doc(db, "analytics/globalStats");
+      await setDoc(globalRef, globalStats, { merge: true });
+    } catch {
+      // Swallowed in test environments or offline
+    }
+
+    return globalStats;
+  } catch {
+    return null;
   }
 };
 

@@ -405,7 +405,7 @@
   - *Exports*: `executeFullUploadPipeline`
   - *Imports*: `./ai/promptFramework`, `../lib/firebase/firestore`, `../utils/trendAnalysis`, `./alertService`, `../types/medical...`
 - **[`src/services/usageService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/usageService.ts)**
-  - *Exports*: `UsageData`, `SubscriptionPlanId`, `UserSubscription`, `getUserSubscription`, `updateUserSubscription`, `checkCanUploadReport`, `getEstCost`, `markUserActive`, `trackUsage`, `trackStorageUsage`, `getUserUsageStats`, `getAllUsersUsage`
+  - *Exports*: `UsageData`, `SubscriptionPlanId`, `UserSubscription`, `getUserSubscription`, `updateUserSubscription`, `checkCanUploadReport`, `getEstCost`, `markUserActive`, `trackUsage`, `trackStorageUsage`, `getUserUsageStats`, `getAllUsersUsage`, `syncGlobalStatsLive`
   - *Imports*: `../lib/firebase/config`
 - **[`src/services/wearableService.stress.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/wearableService.stress.test.ts)**
   - *Imports*: `./wearableService`, `../types/wearables`

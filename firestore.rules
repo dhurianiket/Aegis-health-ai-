@@ -4,7 +4,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return request.auth != null && (
-        (request.auth.token.email == 'dhurianiket@gmail.com' && request.auth.token.email_verified == true) ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'dhurianiket@gmail.com') ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
@@ -17,7 +17,7 @@ service cloud.firestore {
     // User root document and recursively all its nested subcollections
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role != 'admin');
+      allow create: if isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role != 'admin' || isAdmin());
       allow update: if isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isAdmin()) || isAdmin();
       allow delete: if isOwner(userId) || isAdmin();
 
@@ -26,9 +26,10 @@ service cloud.firestore {
       }
     }
 
-    // Admin-only global stats
+    // Global stats: readable by admin, incrementable by authenticated users during uploads/chat
     match /analytics/globalStats {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin();
+      allow write: if request.auth != null;
     }
     
     // Support collectionGroup("usage") queries for Admin Dashboard
@@ -43,7 +44,8 @@ service cloud.firestore {
     
     // Legacy globalStats mapping just in case
     match /globalStats/{statId} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin();
+      allow write: if request.auth != null;
     }
 
   }
