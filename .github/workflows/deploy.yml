@@ -55,7 +55,7 @@ jobs:
           firebaseToolsVersion: 14.4.0
 
       - name: Deploy Firebase Functions
-        uses: w9jds/firebase-action@master
+        uses: w9jds/firebase-action@844c33e381350ae5c600052ba95188f40572d8e0
         with:
           args: deploy --only functions --force
         env:

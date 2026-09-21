@@ -1,24 +1,34 @@
 /**
  * GA4 Measurement Protocol Service
- * Securely handles server-side and background telemetry events for Google Analytics 4
+ * Server-side MP when GA_API_SECRET is available; otherwise browser gtag fallback.
  * Stream Name: aegis-web
  * Stream ID: 14925967845
- * Measurement ID: G-KKGF16H7CY
  */
 
-import { trackEvent } from '../utils/analytics';
+import { trackEvent, GA_MEASUREMENT_ID as ANALYTICS_MEASUREMENT_ID } from '../utils/analytics';
 
 export const GA_MEASUREMENT_ID =
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GA_MEASUREMENT_ID) ||
+  ANALYTICS_MEASUREMENT_ID ||
   'G-KKGF16H7CY';
 
-export const GA_API_SECRET =
-  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GA_API_SECRET) ||
-  '';
+/**
+ * Measurement Protocol API secret — server/runtime only.
+ * Never read from import.meta.env / VITE_* (those ship in the client bundle).
+ */
+export function getGaApiSecret(): string {
+  if (typeof process !== 'undefined' && process.env?.GA_API_SECRET) {
+    return process.env.GA_API_SECRET;
+  }
+  return '';
+}
+
+/** @deprecated Use getGaApiSecret(); kept empty so client bundles never embed an MP secret. */
+export const GA_API_SECRET = '';
 
 export interface MeasurementProtocolEvent {
   name: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 }
 
 export interface SendTelemetryOptions {
@@ -44,9 +54,9 @@ export function getOrCreateClientId(): string {
  * Dispatches event payloads securely to GA4 endpoint or falls back to client-side gtag
  */
 export async function sendMeasurementProtocolEvent(options: SendTelemetryOptions): Promise<boolean> {
-  const secret = GA_API_SECRET || (typeof process !== 'undefined' ? process.env?.GA_API_SECRET : '');
+  const secret = getGaApiSecret();
 
-  // 1. If API secret is present (e.g. backend / server environment), dispatch via HTTP POST
+  // 1. If API secret is present (backend / server environment), dispatch via HTTP POST
   if (secret) {
     const endpoint = `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${secret}`;
 
