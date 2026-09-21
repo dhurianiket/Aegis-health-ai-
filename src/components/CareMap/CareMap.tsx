@@ -26,10 +26,8 @@ import { useProfile } from "../../context/ProfileContext";
 
 export function getStoredMapsKey(): string {
   const envKey =
-    (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-    (import.meta as any).env?.GOOGLE_MAPS_PLATFORM_KEY ||
-    (typeof process !== "undefined" && process.env?.GOOGLE_MAPS_PLATFORM_KEY) ||
-    (typeof process !== "undefined" && process.env?.VITE_GOOGLE_MAPS_PLATFORM_KEY) ||
+    import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+    import.meta.env.GOOGLE_MAPS_PLATFORM_KEY ||
     (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
     "";
   if (envKey && envKey.trim() && envKey !== "YOUR_API_KEY") return envKey.trim();
@@ -57,6 +55,7 @@ interface PlaceMarker {
 }
 
 export default function CareMapContainer() {
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [apiKey] = useState<string>(() => {
     // Purge any legacy browser localStorage key storage for security compliance
     if (typeof window !== "undefined" && window.localStorage) {
@@ -70,6 +69,31 @@ export default function CareMapContainer() {
   });
 
   const hasValidKey = Boolean(apiKey) && apiKey !== "YOUR_API_KEY" && apiKey.trim() !== "";
+
+  if (loadError) {
+    return (
+      <div className="bg-surface backdrop-blur-xl border border-surface p-8 rounded-[32px] max-w-2xl mx-auto shadow-2xl text-center my-12 animate-in fade-in duration-300">
+        <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <AlertCircle className="w-8 h-8 text-rose-500" />
+        </div>
+        <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
+          Unable to Load Map Service
+        </h3>
+        <p className="text-muted text-sm max-w-md mx-auto mb-6 leading-relaxed">
+          The map provider could not be reached. Please check your network connection or verify that content blockers/extensions are not restricting maps.googleapis.com.
+        </p>
+        <button
+          onClick={() => {
+            setLoadError(null);
+            window.location.reload();
+          }}
+          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
+  }
 
   if (!hasValidKey) {
     return (
@@ -98,6 +122,10 @@ export default function CareMapContainer() {
       version="weekly"
       libraries={GOOGLE_MAPS_LIBRARIES}
       region="IN"
+      onError={(err) => {
+        console.error("[CareMap] Google Maps API load error:", err);
+        setLoadError(err instanceof Error ? err.message : String(err));
+      }}
     >
       <CareMap />
     </APIProvider>
