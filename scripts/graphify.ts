@@ -32,7 +32,7 @@ function scanDirectory(dir: string, fileList: string[] = []): string[] {
       if (!file.startsWith('.') && file !== 'node_modules' && file !== '__tests__') {
         scanDirectory(filePath, fileList);
       }
-    } else if (file.endsWith('.ts') || file.endsWith('.tsx')) {
+    } else if ((file.endsWith('.ts') || file.endsWith('.tsx')) && !file.startsWith('.')) {
       fileList.push(filePath);
     }
   });
