@@ -108,7 +108,33 @@ export function isLocationRoutingError(err: unknown): boolean {
   return (
     errorMsg.includes('user location is not supported') ||
     errorMsg.includes('failed_precondition') ||
-    errorMsg.includes('location')
+    errorMsg.includes('location') ||
+    errorMsg.includes('pop routing')
+  );
+}
+
+export function isNetworkOrRoutingError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { status?: unknown; code?: unknown; message?: unknown; name?: unknown };
+  const errorMsg = String(e.message || '').toLowerCase();
+  const errorName = String(e.name || '').toLowerCase();
+  const errorStatus = e.status ?? e.code;
+
+  return (
+    isLocationRoutingError(err) ||
+    errorStatus === 502 ||
+    errorStatus === 504 ||
+    errorStatus === 0 ||
+    errorName === 'typeerror' ||
+    errorName === 'aborterror' ||
+    errorMsg.includes('failed to fetch') ||
+    errorMsg.includes('networkerror') ||
+    errorMsg.includes('network request failed') ||
+    errorMsg.includes('load failed') ||
+    errorMsg.includes('net::err') ||
+    errorMsg.includes('econnrefused') ||
+    errorMsg.includes('fetch failed') ||
+    errorMsg.includes('connection')
   );
 }
 
@@ -263,13 +289,14 @@ export async function callEdgeWithPoPRetry(
 
   for (let i = 0; i < 3; i++) {
     try {
-      // On retry 2, if location routing error was encountered, switch to alternate edge hostname
-      const urlToUse = i === 2 && isLocationRoutingError(lastErr) ? fallbackUrl : primaryUrl;
+      // On retries (i > 0), if previous attempt encountered a network, location routing, or service outage error,
+      // failover immediately to the alternate edge hostname (workers.dev fallback or default)
+      const urlToUse = i > 0 && isNetworkOrRoutingError(lastErr) ? fallbackUrl : primaryUrl;
       return await callEdgeGenerate(params, model, fetchImpl, urlToUse);
     } catch (err: unknown) {
       lastErr = err;
-      if (isLocationRoutingError(err) && i < 2) {
-        await new Promise((r) => setTimeout(r, 180 * (i + 1) + Math.random() * 50));
+      if (isNetworkOrRoutingError(err) && i < 2) {
+        await new Promise((r) => setTimeout(r, 150 * (i + 1) + Math.random() * 50));
         continue;
       }
       throw err;

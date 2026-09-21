@@ -182,8 +182,8 @@ describe('geminiClient edge proxy + model normalization', () => {
     });
   });
 
-  describe('Anycast Location Routing Resilience', () => {
-    it('seamlessly retries when an edge PoP returns User location is not supported', async () => {
+  describe('Anycast Location Routing and Network Failover Resilience', () => {
+    it('seamlessly retries and switches to workers.dev fallback when edge returns location error', async () => {
       mockFetch
         .mockResolvedValueOnce(new Response(JSON.stringify({
           error: 'User location is not supported for the API use.',
@@ -201,19 +201,40 @@ describe('geminiClient edge proxy + model normalization', () => {
 
       expect(result.text).toBe('PoP retry success');
       expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch.mock.calls[0][0]).toBe('https://api.aegishealthai.co.in/api/ai/generate');
+      expect(mockFetch.mock.calls[1][0]).toBe('https://aegishealthai-edge.dhurianiket.workers.dev/api/ai/generate');
     });
 
-    it('fails if location errors persist after all 3 retries', async () => {
+    it('immediately switches to fallback URL on network failure (Failed to fetch)', async () => {
       mockFetch
-        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'User location is not supported for the API use.' }), { status: 400 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'User location is not supported for the API use.' }), { status: 400 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'User location is not supported for the API use.' }), { status: 400 }));
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockResolvedValueOnce(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'Network failover success' }] } }],
+        }), { status: 200 }));
+
+      const ai = getAI();
+      const result = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: 'hello coach',
+      }) as { text: string };
+
+      expect(result.text).toBe('Network failover success');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch.mock.calls[0][0]).toBe('https://api.aegishealthai.co.in/api/ai/generate');
+      expect(mockFetch.mock.calls[1][0]).toBe('https://aegishealthai-edge.dhurianiket.workers.dev/api/ai/generate');
+    });
+
+    it('fails if network or location errors persist after all 3 retries', async () => {
+      mockFetch
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'));
 
       const ai = getAI();
       await expect(ai.models.generateContent({
         model: 'gemini-3.6-flash',
         contents: 'hello nephrologist',
-      })).rejects.toThrow(/User location is not supported/);
+      })).rejects.toThrow(/Failed to fetch/);
       expect(mockFetch).toHaveBeenCalledTimes(3);
     });
   });

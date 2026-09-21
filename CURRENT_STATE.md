@@ -1,6 +1,28 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXVIII — September 21, 2026
+## Current Snapshot LXIX — September 21, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Cloudflare Worker Targeted Placement & Instant Failover Resilience**:
+  - 🌐 **Worker Targeted Regional Placement (`aws:ap-southeast-1` - Singapore)**:
+    - Root cause resolved: Cloudflare Anycast traffic from APAC/India intermittently landed on the Hong Kong (`HKG`) PoP. Because Google Gemini API explicitly restricts Hong Kong IP addresses (`HTTP 400: User location is not supported for the API use`), requests hitting HKG failed with 503.
+    - Updated Cloudflare Worker `aegishealthai-edge` deployment metadata with targeted placement:
+      `"placement": { "region": "aws:ap-southeast-1" }`
+    - Verified via live Cloudflare API that all incoming requests across `api.aegishealthai.co.in` and `aegishealthai-edge.dhurianiket.workers.dev` now execute in Singapore (`cf-placement: remote-SIN`), delivering **100% success rate (5/5 consecutive live API calls)**.
+  - 🛡️ **Hardcoded CORS Fallback in Cloudflare Worker**:
+    - Ensured `DEFAULT_ALLOWED_ORIGINS` is hardcoded into `aegishealthai-edge` script logic for apex domain `aegishealthai.co.in`, `www`, `*.web.app`, `*.firebaseapp.com`, and `localhost`, preventing any future binding drop from causing CORS 403 preflights.
+    - Configured `handleOptions` to return `HTTP 204 No Content` with `Authorization, Content-Type, X-Request-Id` allow-headers and `86400` max-age.
+  - 🔄 **Immediate Client-Side Alternate Host Failover ([`src/lib/geminiClient.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/lib/geminiClient.ts))**:
+    - Implemented `isNetworkOrRoutingError` to recognize client-side network failures (`TypeError: Failed to fetch`, `networkerror`, `net::err`), edge gateway drops (502, 504), and location routing errors.
+    - Updated `callEdgeWithPoPRetry` to immediately failover to `WORKERS_DEV_FALLBACK_URL` (`https://aegishealthai-edge.dhurianiket.workers.dev`) on retry 1 and 2 (`i > 0`), eliminating connection drops without waiting for repeated retries.
+    - Preserved Google Gemini model overload 503 fallback (`generateWithFallback`) from Pro to Flash models.
+- **Verification & Quality**:
+  - Vitest Test Suite: **60/60 test files passed, 582/582 tests passed (100%)**.
+  - TypeScript: **`npx tsc --noEmit` &rarr; 0 errors**.
+  - Production Build: **`npm run build` &rarr; 7.25s clean production bundle with 0 sourcemaps**.
+  - Live Verification: Both custom domain `https://api.aegishealthai.co.in/api/ai/generate` and `https://aegishealthai-edge.dhurianiket.workers.dev/api/ai/generate` tested live with 100% HTTP 200 responses.
+
+## Previous Snapshot LXVIII — September 21, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Cross-Agent Clinical Context Bus & Inter-Agent Referral Protocol**:
