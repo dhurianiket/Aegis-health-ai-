@@ -13,6 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
 import getAI from "../../lib/geminiClient";
+import { getFriendlyErrorMessage } from "../../utils/aiUtils";
 import { db } from "../../lib/firebase/config";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import ReactMarkdown from "react-markdown";
@@ -261,10 +262,11 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        console.error("Chat error:", err);
+        console.error("Specialist chat error:", err);
+        const friendlyMsg = getFriendlyErrorMessage(err);
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: "I am temporarily unavailable.", timestamp: new Date() }
+          { role: "assistant", content: friendlyMsg, timestamp: new Date() }
         ]);
       }
     } finally {

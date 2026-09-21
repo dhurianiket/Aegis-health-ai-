@@ -181,4 +181,40 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(body.systemInstruction).toEqual(structuredSI);
     });
   });
+
+  describe('Anycast Location Routing Resilience', () => {
+    it('seamlessly retries when an edge PoP returns User location is not supported', async () => {
+      mockFetch
+        .mockResolvedValueOnce(new Response(JSON.stringify({
+          error: 'User location is not supported for the API use.',
+          status: 400,
+        }), { status: 400 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'PoP retry success' }] } }],
+        }), { status: 200 }));
+
+      const ai = getAI();
+      const result = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: 'hello nephrologist',
+      }) as { text: string };
+
+      expect(result.text).toBe('PoP retry success');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('fails if location errors persist after all 3 retries', async () => {
+      mockFetch
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'User location is not supported for the API use.' }), { status: 400 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'User location is not supported for the API use.' }), { status: 400 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'User location is not supported for the API use.' }), { status: 400 }));
+
+      const ai = getAI();
+      await expect(ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: 'hello nephrologist',
+      })).rejects.toThrow(/User location is not supported/);
+      expect(mockFetch).toHaveBeenCalledTimes(3);
+    });
+  });
 });

@@ -85,14 +85,29 @@ export function normalizeModel(model: string | undefined): string {
 function isUnavailableError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;
   const e = err as { status?: unknown; code?: unknown; message?: unknown };
-  const errorMsg = String(e.message || '');
+  const errorMsg = String(e.message || '').toLowerCase();
   const errorStatus = e.status ?? e.code;
   return (
     errorStatus === 503 ||
+    errorStatus === 502 ||
+    errorStatus === 504 ||
     errorStatus === 'UNAVAILABLE' ||
     errorMsg.includes('503') ||
-    errorMsg.toLowerCase().includes('demand') ||
-    errorMsg.toLowerCase().includes('unavailable')
+    errorMsg.includes('502') ||
+    errorMsg.includes('504') ||
+    errorMsg.includes('demand') ||
+    errorMsg.includes('unavailable')
+  );
+}
+
+export function isLocationRoutingError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { status?: unknown; code?: unknown; message?: unknown };
+  const errorMsg = String(e.message || '').toLowerCase();
+  return (
+    errorMsg.includes('user location is not supported') ||
+    errorMsg.includes('failed_precondition') ||
+    errorMsg.includes('location')
   );
 }
 
@@ -233,6 +248,27 @@ export async function callEdgeGenerate(
   };
 }
 
+export async function callEdgeWithPoPRetry(
+  params: GeminiGenerateParams,
+  model: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<GeminiGenerateResponse> {
+  let lastErr: unknown;
+  for (let i = 0; i < 3; i++) {
+    try {
+      return await callEdgeGenerate(params, model, fetchImpl);
+    } catch (err: unknown) {
+      lastErr = err;
+      if (isLocationRoutingError(err) && i < 2) {
+        await new Promise((r) => setTimeout(r, 150 * (i + 1) + Math.random() * 50));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+
 async function generateWithFallback(
   params: GeminiGenerateParams,
   fetchImpl: typeof fetch,
@@ -240,7 +276,7 @@ async function generateWithFallback(
   const originalModel = params.model;
   const effectiveModel = normalizeModel(params.model);
 
-  const attempt = async (model: string) => callEdgeGenerate(params, model, fetchImpl);
+  const attempt = async (model: string) => callEdgeWithPoPRetry(params, model, fetchImpl);
 
   try {
     return await attempt(effectiveModel);
