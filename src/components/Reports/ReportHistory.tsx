@@ -275,6 +275,7 @@ export default function ReportHistory() {
           <input
             type="text"
             placeholder="Search report titles or lab markers..."
+            aria-label="Search report titles or lab markers"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full pl-9 pr-4 py-2.5 text-sm text-[var(--color-text)] placeholder-muted focus:outline-none focus:border-[var(--color-primary)]/50 transition-colors shadow-sm"

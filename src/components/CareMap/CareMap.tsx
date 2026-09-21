@@ -39,6 +39,14 @@ export function getStoredMapsKey(): string {
 // Pre-defined default coordinates (Mumbai, Maharashtra, India)
 const DEFAULT_CENTER = { lat: 19.0760, lng: 72.8777 };
 
+// Static libraries array prevents redundant Google Maps script tag injections
+const GOOGLE_MAPS_LIBRARIES: ("places" | "routes" | "marker" | "geometry")[] = [
+  "places",
+  "routes",
+  "marker",
+  "geometry",
+];
+
 interface PlaceMarker {
   id: string;
   name: string;
@@ -85,7 +93,12 @@ export default function CareMapContainer() {
   }
 
   return (
-    <APIProvider apiKey={apiKey} version="weekly">
+    <APIProvider
+      apiKey={apiKey}
+      version="weekly"
+      libraries={GOOGLE_MAPS_LIBRARIES}
+      region="IN"
+    >
       <CareMap />
     </APIProvider>
   );
@@ -292,6 +305,7 @@ function CareMap() {
             <input
               type="text"
               placeholder="Search local clinics, labs..."
+              aria-label="Search local clinics and laboratories"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[var(--color-bg)] text-theme placeholder-slate-400 border border-[var(--color-border)] rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"

@@ -389,6 +389,7 @@ function MainApp() {
               <input
                 type="text"
                 placeholder="Search records..."
+                aria-label="Search records"
                 className="pl-10 pr-4 py-2.5 bg-surface border-transparent rounded-[12px] text-sm md:w-56 focus:ring-1 focus:ring-[var(--color-primary)] transition-all placeholder-muted text-theme outline-none"
               />
             </div>
@@ -653,15 +654,17 @@ function MainApp() {
                   </button>
                 </div>
                 <form onSubmit={handleCreateProfile}>
-                  <label className="block text-sm font-medium text-muted mb-2">
+                  <label htmlFor="new-profile-name" className="block text-sm font-medium text-muted mb-2">
                     Profile Name
                   </label>
                   <input
+                    id="new-profile-name"
                     type="text"
                     value={newProfileName}
                     onChange={(e) => setNewProfileName(e.target.value)}
                     className={`w-full bg-surface border ${profileError ? "border-[var(--color-critical)]" : "border-surface"} rounded-[16px] px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all mb-2`}
                     placeholder="e.g. John's Health"
+                    aria-label="Profile Name"
                     autoFocus
                   />
                   {profileError && (
