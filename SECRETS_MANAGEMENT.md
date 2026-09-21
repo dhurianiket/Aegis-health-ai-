@@ -2,34 +2,49 @@
 
 ## Environment Variables
 
-This application requires certain environment variables to function properly.
-Never commit your `.env` / `.env.local` files to version control.
-
-Required variables are documented in `.env.example`.
+Never commit `.env` / `.env.local` files to version control. See `.env.example` for the template.
 
 ### Client-Exposed Variables (`VITE_*`)
 
-Variables prefixed with `VITE_` are **public** in the client JavaScript bundle. Use them only for non-sensitive configuration (Firebase web config, reCAPTCHA site key, GA measurement id, public gateway URLs).
+Anything prefixed with `VITE_` is **public in the client JavaScript bundle**.
 
-- **Firebase web config**: Generally safe to expose; access control must come from Auth + Firestore/Storage rules (+ App Check when enabled). Never put Admin SDK keys or service-account JSON in `VITE_*`.
-- **`VITE_GEMINI_API_KEY` (current state)**: This value **is embedded in the production bundle** today via the Vite client Gemini path. Treat any key that has ever been set here as **exposed** — rotate it and migrate inference to a server proxy (`GEMINI_API_KEY` on Express / Cloud Functions only). Until that migration ships, restrict the key (HTTP referrer / API restrictions) as a temporary control.
-- **Forbidden as `VITE_*`**: GA Measurement Protocol API secrets, Cloudflare AI Gateway tokens, GitHub PATs, Firebase service-account keys, webhook signing secrets, Razorpay key secrets.
+| Variable | Status | Description |
+|----------|--------|-------------|
+| Firebase web config (`VITE_FIREBASE_*`) | Public by design | Protect data with Auth + Security Rules (+ App Check). Never put Admin SDK keys or service-account JSON in `VITE_*`. |
+| `VITE_EDGE_API_URL` | Public Worker base URL | `https://api.aegishealthai.co.in`. |
+| `VITE_AEGIS_EDGE_BEARER` | **Interim** shared bearer | Interim shared secret for Worker proxy auth. Still leakable from the SPA. Rotate when Firebase JWT verification lands on the Worker. |
+| `VITE_GA_MEASUREMENT_ID` | Public by design | Standard GA4 measurement stream id (`G-KKGF16H7CY`). |
+| `VITE_GEMINI_API_KEY` | **Deprecated** | Do not set on Hosting after edge cutover. Rotate any key that was ever built into a production bundle. |
+| `VITE_CF_AIG_TOKEN` | **Forbidden** client-side | Cloudflare AI Gateway tokens must remain strictly in server/Worker secrets. |
+| `VITE_RECAPTCHA_SITE_KEY` | Public by design | Standard public Google reCAPTCHA v3 site key. |
 
-### Server-Only Secrets
+### Server / Worker-Only Secrets
 
 Variables **without** the `VITE_` prefix must never be referenced from client code or injected into the Vite `define` block.
 
-- **`GEMINI_API_KEY`**: Server-side only (Express / Functions). This is the correct long-term home for Gemini credentials.
-- **`GA_API_SECRET`**: Server-side only for GA4 Measurement Protocol. The browser must use `gtag`, not MP with a secret.
-- **Other third-party secrets**: Proxy through Cloud Functions or Express; do not ship them in Hosting assets.
+| Secret | Where | Description |
+|--------|-------|-------------|
+| `GEMINI_API_KEY` | Cloudflare Worker `aegishealthai-edge` | Server-side Gemini API key used by the edge proxy. |
+| `EDGE_SHARED_SECRET` | Cloudflare Worker `aegishealthai-edge` | Worker secret matching `VITE_AEGIS_EDGE_BEARER` until JWT auth. |
+| `GA_API_SECRET` | Functions/Express only | Server-side only for GA4 Measurement Protocol. The browser must use `gtag`, not MP with a secret. |
+| Firebase service accounts / PEMs | CI secrets / local gitignored files only | Never committed to version control. |
 
-### Storage rules
+### Edge Gemini Proxy (`aegishealthai-edge`)
+
+- **Worker**: `aegishealthai-edge`
+- **Custom domain**: `https://api.aegishealthai.co.in`
+- **Contract**: `POST /api/ai/generate` with Gemini `generateContent`-shaped JSON and `Authorization: Bearer …`
+- **AI Gateway slug**: `aegishealthai` → Google AI Studio
+- **CORS allowlist**: `https://aegishealthai.co.in`, `https://www.aegishealthai.co.in`, `http://localhost:5173`
+- Never log PHI or upload bodies at the edge or in the SPA console beyond request IDs.
+
+### Storage Rules
 
 Repository Storage rules live in `storage.rules` and are wired in `firebase.json`. Deploying them is an explicit `firebase deploy --only storage` (or full deploy) — confirm live bucket rules in the Firebase console before/after deploy.
 
 ## Security Practices
 
-1. **Never commit secrets**: `.env*`, `*.pem`, and `*serviceAccount*.json` are gitignored. Keep them out of version control and out of PR diffs.
-2. **Access control**: Firestore and Storage must enforce Auth + ownership (and admin via custom claims — not hardcoded emails long-term).
-3. **Key rotation**: Rotate any key that may have been built into Hosting as `VITE_*`. Scope Google API keys to specific APIs and HTTP referrers where possible.
+1. **Never commit secrets**: `.env*`, `*.pem`, and `*serviceAccount*.json` are gitignored. Keep them out of version control and PR diffs.
+2. **Key rotation**: After removing `VITE_GEMINI_API_KEY` from Hosting, **rotate** the old Gemini key.
+3. **Transition to JWT**: Prefer Firebase ID tokens on the Worker ASAP so the interim SPA bearer can be completely removed.
 4. **CI secrets**: GitHub Actions should inject secrets only into the build/deploy job environment; never echo them in logs.

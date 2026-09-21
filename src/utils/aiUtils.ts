@@ -143,8 +143,8 @@ export function getFriendlyErrorMessage(err: any): string {
   }
 
   // Detect permission, credentials or API key configuration errors
-  if (rawMsg.includes("API key") || rawMsg.includes("VITE_GEMINI_API_KEY") || rawMsg.includes("API_KEY")) {
-    return "Aura AI is temporarily offline (API Key registration required). Please configure VITE_GEMINI_API_KEY.";
+  if (rawMsg.includes("API key") || rawMsg.includes("VITE_GEMINI_API_KEY") || rawMsg.includes("VITE_AEGIS_EDGE_BEARER") || rawMsg.includes("API_KEY") || rawMsg.includes("Unauthorized")) {
+    return "Aura AI is temporarily offline (edge auth required). Please configure VITE_AEGIS_EDGE_BEARER for the Cloudflare Gemini proxy.";
   }
 
   // Handle nested inner error JSON if possible

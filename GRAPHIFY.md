@@ -17,6 +17,7 @@
 - **[`src/components/ABDM/AbdmScanShareModal.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/ABDM/AbdmScanShareModal.tsx)**
   - *Exports*: `AbdmScanShareModal`
   - *Imports*: `../../services/abdmService`
+- **[`src/components/AIHelper/._ChatCoach.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/AIHelper/._ChatCoach.tsx)**
 - **[`src/components/AIHelper/ChatCoach.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/AIHelper/ChatCoach.tsx)**
   - *Exports*: `ChatCoach`, `default`
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../hooks/useClinicalContext`, `../../services/ai/voiceService`, `../../lib/geminiUtils...`
@@ -38,6 +39,7 @@
 - **[`src/components/Chat/VirtualizedChatList.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Chat/VirtualizedChatList.tsx)**
   - *Exports*: `ChatMessage`, `VirtualizedChatListProps`, `VirtualizedChatList`, `default`
   - *Imports*: `../../lib/pretext`, `../Common/CitationBadge`
+- **[`src/components/Common/._RegionalAudioPlayer.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Common/._RegionalAudioPlayer.tsx)**
 - **[`src/components/Common/Canvas3DMesh.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Common/Canvas3DMesh.tsx)**
   - *Exports*: `Canvas3DMesh`
 - **[`src/components/Common/CitationBadge.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Common/CitationBadge.tsx)**
@@ -274,6 +276,7 @@
 - **[`src/lib/firebase/firestore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/firestore.ts)**
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
   - *Imports*: `./config`, `../../utils/dateUtils`, `../../types/medical`, `../../types/wearables`
+- **[`src/services/._measurementProtocolService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._measurementProtocolService.ts)**
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
   - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`
   - *Imports*: `../types/abdm`, `./fhirService`
@@ -372,7 +375,7 @@
   - *Exports*: `exportToCSV`, `exportToFHIR`
   - *Imports*: `./fhirService`
 - **[`src/services/measurementProtocolService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/measurementProtocolService.ts)**
-  - *Exports*: `GA_MEASUREMENT_ID`, `GA_API_SECRET`, `MeasurementProtocolEvent`, `SendTelemetryOptions`, `getOrCreateClientId`
+  - *Exports*: `GA_MEASUREMENT_ID`, `getGaApiSecret`, `GA_API_SECRET`, `MeasurementProtocolEvent`, `SendTelemetryOptions`, `getOrCreateClientId`
   - *Imports*: `../utils/analytics`
 - **[`src/services/medicationCheckService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/medicationCheckService.ts)**
   - *Exports*: `checkMedicationInteractions`
@@ -470,10 +473,11 @@
   - *Exports*: `BluetoothConnectionState`, `SleepArchitecture`, `WearableBiometrics`, `TelemetryStreamConfig`, `BiometricSample`, `BiometricPoint`, `DailyWearableSummary`, `BiometricDiagnosticInsight`
 
 ### 🛠️ Utilities & Helpers
+- **[`src/lib/._geminiClient.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/._geminiClient.ts)**
 - **[`src/lib/auditLogger.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/auditLogger.ts)**
   - *Imports*: `./firebase/config`
 - **[`src/lib/geminiClient.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiClient.ts)**
-  - *Exports*: `getAI`, `default`
+  - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `getEdgeApiBaseUrl`, `getEdgeBearer`, `normalizeModel`, `EdgeGeminiError`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `__setGeminiFetchForTests`, `getAI`, `default`
 - **[`src/lib/geminiUtils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiUtils.ts)**
   - *Exports*: `Type`
   - *Imports*: `./geminiClient`
@@ -487,6 +491,8 @@
   - *Exports*: `cn`, `formatHealthScore`
 - **[`src/lib/validation.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/validation.ts)**
   - *Exports*: `isRequired`, `isAlphanumeric`, `validateProfileName`
+- **[`src/utils/._aiUtils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/._aiUtils.ts)**
+- **[`src/utils/._analytics.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/._analytics.ts)**
 - **[`src/utils/aiUtils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/aiUtils.ts)**
   - *Exports*: `safeJsonParse`, `getFriendlyErrorMessage`
 - **[`src/utils/analytics.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/analytics.ts)**
@@ -510,6 +516,7 @@
   - *Imports*: `../types/health`
 
 ### ⚙️ Configuration
+- **[`src/._vite-env.d.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/._vite-env.d.ts)**
 - **[`src/App.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/App.tsx)**
   - *Exports*: `App`, `default`
   - *Imports*: `./lib/firebase/config`, `./components/Onboarding/SplashScreen`, `./components/Onboarding/PostLoginTransition`, `./context/AuthContext`, `./context/ProfileContext...`

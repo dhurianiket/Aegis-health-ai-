@@ -250,7 +250,7 @@ describe("Milestone 3 Empirical Stress Test Suite: Safety Triage Alerts & AI Pro
   describe("3. Gemini Client 503 Fallback Interceptor Behavior", () => {
     beforeEach(() => {
       vi.restoreAllMocks();
-      vi.stubEnv("VITE_GEMINI_API_KEY", "test-api-key-123");
+      vi.stubEnv("VITE_AEGIS_EDGE_BEARER", "test-edge-bearer");
     });
 
     it("should retry with 'gemini-3.6-flash' when primary model ('gemini-1.5-pro' mapped to 'gemini-3.1-pro-preview') throws 503 Unavailable error in generateContentStream", async () => {

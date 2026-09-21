@@ -1,45 +1,50 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// We mock @google/genai module before importing getAI
-const mockGenerateContent = vi.fn();
-const mockGenerateContentStream = vi.fn();
-
-vi.mock('@google/genai', () => {
-  return {
-    GoogleGenAI: vi.fn().mockImplementation(function (this: any) {
-      this.models = {
-        generateContent: mockGenerateContent,
-        generateContentStream: mockGenerateContentStream,
-      };
-    }),
-  };
-});
-
-describe('geminiClient Resilience Interceptor & Model Normalization', () => {
-  let getAI: () => any;
+describe('geminiClient edge proxy + model normalization', () => {
+  let getAI: typeof import('../geminiClient').getAI;
+  let __setGeminiFetchForTests: (f: typeof fetch | null) => void;
+  let normalizeModel: (m: string | undefined) => string;
+  let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'test-api-key-123');
-    vi.stubEnv('VITE_CLOUDFLARE_AI_GATEWAY_URL', 'https://gateway.ai.cloudflare.com/v1/test');
+    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', 'test-edge-bearer');
+    vi.stubEnv('VITE_EDGE_API_URL', 'https://api.aegishealthai.co.in');
+
+    mockFetch = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body || '{}')) as { model?: string };
+      return new Response(JSON.stringify({
+        candidates: [{ content: { parts: [{ text: `ok:${body.model}` }] } }],
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    });
 
     const mod = await import('../geminiClient');
     getAI = mod.getAI;
+    __setGeminiFetchForTests = mod.__setGeminiFetchForTests;
+    normalizeModel = mod.normalizeModel;
+    __setGeminiFetchForTests(mockFetch as unknown as typeof fetch);
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    __setGeminiFetchForTests(null);
   });
 
-  it('throws error when VITE_GEMINI_API_KEY is not set', async () => {
+  it('throws when VITE_AEGIS_EDGE_BEARER is not set', async () => {
     vi.resetModules();
-    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
     const mod = await import('../geminiClient');
-    expect(() => mod.getAI()).toThrow('VITE_GEMINI_API_KEY is not set');
+    expect(() => mod.getAI()).toThrow(/VITE_AEGIS_EDGE_BEARER/);
   });
 
-  describe('Model Normalization', () => {
+  it('normalizeModel maps flash/pro aliases', () => {
+    expect(normalizeModel('gemini-2.5-flash')).toBe('gemini-3.6-flash');
+    expect(normalizeModel('gemini-1.5-pro')).toBe('gemini-3.1-pro-preview');
+    expect(normalizeModel('gemini-3.6-flash')).toBe('gemini-3.6-flash');
+  });
+
+  describe('Model Normalization via edge POST', () => {
     it.each([
       ['gemini-3-flash-preview', 'gemini-3.6-flash'],
       ['gemini-3.5-flash', 'gemini-3.6-flash'],
@@ -52,153 +57,73 @@ describe('geminiClient Resilience Interceptor & Model Normalization', () => {
       ['gemini-3.6-flash', 'gemini-3.6-flash'],
     ])('maps model "%s" to "%s" for generateContent', async (inputModel, expectedModel) => {
       const ai = getAI();
-      mockGenerateContent.mockResolvedValueOnce({ text: 'Success response' });
+      const res = await ai.models.generateContent({ model: inputModel, contents: 'hello' }) as { text: string };
 
-      const res = await ai.models.generateContent({ model: inputModel, contents: 'hello' });
-
-      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
-      expect(mockGenerateContent).toHaveBeenCalledWith({
-        model: expectedModel,
-        contents: 'hello',
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [url, init] = mockFetch.mock.calls[0];
+      expect(url).toBe('https://api.aegishealthai.co.in/api/ai/generate');
+      expect((init as RequestInit).headers).toMatchObject({
+        Authorization: 'Bearer test-edge-bearer',
       });
-      expect(res).toEqual({ text: 'Success response' });
+      const body = JSON.parse(String((init as RequestInit).body));
+      expect(body.model).toBe(expectedModel);
+      expect(body.contents).toBe('hello');
+      expect(res.text).toBe(`ok:${expectedModel}`);
     });
 
     it.each([
       ['gemini-3-flash-preview', 'gemini-3.6-flash'],
-      ['gemini-3.5-flash', 'gemini-3.6-flash'],
-      ['gemini-2.0-flash', 'gemini-3.6-flash'],
-      ['gemini-1.5-flash', 'gemini-3.6-flash'],
-      ['gemini-2.5-flash', 'gemini-3.6-flash'],
-      ['gemini-2.5-flash-lite', 'gemini-3.6-flash'],
       ['gemini-1.5-pro', 'gemini-3.1-pro-preview'],
-      ['gemini-2.5-pro', 'gemini-3.1-pro-preview'],
-    ])('maps model "%s" to "%s" for generateContentStream', async (inputModel, expectedModel) => {
+    ])('maps model "%s" to "%s" for generateContentStream (non-stream polyfill)', async (inputModel, expectedModel) => {
       const ai = getAI();
-      mockGenerateContentStream.mockResolvedValueOnce({ stream: 'chunk stream' });
-
-      const res = await ai.models.generateContentStream({ model: inputModel, contents: 'stream test' });
-
-      expect(mockGenerateContentStream).toHaveBeenCalledTimes(1);
-      expect(mockGenerateContentStream).toHaveBeenCalledWith({
-        model: expectedModel,
-        contents: 'stream test',
-      });
-      expect(res).toEqual({ stream: 'chunk stream' });
+      const stream = await ai.models.generateContentStream({ model: inputModel, contents: 'stream test' });
+      const chunks: Array<{ text: string }> = [];
+      for await (const chunk of stream) {
+        chunks.push(chunk as { text: string });
+      }
+      expect(chunks).toHaveLength(1);
+      expect(chunks[0].text).toBe(`ok:${expectedModel}`);
+      const body = JSON.parse(String((mockFetch.mock.calls[0][1] as RequestInit).body));
+      expect(body.model).toBe(expectedModel);
     });
   });
 
-  describe('503 Error Resilience & Retries for generateContent', () => {
-    it('retries with "gemini-3.6-flash" when primary model fails with 503 status code', async () => {
+  describe('503 Error Resilience', () => {
+    it('retries with gemini-3.6-flash then succeeds', async () => {
+      mockFetch
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Service Unavailable' }), { status: 503 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'Fallback success' }] } }],
+        }), { status: 200 }));
+
       const ai = getAI();
-      // First call (gemini-3.1-pro-preview) fails with status 503
-      mockGenerateContent.mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' });
-      // Second call (fallback gemini-3.6-flash) succeeds
-      mockGenerateContent.mockResolvedValueOnce({ text: 'Fallback success' });
-
-      const result = await ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test prompt' });
-
-      expect(result).toEqual({ text: 'Fallback success' });
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(1, { model: 'gemini-3.1-pro-preview', contents: 'test prompt' });
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(2, { model: 'gemini-3.6-flash', contents: 'test prompt' });
+      const result = await ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test prompt' }) as { text: string };
+      expect(result.text).toBe('Fallback success');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      const models = mockFetch.mock.calls.map((c) => JSON.parse(String((c[1] as RequestInit).body)).model);
+      expect(models).toEqual(['gemini-3.1-pro-preview', 'gemini-3.6-flash']);
     });
 
-    it('retries with secondary fallback "gemini-3.5-flash" when primary AND primary-fallback both fail with 503', async () => {
+    it('retries secondary gemini-3.5-flash after both primary paths 503', async () => {
+      mockFetch
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Overloaded' }), { status: 503 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'High demand' }), { status: 503 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'Secondary fallback success' }] } }],
+        }), { status: 200 }));
+
       const ai = getAI();
-      // 1st call (gemini-3.1-pro-preview) fails with 503
-      mockGenerateContent.mockRejectedValueOnce({ status: 503, message: 'Overloaded' });
-      // 2nd call (gemini-3.6-flash) fails with UNAVAILABLE status string
-      mockGenerateContent.mockRejectedValueOnce({ status: 'UNAVAILABLE', message: 'High demand' });
-      // 3rd call (gemini-3.5-flash) succeeds
-      mockGenerateContent.mockResolvedValueOnce({ text: 'Secondary fallback success' });
-
-      const result = await ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test prompt' });
-
-      expect(result).toEqual({ text: 'Secondary fallback success' });
-      expect(mockGenerateContent).toHaveBeenCalledTimes(3);
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(1, { model: 'gemini-3.1-pro-preview', contents: 'test prompt' });
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(2, { model: 'gemini-3.6-flash', contents: 'test prompt' });
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(3, { model: 'gemini-3.5-flash', contents: 'test prompt' });
+      const result = await ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test prompt' }) as { text: string };
+      expect(result.text).toBe('Secondary fallback success');
+      const models = mockFetch.mock.calls.map((c) => JSON.parse(String((c[1] as RequestInit).body)).model);
+      expect(models).toEqual(['gemini-3.1-pro-preview', 'gemini-3.6-flash', 'gemini-3.5-flash']);
     });
 
-    it('retries directly with secondary fallback "gemini-3.5-flash" when model mapped to "gemini-3.6-flash" fails with 503', async () => {
+    it('does NOT retry non-503 errors', async () => {
+      mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Invalid argument provided' }), { status: 400 }));
       const ai = getAI();
-      // gemini-3-flash-preview maps to gemini-3.6-flash
-      mockGenerateContent.mockRejectedValueOnce({ message: 'The model is currently experiencing high demand (503)' });
-      mockGenerateContent.mockResolvedValueOnce({ text: 'Direct secondary fallback success' });
-
-      const result = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: 'test' });
-
-      expect(result).toEqual({ text: 'Direct secondary fallback success' });
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(1, { model: 'gemini-3.6-flash', contents: 'test' });
-      expect(mockGenerateContent).toHaveBeenNthCalledWith(2, { model: 'gemini-3.5-flash', contents: 'test' });
-    });
-
-    it('re-throws error if all retries fail with 503', async () => {
-      const ai = getAI();
-      const err503 = { status: 503, message: 'Persistent 503' };
-      mockGenerateContent.mockRejectedValue(err503);
-
-      await expect(ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test' }))
-        .rejects.toEqual(err503);
-
-      expect(mockGenerateContent).toHaveBeenCalledTimes(3);
-    });
-
-    it('does NOT retry and throws immediately for non-503 errors (e.g. 400 Bad Request)', async () => {
-      const ai = getAI();
-      const err400 = { status: 400, message: 'Invalid argument provided' };
-      mockGenerateContent.mockRejectedValueOnce(err400);
-
-      await expect(ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test' }))
-        .rejects.toEqual(err400);
-
-      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
-    });
-
-    it.each([
-      ['status code 503', { status: 503 }],
-      ['code 503', { code: 503 }],
-      ['status UNAVAILABLE', { status: 'UNAVAILABLE' }],
-      ['message containing 503', { message: 'HTTP 503 Error' }],
-      ['message containing high demand', { message: 'Server under high demand, try later' }],
-      ['message containing unavailable', { message: 'Service is unavailable at this moment' }],
-    ])('detects 503/high-demand error variant: %s', async (_, errorObj) => {
-      const ai = getAI();
-      mockGenerateContent.mockRejectedValueOnce(errorObj);
-      mockGenerateContent.mockResolvedValueOnce({ text: 'Recovered' });
-
-      const res = await ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test' });
-      expect(res).toEqual({ text: 'Recovered' });
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe('503 Error Resilience & Retries for generateContentStream', () => {
-    it('retries streaming with fallbacks on 503 error', async () => {
-      const ai = getAI();
-      mockGenerateContentStream.mockRejectedValueOnce({ status: 503, message: 'Stream 503' });
-      mockGenerateContentStream.mockResolvedValueOnce({ stream: 'Fallback stream' });
-
-      const res = await ai.models.generateContentStream({ model: 'gemini-1.5-pro', contents: 'stream prompt' });
-
-      expect(res).toEqual({ stream: 'Fallback stream' });
-      expect(mockGenerateContentStream).toHaveBeenCalledTimes(2);
-      expect(mockGenerateContentStream).toHaveBeenNthCalledWith(1, { model: 'gemini-3.1-pro-preview', contents: 'stream prompt' });
-      expect(mockGenerateContentStream).toHaveBeenNthCalledWith(2, { model: 'gemini-3.6-flash', contents: 'stream prompt' });
-    });
-
-    it('does NOT retry streaming on non-503 error', async () => {
-      const ai = getAI();
-      const err401 = { status: 401, message: 'Unauthorized' };
-      mockGenerateContentStream.mockRejectedValueOnce(err401);
-
-      await expect(ai.models.generateContentStream({ model: 'gemini-1.5-pro', contents: 'test' }))
-        .rejects.toEqual(err401);
-
-      expect(mockGenerateContentStream).toHaveBeenCalledTimes(1);
+      await expect(ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test' })).rejects.toMatchObject({ status: 400 });
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });
 });

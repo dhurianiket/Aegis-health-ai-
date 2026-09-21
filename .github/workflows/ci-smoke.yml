@@ -45,7 +45,8 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test tests/e2e/smoke.spec.ts
         env:
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+          VITE_EDGE_API_URL: ${{ secrets.VITE_EDGE_API_URL }}
+          VITE_AEGIS_EDGE_BEARER: ${{ secrets.VITE_AEGIS_EDGE_BEARER }}
           TEST_TARGET_URL: https://aegis-health-app-90697.web.app
           
       - name: Notify on failure
