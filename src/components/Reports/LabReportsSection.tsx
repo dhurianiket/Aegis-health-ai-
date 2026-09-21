@@ -138,6 +138,8 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
             <button
               onClick={() => setExpanded(!expanded)}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] text-xs font-bold text-[var(--color-primary)] hover:underline focus:outline-none bg-[var(--color-primary)]/10 rounded-xl transition-all border border-[var(--color-primary)]/20 active:scale-95 cursor-pointer"
+              aria-expanded={expanded}
+              aria-controls={`report-details-${report.id}`}
             >
               {expanded ? "Hide Results" : "View Details"}
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -149,6 +151,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
       <AnimatePresence>
         {expanded && observationCount > 0 && (
           <motion.div
+            id={`report-details-${report.id}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

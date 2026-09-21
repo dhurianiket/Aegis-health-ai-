@@ -1,6 +1,9 @@
-1. **Explore `VisualLabReportCard.tsx`** for missing `focus-visible` ring on buttons to improve keyboard navigation without adding distracting mouse click styling.
-2. **Explore `SpecialistLounge.tsx`** to see if any buttons lack `focus-visible` styling or need better keyboard support.
-3. **Explore `IntegrationsPanel.tsx`** to ensure it aligns with our learning about custom integration panel buttons needing visual focus indicators (which seems to be there but we can check if any are missing).
-4. **Choose ONE small enhancement**: Add `focus-visible:ring-2` to buttons in `VisualLabReportCard.tsx` where they are missing. This fulfills a known UX learning (`focus-visible` over `focus` for cleaner UI).
-5. **Pre-commit testing**: Run `pnpm lint`, `pnpm build`, and tests for verification.
-6. **Submit PR**: Format according to Palette persona constraints.
+1. **Add `aria-expanded` and `aria-controls` to the expand/collapse button in `src/components/Reports/LabReportsSection.tsx`.**
+   - The button that toggles `expanded` in `ReportCard` needs these attributes for better accessibility, just like the one in `VisualLabReportCard.tsx`.
+2. **Add an `id` to the `motion.div` that is controlled by the expand/collapse button.**
+   - The `motion.div` should have an `id` matching the `aria-controls` attribute of the button.
+3. **Complete pre-commit steps.**
+   - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
+4. **Submit the PR.**
+   - Title: "🎨 Palette: Add accessibility attributes to ReportCard expand button"
+   - Description matching Palette's format.
