@@ -237,6 +237,7 @@
 - **[`src/components/Settings/ZeroKnowledgeVaultModal.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Settings/ZeroKnowledgeVaultModal.tsx)**
   - *Exports*: `ZeroKnowledgeVaultModal`
   - *Imports*: `../../services/zeroKnowledgeCryptoService`, `../../services/auditLogService`
+- **[`src/components/Specialists/._SpecialistLounge.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/._SpecialistLounge.tsx)**
 - **[`src/components/Specialists/SpecialistLounge.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/SpecialistLounge.tsx)**
   - *Exports*: `SpecialistLounge`, `default`
   - *Imports*: `../../services/cacheService`, `../../services/sourceGroundedService`, `../Common/CitationBadge`, `../../types/ai`, `../../services/ai/specialists/specialistFactory...`
@@ -271,15 +272,18 @@
   - *Exports*: `SkeletonLoader`, `DashboardSkeleton`, `TimelineSkeleton`, `SpecialistsSkeleton`, `default`
 
 ### ⚙️ Services & API Providers
+- **[`src/lib/firebase/._firestore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/._firestore.ts)**
 - **[`src/lib/firebase/config.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/config.ts)**
   - *Exports*: `auth`, `db`, `storage`, `googleProvider`, `default`
 - **[`src/lib/firebase/firestore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/firestore.ts)**
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
   - *Imports*: `./config`, `../../utils/dateUtils`, `../../types/medical`, `../../types/wearables`
 - **[`src/services/._measurementProtocolService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._measurementProtocolService.ts)**
+- **[`src/services/._sbarGenerationService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/._sbarGenerationService.ts)**
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
   - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`
   - *Imports*: `../types/abdm`, `./fhirService`
+- **[`src/services/ai/._contextService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/._contextService.ts)**
 - **[`src/services/ai/coachService.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.test.ts)**
   - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
 - **[`src/services/ai/coachService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.ts)**
@@ -452,10 +456,11 @@
   - *Imports*: `../context/AuthContext`, `../lib/firebase/firestore`, `../services/wearableService`, `../types/wearables`
 
 ### 📐 TypeScript Schemas & Types
+- **[`src/types/._ai.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/._ai.ts)**
 - **[`src/types/abdm.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/abdm.ts)**
   - *Exports*: `AbdmAuthMode`, `AbhaProfile`, `CareContextType`, `CareContext`, `ConsentStatus`, `HIType`, `AccessMode`, `ConsentPurpose`, `ConsentPermission`, `ConsentRequest`, `ConsentArtifact`, `KeyMaterial`, `EncryptedBundleTransfer`, `AbdmAuthResponse`, `LinkContextResponse`
 - **[`src/types/ai.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/ai.ts)**
-  - *Exports*: `ChatRole`, `ChatMessage`, `Conversation`, `SpecialistId`, `SpecialistProfile`, `PatientContext`
+  - *Exports*: `ChatRole`, `ChatMessage`, `Conversation`, `SpecialistId`, `SpecialistProfile`, `SpecialistConsultation`, `ClinicalReferral`, `CoachSessionSummary`, `PatientContext`
   - *Imports*: `./medical`, `./alerts`, `./wearables`
 - **[`src/types/alerts.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/alerts.ts)**
   - *Exports*: `AlertSeverity`, `AlertType`, `HealthAlert`, `AlertThreshold`, `AlertContextType`
@@ -477,7 +482,7 @@
 - **[`src/lib/auditLogger.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/auditLogger.ts)**
   - *Imports*: `./firebase/config`
 - **[`src/lib/geminiClient.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiClient.ts)**
-  - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `getEdgeApiBaseUrl`, `getEdgeBearer`, `normalizeModel`, `EdgeGeminiError`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `__setGeminiFetchForTests`, `getAI`, `default`
+  - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `getEdgeApiBaseUrl`, `getEdgeBearer`, `normalizeModel`, `isLocationRoutingError`, `normalizeSystemInstruction`, `EdgeGeminiError`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `__setGeminiFetchForTests`, `getAI`, `default`
 - **[`src/lib/geminiUtils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiUtils.ts)**
   - *Exports*: `Type`
   - *Imports*: `./geminiClient`
