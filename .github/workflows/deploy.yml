@@ -44,6 +44,12 @@ jobs:
           # VITE_GEMINI_API_KEY removed from SPA build — Gemini via edge Worker
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
+          GOOGLE_MAPS_PLATFORM_KEY: ${{ secrets.GOOGLE_MAPS_PLATFORM_KEY }}
+          VITE_GOOGLE_MAPS_PLATFORM_KEY: ${{ secrets.GOOGLE_MAPS_PLATFORM_KEY }}
+          VITE_FEEDBACK_FORM_ID: ${{ secrets.VITE_FEEDBACK_FORM_ID }}
+          VITE_ADMIN_FEEDBACK_FORM_ID: ${{ secrets.VITE_ADMIN_FEEDBACK_FORM_ID }}
+          VITE_VISIT_PREP_FORM_ID: ${{ secrets.VITE_VISIT_PREP_FORM_ID }}
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0

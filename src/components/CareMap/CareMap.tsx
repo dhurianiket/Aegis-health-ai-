@@ -21,17 +21,27 @@ import {
   Clock,
   Compass,
   AlertCircle,
+  Key,
+  ExternalLink,
+  Check,
 } from "lucide-react";
 import { useProfile } from "../../context/ProfileContext";
 
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  "";
-
-const hasValidKey = Boolean(API_KEY) && API_KEY !== "YOUR_API_KEY" && API_KEY.trim() !== "";
+export function getStoredMapsKey(): string {
+  if (typeof window !== "undefined" && window.localStorage) {
+    const local = window.localStorage.getItem("aegis_google_maps_key");
+    if (local && local.trim() && local !== "YOUR_API_KEY") return local.trim();
+  }
+  const envKey =
+    (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+    (import.meta as any).env?.GOOGLE_MAPS_PLATFORM_KEY ||
+    (typeof process !== "undefined" && process.env?.GOOGLE_MAPS_PLATFORM_KEY) ||
+    (typeof process !== "undefined" && process.env?.VITE_GOOGLE_MAPS_PLATFORM_KEY) ||
+    (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
+    "";
+  if (envKey && envKey.trim() && envKey !== "YOUR_API_KEY") return envKey.trim();
+  return "";
+}
 
 // Pre-defined default coordinates (e.g., Mount Sinai Hospital area, NY)
 const DEFAULT_CENTER = { lat: 40.7893, lng: -73.9544 };
@@ -46,11 +56,50 @@ interface PlaceMarker {
 }
 
 export default function CareMapContainer() {
-  if (!hasValidKey) {
+  const [apiKey, setApiKey] = useState<string>(() => getStoredMapsKey());
+  const [inputKey, setInputKey] = useState<string>("");
+  const [keyError, setKeyError] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+
+  useEffect(() => {
+    const key = getStoredMapsKey();
+    if (key && !apiKey) {
+      setApiKey(key);
+    }
+  }, [apiKey]);
+
+  const handleSaveKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanKey = inputKey.trim();
+    if (!cleanKey) {
+      setKeyError("Please enter a valid Google Maps Platform API key.");
+      return;
+    }
+    if (typeof window !== "undefined" && window.localStorage) {
+      window.localStorage.setItem("aegis_google_maps_key", cleanKey);
+    }
+    setApiKey(cleanKey);
+    setKeyError(null);
+    setShowSettings(false);
+  };
+
+  const handleClearKey = () => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      window.localStorage.removeItem("aegis_google_maps_key");
+    }
+    setApiKey("");
+    setInputKey("");
+    setKeyError(null);
+    setShowSettings(false);
+  };
+
+  const hasValidKey = Boolean(apiKey) && apiKey !== "YOUR_API_KEY" && apiKey.trim() !== "";
+
+  if (!hasValidKey || showSettings) {
     return (
-      <div className="bg-surface backdrop-blur-xl border border-surface p-8 rounded-[32px] max-w-2xl mx-auto shadow-2xl text-center my-12">
-        <div className="w-16 h-16 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-6">
-          <Compass className="w-8 h-8 animate-spin" style={{ animationDuration: "12s" }} />
+      <div className="bg-surface backdrop-blur-xl border border-surface p-8 rounded-[32px] max-w-2xl mx-auto shadow-2xl text-center my-12 animate-in fade-in duration-300">
+        <div className="w-16 h-16 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <Compass className="w-8 h-8 text-indigo-500 animate-spin" style={{ animationDuration: "20s" }} />
         </div>
         <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
           Localized Care Map
@@ -59,43 +108,134 @@ export default function CareMapContainer() {
           Unlock local healthcare discovery. Aegis routes clinical networks, medical specialists, diagnostic labs, and nearby emergency services directly to your region.
         </p>
 
-        <div className="p-6 bg-black/15 border border-white/5 rounded-2xl text-left space-y-4 mb-8">
-          <h4 className="text-xs uppercase tracking-widest font-extrabold text-indigo-400">
-            Setup Instruction Guide
-          </h4>
-          <ol className="text-xs text-muted list-decimal list-inside space-y-2.5 leading-relaxed">
-            <li>
-              Obtain an API key from Google Cloud Console: <br />
-              <a 
-                href="https://console.cloud.google.com/google/maps-apis/start?utm_campaign=gmp-code-assist-ais" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-indigo-400 underline hover:text-indigo-300 font-semibold"
-              >
-                Get Google Maps Platform API Key
-              </a>
-            </li>
-            <li>In AI Studio, locate the <strong className="text-theme">Settings</strong> page (⚙️ gear icon, top-right panel).</li>
-            <li>Select <strong className="text-theme">Secrets</strong> from the sub-menu.</li>
-            <li>Add <code className="bg-slate-800 text-slate-100 px-1.5 py-0.5 rounded font-mono">GOOGLE_MAPS_PLATFORM_KEY</code> as the secret key.</li>
-            <li>Paste your secret token as the value and press <kbd className="bg-slate-800 text-slate-100 px-1 py-0.5 rounded font-mono">Enter</kbd>.</li>
-          </ol>
-          <div className="text-xs text-faint border-t border-white/5 pt-3 leading-relaxed">
-            The application executes instant developer updates, propagating your environment secrets without needing a browser reload.
+        {/* Interactive Key Configuration Box */}
+        <div className="p-6 bg-black/10 dark:bg-black/25 border border-slate-200 dark:border-white/10 rounded-2xl text-left space-y-4 mb-6 shadow-inner">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs uppercase tracking-widest font-extrabold text-indigo-500 dark:text-indigo-400 flex items-center gap-1.5">
+              <Key className="w-3.5 h-3.5" />
+              {hasValidKey ? "Manage Google Maps Platform Key" : "Connect Google Maps Platform"}
+            </h4>
+            {hasValidKey && (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+                <Check className="w-3 h-3" /> Active
+              </span>
+            )}
           </div>
+
+          <form onSubmit={handleSaveKey} className="space-y-3">
+            <div className="space-y-1">
+              <label htmlFor="maps-api-key" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Google Maps API Key
+              </label>
+              <div className="relative">
+                <input
+                  id="maps-api-key"
+                  type="password"
+                  autoComplete="off"
+                  placeholder="AIzaSy..."
+                  value={inputKey}
+                  onChange={(e) => {
+                    setInputKey(e.target.value);
+                    if (keyError) setKeyError(null);
+                  }}
+                  className="w-full bg-[var(--color-bg)] text-theme placeholder-slate-400 border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              {keyError && (
+                <p className="text-xs text-rose-500 flex items-center gap-1 mt-1 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {keyError}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="submit"
+                className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Key className="w-3.5 h-3.5" />
+                {hasValidKey ? "Update API Key" : "Save & Launch Care Map"}
+              </button>
+
+              {hasValidKey && (
+                <button
+                  type="button"
+                  onClick={() => setShowSettings(false)}
+                  className="py-2.5 px-4 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+
+              {hasValidKey && (
+                <button
+                  type="button"
+                  onClick={handleClearKey}
+                  className="py-2.5 px-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                  title="Remove stored key"
+                >
+                  Clear Key
+                </button>
+              )}
+            </div>
+          </form>
+
+          <p className="text-xs text-muted leading-relaxed pt-1">
+            Keys are securely stored in your local browser session (<code className="text-xs px-1 py-0.5 rounded bg-slate-800 text-slate-200 font-mono">localStorage</code>) and are never shared or transmitted to external servers.
+          </p>
+        </div>
+
+        {/* How to get an API Key Guide */}
+        <div className="p-6 bg-indigo-500/5 border border-indigo-500/15 rounded-2xl text-left space-y-3 mb-6">
+          <h4 className="text-xs uppercase tracking-widest font-extrabold text-indigo-500 dark:text-indigo-400">
+            How to get an API Key
+          </h4>
+          <ul className="text-xs text-muted space-y-2.5 leading-relaxed">
+            <li className="flex items-start gap-2">
+              <span className="font-bold text-indigo-400">1.</span>
+              <span>
+                <strong>Production Key:</strong> Create an API key in the{" "}
+                <a
+                  href="https://console.cloud.google.com/google/maps-apis/credentials?utm_campaign=gmp_git_agentskills_v1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-500 dark:text-indigo-400 underline hover:text-indigo-300 font-semibold inline-flex items-center gap-0.5"
+                >
+                  Google Cloud Console Credentials <ExternalLink className="w-3 h-3 inline" />
+                </a>{" "}
+                with <em>Maps JavaScript API</em>, <em>Places API (New)</em>, and <em>Routes API</em> enabled.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="font-bold text-indigo-400">2.</span>
+              <span>
+                <strong>Free Prototyping Demo Key:</strong> If you don't have a billing account, generate an instant key via{" "}
+                <a
+                  href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentskills_v1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-500 dark:text-indigo-400 underline hover:text-indigo-300 font-semibold inline-flex items-center gap-0.5"
+                >
+                  Maps Demo Key Quickstart <ExternalLink className="w-3 h-3 inline" />
+                </a>{" "}
+                (no billing card required).
+              </span>
+            </li>
+          </ul>
         </div>
       </div>
     );
   }
 
   return (
-    <APIProvider apiKey={API_KEY} version="weekly">
-      <CareMap />
+    <APIProvider apiKey={apiKey} version="weekly">
+      <CareMap onOpenKeySettings={() => { setInputKey(apiKey); setShowSettings(true); }} />
     </APIProvider>
   );
 }
 
-function CareMap() {
+function CareMap({ onOpenKeySettings }: { onOpenKeySettings?: () => void }) {
   const map = useMap();
   const placesLib = useMapsLibrary("places");
   const routesLib = useMapsLibrary("routes");
@@ -314,18 +454,31 @@ function CareMap() {
               <MapPin className="w-3.5 h-3.5" />
               {hasPermission ? "Device GPS Active" : "Fallback Search Anchor"}
             </span>
-            <button 
-              onClick={() => {
-                if (navigator.geolocation) {
-                  navigator.geolocation.getCurrentPosition((pos) => {
-                    setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                  });
-                }
-              }}
-              className="text-xs underline hover:text-indigo-300 pointer-events-auto"
-            >
-              Recenter
-            </button>
+            <div className="flex items-center gap-2">
+              {onOpenKeySettings && (
+                <button
+                  type="button"
+                  onClick={onOpenKeySettings}
+                  className="text-xs underline hover:text-indigo-300 pointer-events-auto flex items-center gap-1"
+                  title="Configure Google Maps API Key"
+                >
+                  <Key className="w-3 h-3" />
+                  Key
+                </button>
+              )}
+              <button 
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                      setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    });
+                  }
+                }}
+                className="text-xs underline hover:text-indigo-300 pointer-events-auto"
+              >
+                Recenter
+              </button>
+            </div>
           </div>
 
           {/* Quick Filters */}
@@ -456,7 +609,7 @@ function CareMap() {
             defaultZoom={zoom}
             center={mapCenter}
             mapId="DEMO_MAP_ID"
-            internalUsageAttributionIds={["gmp_mcp_codeassist_v1_aistudio"]}
+            internalUsageAttributionIds={["gmp_git_agentskills_v1"]}
             style={{ width: "100%", height: "100%" }}
             gestureHandling="greedy"
           >

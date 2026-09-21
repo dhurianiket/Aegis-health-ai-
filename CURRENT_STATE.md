@@ -1,6 +1,28 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXIX — September 21, 2026
+## Current Snapshot LXX — September 21, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Localized Care Map Google Maps Platform Key Resolution & Interactive Configuration**:
+  - 🗺️ **Root Cause & Production Secret Injection**:
+    - Identified that GitHub Actions (`.github/workflows/deploy.yml`) was omitting `GOOGLE_MAPS_PLATFORM_KEY` and `VITE_GOOGLE_MAPS_PLATFORM_KEY` during `npm run build`, causing the SPA deployed to Firebase Hosting (`aegishealthai.co.in/dashboard#caremap`) to build with an empty API key and display a non-interactive setup placeholder.
+    - Updated `.github/workflows/deploy.yml` to inject `GOOGLE_MAPS_PLATFORM_KEY` and `VITE_GOOGLE_MAPS_PLATFORM_KEY` from GitHub Secrets into `npm run build`, alongside public client form IDs (`VITE_FEEDBACK_FORM_ID`, `VITE_ADMIN_FEEDBACK_FORM_ID`, `VITE_VISIT_PREP_FORM_ID`, `VITE_GA_MEASUREMENT_ID`).
+  - 🔑 **Interactive In-App Key Management & LocalStorage Fallback ([`src/components/CareMap/CareMap.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/CareMap/CareMap.tsx))**:
+    - Replaced the hardcoded AI Studio instruction guide with an interactive, patient-grade Care Map Configuration card.
+    - Implemented `getStoredMapsKey()` supporting tiered key resolution: `localStorage` (`aegis_google_maps_key`) &rarr; `import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY` &rarr; `import.meta.env.GOOGLE_MAPS_PLATFORM_KEY` &rarr; `process.env`.
+    - Added direct API key input with instant launch capability, live validation, and key clearing.
+    - Added an unobtrusive "Key" settings button to the Care Map toolbar so users and developers can change or clear their key anytime.
+    - Provided authoritative links to Google Cloud Console Credentials and the free prototyping Maps Demo Key Quickstart.
+  - 🛡️ **Standards Compliance & Attribution**:
+    - Updated `<Map>` usage attribution ID to `internalUsageAttributionIds={["gmp_git_agentskills_v1"]}` per Google Maps Platform guidelines.
+    - Added `VITE_GOOGLE_MAPS_PLATFORM_KEY` and `GOOGLE_MAPS_PLATFORM_KEY` typings to [`src/vite-env.d.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/vite-env.d.ts).
+- **Verification & Quality**:
+  - New Test Suite: [`src/components/CareMap/__tests__/CareMap.test.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/CareMap/__tests__/CareMap.test.tsx) (**6/6 tests passed**).
+  - Vitest Test Suite: **61/61 test files passed, 588/588 tests passed (100%)**.
+  - TypeScript: **`npx tsc --noEmit` &rarr; 0 errors**.
+  - Production Build: **`npm run build` &rarr; 6.25s clean production bundle with 0 sourcemaps**.
+
+## Previous Snapshot LXIX — September 21, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Cloudflare Worker Targeted Placement & Instant Failover Resilience**:

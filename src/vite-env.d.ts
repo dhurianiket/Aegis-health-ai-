@@ -8,6 +8,9 @@ interface ImportMetaEnv {
   readonly VITE_CF_AIG_TOKEN?: string;
   readonly VITE_RECAPTCHA_SITE_KEY: string;
   readonly VITE_GA_MEASUREMENT_ID?: string;
+  /** Google Maps Platform API Key for Localized Care Map. */
+  readonly VITE_GOOGLE_MAPS_PLATFORM_KEY?: string;
+  readonly GOOGLE_MAPS_PLATFORM_KEY?: string;
   /** Base URL for aegishealthai-edge Worker (default https://api.aegishealthai.co.in). */
   readonly VITE_EDGE_API_URL?: string;
   /**
