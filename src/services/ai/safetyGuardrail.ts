@@ -18,6 +18,7 @@ const MANDATORY_DISCLAIMERS = [
 ];
 
 const FALLBACK_DISCLAIMER = "\n\n---\n*DISCLAIMER: This information is for educational purposes only and is not a medical diagnosis. Always consult your physician before making any changes to your treatment plan.*";
+const PAEDIATRIC_DISCLAIMER = "\n\n---\n*PAEDIATRIC SAFETY NOTICE (DPDP Act 2023 Sec 9): Paediatric reference ranges and dosages vary strictly by age and weight. Never alter paediatric treatment without direct guidance from a certified paediatrician.*";
 
 export interface SafetyCheckResult {
   passed: boolean;
@@ -25,11 +26,15 @@ export interface SafetyCheckResult {
   flags: string[];
 }
 
+export interface SafetyCheckOptions {
+  isMinor?: boolean;
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export const runSafetyCheck = (content: string): SafetyCheckResult => {
+export const runSafetyCheck = (content: string, options?: SafetyCheckOptions): SafetyCheckResult => {
   try {
     const flags: string[] = [];
     let modifiedContent = content;
@@ -51,6 +56,15 @@ export const runSafetyCheck = (content: string): SafetyCheckResult => {
     if (!hasDisclaimer) {
       flags.push("Missing mandatory disclaimer");
       modifiedContent += FALLBACK_DISCLAIMER;
+    }
+
+    if (options?.isMinor) {
+      const hasPaediatricNote =
+        modifiedContent.toLowerCase().includes("paediatric") ||
+        modifiedContent.toLowerCase().includes("pediatric");
+      if (!hasPaediatricNote) {
+        modifiedContent += PAEDIATRIC_DISCLAIMER;
+      }
     }
 
     return {

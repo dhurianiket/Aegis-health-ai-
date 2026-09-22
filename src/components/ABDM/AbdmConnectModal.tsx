@@ -23,7 +23,8 @@ import {
   Building2,
   Clock,
   Eye,
-  AlertCircle
+  AlertCircle,
+  Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
@@ -33,6 +34,7 @@ import {
   ConsentRequest,
   ConsentArtifact,
   EncryptedBundleTransfer,
+  DataProvenanceReceipt,
   getAbdmProfile,
   saveAbdmProfile,
   requestAbdmOtp,
@@ -48,6 +50,9 @@ import {
   simulateConsentRevocation,
   simulateEncryptedDataTransfer,
   formatAbhaNumber,
+  generateDataProvenanceReceipt,
+  downloadProvenanceReceiptJson,
+  revokeAndWipeCareContext,
 } from '../../services/abdmService';
 import { downloadFhirJson } from '../../services/fhirService';
 
@@ -86,6 +91,7 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
   const [simulationStep, setSimulationStep] = useState<number>(0);
 
   // Common UI State
+  const [provenanceReceipt, setProvenanceReceipt] = useState<DataProvenanceReceipt | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -240,6 +246,46 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
       setFeedback({ type: 'info', message: `Consent ${reqId} revoked.` });
     } catch (err: any) {
       setFeedback({ type: 'error', message: err.message || 'Failed to revoke consent.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewProvenanceReceipt = (ctx: CareContext) => {
+    if (!profile) return;
+    const matchingConsent = consentRequests.find((r) => r.status === 'GRANTED');
+    const receipt = generateDataProvenanceReceipt(ctx, profile, matchingConsent);
+    setProvenanceReceipt(receipt);
+  };
+
+  const handleViewConsentReceipt = (req: ConsentRequest) => {
+    if (!profile) return;
+    const dummyContext: CareContext = {
+      referenceNumber: `CC-CONSENT-${req.id}`,
+      display: req.purpose.text,
+      type: (req.hiTypes[0] as any) || 'DiagnosticReport',
+      date: req.createdAt,
+      hipId: req.hip?.id || 'IN2710001824',
+      hipName: req.hip?.name || 'Aegis Health Intelligence Clinic',
+      status: 'linked',
+      recordCount: req.hiTypes.length,
+    };
+    const receipt = generateDataProvenanceReceipt(dummyContext, profile, req);
+    setProvenanceReceipt(receipt);
+  };
+
+  const handleRevokeAndWipeFromReceipt = async (refNumber: string) => {
+    setLoading(true);
+    try {
+      const res = await revokeAndWipeCareContext(userId, refNumber);
+      setContexts(res.updatedContexts);
+      setProvenanceReceipt(null);
+      setFeedback({
+        type: 'success',
+        message: `Context ${refNumber} unlinked and cryptographically erased from local cache.`,
+      });
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Failed to wipe context.' });
     } finally {
       setLoading(false);
     }
@@ -683,6 +729,20 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
                 )}
               </div>
 
+              {/* Zero Ambient Capture & DPDP Provenance Trust Banner */}
+              <div className="p-3.5 bg-gradient-to-r from-emerald-950/20 via-indigo-950/30 to-black/30 border border-emerald-500/30 rounded-2xl flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="text-xs space-y-0.5">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    Zero Ambient Ingestion & DPDP Act 2023 Provenance
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">VERIFIED VOLUNTARY</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Aegis never performs background hospital scraping or sends unsolicited WhatsApp/SMS messages. Every record requires explicit consent and includes a verifiable cryptographic provenance receipt.
+                  </p>
+                </div>
+              </div>
+
               {!profile && (
                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center gap-3 text-amber-300 text-xs">
                   <AlertCircle className="w-5 h-5 shrink-0" />
@@ -728,6 +788,16 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
                       >
                         {ctx.status}
                       </span>
+                      {profile && ctx.status === 'linked' && (
+                        <button
+                          onClick={() => handleViewProvenanceReceipt(ctx)}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition-all flex items-center gap-1.5"
+                          title="View cryptographic data provenance receipt"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                          Provenance Receipt
+                        </button>
+                      )}
                       {profile && (
                         <button
                           onClick={() => handleToggleContext(ctx)}
@@ -830,17 +900,26 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
                     )}
 
                     {req.status === 'GRANTED' && (
-                      <div className="flex items-center justify-between pt-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2">
                         <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Cryptographic ECDSA Signature Generated
                         </span>
-                        <button
-                          onClick={() => handleRevokeConsent(req.id)}
-                          disabled={loading}
-                          className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-xl text-xs font-bold transition-colors"
-                        >
-                          Revoke Consent
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewConsentReceipt(req)}
+                            className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                            Provenance Receipt
+                          </button>
+                          <button
+                            onClick={() => handleRevokeConsent(req.id)}
+                            disabled={loading}
+                            className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-xl text-xs font-bold transition-colors"
+                          >
+                            Revoke Consent
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -985,6 +1064,123 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
           </button>
         </div>
       </motion.div>
+
+      {/* DATA PROVENANCE RECEIPT MODAL */}
+      <AnimatePresence>
+        {provenanceReceipt && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-xl bg-slate-900 border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-7 space-y-5"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-base font-bold text-white">Data Provenance Receipt</h4>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold">
+                        {provenanceReceipt.receiptId}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted">
+                      ABDM Sandbox v3 & DPDP Act 2023 Statutory Audit Trail
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setProvenanceReceipt(null)}
+                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Provenance Ledger Details */}
+              <div className="space-y-3 bg-black/40 p-4 rounded-2xl border border-white/10 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-white/5">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Patient ABHA</span>
+                    <div className="text-white font-mono font-semibold">{provenanceReceipt.patientAbha}</div>
+                    <div className="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3" /> {provenanceReceipt.verificationMode}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Originating Facility</span>
+                    <div className="text-white font-semibold truncate">{provenanceReceipt.originatingFacility.name}</div>
+                    <div className="text-[10px] text-indigo-300 font-mono">HIP ID: {provenanceReceipt.originatingFacility.hipId}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-white/5">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Clinical Care Context</span>
+                    <div className="text-white font-medium truncate">{provenanceReceipt.careContextRef.display}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">Ref: {provenanceReceipt.careContextRef.referenceNumber}</div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Consent Artefact ID</span>
+                    <div className="text-white font-mono">{provenanceReceipt.consentArtifactId}</div>
+                    <div className="text-[10px] text-amber-300">Mode: {provenanceReceipt.permittedAccessMode} ONLY</div>
+                  </div>
+                </div>
+
+                {/* Guarantees */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-start gap-2 text-[11px] text-slate-300">
+                    <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><strong>Zero AI Retention:</strong> {provenanceReceipt.aiTrainingPolicy}</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-[11px] text-slate-300">
+                    <ShieldAlert className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+                    <span><strong>Anti-Surveillance Guarantee:</strong> {provenanceReceipt.zeroAmbientPolicy}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Signature & Checksum */}
+              <div className="p-3 bg-black/60 rounded-xl border border-white/5 font-mono text-[10px] space-y-1 text-slate-400">
+                <div className="flex items-center justify-between">
+                  <span>Digital Signature:</span>
+                  <span className="text-emerald-400 truncate max-w-[260px]">{provenanceReceipt.digitalSignature}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>SHA-256 Checksum:</span>
+                  <span className="text-indigo-300 truncate max-w-[260px]">{provenanceReceipt.checksum}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <button
+                  onClick={() => handleRevokeAndWipeFromReceipt(provenanceReceipt.careContextRef.referenceNumber)}
+                  disabled={loading}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Revoke & Wipe Context
+                </button>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => downloadProvenanceReceiptJson(provenanceReceipt)}
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download Audit JSON
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

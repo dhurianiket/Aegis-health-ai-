@@ -144,3 +144,36 @@ export interface LinkContextResponse {
   updatedCount: number;
   linkedContexts: CareContext[];
 }
+
+export interface DataProvenanceReceipt {
+  receiptId: string;
+  timestamp: string;
+  patientAbha: string;
+  patientName: string;
+  verificationMode: string;
+  originatingFacility: {
+    name: string;
+    hipId: string;
+    type?: string;
+  };
+  careContextRef: {
+    referenceNumber: string;
+    display: string;
+    type: CareContextType;
+    recordCount?: number;
+    date: string;
+  };
+  consentArtifactId: string;
+  consentPurpose: {
+    code: string;
+    text: string;
+  };
+  permittedAccessMode: AccessMode;
+  validFrom: string;
+  validUntil: string;
+  digitalSignature: string;
+  checksum: string;
+  dpdpCompliance: string;
+  zeroAmbientPolicy: string;
+  aiTrainingPolicy: string;
+}

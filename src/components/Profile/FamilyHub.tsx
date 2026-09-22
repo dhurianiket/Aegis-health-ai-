@@ -15,9 +15,11 @@ import {
   Share2,
   Loader2,
   ChevronDown,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
+import { isMinor, calculateAge } from "../../services/dpdpPaediatricService";
 import { getFamilyRelations, db } from "../../lib/firebase/firestore";
 import {
   collection,
@@ -202,6 +204,72 @@ export default function FamilyHub() {
 
             {/* Right Column: Connection List */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Family Profiles & Paediatric Dependents */}
+              <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-indigo-400" />
+                    <h4 className="text-xs font-black text-slate-200 uppercase tracking-widest">
+                      Family Profiles & Dependents ({profiles.length})
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold">
+                    DPDP ACT 2023 AUDITED
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {profiles.map((p) => {
+                    const minor = isMinor(p.dob);
+                    const age = calculateAge(p.dob);
+                    return (
+                      <div
+                        key={p.id}
+                        className={`p-4 rounded-2xl border transition-all ${
+                          minor
+                            ? "bg-amber-950/10 border-amber-500/30"
+                            : "bg-black/20 border-white/5"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="text-sm font-bold text-white truncate">{p.fullName || p.name}</div>
+                            <div className="text-xs text-slate-400 mt-0.5">
+                              {p.dob ? `DOB: ${p.dob}${age !== null ? ` (${age} yrs)` : ''}` : 'DOB not specified'}
+                            </div>
+                          </div>
+                          {minor && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0 flex items-center gap-1">
+                              <ShieldCheck className="w-3 h-3 text-amber-400" />
+                              Child Profile
+                            </span>
+                          )}
+                        </div>
+
+                        {minor && (
+                          <div className="mt-3 pt-2.5 border-t border-amber-500/20 space-y-1 text-[11px]">
+                            {p.paediatricConsent?.guardianConsentGiven ? (
+                              <div className="text-emerald-400 flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Guardian Verified: <strong>{p.paediatricConsent.guardianName}</strong> ({p.paediatricConsent.guardianRelationship})</span>
+                              </div>
+                            ) : (
+                              <div className="text-amber-400 flex items-center gap-1">
+                                <AlertCircle className="w-3.5 h-3.5" />
+                                <span>Pending DPDP Sec 9 Guardian Verification</span>
+                              </div>
+                            )}
+                            <div className="text-[10px] text-slate-400">
+                              Zero AI Training • Zero Tracking • 72h Erasure SLA
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between px-4">
                 <h4 className="text-xs font-black text-slate-300 uppercase tracking-widest">
                   Active Connections

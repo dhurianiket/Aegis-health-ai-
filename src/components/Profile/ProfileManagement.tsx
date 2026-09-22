@@ -8,7 +8,10 @@ import {
   X,
   AlertTriangle,
   Save,
-  Activity
+  Activity,
+  ShieldCheck,
+  Check,
+  Clock,
 } from "lucide-react";
 import { useProfile } from "../../context/ProfileContext";
 import { Gender, UserProfile } from "../../types/medical";
@@ -19,6 +22,12 @@ import { auth } from "../../lib/firebase/config";
 import { version } from "../../../package.json";
 import CycleTrackingSettings from "./CycleTrackingSettings";
 import AutoSizeTextarea from "../Form/AutoSizeTextarea";
+import {
+  isMinor,
+  calculateAge,
+  createPaediatricConsent,
+  request72HourErasure,
+} from "../../services/dpdpPaediatricService";
 
 export default function ProfileManagement() {
   const {
@@ -56,6 +65,14 @@ export default function ProfileManagement() {
   const [editError, setEditError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+
+  // DPDP Act 2023 Section 9 Paediatric State
+  const [editGuardianName, setEditGuardianName] = useState("");
+  const [editGuardianRelationship, setEditGuardianRelationship] = useState<
+    'Parent' | 'Lawful Guardian' | 'Legal Representative'
+  >('Parent');
+  const [editGuardianConsentGiven, setEditGuardianConsentGiven] = useState(false);
+  const [erasureFeedback, setErasureFeedback] = useState<string | null>(null);
 
   // BMI Calculation Helper
   const calculateBMI = (weight: number | "", height: number | "") => {
@@ -103,12 +120,33 @@ export default function ProfileManagement() {
     setEditWeight(p.weight || "");
     setEditGoogleFormId(p.googleFormId || "");
     setEditDoctorNotes(p.clinicalNotes || p.doctorNotes?.join("\n") || "");
+    setEditGuardianName(p.paediatricConsent?.guardianName || "");
+    setEditGuardianRelationship(p.paediatricConsent?.guardianRelationship || 'Parent');
+    setEditGuardianConsentGiven(p.paediatricConsent?.guardianConsentGiven || false);
+    setErasureFeedback(null);
     setEditError("");
   };
 
   const handleUpdate = async (id: string) => {
     try {
       setIsSaving(true);
+      setEditError("");
+
+      let paediatricConsent = profiles.find((pr) => pr.id === id)?.paediatricConsent;
+      if (isMinor(editDob)) {
+        if (!editGuardianConsentGiven || !editGuardianName.trim()) {
+          setEditError("Under DPDP Act 2023 Section 9, diagnostic records for minors require verified parental consent.");
+          setIsSaving(false);
+          return;
+        }
+        paediatricConsent = createPaediatricConsent(
+          editGuardianName,
+          editGuardianRelationship,
+          editFullName,
+          editDob
+        );
+      }
+
       const updates: Partial<UserProfile> = {
         fullName: editFullName,
         name: editFullName,
@@ -121,6 +159,7 @@ export default function ProfileManagement() {
         clinicalNotes: editDoctorNotes,
         googleFormId: editGoogleFormId,
         doctorNotes: editDoctorNotes.split("\n").filter(Boolean),
+        paediatricConsent,
       };
       await updateProfile(id, updates);
       setIsSaving(false);
@@ -295,6 +334,104 @@ export default function ProfileManagement() {
                       </select>
                     </div>
                   </div>
+
+                  {/* DPDP Act 2023 Section 9 Paediatric Privacy Section */}
+                  {isMinor(editDob) && (
+                    <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
+                        <div>
+                          <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                            DPDP Act 2023 Section 9 — Paediatric Privacy Guardrail
+                          </h4>
+                          <p className="text-[11px] text-slate-300">
+                            Age {calculateAge(editDob)} is legally classified as a child. Indian law mandates verifiable parental/guardian consent before processing diagnostic health data.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                            Parent / Lawful Guardian Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            value={editGuardianName}
+                            onChange={(e) => setEditGuardianName(e.target.value)}
+                            placeholder="e.g. Ramesh Sharma"
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                            Relationship *
+                          </label>
+                          <select
+                            value={editGuardianRelationship}
+                            onChange={(e) => setEditGuardianRelationship(e.target.value as any)}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-xs"
+                          >
+                            <option value="Parent">Parent</option>
+                            <option value="Lawful Guardian">Lawful Guardian</option>
+                            <option value="Legal Representative">Legal Representative</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <label className="flex items-start gap-2.5 pt-1 text-xs text-slate-200 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={editGuardianConsentGiven}
+                          onChange={(e) => setEditGuardianConsentGiven(e.target.checked)}
+                          className="mt-0.5 rounded border-amber-400/40 text-amber-500 focus:ring-amber-400"
+                        />
+                        <span className="text-[11px] leading-relaxed">
+                          I verify as the parent/lawful guardian that I consent to secure health data management under <strong>Section 9 of the DPDP Act 2023</strong>. I acknowledge this profile is strictly barred from AI model training, commercial profiling, and targeted tracking.
+                        </span>
+                      </label>
+
+                      {/* Statutory Protections Guarantee Banner */}
+                      <div className="p-2.5 bg-black/40 rounded-lg border border-white/5 space-y-1 text-[10px] text-slate-300">
+                        <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                          <Check className="w-3.5 h-3.5" /> Zero AI Training: Never ingested for machine learning.
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                          <Check className="w-3.5 h-3.5" /> Zero Behavioral Tracking: Marketing and profiling disabled.
+                        </div>
+                        <div className="flex items-center gap-1.5 text-indigo-300 font-semibold">
+                          <Clock className="w-3.5 h-3.5" /> 72-Hour Hard-Erasure Right: 1-click statutory data purge.
+                        </div>
+                      </div>
+
+                      {/* 72-Hour Erasure Action */}
+                      {p.paediatricConsent?.guardianConsentGiven && (
+                        <div className="pt-2 flex items-center justify-between border-t border-amber-500/20 text-xs">
+                          <span className="text-[11px] text-slate-400">
+                            Consent ID: <span className="font-mono text-amber-300">{p.paediatricConsent.guardianConsentId}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!auth.currentUser?.uid) return;
+                              const res = await request72HourErasure(auth.currentUser.uid, p.id);
+                              setErasureFeedback(`Statutory 72-hour erasure scheduled (Ref: ${res.receiptId}). Data will be fully purged by ${new Date(res.scheduledEraseAt).toLocaleString()}.`);
+                            }}
+                            className="px-2.5 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-md transition-colors"
+                          >
+                            Request 72h Data Purge
+                          </button>
+                        </div>
+                      )}
+
+                      {erasureFeedback && (
+                        <div className="p-2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">
+                          {erasureFeedback}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <label className="block text-xs text-[var(--color-text-muted)] mb-1">Blood Type</label>
@@ -374,11 +511,23 @@ export default function ProfileManagement() {
               ) : (
                 <div>
                   <h3
-                    className="text-xl font-semibold text-[var(--color-text)] truncate pr-6 mb-2"
+                    className="text-xl font-semibold text-[var(--color-text)] truncate pr-6 mb-1"
                     title={p.fullName || p.name}
                   >
                     {p.fullName || p.name}
                   </h3>
+
+                  {isMinor(p.dob) && (
+                    <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                      DPDP Paediatric Protected ({calculateAge(p.dob)} yrs)
+                    </div>
+                  )}
+                  {p.paediatricConsent?.guardianName && (
+                    <div className="text-[11px] text-slate-400 mb-1">
+                      Guardian: <span className="text-white font-medium">{p.paediatricConsent.guardianName}</span> ({p.paediatricConsent.guardianRelationship})
+                    </div>
+                  )}
                   
                   <div className="flex flex-col gap-2 mt-3">
                      <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">

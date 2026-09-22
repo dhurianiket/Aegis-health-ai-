@@ -50,6 +50,19 @@ export interface CycleLog {
   updatedAt?: string;
 }
 
+export interface PaediatricConsent {
+  isMinor: boolean;
+  guardianName: string;
+  guardianRelationship: 'Parent' | 'Lawful Guardian' | 'Legal Representative';
+  guardianConsentGiven: boolean;
+  guardianConsentTimestamp?: string;
+  guardianConsentId?: string;
+  strictNoAiTraining: boolean;
+  noBehavioralTracking: boolean;
+  dataRetentionPolicy: '72h_erasure_on_demand' | 'standard_encrypted';
+  erasureRequestedAt?: string;
+}
+
 export interface UserProfile {
   id: string;
   userId: string;
@@ -69,6 +82,7 @@ export interface UserProfile {
   labValues?: LabResult[];
   doctorNotes?: string[];
   reproductiveProfile?: ReproductiveProfile;
+  paediatricConsent?: PaediatricConsent;
   createdAt: string;
 }
 

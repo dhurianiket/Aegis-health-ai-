@@ -202,7 +202,7 @@
   - *Imports*: `../../types/medical`, `../../lib/firebase/firestore`, `../../context/AuthContext`
 - **[`src/components/Profile/FamilyHub.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Profile/FamilyHub.tsx)**
   - *Exports*: `FamilyHub`, `default`
-  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../services/ai/geneticService`, `../../types/medical`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../services/dpdpPaediatricService`, `../../lib/firebase/firestore`, `../../services/ai/geneticService...`
 - **[`src/components/Profile/ProfileManagement.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Profile/ProfileManagement.tsx)**
   - *Exports*: `ProfileManagement`, `default`
   - *Imports*: `../../context/ProfileContext`, `../../types/medical`, `../../lib/validation`, `../../lib/logger`, `../../services/usageService...`
@@ -275,7 +275,7 @@
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
   - *Imports*: `./config`, `../../utils/dateUtils`, `../../types/medical`, `../../types/wearables`
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
-  - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`
+  - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`, `generateDataProvenanceReceipt`, `downloadProvenanceReceiptJson`
   - *Imports*: `../types/abdm`, `./fhirService`
 - **[`src/services/ai/coachService.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.test.ts)**
   - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
@@ -302,7 +302,7 @@
 - **[`src/services/ai/safetyGuardrail.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/safetyGuardrail.test.ts)**
   - *Imports*: `./safetyGuardrail`
 - **[`src/services/ai/safetyGuardrail.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/safetyGuardrail.ts)**
-  - *Exports*: `SafetyCheckResult`, `runSafetyCheck`
+  - *Exports*: `SafetyCheckResult`, `SafetyCheckOptions`, `runSafetyCheck`
 - **[`src/services/ai/specialists/cardiologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/cardiologist.ts)**
   - *Exports*: `getCardiologistPrompt`
 - **[`src/services/ai/specialists/dermatologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/dermatologist.ts)**
@@ -351,6 +351,9 @@
 - **[`src/services/couponService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/couponService.ts)**
   - *Exports*: `CouponData`, `RedeemCouponResult`
   - *Imports*: `../lib/firebase/config`, `./usageService`
+- **[`src/services/dpdpPaediatricService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/dpdpPaediatricService.ts)**
+  - *Exports*: `calculateAge`, `isMinor`, `createPaediatricConsent`, `validatePaediatricConsent`, `getPaediatricSafetyNotice`
+  - *Imports*: `../types/medical`
 - **[`src/services/drugInteractionService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/drugInteractionService.ts)**
   - *Exports*: `RxCuiMatch`, `AdverseEventReaction`, `BlackBoxWarning`, `ClinicalCitation`, `OpenFdaAdverseEventSummary`, `EnrichedInteractionPair`, `EnrichedInteractionResult`, `CURATED_RXCUI_REGISTRY`, `CURATED_FDA_KNOWLEDGE_BASE`, `cleanDrugQuery`
   - *Imports*: `../types/health`, `./drugLabEngine`
@@ -450,7 +453,7 @@
 
 ### 📐 TypeScript Schemas & Types
 - **[`src/types/abdm.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/abdm.ts)**
-  - *Exports*: `AbdmAuthMode`, `AbhaProfile`, `CareContextType`, `CareContext`, `ConsentStatus`, `HIType`, `AccessMode`, `ConsentPurpose`, `ConsentPermission`, `ConsentRequest`, `ConsentArtifact`, `KeyMaterial`, `EncryptedBundleTransfer`, `AbdmAuthResponse`, `LinkContextResponse`
+  - *Exports*: `AbdmAuthMode`, `AbhaProfile`, `CareContextType`, `CareContext`, `ConsentStatus`, `HIType`, `AccessMode`, `ConsentPurpose`, `ConsentPermission`, `ConsentRequest`, `ConsentArtifact`, `KeyMaterial`, `EncryptedBundleTransfer`, `AbdmAuthResponse`, `LinkContextResponse`, `DataProvenanceReceipt`
 - **[`src/types/ai.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/ai.ts)**
   - *Exports*: `ChatRole`, `ChatMessage`, `Conversation`, `SpecialistId`, `SpecialistProfile`, `SpecialistConsultation`, `ClinicalReferral`, `CoachSessionSummary`, `PatientContext`
   - *Imports*: `./medical`, `./alerts`, `./wearables`
@@ -463,7 +466,7 @@
 - **[`src/types/health.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/health.ts)**
   - *Exports*: `LabValue`, `Medication`, `DrugInteraction`, `HealthProfile`, `Appointment`, `HealthInsight`, `LabObservation`, `LabReminder`
 - **[`src/types/medical.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/medical.ts)**
-  - *Exports*: `Gender`, `DocumentType`, `LabStatus`, `MedicationStatus`, `ReproductiveProfile`, `CycleLog`, `UserProfile`, `MedicalDocument`, `LabResult`, `Medication`, `SpecialistInsight`, `HealthScore`, `Specialty`, `SBARSummary`, `ReportHistoryEntry`
+  - *Exports*: `Gender`, `DocumentType`, `LabStatus`, `MedicationStatus`, `ReproductiveProfile`, `CycleLog`, `PaediatricConsent`, `UserProfile`, `MedicalDocument`, `LabResult`, `Medication`, `SpecialistInsight`, `HealthScore`, `Specialty`, `SBARSummary`, `ReportHistoryEntry`
 - **[`src/types/ui.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/ui.ts)**
   - *Exports*: `BaseComponentProps`, `CardProps`, `ButtonProps`, `StatusBadgeProps`
 - **[`src/types/wearables.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/types/wearables.ts)**
