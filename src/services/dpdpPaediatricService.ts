@@ -116,7 +116,7 @@ export async function request72HourErasure(
 ): Promise<{ success: boolean; scheduledEraseAt: string; receiptId: string }> {
   // 72 hours from current moment
   const scheduledEraseAt = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
-  const receiptId = `ERASE-DPDP-${Date.now().toString().slice(-6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  const receiptId = `ERASE-DPDP-${Date.now().toString().slice(-6)}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
 
   // Log in LocalStorage for client-side audit compliance
   try {
