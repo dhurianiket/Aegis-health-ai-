@@ -2,8 +2,9 @@
  * Gemini client routed through Cloudflare Worker `aegishealthai-edge`.
  * POST https://api.aegishealthai.co.in/api/ai/generate
  *
- * Auth v1: Authorization Bearer VITE_AEGIS_EDGE_BEARER (interim shared secret —
- * still extractable from the SPA bundle; Firebase ID-token verify is the follow-up).
+ * Auth (interim): Authorization Bearer VITE_AEGIS_EDGE_BEARER when set — must match
+ * Worker EDGE_SHARED_SECRET. Firebase ID tokens are used only as fallback when the
+ * shared bearer is unset; the Worker does not verify Firebase JWTs yet.
  * Never embed GEMINI_API_KEY or EDGE secrets in source / commits.
  */
 
@@ -240,12 +241,15 @@ export async function callEdgeGenerate(
   fetchImpl: typeof fetch = fetch,
   baseUrlOverride?: string,
 ): Promise<GeminiGenerateResponse> {
-  const bearer = getEdgeBearer();
+  const bearer = getEdgeBearer().trim();
+  // Prefer shared edge bearer while the Worker only accepts EDGE_SHARED_SECRET.
+  // Firebase JWT is fallback-only until FlareOps adds ID-token verification.
   let authBearer = bearer;
-
-  const idToken = await getAuthToken();
-  if (idToken) {
-    authBearer = idToken;
+  if (!authBearer) {
+    const idToken = await getAuthToken();
+    if (idToken) {
+      authBearer = idToken;
+    }
   }
 
   if (!authBearer) {

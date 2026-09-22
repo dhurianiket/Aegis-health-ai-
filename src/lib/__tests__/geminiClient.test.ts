@@ -276,7 +276,7 @@ describe('geminiClient edge proxy + model normalization', () => {
   });
 
   describe('JWT Token Provider & Auth Isolation', () => {
-    it('uses user ID token and does not leak X-Aegis-Shared-Bearer', async () => {
+    it('prefers shared edge bearer over Firebase ID token (Worker accepts EDGE_SHARED_SECRET only)', async () => {
       const mod = await import('../geminiClient');
       mod.setAuthTokenProvider(async () => 'user-firebase-id-token-xyz');
 
@@ -285,15 +285,19 @@ describe('geminiClient edge proxy + model normalization', () => {
 
       expect(mockFetch).toHaveBeenCalled();
       const lastCallInit = mockFetch.mock.calls[0][1];
-      expect(lastCallInit.headers.Authorization).toBe('Bearer user-firebase-id-token-xyz');
+      expect(lastCallInit.headers.Authorization).toBe('Bearer test-edge-bearer');
       expect(lastCallInit.headers['X-Aegis-Shared-Bearer']).toBeUndefined();
 
       mod.setAuthTokenProvider(null);
     });
 
-    it('allows generation when user token is present even if VITE_AEGIS_EDGE_BEARER is empty', async () => {
+    it('falls back to Firebase ID token when VITE_AEGIS_EDGE_BEARER is empty', async () => {
+      vi.resetModules();
       vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
+      vi.stubEnv('VITE_EDGE_API_URL', 'https://api.aegishealthai.co.in');
+      mockFetch.mockClear();
       const mod = await import('../geminiClient');
+      mod.__setGeminiFetchForTests(mockFetch as unknown as typeof fetch);
       mod.setAuthTokenProvider(async () => 'user-id-token-without-shared-secret');
 
       const ai = mod.getAI();
