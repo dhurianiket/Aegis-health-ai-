@@ -29,4 +29,28 @@ describe("AI Safety Guardrails", () => {
     expect(result.flags.length).toBe(0);
     expect(result.modifiedContent).toBe(input);
   });
+
+  it("fails closed on internal errors (passed=false + disclaimer)", () => {
+    const original = String.prototype.toLowerCase;
+    let result: ReturnType<typeof runSafetyCheck>;
+    try {
+      String.prototype.toLowerCase = () => {
+        throw new Error("boom");
+      };
+      result = runSafetyCheck("Your glucose looks high.");
+    } finally {
+      String.prototype.toLowerCase = original;
+    }
+    expect(result!.passed).toBe(false);
+    expect(result!.flags).toContain("Internal Safety Filter Error");
+    expect(result!.modifiedContent).toContain("DISCLAIMER");
+  });
+
+  it("flags definitive diagnosis phrasing", () => {
+    const result = runSafetyCheck(
+      "You have been diagnosed with hypothyroidism. Not a medical diagnosis.",
+    );
+    expect(result.passed).toBe(false);
+    expect(result.flags.some((f) => f.includes("You have been diagnosed"))).toBe(true);
+  });
 });

@@ -182,6 +182,33 @@ describe('geminiClient edge proxy + model normalization', () => {
     });
   });
 
+
+  describe('Abort and request metadata', () => {
+    it('does not PoP-retry when the request is aborted', async () => {
+      const abortErr = new DOMException('The operation was aborted.', 'AbortError');
+      mockFetch.mockRejectedValueOnce(abortErr);
+
+      const ai = getAI();
+      await expect(
+        ai.models.generateContent({ model: 'gemini-3.6-flash', contents: 'hello' }),
+      ).rejects.toMatchObject({ name: 'EdgeGeminiError', status: 408 });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const headers = (mockFetch.mock.calls[0][1] as RequestInit).headers as Record<string, string>;
+      expect(headers['X-Request-Id']).toBeTruthy();
+    });
+
+    it('does not treat clinical "location" prose as a routing error', async () => {
+      const { isLocationRoutingError } = await import('../geminiClient');
+      expect(
+        isLocationRoutingError({ message: 'Pain location is the lower abdomen' }),
+      ).toBe(false);
+      expect(
+        isLocationRoutingError({ message: 'User location is not supported for the API use.' }),
+      ).toBe(true);
+    });
+  });
+
   describe('Anycast Location Routing and Network Failover Resilience', () => {
     it('seamlessly retries and switches to workers.dev fallback when edge returns location error', async () => {
       mockFetch
