@@ -402,7 +402,7 @@
 - **[`src/services/sourceGroundedService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/sourceGroundedService.ts)**
   - *Exports*: `MedicalSource`, `getSourceForMarker`, `UrgencyInfo`, `getUrgencyAndNextStep`, `ClinicalGuideline`, `CLINICAL_GUIDELINES`, `lookupRelevantGuidelines`, `buildGuidelinePromptAugmentation`
 - **[`src/services/uploadPipeline.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/uploadPipeline.ts)**
-  - *Exports*: `executeFullUploadPipeline`
+  - *Exports*: `UploadPipelineResult`, `executeFullUploadPipeline`
   - *Imports*: `./ai/promptFramework`, `../lib/firebase/firestore`, `../utils/trendAnalysis`, `./alertService`, `../types/medical...`
 - **[`src/services/usageService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/usageService.ts)**
   - *Exports*: `UsageData`, `SubscriptionPlanId`, `UserSubscription`, `getUserSubscription`, `updateUserSubscription`, `checkCanUploadReport`, `getEstCost`, `markUserActive`, `trackUsage`, `trackStorageUsage`, `getUserUsageStats`, `getAllUsersUsage`, `syncGlobalStatsLive`
@@ -473,7 +473,7 @@
 - **[`src/lib/auditLogger.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/auditLogger.ts)**
   - *Imports*: `./firebase/config`
 - **[`src/lib/geminiClient.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiClient.ts)**
-  - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `getEdgeApiBaseUrl`, `getEdgeBearer`, `normalizeModel`, `isLocationRoutingError`, `isNetworkOrRoutingError`, `normalizeSystemInstruction`, `EdgeGeminiError`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `__setGeminiFetchForTests`, `getAI`, `default`
+  - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `getEdgeApiBaseUrl`, `isEdgeConfigured`, `getEdgeBearer`, `normalizeModel`, `isLocationRoutingError`, `isNetworkOrRoutingError`, `normalizeSystemInstruction`, `EdgeGeminiError`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `__setGeminiFetchForTests`, `getAI`, `default`
 - **[`src/lib/geminiUtils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiUtils.ts)**
   - *Exports*: `Type`
   - *Imports*: `./geminiClient`
