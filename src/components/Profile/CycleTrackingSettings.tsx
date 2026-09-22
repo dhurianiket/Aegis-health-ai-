@@ -123,7 +123,7 @@ export default function CycleTrackingSettings({ profile }: { profile: UserProfil
             type="number" 
             value={cycleLength}
             onChange={e => setCycleLength(parseInt(e.target.value) || 28)}
-            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
+            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text)] rounded-xl px-4 py-3 text-sm focus-visible:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
           />
         </div>
         <div>
@@ -134,7 +134,7 @@ export default function CycleTrackingSettings({ profile }: { profile: UserProfil
             type="number" 
             value={periodLength}
             onChange={e => setPeriodLength(parseInt(e.target.value) || 5)}
-            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
+            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text)] rounded-xl px-4 py-3 text-sm focus-visible:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
           />
         </div>
       </div>

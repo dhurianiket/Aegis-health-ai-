@@ -517,7 +517,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={`Message ${activeSpecProfile.displayName}...`}
             aria-label={`Message ${activeSpecProfile.displayName}`}
-            className="w-full bg-slate-100 dark:bg-[#1C1C1E] border border-slate-300 dark:border-[#3C3C3E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all disabled:opacity-50 shadow-sm"
+            className="w-full bg-slate-100 dark:bg-[#1C1C1E] border border-slate-300 dark:border-[#3C3C3E] rounded-full py-4 pl-6 pr-14 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all disabled:opacity-50 shadow-sm"
           />
           <button
             type="submit"
@@ -571,7 +571,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search specialists, expertise, symptoms..."
               aria-label="Search specialists"
-              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-2.5 pl-9 pr-8 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all shadow-sm"
+              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-2.5 pl-9 pr-8 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus-visible:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all shadow-sm"
             />
             {searchQuery && (
               <button

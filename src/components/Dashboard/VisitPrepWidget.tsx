@@ -215,7 +215,7 @@ Format as a clean, highly structured Markdown document with:
                            value={questions}
                            onChange={(e: any) => setQuestions(e.target.value)}
                            placeholder="e.g., Is this dosage of Lisinopril safe to continue? When should I retest?"
-                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none shadow-sm"
+                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus:ring-indigo-500/50 resize-none shadow-sm"
                            minLines={2}
                         />
                      </div>
@@ -228,7 +228,7 @@ Format as a clean, highly structured Markdown document with:
                            value={onsetNotes}
                            onChange={(e: any) => setOnsetNotes(e.target.value)}
                            placeholder="e.g., Symptoms have been mostly in the evening. Slight chest tightness."
-                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none shadow-sm"
+                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-900 dark:text-slate-100 font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus:ring-indigo-500/50 resize-none shadow-sm"
                            minLines={1}
                         />
                      </div>

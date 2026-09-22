@@ -336,7 +336,7 @@ function CareMap() {
               aria-label="Search local clinics and laboratories"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[var(--color-bg)] text-theme placeholder-slate-400 border border-[var(--color-border)] rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-[var(--color-bg)] text-theme placeholder-slate-400 border border-[var(--color-border)] rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus-visible:ring-2 focus:ring-indigo-500"
             />
             <button
               type="submit"

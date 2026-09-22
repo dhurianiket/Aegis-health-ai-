@@ -114,7 +114,7 @@ export default function NoteAnalyzer() {
           value={note}
           onChange={(e: any) => setNote(e.target.value)}
           placeholder="e.g., Patient presents with mild hypertension. Currently taking Lisinopril 10mg. Follow up in 3 weeks with Cardiology..."
-          className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-2xl p-4 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
+          className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-2xl p-4 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus-visible:ring-2 focus:ring-[var(--color-primary)] transition-all"
           minLines={5}
         />
 

@@ -165,7 +165,7 @@ export default function FamilyHub() {
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="Email Address"
-                      className="w-full bg-white/10 border border-white/20 rounded-xl py-3 px-4 text-sm text-white placeholder:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                      className="w-full bg-white/10 border border-white/20 rounded-xl py-3 px-4 text-sm text-white placeholder:text-indigo-200 focus:outline-none focus-visible:ring-2 focus:ring-white/50"
                     />
                   </div>
                   <button
