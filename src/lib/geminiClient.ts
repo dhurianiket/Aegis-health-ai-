@@ -69,6 +69,10 @@ export function getEdgeApiBaseUrl(): string {
   return String(raw).replace(/\/$/, '');
 }
 
+export function isEdgeConfigured(): boolean {
+  return getEdgeBearer().trim().length > 0;
+}
+
 export function getEdgeBearer(): string {
   const bearer =
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AEGIS_EDGE_BEARER) ||
@@ -105,11 +109,12 @@ export function isLocationRoutingError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;
   const e = err as { status?: unknown; code?: unknown; message?: unknown };
   const errorMsg = String(e.message || '').toLowerCase();
+  // Avoid matching clinical prose that merely contains the word "location".
   return (
     errorMsg.includes('user location is not supported') ||
     errorMsg.includes('failed_precondition') ||
-    errorMsg.includes('location') ||
-    errorMsg.includes('pop routing')
+    errorMsg.includes('pop routing') ||
+    (errorMsg.includes('location') && errorMsg.includes('not supported'))
   );
 }
 
@@ -120,13 +125,17 @@ export function isNetworkOrRoutingError(err: unknown): boolean {
   const errorName = String(e.name || '').toLowerCase();
   const errorStatus = e.status ?? e.code;
 
+  // Do NOT treat AbortError as retryable — user/cancel aborts must surface immediately.
+  if (errorName === 'aborterror' || errorMsg.includes('aborted')) {
+    return false;
+  }
+
   return (
     isLocationRoutingError(err) ||
     errorStatus === 502 ||
     errorStatus === 504 ||
     errorStatus === 0 ||
     errorName === 'typeerror' ||
-    errorName === 'aborterror' ||
     errorMsg.includes('failed to fetch') ||
     errorMsg.includes('networkerror') ||
     errorMsg.includes('network request failed') ||
@@ -236,14 +245,39 @@ export async function callEdgeGenerate(
 
   const base = baseUrlOverride || getEdgeApiBaseUrl();
   const url = `${base}/api/ai/generate`;
-  const response = await fetchImpl(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${bearer}`,
-    },
-    body: JSON.stringify(buildEdgeBody(params, model)),
-  });
+  const requestId =
+    (typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `aegis-${Date.now()}`);
+
+  const timeoutMs = 90_000;
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetchImpl(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bearer}`,
+        'X-Request-Id': requestId,
+      },
+      body: JSON.stringify(buildEdgeBody(params, model)),
+      signal: controller.signal,
+    });
+  } catch (err: unknown) {
+    clearTimeout(timeoutHandle);
+    if (err && typeof err === 'object' && (err as { name?: string }).name === 'AbortError') {
+      throw new EdgeGeminiError('Edge Gemini request timed out or was aborted', {
+        status: 408,
+        requestId,
+      });
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 
   const rawText = await response.text();
   let parsed: unknown = null;
@@ -257,7 +291,10 @@ export async function callEdgeGenerate(
     const errBody = (parsed || {}) as EdgeErrorBody;
     throw new EdgeGeminiError(
       errBody.error || errBody.message || `Edge Gemini request failed (${response.status})`,
-      { status: response.status, requestId: errBody.request_id },
+      {
+        status: response.status,
+        requestId: errBody.request_id || response.headers.get('x-request-id') || requestId,
+      },
     );
   }
 

@@ -31,6 +31,15 @@ describe('geminiClient edge proxy + model normalization', () => {
     __setGeminiFetchForTests(null);
   });
 
+  it('reports edge configuration from bearer env', async () => {
+    const mod = await import('../geminiClient');
+    expect(mod.isEdgeConfigured()).toBe(true);
+    vi.resetModules();
+    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
+    const empty = await import('../geminiClient');
+    expect(empty.isEdgeConfigured()).toBe(false);
+  });
+
   it('throws when VITE_AEGIS_EDGE_BEARER is not set', async () => {
     vi.resetModules();
     vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
@@ -179,6 +188,33 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const body = JSON.parse(String((mockFetch.mock.calls[0][1] as RequestInit).body));
       expect(body.systemInstruction).toEqual(structuredSI);
+    });
+  });
+
+
+  describe('Abort and request metadata', () => {
+    it('does not PoP-retry when the request is aborted', async () => {
+      const abortErr = new DOMException('The operation was aborted.', 'AbortError');
+      mockFetch.mockRejectedValueOnce(abortErr);
+
+      const ai = getAI();
+      await expect(
+        ai.models.generateContent({ model: 'gemini-3.6-flash', contents: 'hello' }),
+      ).rejects.toMatchObject({ name: 'EdgeGeminiError', status: 408 });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const headers = (mockFetch.mock.calls[0][1] as RequestInit).headers as Record<string, string>;
+      expect(headers['X-Request-Id']).toBeTruthy();
+    });
+
+    it('does not treat clinical "location" prose as a routing error', async () => {
+      const { isLocationRoutingError } = await import('../geminiClient');
+      expect(
+        isLocationRoutingError({ message: 'Pain location is the lower abdomen' }),
+      ).toBe(false);
+      expect(
+        isLocationRoutingError({ message: 'User location is not supported for the API use.' }),
+      ).toBe(true);
     });
   });
 

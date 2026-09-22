@@ -14,7 +14,7 @@ import {
 import { COACH_SYSTEM_INSTRUCTION } from "../../services/ai/coachService";
 import { ChatMessage } from "../../types/ai";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
-import getAI from "../../lib/geminiClient";
+import getAI, { isEdgeConfigured } from "../../lib/geminiClient";
 import { safeJsonParse, getFriendlyErrorMessage } from "../../utils/aiUtils";
 import { trackUsage } from "../../services/usageService";
 import { getActiveMedications } from "../../services/medicationService";
@@ -45,7 +45,7 @@ export default function ChatCoach({
   };
 
   const [inputValue, setInputValue] = useState("");
-  const [isAlAvailable, setIsAlAvailable] = useState(true);
+  const [isAlAvailable, setIsAlAvailable] = useState(() => isEdgeConfigured());
   const [isListening, setIsListening] = useState(false);
   const voiceServiceRef = useRef<any>(null);
   const { user } = useAuth();
