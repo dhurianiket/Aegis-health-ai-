@@ -31,6 +31,15 @@ describe('geminiClient edge proxy + model normalization', () => {
     __setGeminiFetchForTests(null);
   });
 
+  it('reports edge configuration from bearer env', async () => {
+    const mod = await import('../geminiClient');
+    expect(mod.isEdgeConfigured()).toBe(true);
+    vi.resetModules();
+    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
+    const empty = await import('../geminiClient');
+    expect(empty.isEdgeConfigured()).toBe(false);
+  });
+
   it('throws when VITE_AEGIS_EDGE_BEARER is not set', async () => {
     vi.resetModules();
     vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');

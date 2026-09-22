@@ -69,6 +69,10 @@ export function getEdgeApiBaseUrl(): string {
   return String(raw).replace(/\/$/, '');
 }
 
+export function isEdgeConfigured(): boolean {
+  return getEdgeBearer().trim().length > 0;
+}
+
 export function getEdgeBearer(): string {
   const bearer =
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AEGIS_EDGE_BEARER) ||
