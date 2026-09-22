@@ -117,16 +117,19 @@ Ensure your code adheres strictly to the invariants listed in AGENTS.md.
 `;
 
       // 3. Programmatically Call Google Jules REST API
+      const julesToken = process.env.JULES_AUTH_TOKEN || process.env.GOOGLE_ADC_TOKEN;
+      if (!julesToken) {
+        console.warn("⚠️ JULES_AUTH_TOKEN is not configured; failing closed for Google Jules API call.");
+        return res.status(503).json({
+          status: "skipped",
+          message: "Jules VM automation paused: JULES_AUTH_TOKEN required."
+        });
+      }
+
       const julesPayload = {
         repository: {
           url: repoUrl,
-          branch: "main",
-        },
-        issue: {
-          id: issue.id,
-          number: issue.number,
-          title: issueTitle,
-          description: issueBody,
+          branch: "main"
         },
         sessionOptions: {
           targetBranch: headBranch,
@@ -141,9 +144,7 @@ Ensure your code adheres strictly to the invariants listed in AGENTS.md.
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // The Google API expects authorization which on GCP functions can be proxied or generated via ADC.
-          // In deep production we use an IAM authenticated header using Google Auth libraries.
-          "Authorization": `Bearer ${process.env.GEMINI_API_KEY || "GOOGLE_ADC_OR_API_KEY"}`,
+          "Authorization": `Bearer ${julesToken}`,
         },
         body: JSON.stringify(julesPayload)
       });

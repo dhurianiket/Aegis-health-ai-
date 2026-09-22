@@ -5,7 +5,7 @@ import {
   buildGuidelinePromptAugmentation
 } from "../../services/sourceGroundedService";
 import { renderCitationLink } from "../Common/CitationBadge";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { SpecialistId } from "../../types/ai";
 import { getSpecialist, SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
 import { getPatientContext, formatContextForPrompt } from "../../services/ai/contextService";
@@ -19,11 +19,43 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { saveActiveReferral, getActiveReferrals, updateReferralStatus } from "../../lib/firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft } from "lucide-react";
+import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft, Search, X } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
 
 const PROMPT_VERSION = "v1.0";
+
+/**
+ * Real-time text highlight component.
+ * Escapes regex special characters and safely wraps matching query substrings in high-contrast <mark> tags.
+ */
+export function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query || !query.trim()) {
+    return <>{text}</>;
+  }
+
+  const trimmedQuery = query.trim();
+  const escapedQuery = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escapedQuery})`, "gi"));
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === trimmedQuery.toLowerCase() ? (
+          <mark
+            key={i}
+            data-testid="search-highlight"
+            className="bg-amber-300/40 dark:bg-amber-400/35 text-amber-950 dark:text-amber-200 font-bold px-0.5 rounded shadow-sm"
+          >
+            {part}
+          </mark>
+        ) : (
+          <React.Fragment key={i}>{part}</React.Fragment>
+        )
+      )}
+    </>
+  );
+}
 
 export default function SpecialistLounge() {
   const [activeSpecialist, setActiveSpecialist] = useState<SpecialistId>('cardiologist');
@@ -99,6 +131,35 @@ export default function SpecialistLounge() {
   };
 
   const SPECIALIST_TABS = Object.values(SPECIALISTS);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const CATEGORIES = useMemo(() => {
+    const unique = Array.from(new Set(SPECIALIST_TABS.map((s) => s.specialty)));
+    return ["All", ...unique];
+  }, [SPECIALIST_TABS]);
+
+  const filteredSpecialists = useMemo(() => {
+    return SPECIALIST_TABS.filter((s) => {
+      // Category filter
+      if (selectedCategory !== "All" && s.specialty !== selectedCategory) {
+        return false;
+      }
+      // Search query filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesName = s.name.toLowerCase().includes(q);
+        const matchesDisplayName = s.displayName.toLowerCase().includes(q);
+        const matchesSpecialty = s.specialty.toLowerCase().includes(q);
+        const matchesDesc = s.description.toLowerCase().includes(q);
+        const matchesExpertise = s.expertise.some((exp) => exp.toLowerCase().includes(q));
+        const matchesGuidelines = s.guidelines.some((g) => g.toLowerCase().includes(q));
+        return matchesName || matchesDisplayName || matchesSpecialty || matchesDesc || matchesExpertise || matchesGuidelines;
+      }
+      return true;
+    });
+  }, [SPECIALIST_TABS, selectedCategory, searchQuery]);
 
   const saveChatHistory = async (newMessages: { role: string, content: string, timestamp: Date }[]) => {
     if (!user?.uid || !activeProfile?.id) return;
@@ -493,45 +554,152 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:min-h-[600px] lg:h-[max(calc(100vh-200px),600px)]">
         {/* Sidebar */}
-        <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block`}>
-          <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest px-3 mb-5">Select Specialist</h3>
-          <div role="list" className="flex flex-col gap-2">
-            {SPECIALIST_TABS.map((s) => (
-              <div key={s.id} role="listitem" className="w-full">
+        <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block flex flex-col`}>
+          <div className="flex items-center justify-between px-1 mb-3">
+            <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Select Specialist</h3>
+            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              {filteredSpecialists.length} available
+            </span>
+          </div>
+
+          {/* Search Field */}
+          <div className="relative mb-3">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search specialists, expertise, symptoms..."
+              aria-label="Search specialists"
+              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-2.5 pl-9 pr-8 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/20 transition-all shadow-sm"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Pill-Style Category Filter */}
+          <div
+            role="tablist"
+            aria-label="Specialist Categories"
+            className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none no-scrollbar -mx-1 px-1"
+          >
+            {CATEGORIES.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              return (
                 <button
+                  key={cat}
+                  role="tab"
                   type="button"
-                  aria-pressed={activeSpecialist === s.id}
-                  onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
-                  className={`cursor-pointer w-full p-4 md:p-5 rounded-[24px] flex flex-col items-start gap-1 transition-all duration-300 relative overflow-hidden text-left ${
-                    activeSpecialist === s.id 
-                    ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none text-white' 
-                    : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50'
+                  aria-selected={isSelected}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 select-none ${
+                    isSelected
+                      ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-sm"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
                   }`}
                 >
-                  {activeSpecialist === s.id && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Specialist Cards List */}
+          <div role="list" className="flex flex-col gap-2 flex-1">
+            {filteredSpecialists.length === 0 ? (
+              <div className="py-8 px-4 text-center space-y-3 bg-slate-50 dark:bg-white/[0.02] rounded-2xl border border-dashed border-slate-200 dark:border-white/10 my-auto">
+                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center mx-auto text-slate-500 dark:text-slate-400">
+                  <Search className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    No specialists match your criteria
+                  </p>
+                  {searchQuery && (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[200px] mx-auto">
+                      Query: &ldquo;{searchQuery}&rdquo;
+                    </p>
                   )}
-                  <div className="flex items-center gap-3 w-full">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-200 dark:bg-[#2C2C2E]'}`}>
-                      <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between w-full gap-1">
-                        <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-[var(--color-text)] dark:text-slate-100'}`}>{s.displayName}</div>
-                        {activeReferrals.some((r) => r.toSpecialist === s.id && r.status === "pending") && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-500 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0">
-                            Referral
-                          </span>
-                        )}
-                      </div>
-                      <div className={`text-[12px] font-medium truncate ${activeSpecialist === s.id ? 'text-slate-200' : 'text-[var(--color-text-muted)] dark:text-slate-300'}`}>
-                        {s.expertise.slice(0, 2).join(' • ')}...
-                      </div>
-                    </div>
-                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("All");
+                  }}
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-block pt-1"
+                >
+                  Reset filters
                 </button>
               </div>
-            ))}
+            ) : (
+              filteredSpecialists.map((s) => {
+                const q = searchQuery.toLowerCase().trim();
+                const matchingExpertise = q
+                  ? s.expertise.filter((e) => e.toLowerCase().includes(q))
+                  : [];
+                const displayedExpertise = matchingExpertise.length > 0
+                  ? [matchingExpertise[0], ...s.expertise.filter((e) => e !== matchingExpertise[0])].slice(0, 2)
+                  : s.expertise.slice(0, 2);
+
+                return (
+                  <div key={s.id} role="listitem" className="w-full">
+                    <button
+                      type="button"
+                      aria-pressed={activeSpecialist === s.id}
+                      onClick={() => { setActiveSpecialist(s.id); setIsMobileChatOpen(true); }}
+                      className={`cursor-pointer w-full p-4 md:p-5 rounded-[24px] flex flex-col items-start gap-1 transition-all duration-300 relative overflow-hidden text-left ${
+                        activeSpecialist === s.id 
+                        ? 'bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] shadow-xl shadow-slate-900/10 dark:shadow-none text-white' 
+                        : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-[#1C1C1E]/50'
+                      }`}
+                    >
+                      {activeSpecialist === s.id && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                      )}
+                      <div className="flex items-center gap-3 w-full">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-200 dark:bg-[#2C2C2E]'}`}>
+                          <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between w-full gap-1">
+                            <div className={`font-semibold text-[15px] tracking-tight truncate ${activeSpecialist === s.id ? 'text-white' : 'text-[var(--color-text)] dark:text-slate-100'}`}>
+                              <HighlightMatch text={s.displayName} query={searchQuery} />
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                activeSpecialist === s.id 
+                                  ? 'bg-white/15 text-white' 
+                                  : 'bg-slate-200/70 dark:bg-white/10 text-slate-600 dark:text-slate-300'
+                              }`}>
+                                <HighlightMatch text={s.specialty} query={searchQuery} />
+                              </span>
+                              {activeReferrals.some((r) => r.toSpecialist === s.id && r.status === "pending") && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-500 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0">
+                                  Referral
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className={`text-[12px] font-medium truncate mt-0.5 ${activeSpecialist === s.id ? 'text-slate-200' : 'text-[var(--color-text-muted)] dark:text-slate-300'}`}>
+                            <HighlightMatch text={displayedExpertise.join(' • ')} query={searchQuery} />
+                            {displayedExpertise.length < s.expertise.length && "..."}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 

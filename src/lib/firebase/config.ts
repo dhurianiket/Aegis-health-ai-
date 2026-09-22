@@ -30,22 +30,31 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-let appCheck = null;
-// Temporarily isolated App Check due to throttling and 500 errors breaking auth flow
-/*
-if (typeof window !== "undefined" && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
-  appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
-    isTokenAutoRefreshEnabled: true
-  });
+export let appCheck: any = null;
+if (typeof window !== "undefined" && import.meta.env.VITE_RECAPTCHA_SITE_KEY && import.meta.env.MODE !== 'test') {
+  try {
+    appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (err) {
+    console.warn("[AppCheck] Graceful fallback: initialization deferred:", err);
+  }
 }
-*/
 
 export const auth = getAuth(app);
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-});
+if (typeof window !== 'undefined') {
+  (window as any).__aegisAuth = auth;
+}
+export const db = (() => {
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    });
+  } catch {
+    return getFirestore(app);
+  }
+})();
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('https://www.googleapis.com/auth/forms');
 export default app;

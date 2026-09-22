@@ -4,6 +4,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return request.auth != null && (
+        request.auth.token.admin == true ||
         (request.auth.token.email != null && request.auth.token.email.lower() == 'dhurianiket@gmail.com') ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
@@ -26,10 +27,9 @@ service cloud.firestore {
       }
     }
 
-    // Global stats: readable by admin, incrementable by authenticated users during uploads/chat
+    // Global stats: readable and writable by admin only (prevents metric poisoning)
     match /analytics/globalStats {
-      allow read: if isAdmin();
-      allow write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
     
     // Support collectionGroup("usage") queries for Admin Dashboard
@@ -42,10 +42,9 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
     
-    // Legacy globalStats mapping just in case
+    // Legacy globalStats mapping
     match /globalStats/{statId} {
-      allow read: if isAdmin();
-      allow write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
 
   }

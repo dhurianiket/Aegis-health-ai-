@@ -170,12 +170,17 @@ export class PaperclipJulesCoordinator {
     let attempt = 0;
     while (attempt < this.maxRetries) {
       try {
+        const julesToken = process.env.JULES_AUTH_TOKEN || process.env.GOOGLE_ADC_TOKEN;
+        if (!julesToken) {
+          throw new Error("Jules automation paused: JULES_AUTH_TOKEN is not configured in server environment.");
+        }
+
         const julesApiCall = `https://jules.googleapis.com/v1/projects/${this.gcpProject}/sessions`;
         const res = await fetch(julesApiCall, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.GEMINI_API_KEY || "BEARER_TOKEN"}`
+            "Authorization": `Bearer ${julesToken}`
           },
           body: JSON.stringify({
             repository: { url: config.repoUrl, branch: config.branch },

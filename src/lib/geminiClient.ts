@@ -243,6 +243,19 @@ export async function callEdgeGenerate(
     );
   }
 
+  // Attempt to resolve authenticated Firebase ID token if user is signed in
+  let authBearer = bearer;
+  if (typeof window !== 'undefined' && (window as any).__aegisAuth?.currentUser) {
+    try {
+      const idToken = await (window as any).__aegisAuth.currentUser.getIdToken();
+      if (idToken) {
+        authBearer = idToken;
+      }
+    } catch {
+      // Fallback to configured interim shared bearer
+    }
+  }
+
   const base = baseUrlOverride || getEdgeApiBaseUrl();
   const url = `${base}/api/ai/generate`;
   const requestId =
@@ -260,8 +273,9 @@ export async function callEdgeGenerate(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${bearer}`,
+        Authorization: `Bearer ${authBearer}`,
         'X-Request-Id': requestId,
+        ...(bearer ? { 'X-Aegis-Shared-Bearer': bearer } : {}),
       },
       body: JSON.stringify(buildEdgeBody(params, model)),
       signal: controller.signal,

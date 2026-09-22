@@ -1,6 +1,6 @@
 export interface PaymentOrder {
   orderId: string;
-  amount: number; // In INR (Paise) e.g., 9900 for Rs. 99
+  amount: number; // Amount in INR (Rupees), e.g. 299 for ₹299
   currency: string;
   planId: 'b2c_monthly' | 'b2c_quarterly' | 'b2b_clinic_monthly' | 'b2b_clinic_quarterly';
   planName: string;
@@ -40,6 +40,7 @@ export function loadRazorpayScript(): Promise<boolean> {
 
 /**
  * Initiates Razorpay payment checkout modal for B2C & B2B subscription plans.
+ * Fails closed: Never simulates success if script is blocked or gateway rejects.
  */
 export async function initiateRazorpayPayment(
   order: PaymentOrder,
@@ -50,16 +51,8 @@ export async function initiateRazorpayPayment(
   const isScriptLoaded = await loadRazorpayScript();
 
   if (!isScriptLoaded) {
-    // If Razorpay SDK fails to load (e.g. offline or blocked), fallback to simulated test mode
-    console.warn('[Razorpay] SDK script blocked or offline. Falling back to test checkout mode.');
-    setTimeout(() => {
-      onSuccess({
-        razorpay_payment_id: `pay_test_${Date.now()}`,
-        razorpay_order_id: order.orderId,
-        razorpay_signature: `sig_test_${Date.now()}`,
-        planId: order.planId,
-      });
-    }, 1200);
+    console.error('[Razorpay] SDK script blocked or offline.');
+    onError('Unable to load payment gateway. Please check your network connection or ad-blocker.');
     return;
   }
 
@@ -68,7 +61,7 @@ export async function initiateRazorpayPayment(
 
   const options = {
     key: razorpayKey,
-    amount: order.amount * 100, // Amount in paise
+    amount: Math.round(order.amount * 100), // Converted to paise for Razorpay API (e.g., 299 INR -> 29900 paise)
     currency: order.currency || 'INR',
     name: 'Aegis Health AI',
     description: `Subscription: ${order.planName}`,
@@ -83,10 +76,16 @@ export async function initiateRazorpayPayment(
       color: '#0d9488', // Teal theme
     },
     handler: function (response: any) {
+      if (!response?.razorpay_payment_id || !response?.razorpay_signature) {
+        console.error('[Razorpay] Missing payment credentials from checkout handler:', response);
+        onError('Payment verification failed: Incomplete payment response from gateway.');
+        return;
+      }
+
       onSuccess({
-        razorpay_payment_id: response.razorpay_payment_id || `pay_${Date.now()}`,
+        razorpay_payment_id: response.razorpay_payment_id,
         razorpay_order_id: response.razorpay_order_id || order.orderId,
-        razorpay_signature: response.razorpay_signature || 'sig_demo',
+        razorpay_signature: response.razorpay_signature,
         planId: order.planId,
       });
     },
@@ -101,12 +100,7 @@ export async function initiateRazorpayPayment(
     const rzp = new (window as any).Razorpay(options);
     rzp.open();
   } catch (err: any) {
-    // Fallback if instantiation fails in test env
-    onSuccess({
-      razorpay_payment_id: `pay_test_${Date.now()}`,
-      razorpay_order_id: order.orderId,
-      razorpay_signature: `sig_test_${Date.now()}`,
-      planId: order.planId,
-    });
+    console.error('[Razorpay] Checkout modal invocation error:', err);
+    onError('Payment gateway initialization failed. Please try again.');
   }
 }
