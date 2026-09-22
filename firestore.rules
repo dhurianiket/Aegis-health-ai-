@@ -3,12 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      return request.auth != null && (
-        request.auth.token.admin == true ||
-        (request.auth.token.email != null && request.auth.token.email.lower() == 'dhurianiket@gmail.com') ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
-      );
+      return request.auth != null && request.auth.token.admin == true;
     }
 
     function isOwner(userId) {

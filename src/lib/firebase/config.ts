@@ -42,10 +42,19 @@ if (typeof window !== "undefined" && import.meta.env.VITE_RECAPTCHA_SITE_KEY && 
   }
 }
 
+import { setAuthTokenProvider } from "../authTokenProvider";
+
 export const auth = getAuth(app);
-if (typeof window !== 'undefined') {
-  (window as any).__aegisAuth = auth;
-}
+
+// Securely register auth token provider without leaking auth instance to window (XSS prevention)
+setAuthTokenProvider(async () => {
+  try {
+    const user = auth?.currentUser;
+    return user ? await user.getIdToken() : null;
+  } catch {
+    return null;
+  }
+});
 export const db = (() => {
   try {
     return initializeFirestore(app, {

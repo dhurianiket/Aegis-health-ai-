@@ -274,4 +274,36 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(mockFetch).toHaveBeenCalledTimes(3);
     });
   });
+
+  describe('JWT Token Provider & Auth Isolation', () => {
+    it('uses user ID token and does not leak X-Aegis-Shared-Bearer', async () => {
+      const mod = await import('../geminiClient');
+      mod.setAuthTokenProvider(async () => 'user-firebase-id-token-xyz');
+
+      const ai = mod.getAI();
+      await ai.models.generateContent({ contents: 'test message' });
+
+      expect(mockFetch).toHaveBeenCalled();
+      const lastCallInit = mockFetch.mock.calls[0][1];
+      expect(lastCallInit.headers.Authorization).toBe('Bearer user-firebase-id-token-xyz');
+      expect(lastCallInit.headers['X-Aegis-Shared-Bearer']).toBeUndefined();
+
+      mod.setAuthTokenProvider(null);
+    });
+
+    it('allows generation when user token is present even if VITE_AEGIS_EDGE_BEARER is empty', async () => {
+      vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
+      const mod = await import('../geminiClient');
+      mod.setAuthTokenProvider(async () => 'user-id-token-without-shared-secret');
+
+      const ai = mod.getAI();
+      await ai.models.generateContent({ contents: 'test message' });
+
+      expect(mockFetch).toHaveBeenCalled();
+      const lastCallInit = mockFetch.mock.calls[0][1];
+      expect(lastCallInit.headers.Authorization).toBe('Bearer user-id-token-without-shared-secret');
+
+      mod.setAuthTokenProvider(null);
+    });
+  });
 });

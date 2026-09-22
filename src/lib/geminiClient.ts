@@ -7,6 +7,10 @@
  * Never embed GEMINI_API_KEY or EDGE secrets in source / commits.
  */
 
+import { getAuthToken, hasAuthTokenProvider, setAuthTokenProvider } from './authTokenProvider';
+export { setAuthTokenProvider } from './authTokenProvider';
+export type { TokenProvider } from './authTokenProvider';
+
 export interface GeminiGenerateConfig {
   temperature?: number;
   topP?: number;
@@ -70,7 +74,7 @@ export function getEdgeApiBaseUrl(): string {
 }
 
 export function isEdgeConfigured(): boolean {
-  return getEdgeBearer().trim().length > 0;
+  return getEdgeBearer().trim().length > 0 || hasAuthTokenProvider();
 }
 
 export function getEdgeBearer(): string {
@@ -237,23 +241,17 @@ export async function callEdgeGenerate(
   baseUrlOverride?: string,
 ): Promise<GeminiGenerateResponse> {
   const bearer = getEdgeBearer();
-  if (!bearer) {
-    throw new EdgeGeminiError(
-      'VITE_AEGIS_EDGE_BEARER is not set (interim edge shared secret for api.aegishealthai.co.in)',
-    );
+  let authBearer = bearer;
+
+  const idToken = await getAuthToken();
+  if (idToken) {
+    authBearer = idToken;
   }
 
-  // Attempt to resolve authenticated Firebase ID token if user is signed in
-  let authBearer = bearer;
-  if (typeof window !== 'undefined' && (window as any).__aegisAuth?.currentUser) {
-    try {
-      const idToken = await (window as any).__aegisAuth.currentUser.getIdToken();
-      if (idToken) {
-        authBearer = idToken;
-      }
-    } catch {
-      // Fallback to configured interim shared bearer
-    }
+  if (!authBearer) {
+    throw new EdgeGeminiError(
+      'Authentication required: VITE_AEGIS_EDGE_BEARER is not set, or please sign in with verified account.',
+    );
   }
 
   const base = baseUrlOverride || getEdgeApiBaseUrl();
@@ -275,7 +273,6 @@ export async function callEdgeGenerate(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${authBearer}`,
         'X-Request-Id': requestId,
-        ...(bearer ? { 'X-Aegis-Shared-Bearer': bearer } : {}),
       },
       body: JSON.stringify(buildEdgeBody(params, model)),
       signal: controller.signal,
@@ -483,9 +480,9 @@ export function __setGeminiFetchForTests(fetchImpl: typeof fetch | null): void {
 
 export function getAI(): AegisAI {
   if (!aiInstance) {
-    if (!getEdgeBearer()) {
+    if (!getEdgeBearer() && !hasAuthTokenProvider()) {
       throw new Error(
-        'VITE_AEGIS_EDGE_BEARER is not set (interim edge shared secret for api.aegishealthai.co.in)',
+        'Authentication required: VITE_AEGIS_EDGE_BEARER is not set, or please sign in with verified account.',
       );
     }
 

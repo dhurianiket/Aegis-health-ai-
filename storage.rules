@@ -2,11 +2,10 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /users/{userId}/{allPaths=**} {
-      // Read & Delete: Allow owner or verified admin (custom claims supported)
+      // Read & Delete: Allow owner or verified admin (custom claims only)
       allow read, delete: if request.auth != null && (
         request.auth.uid == userId ||
-        request.auth.token.admin == true ||
-        (request.auth.token.email == 'dhurianiket@gmail.com' && request.auth.token.email_verified == true)
+        request.auth.token.admin == true
       );
 
       // Create & Update: Restrict to owner with 25MB max size and safe medical document / media MIME types
