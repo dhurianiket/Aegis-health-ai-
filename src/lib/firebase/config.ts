@@ -31,11 +31,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export let appCheck: any = null;
-if (typeof window !== "undefined" && import.meta.env.VITE_RECAPTCHA_SITE_KEY && import.meta.env.MODE !== 'test') {
+const RECAPTCHA_SITE_KEY =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_RECAPTCHA_SITE_KEY) ||
+  "6Lfln_EsAAAAABlOtBKP5ngFr3f8lXzX59Oujq6A";
+
+if (typeof window !== "undefined" && RECAPTCHA_SITE_KEY && import.meta.env.MODE !== "test") {
   try {
     appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
-      isTokenAutoRefreshEnabled: true
+      provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true,
     });
   } catch (err) {
     console.warn("[AppCheck] Graceful fallback: initialization deferred:", err);
