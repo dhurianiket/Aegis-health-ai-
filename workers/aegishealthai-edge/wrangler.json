@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aegishealthai-edge",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "api.aegishealthai.co.in/*",
+      "zone_name": "aegishealthai.co.in"
+    }
+  ],
+  "placement": {
+    "mode": "smart"
+  },
+  "vars": {
+    "FIREBASE_PROJECT_ID": "aegis-health-app-90697"
+  }
+}
