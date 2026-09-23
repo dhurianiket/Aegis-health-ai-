@@ -1,12 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "aegishealthai-edge",
+  "account_id": "ca163e8753d019d7dfa1937535d7ea57",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-20",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
       "pattern": "api.aegishealthai.co.in/*",
+      "zone_name": "aegishealthai.co.in"
+    },
+    {
+      "pattern": "aegishealthai.co.in/.well-known/security.txt",
       "zone_name": "aegishealthai.co.in"
     }
   ],

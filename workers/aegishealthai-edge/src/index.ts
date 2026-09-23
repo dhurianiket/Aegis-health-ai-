@@ -70,8 +70,8 @@ async function getGooglePublicKeys(): Promise<any[]> {
   }
 
   try {
-    const res = await fetch(GOOGLE_JWKS_URL, {
-      cf: { cacheTtl: 21600, cacheEverything: true } as any,
+    const res = await (fetch as any)(GOOGLE_JWKS_URL, {
+      cf: { cacheTtl: 21600, cacheEverything: true },
     });
     if (!res.ok) throw new Error(`Failed to fetch Google JWKs: HTTP ${res.status}`);
     const data = await res.json() as { keys: any[] };
@@ -158,7 +158,7 @@ function getCorsHeaders(request: Request): Record<string, string> {
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: any): Promise<Response> {
     const corsHeaders = getCorsHeaders(request);
     const url = new URL(request.url);
     const requestId = request.headers.get("X-Request-Id") || crypto.randomUUID();
@@ -174,6 +174,29 @@ export default {
         JSON.stringify({ status: "healthy", region: "SIN", service: "aegishealthai-edge", timestamp: new Date().toISOString() }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
+    }
+
+    // 2b. RFC 9116 security.txt
+    if (url.pathname === "/.well-known/security.txt" || url.pathname === "/security.txt") {
+      const securityTxt = [
+        "Contact: mailto:founder@aegishealthai.co.in",
+        "Expires: 2027-12-31T23:59:59.000Z",
+        "Preferred-Languages: en, mr, hi",
+        "Canonical: https://aegishealthai.co.in/.well-known/security.txt",
+        "Policy: https://aegishealthai.co.in/security.html",
+        "Acknowledgments: https://aegishealthai.co.in/security.html#acknowledgments",
+        "Hiring: https://aegishealthai.co.in/about.html",
+        "",
+      ].join("\n");
+
+      return new Response(securityTxt, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "public, max-age=86400",
+        },
+      });
     }
 
     // 3. AI Generation Route

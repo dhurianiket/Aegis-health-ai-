@@ -52,7 +52,6 @@ type EdgeErrorBody = {
 };
 
 const DEFAULT_EDGE_API_URL = 'https://api.aegishealthai.co.in';
-const WORKERS_DEV_FALLBACK_URL = 'https://aegishealthai-edge.dhurianiket.workers.dev';
 const DEFAULT_MODEL = 'gemini-3.6-flash';
 const SECONDARY_FALLBACK = 'gemini-3.5-flash';
 
@@ -241,20 +240,15 @@ export async function callEdgeGenerate(
   fetchImpl: typeof fetch = fetch,
   baseUrlOverride?: string,
 ): Promise<GeminiGenerateResponse> {
+  // Primary auth: User Firebase ID token (JWT RS256 cryptographically verified at Cloudflare Edge)
+  // Fallback: Shared edge bearer (during transition or for unauthenticated requests)
+  const idToken = await getAuthToken();
   const bearer = getEdgeBearer().trim();
-  // Prefer shared edge bearer while the Worker only accepts EDGE_SHARED_SECRET.
-  // Firebase JWT is fallback-only until FlareOps adds ID-token verification.
-  let authBearer = bearer;
-  if (!authBearer) {
-    const idToken = await getAuthToken();
-    if (idToken) {
-      authBearer = idToken;
-    }
-  }
+  const authBearer = idToken || bearer;
 
   if (!authBearer) {
     throw new EdgeGeminiError(
-      'Authentication required: VITE_AEGIS_EDGE_BEARER is not set, or please sign in with verified account.',
+      'Authentication required: Please sign in with a verified account or configure edge auth.',
     );
   }
 
@@ -336,15 +330,10 @@ export async function callEdgeWithPoPRetry(
 ): Promise<GeminiGenerateResponse> {
   let lastErr: unknown;
   const primaryUrl = getEdgeApiBaseUrl();
-  const fallbackUrl =
-    primaryUrl !== WORKERS_DEV_FALLBACK_URL ? WORKERS_DEV_FALLBACK_URL : DEFAULT_EDGE_API_URL;
 
   for (let i = 0; i < 3; i++) {
     try {
-      // On retries (i > 0), if previous attempt encountered a network, location routing, or service outage error,
-      // failover immediately to the alternate edge hostname (workers.dev fallback or default)
-      const urlToUse = i > 0 && isNetworkOrRoutingError(lastErr) ? fallbackUrl : primaryUrl;
-      return await callEdgeGenerate(params, model, fetchImpl, urlToUse);
+      return await callEdgeGenerate(params, model, fetchImpl, primaryUrl);
     } catch (err: unknown) {
       lastErr = err;
       if (isNetworkOrRoutingError(err) && i < 2) {

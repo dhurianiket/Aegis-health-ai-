@@ -219,7 +219,7 @@ describe('geminiClient edge proxy + model normalization', () => {
   });
 
   describe('Anycast Location Routing and Network Failover Resilience', () => {
-    it('seamlessly retries and switches to workers.dev fallback when edge returns location error', async () => {
+    it('seamlessly retries on primary edge URL when edge returns location error', async () => {
       mockFetch
         .mockResolvedValueOnce(new Response(JSON.stringify({
           error: 'User location is not supported for the API use.',
@@ -238,10 +238,10 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(result.text).toBe('PoP retry success');
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(mockFetch.mock.calls[0][0]).toBe('https://api.aegishealthai.co.in/api/ai/generate');
-      expect(mockFetch.mock.calls[1][0]).toBe('https://aegishealthai-edge.dhurianiket.workers.dev/api/ai/generate');
+      expect(mockFetch.mock.calls[1][0]).toBe('https://api.aegishealthai.co.in/api/ai/generate');
     });
 
-    it('immediately switches to fallback URL on network failure (Failed to fetch)', async () => {
+    it('retries on primary edge URL on network failure (Failed to fetch)', async () => {
       mockFetch
         .mockRejectedValueOnce(new TypeError('Failed to fetch'))
         .mockResolvedValueOnce(new Response(JSON.stringify({
@@ -257,7 +257,7 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(result.text).toBe('Network failover success');
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(mockFetch.mock.calls[0][0]).toBe('https://api.aegishealthai.co.in/api/ai/generate');
-      expect(mockFetch.mock.calls[1][0]).toBe('https://aegishealthai-edge.dhurianiket.workers.dev/api/ai/generate');
+      expect(mockFetch.mock.calls[1][0]).toBe('https://api.aegishealthai.co.in/api/ai/generate');
     });
 
     it('fails if network or location errors persist after all 3 retries', async () => {
@@ -276,7 +276,7 @@ describe('geminiClient edge proxy + model normalization', () => {
   });
 
   describe('JWT Token Provider & Auth Isolation', () => {
-    it('prefers shared edge bearer over Firebase ID token (Worker accepts EDGE_SHARED_SECRET only)', async () => {
+    it('prefers Firebase ID token over shared edge bearer', async () => {
       const mod = await import('../geminiClient');
       mod.setAuthTokenProvider(async () => 'user-firebase-id-token-xyz');
 
@@ -285,29 +285,27 @@ describe('geminiClient edge proxy + model normalization', () => {
 
       expect(mockFetch).toHaveBeenCalled();
       const lastCallInit = mockFetch.mock.calls[0][1];
-      expect(lastCallInit.headers.Authorization).toBe('Bearer test-edge-bearer');
+      expect(lastCallInit.headers.Authorization).toBe('Bearer user-firebase-id-token-xyz');
       expect(lastCallInit.headers['X-Aegis-Shared-Bearer']).toBeUndefined();
 
       mod.setAuthTokenProvider(null);
     });
 
-    it('falls back to Firebase ID token when VITE_AEGIS_EDGE_BEARER is empty', async () => {
+    it('falls back to shared edge bearer when user ID token is absent', async () => {
       vi.resetModules();
-      vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
+      vi.stubEnv('VITE_AEGIS_EDGE_BEARER', 'test-edge-bearer');
       vi.stubEnv('VITE_EDGE_API_URL', 'https://api.aegishealthai.co.in');
       mockFetch.mockClear();
       const mod = await import('../geminiClient');
       mod.__setGeminiFetchForTests(mockFetch as unknown as typeof fetch);
-      mod.setAuthTokenProvider(async () => 'user-id-token-without-shared-secret');
+      mod.setAuthTokenProvider(null);
 
       const ai = mod.getAI();
       await ai.models.generateContent({ contents: 'test message' });
 
       expect(mockFetch).toHaveBeenCalled();
       const lastCallInit = mockFetch.mock.calls[0][1];
-      expect(lastCallInit.headers.Authorization).toBe('Bearer user-id-token-without-shared-secret');
-
-      mod.setAuthTokenProvider(null);
+      expect(lastCallInit.headers.Authorization).toBe('Bearer test-edge-bearer');
     });
   });
 });
