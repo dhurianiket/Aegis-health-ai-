@@ -388,11 +388,16 @@ function HealthReportPrintable({
               };
 
               return context?.recentTrends?.length > 0 ? (
-                [...context.recentTrends].sort((a, b) => safeGetTime(a.date) - safeGetTime(b.date)).map((trend: any, i: number) => {
+                // ⚡ Bolt: Performance optimization
+                // Using a Schwartzian Transform to pre-calculate safeGetTime(trend?.date)
+                // This prevents O(N log N) redundant date parsing allocations inside the sort comparator.
+                context.recentTrends
+                  .map((trend: any) => ({ trend, validTs: safeGetTime(trend?.date) }))
+                  .sort((a: any, b: any) => a.validTs - b.validTs)
+                  .map(({ trend, validTs }: any, i: number) => {
                   const isOutOfRange = trend?.direction === "up" || trend?.direction === "down";
                   const statusColor = isOutOfRange ? "text-red-600 bg-red-50" : "text-emerald-600 bg-emerald-50";
                   const statusText = isOutOfRange ? "Out of Range" : "Normal";
-                  const validTs = safeGetTime(trend?.date);
                   
                   return (
                     <tr key={i} className="border-b border-slate-100 last:border-0">
