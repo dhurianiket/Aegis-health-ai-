@@ -40,11 +40,12 @@ describe('geminiClient edge proxy + model normalization', () => {
     expect(empty.isEdgeConfigured()).toBe(false);
   });
 
-  it('throws when VITE_AEGIS_EDGE_BEARER is not set', async () => {
+  it('throws when neither user auth nor edge bearer is configured', async () => {
     vi.resetModules();
     vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
     const mod = await import('../geminiClient');
-    expect(() => mod.getAI()).toThrow(/VITE_AEGIS_EDGE_BEARER/);
+    mod.setAuthTokenProvider(null);
+    expect(() => mod.getAI()).toThrow(/Authentication required/);
   });
 
   it('normalizeModel maps flash/pro aliases', () => {

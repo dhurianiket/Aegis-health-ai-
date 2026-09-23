@@ -2,10 +2,9 @@
  * Gemini client routed through Cloudflare Worker `aegishealthai-edge`.
  * POST https://api.aegishealthai.co.in/api/ai/generate
  *
- * Auth (interim): Authorization Bearer VITE_AEGIS_EDGE_BEARER when set — must match
- * Worker EDGE_SHARED_SECRET. Firebase ID tokens are used only as fallback when the
- * shared bearer is unset; the Worker does not verify Firebase JWTs yet.
- * Never embed GEMINI_API_KEY or EDGE secrets in source / commits.
+ * Auth: Verified Firebase ID Token (JWT RS256 cryptographically verified at Cloudflare Edge via Google JWKs).
+ * Edge enforces Turnstile bot defense + RS256 JWT cryptographic authentication.
+ * Never embed GEMINI_API_KEY or server secrets in source / commits.
  */
 
 import { getAuthToken, hasAuthTokenProvider, setAuthTokenProvider } from './authTokenProvider';
@@ -483,9 +482,9 @@ export function __setGeminiFetchForTests(fetchImpl: typeof fetch | null): void {
 
 export function getAI(): AegisAI {
   if (!aiInstance) {
-    if (!getEdgeBearer() && !hasAuthTokenProvider()) {
+    if (!hasAuthTokenProvider() && !getEdgeBearer()) {
       throw new Error(
-        'Authentication required: VITE_AEGIS_EDGE_BEARER is not set, or please sign in with verified account.',
+        'Authentication required: Please sign in with a verified account to access Aegis AI.',
       );
     }
 
