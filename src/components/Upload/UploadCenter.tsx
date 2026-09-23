@@ -27,9 +27,11 @@ import {
   Tag,
   Plus,
   Camera,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { extractMedicalReports } from "../../services/ai/gemini";
+import { reconcileDualModelConsensus } from "../../services/ai/consensusExtractionService";
 import { trackStorageUsage, checkCanUploadReport, getUserSubscription, updateUserSubscription } from "../../services/usageService";
 import {
   saveDocument,
@@ -641,6 +643,42 @@ export default function UploadCenter({
                 "Please ensure it is a clear medical report and try again."
               );
             }
+
+            // Step 4b: Dual-Model Consensus Verification (Gemini + Claude 3.5 Sonnet v2 via AWS Bedrock Mumbai)
+            try {
+              const consensus = await reconcileDualModelConsensus(extraction, {
+                rawFiles: [fileData],
+                clinicalContext: contextString,
+              });
+              if (consensus) {
+                extraction.consensus = consensus.consensusSummary;
+                if (consensus.observations?.length) {
+                  extraction.lab_values = consensus.observations.map((obs: any) => ({
+                    marker: obs.testName,
+                    value: obs.display_value || (obs.valueCanonical !== null && obs.valueCanonical !== undefined ? String(obs.valueCanonical) : String(obs.valueOriginal ?? "")),
+                    unit: obs.unitCanonical || obs.unitOriginal || "",
+                    reference_range: `${obs.referenceLow ?? ""} - ${obs.referenceHigh ?? ""}`.trim(),
+                    status: obs.flag || "NORMAL",
+                    consensusStatus: obs.consensusStatus,
+                    consensusConfidence: obs.consensusConfidence,
+                    discrepancyNote: obs.discrepancyNote,
+                    claudeValue: obs.claudeValue,
+                  }));
+                }
+                if (consensus.prescriptions?.length && extraction.medications) {
+                  extraction.medications = consensus.prescriptions.map((p: any) => ({
+                    name: p.medicationName,
+                    dosage: p.dosage,
+                    frequency: p.frequency,
+                    instructions: p.instructions,
+                    consensusStatus: p.consensusStatus,
+                    discrepancyNote: p.discrepancyNote,
+                  }));
+                }
+              }
+            } catch (consensusErr) {
+              console.warn("[UploadCenter] Dual-model consensus check deferred to single-model:", consensusErr);
+            }
           } catch (extractErr: any) {
             console.error("Extraction failed:", extractErr);
             const errMsg = extractErr?.message || "Failed to extract document";
@@ -1116,9 +1154,26 @@ export default function UploadCenter({
               <div className="grid grid-cols-1 gap-8 mt-8">
                 {results.map((result: any, extIndex: number) => (
                   <div key={extIndex} className="space-y-6 bg-surface/30 p-6 rounded-[24px] border border-surface">
-                    <div className="flex items-center gap-2 mb-4">
-                       <FileText size={20} className="text-[var(--color-primary)]" />
-                       <span className="font-bold">{result.fileName}</span>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                       <div className="flex items-center gap-2">
+                          <FileText size={20} className="text-[var(--color-primary)]" />
+                          <span className="font-bold">{result.fileName}</span>
+                       </div>
+                       {result.consensus && (
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                             result.consensus.overallConsensus === 'DISCREPANCY_FLAGGED'
+                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
+                                : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
+                          }`}>
+                             <ShieldCheck className="w-3.5 h-3.5" />
+                             <span>
+                                {result.consensus.overallConsensus === 'DISCREPANCY_FLAGGED'
+                                   ? `⚠️ Dual AI Flagged: ${result.consensus.discrepancyMarkers} marker discrepancy`
+                                   : `🛡️ Dual AI Verified: Gemini + Claude 3.5 Sonnet (Mumbai)`}
+                             </span>
+                             <span className="text-[10px] opacity-75 font-mono">({result.consensus.agreementPercentage}%)</span>
+                          </div>
+                       )}
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -1197,9 +1252,28 @@ export default function UploadCenter({
                               const urgency = getUrgencyAndNextStep(m.marker, m.status, m.value);
                               return (
                                 <tr key={i} className="hover:bg-surface/50">
-                                  <td className="px-4 py-3 font-medium">{m.marker}</td>
+                                  <td className="px-4 py-3 font-medium">
+                                    <div>{m.marker}</div>
+                                    {m.consensusStatus === 'DISCREPANCY' && m.discrepancyNote && (
+                                      <div className="text-[11px] text-amber-500 font-normal mt-0.5">
+                                        ⚠️ {m.discrepancyNote}
+                                      </div>
+                                    )}
+                                    {m.consensusStatus === 'VERIFIED' && (
+                                      <div className="text-[10px] text-emerald-500/80 font-normal mt-0.5">
+                                        ✓ Dual AI Verified
+                                      </div>
+                                    )}
+                                  </td>
                                   <td className="px-4 py-3 text-right font-medium">
-                                     {m.value} <span className="text-muted text-xs font-normal ml-0.5">{m.unit}</span>
+                                     <div>
+                                       {m.value} <span className="text-muted text-xs font-normal ml-0.5">{m.unit}</span>
+                                     </div>
+                                     {m.claudeValue !== undefined && m.claudeValue !== null && m.consensusStatus === 'DISCREPANCY' && (
+                                       <div className="text-[10px] text-amber-500/90 font-mono">
+                                         Claude: {m.claudeValue}
+                                       </div>
+                                     )}
                                   </td>
                                   <td className="px-4 py-3">
                                      <span className={`px-2 py-1 flex items-center w-fit rounded text-xs uppercase font-bold tracking-wider ${

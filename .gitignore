@@ -45,3 +45,6 @@ serviceAccount*.json
 
 # Cloud Functions build output (built on predeploy)
 functions/lib/
+
+# Firebase cache
+.firebase/

@@ -58,6 +58,18 @@ export const executeFullUploadPipeline = async (
     // 2. Extract & Normalize
     const extraction = await extractLabData(rawFiles);
 
+    // 2b. Dual-Model Consensus Verification (Gemini + Claude 3.5 Sonnet v2 - AWS Bedrock Mumbai)
+    try {
+      const { reconcileDualModelConsensus } = await import("./ai/consensusExtractionService");
+      const consensus = await reconcileDualModelConsensus(extraction, { rawFiles });
+      if (consensus?.observations?.length) {
+        extraction.observations = consensus.observations as any;
+        (extraction as any).consensus = consensus.consensusSummary;
+      }
+    } catch (consensusErr) {
+      console.warn("[UploadPipeline] Dual-model consensus check deferred to single-model:", consensusErr);
+    }
+
     // 3. Write to Firestore
     const collectionDate =
       extraction.collection_date ||
