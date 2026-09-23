@@ -16,11 +16,15 @@
       - `Acknowledgments`: `https://aegishealthai.co.in/security.html#acknowledgments`
       - `Hiring`: `https://aegishealthai.co.in/about.html`
     - Verified live across `https://aegishealthai.co.in/.well-known/security.txt`, `https://api.aegishealthai.co.in/.well-known/security.txt`, and `https://www.aegishealthai.co.in/.well-known/security.txt` (`HTTP/2 200 OK`, 342 bytes).
-- **Cloudflare Worker Native RS256 JWT Verification (`aegishealthai-edge`)**:
+- **Cloudflare Worker Native RS256 JWT Verification & AI Gateway Routing (`aegishealthai-edge`)**:
   - 🔐 **Cryptographic Firebase ID Token Verification**:
     - Replaced shared bearer secret dependency with native WebCrypto RS256 token verification using Google's public JWKs (`securetoken@system.gserviceaccount.com`).
     - Validates signature, audience (`aegis-health-app-90697`), issuer, expiry (`exp`), and issuance timestamp.
-    - Successfully deployed revision `2203e468-24c9-4858-9992-4d1c07a54dd0` to Cloudflare zone `aegishealthai.co.in`.
+  - 🤖 **Cloudflare AI Gateway (`aegishealthai`) Integration**:
+    - Routed edge worker AI requests through `https://gateway.ai.cloudflare.com/v1/{account_id}/aegishealthai/google-ai-studio/...`.
+    - Real-time logging of token counts, inference costs, latency percentiles, and cache hits (`X-AI-Cache-Status`) directly into the Cloudflare AI Gateway dashboard.
+    - Zero-downtime resilience: Automatic silent failover to direct Google AI Studio (`generativelanguage.googleapis.com`) on any transient gateway issues.
+    - Successfully deployed revision `749c6ae3-89c1-4306-bfa2-2589e912a041` to Cloudflare zone `aegishealthai.co.in`.
     - Live verified: `POST /api/ai/generate` with missing/invalid auth returns `401 Unauthorized`.
 - **Client AI Auth & CSP Hardening**:
   - 🛡️ **Prioritize User ID Token**:
