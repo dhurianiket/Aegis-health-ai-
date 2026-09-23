@@ -15,6 +15,7 @@ export interface Env {
   EDGE_SHARED_SECRET?: string;
   FIREBASE_PROJECT_ID?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
+  CF_AI_GATEWAY_ID?: string;
   CF_AIG_TOKEN?: string;
 }
 
@@ -266,59 +267,93 @@ export default {
         );
       }
 
-      // Upstream Gemini API URL
-      const upstreamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+      // Primary: Route via Cloudflare AI Gateway for edge caching, telemetry, and analytics
+      // Fallback: Direct Google AI Studio endpoint for 100% failover resilience
+      const accountId = env.CLOUDFLARE_ACCOUNT_ID || "ca163e8753d019d7dfa1937535d7ea57";
+      const gatewayId = env.CF_AI_GATEWAY_ID || "aegishealthai";
+      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-ai-studio/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+      const directGoogleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+
+      const payload = JSON.stringify({
+        contents: body.contents,
+        generationConfig: body.generationConfig,
+        systemInstruction: body.systemInstruction,
+        safetySettings: body.safetySettings,
+      });
+
+      const gatewayHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+        "User-Agent": "AegisHealthAI-Edge/2.0",
+      };
+      if (env.CF_AIG_TOKEN) {
+        gatewayHeaders["cf-aig-authorization"] = `Bearer ${env.CF_AIG_TOKEN}`;
+      }
+
+      let upstreamResponse: Response;
+      let usedGateway = true;
 
       try {
-        const upstreamResponse = await fetch(upstreamUrl, {
+        upstreamResponse = await fetch(gatewayUrl, {
+          method: "POST",
+          headers: gatewayHeaders,
+          body: payload,
+        });
+
+        // Failover if Cloudflare AI Gateway encounters transient 502/503/504 or auth error
+        if (!upstreamResponse.ok && (upstreamResponse.status >= 502 || upstreamResponse.status === 401)) {
+          console.warn(`[AIGateway] Gateway returned HTTP ${upstreamResponse.status}, failing over to direct Google AI Studio`);
+          upstreamResponse = await fetch(directGoogleUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": "AegisHealthAI-Edge/2.0",
+            },
+            body: payload,
+          });
+          usedGateway = false;
+        }
+      } catch (gatewayErr) {
+        console.warn("[AIGateway] Gateway fetch exception, failing over to direct Google AI Studio:", gatewayErr);
+        upstreamResponse = await fetch(directGoogleUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "User-Agent": "AegisHealthAI-Edge/2.0",
           },
-          body: JSON.stringify({
-            contents: body.contents,
-            generationConfig: body.generationConfig,
-            systemInstruction: body.systemInstruction,
-            safetySettings: body.safetySettings,
-          }),
+          body: payload,
         });
+        usedGateway = false;
+      }
 
-        const upstreamData = await upstreamResponse.json() as any;
+      const upstreamData = await upstreamResponse.json() as any;
 
-        // Catch Google geographical location restrictions (e.g. India Anycast routing to unsupported region)
-        const errorMsg = String(upstreamData?.error?.message || "");
-        if (errorMsg.includes("User location is not supported") || upstreamResponse.status === 403 && errorMsg.includes("location")) {
-          return new Response(
-            JSON.stringify({
-              error: "Location restriction encountered",
-              message: "Google AI endpoint reported geographical restriction. Retry in progress.",
-              code: "LOCATION_UNSUPPORTED",
-              request_id: requestId,
-            }),
-            { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "1" } },
-          );
-        }
-
-        return new Response(JSON.stringify(upstreamData), {
-          status: upstreamResponse.status,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-            "X-Auth-Method": authMethod,
-            "X-Request-Id": requestId,
-          },
-        });
-      } catch (upstreamErr: any) {
+      // Catch Google geographical location restrictions (e.g. India Anycast routing to unsupported region)
+      const errorMsg = String(upstreamData?.error?.message || "");
+      if (errorMsg.includes("User location is not supported") || upstreamResponse.status === 403 && errorMsg.includes("location")) {
         return new Response(
           JSON.stringify({
-            error: "Gateway Timeout / Upstream Failure",
-            message: upstreamErr?.message || "Failed to contact Gemini upstream",
+            error: "Location restriction encountered",
+            message: "Google AI endpoint reported geographical restriction. Retry in progress.",
+            code: "LOCATION_UNSUPPORTED",
             request_id: requestId,
           }),
-          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "1" } },
         );
       }
+
+      const aigCacheStatus = upstreamResponse.headers.get("cf-aig-cache-status") || "BYPASS";
+
+      return new Response(JSON.stringify(upstreamData), {
+        status: upstreamResponse.status,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "X-Auth-Method": authMethod,
+          "X-Request-Id": requestId,
+          "X-AI-Gateway": usedGateway ? gatewayId : "direct-fallback",
+          "X-AI-Cache-Status": aigCacheStatus,
+        },
+      });
     }
 
     return new Response(
