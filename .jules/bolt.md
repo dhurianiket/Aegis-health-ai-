@@ -69,3 +69,6 @@
 ## 2024-05-31 - Schwartzian Transform for Component Prop Sorting
 **Learning:** Performing a `.sort()` inside a `.map()` callback (such as rendering UI lists with nested structures) causes an `O(N log N)` evaluation where the comparator redundantly executes operations, like date parsing (`safeGetTime()`), on every single comparison step. When this is done inline inside a React render function, it severely impacts performance and blocks the main thread.
 **Action:** Extract expensive inline sorting operations using a Schwartzian Transform (Decorate-Sort-Undecorate) to pre-calculate the expensive value (like `safeGetTime`) during a single O(N) mapping phase before the sort phase.
+## 2026-09-23 - Prevent O(M) Sub-Lookups in useMemo Arrays
+**Learning:** Checking array inclusions inside `.filter()` and `.map()` iterations utilizing `selectedDocIds.includes(id)` generates an O(N * M) performance penalty because `.includes()` iterates the secondary array linearly every time.
+**Action:** When filtering or mapping data against an array of identifiers within React functional components, first extract the identifier array into a module-scoped or `useMemo`-wrapped `Set` (e.g. `new Set(selectedDocIds)`), and use `.has()` inside the iterations for O(1) time complexity.
