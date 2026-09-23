@@ -217,6 +217,9 @@
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical`, `../../utils/dateUtils...`
 - **[`src/components/SBAR/SBARView.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/SBAR/SBARView.tsx)**
   - *Imports*: `../Export/SBARPreview`
+- **[`src/components/Security/TurnstileWidget.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Security/TurnstileWidget.tsx)**
+  - *Exports*: `TurnstileWidgetProps`, `TurnstileWidget`, `default`
+  - *Imports*: `../../hooks/useTurnstile`
 - **[`src/components/Settings/AbdmConnectModal.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Settings/AbdmConnectModal.tsx)**
   - *Exports*: `default`
   - *Imports*: `../ABDM/AbdmConnectModal`
@@ -249,7 +252,7 @@
   - *Imports*: `../../services/ai/entityExtractorService`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical...`
 - **[`src/components/Upload/UploadCenter.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Upload/UploadCenter.tsx)**
   - *Exports*: `generateSuggestedTags`, `UploadCenter`, `default`
-  - *Imports*: `../../services/ai/gemini`, `../../services/usageService`, `../../lib/firebase/firestore`, `./NoteAnalyzer`, `../../context/AuthContext...`
+  - *Imports*: `../../services/ai/gemini`, `../../services/ai/consensusExtractionService`, `../../services/usageService`, `../../lib/firebase/firestore`, `./NoteAnalyzer...`
 - **[`src/components/ui/AIErrorBoundary.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/ui/AIErrorBoundary.tsx)**
   - *Exports*: `AIErrorBoundary`
   - *Imports*: `../../lib/logger`
@@ -271,17 +274,24 @@
 ### ⚙️ Services & API Providers
 - **[`src/lib/firebase/config.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/config.ts)**
   - *Exports*: `auth`, `db`, `storage`, `googleProvider`, `default`
+  - *Imports*: `../authTokenProvider`
 - **[`src/lib/firebase/firestore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/firestore.ts)**
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
   - *Imports*: `./config`, `../../utils/dateUtils`, `../../types/medical`, `../../types/wearables`
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
   - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`, `generateDataProvenanceReceipt`, `downloadProvenanceReceiptJson`
   - *Imports*: `../types/abdm`, `./fhirService`
+- **[`src/services/ai/bedrockService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/bedrockService.ts)**
+  - *Exports*: `BEDROCK_MODELS`, `BedrockModelKey`, `DEFAULT_BEDROCK_REGION`, `DEFAULT_EXTRACTION_MODEL`, `DEFAULT_REASONING_MODEL`, `BedrockMessageContent`, `BedrockMessage`, `BedrockInferenceConfig`, `BedrockConverseParams`, `BedrockConverseResponse`, `BedrockError`, `__setBedrockFetchForTests`, `UnifiedAIParams`, `UnifiedAIResponse`
+  - *Imports*: `../../lib/geminiClient`, `./promptFramework`
 - **[`src/services/ai/coachService.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.test.ts)**
   - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
 - **[`src/services/ai/coachService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/coachService.ts)**
   - *Exports*: `COACH_SYSTEM_INSTRUCTION`, `buildCoachPromptAugmentation`, `CoachResponse`, `getCoachResponse`
   - *Imports*: `../../lib/geminiClient`, `../../types/ai`, `./contextService`, `./safetyGuardrail`, `./promptFramework...`
+- **[`src/services/ai/consensusExtractionService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/consensusExtractionService.ts)**
+  - *Exports*: `ConsensusStatus`, `ConsensusObservation`, `ConsensusPrescription`, `DualModelConsensusReport`, `normalizeMarkerName`, `valuesMatch`
+  - *Imports*: `./bedrockService`, `./promptFramework`, `../../utils/aiUtils`
 - **[`src/services/ai/contextService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/contextService.ts)**
   - *Exports*: `getPatientContext`, `formatContextForPrompt`
   - *Imports*: `../../lib/firebase/firestore`, `../alertService`, `../../types/ai`, `../../types/medical`, `../../utils/dateUtils...`
@@ -447,6 +457,9 @@
 - **[`src/hooks/useCoach.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/useCoach.ts)**
   - *Exports*: `useCoach`
   - *Imports*: `../services/ai/coachService`, `../services/ai/contextService`, `../services/ai/safetyGuardrail`, `../types/ai`, `../types/medical...`
+- **[`src/hooks/useTurnstile.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/useTurnstile.ts)**
+  - *Exports*: `UseTurnstileOptions`, `UseTurnstileReturn`, `useTurnstile`
+  - *Imports*: `../lib/turnstileTokenProvider`
 - **[`src/hooks/useWearableTelemetry.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/useWearableTelemetry.ts)**
   - *Exports*: `UseWearableTelemetryResult`, `useWearableTelemetry`
   - *Imports*: `../context/AuthContext`, `../lib/firebase/firestore`, `../services/wearableService`, `../types/wearables`
@@ -475,8 +488,11 @@
 ### 🛠️ Utilities & Helpers
 - **[`src/lib/auditLogger.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/auditLogger.ts)**
   - *Imports*: `./firebase/config`
+- **[`src/lib/authTokenProvider.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/authTokenProvider.ts)**
+  - *Exports*: `TokenProvider`, `setAuthTokenProvider`, `hasAuthTokenProvider`
 - **[`src/lib/geminiClient.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiClient.ts)**
   - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `getEdgeApiBaseUrl`, `isEdgeConfigured`, `getEdgeBearer`, `normalizeModel`, `isLocationRoutingError`, `isNetworkOrRoutingError`, `normalizeSystemInstruction`, `EdgeGeminiError`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `__setGeminiFetchForTests`, `getAI`, `default`
+  - *Imports*: `./authTokenProvider`, `./turnstileTokenProvider`
 - **[`src/lib/geminiUtils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiUtils.ts)**
   - *Exports*: `Type`
   - *Imports*: `./geminiClient`
@@ -486,6 +502,8 @@
   - *Exports*: `InteractionRule`, `DRUG_INTERACTIONS`, `isDuplicateClass`, `MED_CATEGORIES`, `isMedInCategory`
 - **[`src/lib/pretext.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/pretext.ts)**
   - *Exports*: `PretextPrepared`, `prepareText`, `measureHeight`, `measureWidth`, `measureLines`
+- **[`src/lib/turnstileTokenProvider.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/turnstileTokenProvider.ts)**
+  - *Exports*: `TurnstileTokenProvider`, `setTurnstileTokenProvider`, `setCachedTurnstileToken`, `hasTurnstileTokenProvider`
 - **[`src/lib/utils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/utils.ts)**
   - *Exports*: `cn`, `formatHealthScore`
 - **[`src/lib/validation.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/validation.ts)**
@@ -511,6 +529,9 @@
 - **[`src/utils/trendAnalysis.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/trendAnalysis.ts)**
   - *Exports*: `CLINICAL_STABILITY_THRESHOLDS`, `TrendSummary`, `computeTrend`, `computeAllTrends`, `formatTrendForPrompt`
   - *Imports*: `../types/health`
+- **[`src/utils/turnstile.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/turnstile.ts)**
+  - *Exports*: `TURNSTILE_SITE_KEY`
+  - *Imports*: `../lib/turnstileTokenProvider`
 
 ### ⚙️ Configuration
 - **[`src/App.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/App.tsx)**
