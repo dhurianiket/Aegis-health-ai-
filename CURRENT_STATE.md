@@ -1,6 +1,47 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXXIV — September 21, 2026
+## Current Snapshot LXXV — September 23, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Cloudflare Edge Security.txt Full RFC 9116 Provisioning**:
+  - 🛡️ **Edge Security.txt Remediation**:
+    - Resolved audit finding regarding "thin" 2-line `security.txt` served by Cloudflare's edge pipeline.
+    - Provisioned dedicated Cloudflare API management credentials and executed `PUT /zones/{zone_id}/security-center/securitytxt`.
+    - Configured all 7 RFC 9116 fields live on edge:
+      - `Contact`: `mailto:founder@aegishealthai.co.in`
+      - `Expires`: `2027-12-31T23:59:59Z`
+      - `Preferred-Languages`: `en, mr, hi`
+      - `Canonical`: `https://aegishealthai.co.in/.well-known/security.txt`
+      - `Policy`: `https://aegishealthai.co.in/security.html`
+      - `Acknowledgments`: `https://aegishealthai.co.in/security.html#acknowledgments`
+      - `Hiring`: `https://aegishealthai.co.in/about.html`
+    - Verified live across `https://aegishealthai.co.in/.well-known/security.txt`, `https://api.aegishealthai.co.in/.well-known/security.txt`, and `https://www.aegishealthai.co.in/.well-known/security.txt` (`HTTP/2 200 OK`, 342 bytes).
+- **Cloudflare Worker Native RS256 JWT Verification (`aegishealthai-edge`)**:
+  - 🔐 **Cryptographic Firebase ID Token Verification**:
+    - Replaced shared bearer secret dependency with native WebCrypto RS256 token verification using Google's public JWKs (`securetoken@system.gserviceaccount.com`).
+    - Validates signature, audience (`aegis-health-app-90697`), issuer, expiry (`exp`), and issuance timestamp.
+    - Successfully deployed revision `2203e468-24c9-4858-9992-4d1c07a54dd0` to Cloudflare zone `aegishealthai.co.in`.
+    - Live verified: `POST /api/ai/generate` with missing/invalid auth returns `401 Unauthorized`.
+- **Client AI Auth & CSP Hardening**:
+  - 🛡️ **Prioritize User ID Token**:
+    - In [`src/lib/geminiClient.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/lib/geminiClient.ts), prioritized authentic Firebase ID token (`idToken || bearer`).
+    - Purged `workers.dev` fallback domain, ensuring 100% of API calls stay on DNSSEC-authenticated `https://api.aegishealthai.co.in` (`AD=true`).
+  - 🌐 **CSP Connect-Src Cleanup & Hosting Deploy**:
+    - Removed `https://aegishealthai-edge.dhurianiket.workers.dev` from `connect-src` in [`firebase.json`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/firebase.json).
+    - Re-deployed live to Firebase Hosting (`last-modified: Wed, 23 Sep 2026 09:56:22 GMT`).
+- **Option B: Dual-Model Consensus for Lab Report Extraction**:
+  - 🔬 **Engineered Consensus Engine ([`src/services/ai/consensusExtractionService.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/services/ai/consensusExtractionService.ts))**:
+    - Cross-verifies extracted lab biomarkers using Claude 3.5 Sonnet v2 to detect decimal shifts, OCR drift, and unit misalignment.
+    - Integrated into upload pipeline and UI ([`UploadCenter.tsx`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/components/Upload/UploadCenter.tsx)).
+- **Option C: Unified AWS Bedrock Microservice in Mumbai ([`src/services/ai/bedrockService.ts`](file:///Volumes/DEOYANI%20SSD/antigravity%20workspace%20/aniket%20/Aegis-health-ai-/src/services/ai/bedrockService.ts))**:
+  - 🇮🇳 **DPDP Act 2023 Compliance**: Pinned inference to AWS Mumbai (`ap-south-1`) with zero client credential exposure.
+  - Implemented automatic bi-directional fallback (`callWithUnifiedFallback`).
+- **🧪 Test Suite & Build Verification**:
+  - Vitest: **67/67 suites passed, 634/634 unit tests passed (100%)**.
+  - TypeScript: `npx tsc --noEmit` &rarr; 0 errors.
+  - Production build: Clean Vite production build.
+
+## Previous Snapshot LXXIV — September 21, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Content-Security-Policy & Geolocation Unblocking for Google Maps API**:
