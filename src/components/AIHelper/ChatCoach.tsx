@@ -457,7 +457,7 @@ ${remindersContext}`;
                 </div>
                 <button
                   onClick={handleToggle}
-                  className="p-2 hover:bg-[var(--color-surface)] rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  className="p-2 hover:bg-[var(--color-surface)] rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                   aria-label="Close chat"
                 >
                   <X className="w-5 h-5 text-[var(--color-text-muted)]" />
@@ -494,7 +494,7 @@ ${remindersContext}`;
                         <button
                           key={i}
                           onClick={() => handleSendMessage(q)}
-                          className="text-left px-4 py-3 rounded-[16px] bg-slate-900 dark:bg-[#1C1C1E] hover:opacity-90 border border-slate-700 dark:border-[#2C2C2E] text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] shadow-sm"
+                          className="text-left px-4 py-3 rounded-[16px] bg-slate-900 dark:bg-[#1C1C1E] hover:opacity-90 border border-slate-700 dark:border-[#2C2C2E] text-sm font-semibold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] shadow-sm"
                         >
                           {q}
                         </button>
@@ -593,7 +593,7 @@ ${remindersContext}`;
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder={isAlAvailable ? (isListening ? "Listening..." : "Ask Aura AI...") : "Neural Link Offline"}
                     disabled={isTyping || !isAlAvailable}
-                    className={`w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full py-3.5 pl-5 pr-24 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${isTyping || !isAlAvailable ? "pointer-events-none opacity-50" : ""} ${isListening ? "ring-2 ring-indigo-500 bg-indigo-500/5 animate-pulse" : ""}`}
+                    className={`w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full py-3.5 pl-5 pr-24 text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${isTyping || !isAlAvailable ? "pointer-events-none opacity-50" : ""} ${isListening ? "ring-2 ring-indigo-500 bg-indigo-500/5 animate-pulse" : ""}`}
                   />
                   <div className="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1.5">
                     {voiceServiceRef.current && (
