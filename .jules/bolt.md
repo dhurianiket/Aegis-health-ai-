@@ -66,3 +66,6 @@
 ## 2026-09-15 - Date Parsing Overhead in Array Reduce Hooks
 **Learning:** When iterating through an array to find a maximum or latest item based on an expensive computation (like date parsing), using `.reduce()` can result in re-evaluating the accumulator's value on every single iteration, doubling the number of expensive operations (from N to 2N-1). Furthermore, starting without a safe initial value can introduce hidden `NaN` null-reference crashes if the array contains invalid elements.
 **Action:** Replace these `.reduce()` implementations with a standard `for` loop initialized securely with the first element. Cache the expensive maximum calculation (e.g., `maxTime`) outside the loop body to cut the computational overhead in half and properly handle `NaN` validation.
+## 2026-09-23 - Prevent O(M) Sub-Lookups in useMemo Arrays
+**Learning:** Checking array inclusions inside `.filter()` and `.map()` iterations utilizing `selectedDocIds.includes(id)` generates an O(N * M) performance penalty because `.includes()` iterates the secondary array linearly every time.
+**Action:** When filtering or mapping data against an array of identifiers within React functional components, first extract the identifier array into a module-scoped or `useMemo`-wrapped `Set` (e.g. `new Set(selectedDocIds)`), and use `.has()` inside the iterations for O(1) time complexity.
