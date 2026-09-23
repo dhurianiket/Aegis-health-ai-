@@ -1,6 +1,33 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXXV — September 23, 2026
+## Current Snapshot LXXVI — September 23, 2026
+### Completed by: Antigravity AI Pair Programmer
+### Tasks Completed:
+- **Cloudflare Turnstile Bot Defense Integration (Site Key `0x4AAAAAAFA-TF6j3OO6uZY0`)**:
+  - 🛡️ **Edge Worker Server-Side Verification (`aegishealthai-edge`)**:
+    - Stored `TURNSTILE_SECRET` (`0x4AAAAAAFA-TCwNLGL5KMJ28IAJ5axLaMA`) in Cloudflare Worker secret store via `wrangler secret put`.
+    - Added cryptographic server-side validation against `https://challenges.cloudflare.com/turnstile/v0/siteverify`.
+    - Enforced domain allowlist validation (`aegishealthai.co.in`, `www.aegishealthai.co.in`, `localhost`, `127.0.0.1`).
+    - Added dedicated `/api/turnstile/verify` endpoint for standalone challenge validation.
+    - Integrated Turnstile verification into `/api/ai/generate` before proxying to Google Gemini / Cloudflare AI Gateway.
+    - Added CORS preflight allow-headers for `X-Turnstile-Token` and `cf-turnstile-response`.
+    - Deployed live revision `21fe1039-373e-459c-9504-23ddb9a79575` on `api.aegishealthai.co.in`.
+  - 🌐 **Content Security Policy (CSP) Updates**:
+    - Updated `firebase.json` CSP to allow `https://challenges.cloudflare.com` across `script-src`, `connect-src`, and `frame-src`.
+    - Deployed live to Firebase Hosting (`https://aegis-health-app-90697.web.app` and `https://aegishealthai.co.in`).
+  - 🧩 **Client-Side Turnstile Token Provider & React Hook**:
+    - Created `src/lib/turnstileTokenProvider.ts` with global token registry, getters, and fallbacks.
+    - Created `src/hooks/useTurnstile.ts` with lifecycle management, script injection, widget rendering, and reset logic.
+    - Created `src/components/Security/TurnstileWidget.tsx` for easy embedding.
+    - Created `src/utils/turnstile.ts` for dynamic on-demand token acquisition.
+    - Integrated `getTurnstileToken` into `UploadCenter.tsx` for edge AI document extraction calls.
+    - Updated `src/lib/geminiClient.ts` to automatically attach `X-Turnstile-Token` headers when tokens are available.
+  - 🧪 **Full Test Suite & Build Verification**:
+    - All **69/69 test suites** and **644/644 unit tests passing (100%)**.
+    - `npx tsc --noEmit` &rarr; 0 errors.
+    - Clean production Vite build (`npm run build`).
+
+## Previous Snapshot LXXV — September 23, 2026
 ### Completed by: Antigravity AI Pair Programmer
 ### Tasks Completed:
 - **Cloudflare Edge Security.txt Full RFC 9116 Provisioning**:

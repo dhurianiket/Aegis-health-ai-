@@ -50,6 +50,7 @@ import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/source
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../lib/firebase/config";
 import { getRecaptchaToken } from "../../utils/recaptcha";
+import { getTurnstileToken } from "../../utils/turnstile";
 
 const EXTRACTION_STEPS = [
   { id: 1, label: 'Uploading...', duration: 1000 },
@@ -586,6 +587,11 @@ export default function UploadCenter({
       setIsProcessing(false);
       return;
     }
+
+    // Acquire Turnstile bot defense token in background for edge AI extractions
+    getTurnstileToken("ai_generate").catch((err) => {
+      console.warn("[UploadCenter] Turnstile token acquisition deferred:", err);
+    });
 
     showToast("Processing your reports...", "info");
     const allExtractions: any[] = [];

@@ -13,6 +13,8 @@
 export interface Env {
   GEMINI_API_KEY: string;
   EDGE_SHARED_SECRET?: string;
+  TURNSTILE_SECRET?: string;
+  TURNSTILE_ENFORCE?: string;
   FIREBASE_PROJECT_ID?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
   CF_AI_GATEWAY_ID?: string;
@@ -145,6 +147,75 @@ async function verifyFirebaseIdToken(token: string, projectId: string): Promise<
   }
 }
 
+interface TurnstileVerifyResult {
+  success: boolean;
+  "error-codes"?: string[];
+  challenge_ts?: string;
+  hostname?: string;
+  action?: string;
+  cdata?: string;
+}
+
+const ALLOWED_TURNSTILE_HOSTNAMES = new Set([
+  "aegishealthai.co.in",
+  "www.aegishealthai.co.in",
+  "aegis-health-app-90697.web.app",
+  "aegis-health-app-90697.firebaseapp.com",
+  "localhost",
+  "127.0.0.1",
+]);
+
+async function verifyTurnstileToken(
+  token: string,
+  secret: string,
+  remoteIp?: string,
+): Promise<{ valid: boolean; result?: TurnstileVerifyResult; error?: string }> {
+  if (!token || typeof token !== "string" || token.length > 2048) {
+    return { valid: false, error: "Missing or malformed Turnstile token" };
+  }
+
+  try {
+    const formData = new URLSearchParams();
+    formData.append("secret", secret);
+    formData.append("response", token);
+    if (remoteIp) {
+      formData.append("remoteip", remoteIp);
+    }
+
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      return { valid: false, error: `Turnstile siteverify HTTP ${res.status}` };
+    }
+
+    const data = (await res.json()) as TurnstileVerifyResult;
+    if (!data.success) {
+      return {
+        valid: false,
+        result: data,
+        error: `Turnstile verification failed: ${(data["error-codes"] || []).join(", ")}`,
+      };
+    }
+
+    // Verify hostname if provided
+    if (data.hostname && !ALLOWED_TURNSTILE_HOSTNAMES.has(data.hostname)) {
+      return {
+        valid: false,
+        result: data,
+        error: `Turnstile hostname rejected: ${data.hostname}`,
+      };
+    }
+
+    return { valid: true, result: data };
+  } catch (err: any) {
+    return { valid: false, error: `Turnstile request error: ${err?.message}` };
+  }
+}
+
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("Origin") || "";
   const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "https://aegishealthai.co.in";
@@ -152,7 +223,7 @@ function getCorsHeaders(request: Request): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-Id, X-Firebase-AppCheck",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-Id, X-Firebase-AppCheck, X-Turnstile-Token, cf-turnstile-response",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
@@ -200,6 +271,37 @@ export default {
       });
     }
 
+    // 2c. Standalone Turnstile Token Verification
+    if (url.pathname === "/api/turnstile/verify" && request.method === "POST") {
+      if (!env.TURNSTILE_SECRET) {
+        return new Response(
+          JSON.stringify({ error: "Configuration Error", message: "TURNSTILE_SECRET is not configured on edge", request_id: requestId }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      let payload: any = {};
+      try {
+        payload = await request.json();
+      } catch {}
+
+      const token = payload.token || request.headers.get("X-Turnstile-Token") || "";
+      const clientIp = request.headers.get("CF-Connecting-IP") || undefined;
+
+      const verifyResult = await verifyTurnstileToken(token, env.TURNSTILE_SECRET, clientIp);
+      if (!verifyResult.valid) {
+        return new Response(
+          JSON.stringify({ success: false, error: verifyResult.error, request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, details: verifyResult.result, request_id: requestId }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // 3. AI Generation Route
     if (url.pathname === "/api/ai/generate" && request.method === "POST") {
       const authHeader = request.headers.get("Authorization") || "";
@@ -244,6 +346,44 @@ export default {
           }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
+      }
+
+      // 3a. Turnstile Bot Verification (Additive Bot Defense)
+      const turnstileToken =
+        request.headers.get("X-Turnstile-Token") ||
+        request.headers.get("cf-turnstile-response") ||
+        "";
+      const clientIp = request.headers.get("CF-Connecting-IP") || undefined;
+      let turnstileVerified = false;
+
+      if (env.TURNSTILE_SECRET) {
+        if (turnstileToken) {
+          const turnstileResult = await verifyTurnstileToken(
+            turnstileToken,
+            env.TURNSTILE_SECRET,
+            clientIp,
+          );
+          if (!turnstileResult.valid) {
+            return new Response(
+              JSON.stringify({
+                error: "Forbidden",
+                message: `Turnstile bot verification failed: ${turnstileResult.error}`,
+                request_id: requestId,
+              }),
+              { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+          turnstileVerified = true;
+        } else if (env.TURNSTILE_ENFORCE === "true" && authMethod !== "shared_secret") {
+          return new Response(
+            JSON.stringify({
+              error: "Forbidden",
+              message: "Missing Turnstile verification token",
+              request_id: requestId,
+            }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
       }
 
       // Read client payload
@@ -352,6 +492,7 @@ export default {
           "X-Request-Id": requestId,
           "X-AI-Gateway": usedGateway ? gatewayId : "direct-fallback",
           "X-AI-Cache-Status": aigCacheStatus,
+          "X-Turnstile-Status": turnstileVerified ? "verified" : (env.TURNSTILE_SECRET ? "unverified" : "disabled"),
         },
       });
     }

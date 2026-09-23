@@ -11,6 +11,9 @@
 import { getAuthToken, hasAuthTokenProvider, setAuthTokenProvider } from './authTokenProvider';
 export { setAuthTokenProvider } from './authTokenProvider';
 export type { TokenProvider } from './authTokenProvider';
+import { getTurnstileToken, setTurnstileTokenProvider } from './turnstileTokenProvider';
+export { setTurnstileTokenProvider, getTurnstileToken } from './turnstileTokenProvider';
+export type { TurnstileTokenProvider } from './turnstileTokenProvider';
 
 export interface GeminiGenerateConfig {
   temperature?: number;
@@ -239,6 +242,7 @@ export async function callEdgeGenerate(
   model: string,
   fetchImpl: typeof fetch = fetch,
   baseUrlOverride?: string,
+  turnstileTokenOverride?: string,
 ): Promise<GeminiGenerateResponse> {
   // Primary auth: User Firebase ID token (JWT RS256 cryptographically verified at Cloudflare Edge)
   // Fallback: Shared edge bearer (during transition or for unauthenticated requests)
@@ -252,6 +256,7 @@ export async function callEdgeGenerate(
     );
   }
 
+  const turnstileToken = turnstileTokenOverride || (await getTurnstileToken());
   const base = baseUrlOverride || getEdgeApiBaseUrl();
   const url = `${base}/api/ai/generate`;
   const requestId =
@@ -263,15 +268,20 @@ export async function callEdgeGenerate(
   const controller = new AbortController();
   const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${authBearer}`,
+    'X-Request-Id': requestId,
+  };
+  if (turnstileToken) {
+    headers['X-Turnstile-Token'] = turnstileToken;
+  }
+
   let response: Response;
   try {
     response = await fetchImpl(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authBearer}`,
-        'X-Request-Id': requestId,
-      },
+      headers,
       body: JSON.stringify(buildEdgeBody(params, model)),
       signal: controller.signal,
     });

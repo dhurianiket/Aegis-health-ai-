@@ -308,4 +308,32 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(lastCallInit.headers.Authorization).toBe('Bearer test-edge-bearer');
     });
   });
+
+  describe('Turnstile Token Provider', () => {
+    it('attaches X-Turnstile-Token header when Turnstile token is available', async () => {
+      const mod = await import('../geminiClient');
+      mod.setTurnstileTokenProvider(async () => 'turnstile-response-token-123');
+
+      const ai = mod.getAI();
+      await ai.models.generateContent({ contents: 'test turnstile protected message' });
+
+      expect(mockFetch).toHaveBeenCalled();
+      const lastCallInit = mockFetch.mock.calls[0][1];
+      expect(lastCallInit.headers['X-Turnstile-Token']).toBe('turnstile-response-token-123');
+
+      mod.setTurnstileTokenProvider(null);
+    });
+
+    it('omits X-Turnstile-Token header when Turnstile token is absent', async () => {
+      const mod = await import('../geminiClient');
+      mod.setTurnstileTokenProvider(null);
+
+      const ai = mod.getAI();
+      await ai.models.generateContent({ contents: 'test unverified message' });
+
+      expect(mockFetch).toHaveBeenCalled();
+      const lastCallInit = mockFetch.mock.calls[0][1];
+      expect(lastCallInit.headers['X-Turnstile-Token']).toBeUndefined();
+    });
+  });
 });
