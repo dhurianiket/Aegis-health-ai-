@@ -149,13 +149,17 @@ export default function SpecialistLounge() {
       // Search query filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchesName = s.name.toLowerCase().includes(q);
-        const matchesDisplayName = s.displayName.toLowerCase().includes(q);
-        const matchesSpecialty = s.specialty.toLowerCase().includes(q);
-        const matchesDesc = s.description.toLowerCase().includes(q);
-        const matchesExpertise = s.expertise.some((exp) => exp.toLowerCase().includes(q));
-        const matchesGuidelines = s.guidelines.some((g) => g.toLowerCase().includes(q));
-        return matchesName || matchesDisplayName || matchesSpecialty || matchesDesc || matchesExpertise || matchesGuidelines;
+        if (s.name.toLowerCase().includes(q)) return true;
+        if (s.displayName.toLowerCase().includes(q)) return true;
+        if (s.specialty.toLowerCase().includes(q)) return true;
+        if (s.description.toLowerCase().includes(q)) return true;
+        for (let i = 0; i < s.expertise.length; i++) {
+          if (s.expertise[i].toLowerCase().includes(q)) return true;
+        }
+        for (let i = 0; i < s.guidelines.length; i++) {
+          if (s.guidelines[i].toLowerCase().includes(q)) return true;
+        }
+        return false;
       }
       return true;
     });

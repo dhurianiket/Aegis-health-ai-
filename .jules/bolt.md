@@ -72,3 +72,6 @@
 ## 2026-09-23 - Prevent O(M) Sub-Lookups in useMemo Arrays
 **Learning:** Checking array inclusions inside `.filter()` and `.map()` iterations utilizing `selectedDocIds.includes(id)` generates an O(N * M) performance penalty because `.includes()` iterates the secondary array linearly every time.
 **Action:** When filtering or mapping data against an array of identifiers within React functional components, first extract the identifier array into a module-scoped or `useMemo`-wrapped `Set` (e.g. `new Set(selectedDocIds)`), and use `.has()` inside the iterations for O(1) time complexity.
+## 2024-05-25 - Short-Circuit Array Filtering
+**Learning:** Eagerly evaluating all string matching conditions (e.g. using multiple `.toLowerCase().includes(...)` assignments) before applying a boolean `||` operator inside a `.filter()` iteration bypasses short-circuiting and causes severe O(N*M) performance bottlenecks during React renders.
+**Action:** Replace eager boolean variable assignments with explicit sequential early return statements (e.g., `if (cheapCondition) return true;`) so the function exits immediately upon the first match, avoiding unnecessary expensive string evaluations on large data sets.
