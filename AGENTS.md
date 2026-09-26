@@ -22,8 +22,14 @@ npm run graphify:full     # deep: 1,164 nodes → graphify-out/
 
 ## 0. Edge AI invariant
 - SPA Gemini traffic: `src/lib/geminiClient.ts` → Worker `POST /api/ai/generate`.
-- Env: `VITE_EDGE_API_URL`, `VITE_AEGIS_EDGE_BEARER` (interim). Never commit the bearer. Rotate after JWT cutover.
+- Env: `VITE_EDGE_API_URL`. Never hardcode API keys or bearer tokens in client code or docs.
 - After changing AI routing, refresh Graphify (`npm run graphify`) and note the snapshot in `CURRENT_STATE.md`.
+
+## 0.1 🔒 ZERO SECRETS LEAK & GGSHIELD DEFENSE INVARIANT (Strictly Enforced)
+- **Zero Secrets Committed**: NEVER commit, log, or document real secrets, API keys, private keys, service account JSONs, bearer tokens, or webhook credentials in source code, comments, git commit messages, or markdown documentation (including `CURRENT_STATE.md`, `WALKTHROUGH.md`, and `README.md`). Use placeholder syntax like `[REDACTED]` or `[CONFIGURED_VIA_SECRET_STORE]`.
+- **Secret Storage Boundaries**: All runtime secrets belong strictly in environment variables (`.env` - gitignored) or edge/cloud secret stores (Cloudflare `wrangler secret put`, Firebase Secret Manager).
+- **Mandatory `ggshield` Pre-Commit / Pre-Push Protection**: GitGuardian's `ggshield` CLI is installed and active in `.git/hooks/pre-commit` and `.git/hooks/pre-push`. All changes MUST pass `ggshield secret scan pre-commit` cleanly. Running `git commit --no-verify` to bypass `ggshield` is strictly forbidden.
+- **Incident Protocol**: If any secret is accidentally flagged by `ggshield`, immediately redact the file, verify `.gitguardian.yaml` exclusions, rotate the affected credential upstream, and ensure a 100% clean `ggshield secret scan` before proceeding.
 
 ## 1. Foundational Architecture Constraints
 - **Stack Consistency:** We are strictly a **React + Vite + TypeScript** application backed by **Firebase Cloud Functions** and the Cloudflare Worker **`aegishealthai-edge`** for Gemini. There is NO Next.js. There is NO Firebase App Hosting. Browser Gemini calls go through `https://api.aegishealthai.co.in` — never embed `GEMINI_API_KEY` in the SPA.

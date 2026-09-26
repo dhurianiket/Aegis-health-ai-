@@ -9,3 +9,4 @@ This file logs verified implementation rules, past bugs, and dead-ends to preven
 4. **Recharts Envelope Rule**: Recharts MUST be wrapped in strict `h-[300px]` height envelopes.
 5. **Real-time Firestore Sync**: Clinical data MUST use real-time `onSnapshot` listeners (`useClinicalContext.ts`).
 6. **Lockfile Synchronization**: Always run `npm install` when updating `package.json` dependencies.
+7. **Zero Secrets Leak & ggshield Defense**: Never write or commit real secrets/tokens to code or markdown documentation. Pre-commit & pre-push hooks are enforced with `ggshield`. Always test staged changes with `ggshield secret scan pre-commit`.

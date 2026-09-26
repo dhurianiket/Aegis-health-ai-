@@ -48,3 +48,6 @@ functions/lib/
 
 # Firebase cache
 .firebase/
+
+# Added by ggshield
+.cache_ggshield
