@@ -6,6 +6,7 @@
 
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
+import DOMPurify from 'dompurify';
 
 function escapeHtml(unsafe: string | number | undefined | null): string {
   if (unsafe == null) return '';
@@ -85,7 +86,7 @@ export async function exportOpdConsultationPdf(
   const sbarClean = (data.sbarSummary || 'Patient profile synthesized cleanly by Aegis AI. All vital parameters within acceptable range.')
     .replace(/[*_#`~]/g, '');
 
-  container.innerHTML = `
+  const rawHtml = `
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0F2647; padding-bottom: 16px; margin-bottom: 20px;">
       <div>
         <h1 style="font-size: 20px; color: #0F2647; margin: 0; font-weight: 900; letter-spacing: -0.5px;">${escapeHtml(clinic)}</h1>
@@ -158,6 +159,8 @@ export async function exportOpdConsultationPdf(
       </div>
     </div>
   `;
+
+  container.innerHTML = DOMPurify.sanitize(rawHtml);
 
   document.body.appendChild(container);
 
