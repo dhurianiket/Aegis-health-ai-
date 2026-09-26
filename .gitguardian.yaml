@@ -1,0 +1,9 @@
+version: 2
+secret:
+  ignored_paths:
+    - "**/.env*"
+    - "**/*service-account*.json"
+    - "**/tests/**"
+    - "**/node_modules/**"
+    - "**/dist/**"
+    - "**/build/**"
