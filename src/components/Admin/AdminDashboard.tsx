@@ -303,6 +303,69 @@ export default function AdminDashboard() {
       }));
   }, [users]);
 
+  // ⚡ Bolt Performance Optimization:
+  // Wrapped expensive sorting in useMemo to prevent main thread blocking on re-renders.
+  // Impact: Prevents O(N log N) sorting execution on every dashboard refresh.
+  const topUsersByTokens = useMemo(() => {
+    return [...users]
+      .sort((a, b) => (b.totalTokensUsed || 0) - (a.totalTokensUsed || 0))
+      .slice(0, 10);
+  }, [users]);
+
+  const topUsersByStorage = useMemo(() => {
+    return [...users]
+      .sort((a, b) => (b.totalStorageBytes || 0) - (a.totalStorageBytes || 0))
+      .slice(0, 10);
+  }, [users]);
+
+  // ⚡ Bolt Performance Optimization:
+  // Memoized object mapping for feature tokens to prevent unnecessary array allocations.
+  const featureTokensArray = useMemo(() => {
+    return globalStats?.featureTokens
+      ? Object.entries(globalStats.featureTokens)
+          .map(([name, value]) => ({ name, value: Number(value) || 0 }))
+          .filter((entry) => entry.value > 0)
+      : [];
+  }, [globalStats?.featureTokens]);
+
+  // ⚡ Bolt Performance Optimization:
+  // Replaced 6 individual O(N) array.reduce() and array.filter() calls with a single O(N) forward loop.
+  // Impact: Reduces array iterations from 6 passes to 1 pass and eliminates callback allocation overhead.
+  const {
+    computedTotalTokens,
+    computedEstimatedCost,
+    computedActiveTodayCount,
+    computedActiveMonthCount,
+    computedTotalDocsCount,
+    computedTotalStorageBytes,
+  } = useMemo(() => {
+    let tokens = 0;
+    let cost = 0;
+    let today = 0;
+    let month = 0;
+    let docs = 0;
+    let storage = 0;
+
+    for (let i = 0; i < users.length; i++) {
+      const u = users[i];
+      tokens += u.totalTokensUsed || 0;
+      cost += getEstCost(u.promptTokens, u.responseTokens, u.thinkingTokens);
+      if (u.isActiveToday) today++;
+      if (u.isActiveThisMonth) month++;
+      docs += u.documentsUploaded || 0;
+      storage += u.totalStorageBytes || 0;
+    }
+
+    return {
+      computedTotalTokens: tokens,
+      computedEstimatedCost: cost,
+      computedActiveTodayCount: today,
+      computedActiveMonthCount: month,
+      computedTotalDocsCount: docs,
+      computedTotalStorageBytes: storage,
+    };
+  }, [users]);
+
   const handleExportCSV = () => {
     if (!users.length) return;
     const headers = [
@@ -386,28 +449,11 @@ export default function AdminDashboard() {
     );
   }
 
-  const topUsersByTokens = [...users]
-    .sort((a, b) => (b.totalTokensUsed || 0) - (a.totalTokensUsed || 0))
-    .slice(0, 10);
-  const topUsersByStorage = [...users]
-    .sort((a, b) => (b.totalStorageBytes || 0) - (a.totalStorageBytes || 0))
-    .slice(0, 10);
 
-  const featureTokensArray = globalStats?.featureTokens
-    ? Object.entries(globalStats.featureTokens)
-        .map(([name, value]) => ({ name, value: Number(value) || 0 }))
-        .filter((entry) => entry.value > 0)
-    : [];
 
-  const computedTotalTokens = users.reduce((acc, u) => acc + (u.totalTokensUsed || 0), 0);
   const totalTokensDisplay = globalStats?.totalTokensUsed || computedTotalTokens;
+  const estimatedCost = globalStats?.estimatedCostUSD || computedEstimatedCost;
 
-  const estimatedCost =
-    globalStats?.estimatedCostUSD ||
-    users.reduce(
-      (acc, u) => acc + getEstCost(u.promptTokens, u.responseTokens, u.thinkingTokens),
-      0
-    );
   const monthlyCostINR = estimatedCost * 84;
   const breakEven99 = Math.max(1, Math.ceil(monthlyCostINR / 99));
   const breakEven199 = Math.max(1, Math.ceil(monthlyCostINR / 199));
@@ -415,14 +461,10 @@ export default function AdminDashboard() {
   const avgCostPerUser = users.length > 0 ? estimatedCost / users.length : 0;
 
   const totalUsersCount = globalStats?.totalUsers || users.length;
-  const activeTodayCount = globalStats?.activeUsersToday ?? users.filter((u) => u.isActiveToday).length;
-  const activeMonthCount = globalStats?.activeUsersThisMonth ?? users.filter((u) => u.isActiveThisMonth).length;
-  const totalDocsCount =
-    globalStats?.totalDocumentsUploaded ||
-    users.reduce((acc, u) => acc + (u.documentsUploaded || 0), 0);
-  const totalStorageBytes =
-    globalStats?.totalStorageBytes ||
-    users.reduce((acc, u) => acc + (u.totalStorageBytes || 0), 0);
+  const activeTodayCount = globalStats?.activeUsersToday ?? computedActiveTodayCount;
+  const activeMonthCount = globalStats?.activeUsersThisMonth ?? computedActiveMonthCount;
+  const totalDocsCount = globalStats?.totalDocumentsUploaded || computedTotalDocsCount;
+  const totalStorageBytes = globalStats?.totalStorageBytes || computedTotalStorageBytes;
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-16">
