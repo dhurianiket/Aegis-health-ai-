@@ -5,7 +5,7 @@
 ### Tasks Completed:
 - **Cloudflare Turnstile Bot Defense Integration (Site Key `0x4AAAAAAFA-TF6j3OO6uZY0`)**:
   - 🛡️ **Edge Worker Server-Side Verification (`aegishealthai-edge`)**:
-    - Stored `TURNSTILE_SECRET` (`0x4AAAAAAFA-TCwNLGL5KMJ28IAJ5axLaMA`) in Cloudflare Worker secret store via `wrangler secret put`.
+    - Stored `TURNSTILE_SECRET` (`[REDACTED_CLOUDFLARE_TURNSTILE_SECRET]`) in Cloudflare Worker secret store via `wrangler secret put`.
     - Added cryptographic server-side validation against `https://challenges.cloudflare.com/turnstile/v0/siteverify`.
     - Enforced domain allowlist validation (`aegishealthai.co.in`, `www.aegishealthai.co.in`, `localhost`, `127.0.0.1`).
     - Added dedicated `/api/turnstile/verify` endpoint for standalone challenge validation.
