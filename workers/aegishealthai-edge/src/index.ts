@@ -8,7 +8,20 @@
  * 1. Primary: Firebase ID Token (JWT RS256 cryptographically verified via Google JWKs)
  * 2. Secondary: Firebase App Check (reCAPTCHA v3 verified via X-Firebase-AppCheck)
  * 3. Fallback: EDGE_SHARED_SECRET (interim secret for transition / internal scripts)
+ *
+ * Specialist Lounge requests (feature flag "specialist", sent by the SPA as the
+ * `aegisFeature` body field or `X-Aegis-Feature` header) additionally get a
+ * server-side maxOutputTokens ceiling and a patient-directed-dosing output
+ * guard (see ./dosingGuard.ts). Other routes (e.g. report extraction) are
+ * never passed through the guard.
  */
+
+import {
+  LOUNGE_FEATURE,
+  applyLoungeOutputGuard,
+  clampLoungeGenerationConfig,
+  resolveFeature,
+} from "./dosingGuard";
 
 export interface Env {
   GEMINI_API_KEY: string;
@@ -223,7 +236,7 @@ function getCorsHeaders(request: Request): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-Id, X-Firebase-AppCheck, X-Turnstile-Token, cf-turnstile-response",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-Id, X-Firebase-AppCheck, X-Turnstile-Token, cf-turnstile-response, X-Aegis-Feature",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
@@ -397,6 +410,9 @@ export default {
         );
       }
 
+      const feature = resolveFeature(request.headers.get("X-Aegis-Feature"), body);
+      const isLounge = feature === LOUNGE_FEATURE;
+
       const model = body.model || "gemini-3.6-flash";
       const apiKey = env.GEMINI_API_KEY;
 
@@ -416,7 +432,8 @@ export default {
 
       const payload = JSON.stringify({
         contents: body.contents,
-        generationConfig: body.generationConfig,
+        // Lounge: never trust the client alone for output-token caps.
+        generationConfig: isLounge ? clampLoungeGenerationConfig(body.generationConfig) : body.generationConfig,
         systemInstruction: body.systemInstruction,
         safetySettings: body.safetySettings,
       });
@@ -424,6 +441,8 @@ export default {
       const gatewayHeaders: Record<string, string> = {
         "Content-Type": "application/json",
         "User-Agent": "AegisHealthAI-Edge/2.0",
+        // Privacy: do not store prompt/response bodies (PHI) in AI Gateway logs; metadata only.
+        "cf-aig-collect-log-payload": "false",
       };
       if (env.CF_AIG_TOKEN) {
         gatewayHeaders["cf-aig-authorization"] = `Bearer ${env.CF_AIG_TOKEN}`;
@@ -465,7 +484,7 @@ export default {
         usedGateway = false;
       }
 
-      const upstreamData = await upstreamResponse.json() as any;
+      let upstreamData = await upstreamResponse.json() as any;
 
       // Catch Google geographical location restrictions (e.g. India Anycast routing to unsupported region)
       const errorMsg = String(upstreamData?.error?.message || "");
@@ -483,6 +502,18 @@ export default {
 
       const aigCacheStatus = upstreamResponse.headers.get("cf-aig-cache-status") || "BYPASS";
 
+      // Lounge-only output guard: replace patient-directed dosing with a fixed safe reply.
+      let outputGuard = "off";
+      if (isLounge && upstreamResponse.ok) {
+        const guarded = applyLoungeOutputGuard(upstreamData, body.contents);
+        upstreamData = guarded.payload;
+        outputGuard = guarded.replaced ? "replaced" : "pass";
+        if (guarded.replaced) {
+          // Category only — never log model or user text (PHI).
+          console.warn(`[OutputGuard] Lounge reply replaced (${guarded.reason}) for request ${requestId}`);
+        }
+      }
+
       return new Response(JSON.stringify(upstreamData), {
         status: upstreamResponse.status,
         headers: {
@@ -493,6 +524,7 @@ export default {
           "X-AI-Gateway": usedGateway ? gatewayId : "direct-fallback",
           "X-AI-Cache-Status": aigCacheStatus,
           "X-Turnstile-Status": turnstileVerified ? "verified" : (env.TURNSTILE_SECRET ? "unverified" : "disabled"),
+          "X-Aegis-Output-Guard": outputGuard,
         },
       });
     }
