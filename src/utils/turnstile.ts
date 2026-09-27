@@ -47,30 +47,73 @@ export async function loadTurnstileScript(): Promise<void> {
   });
 }
 
+const CONTAINER_ID = 'aegis-turnstile-wrapper';
+/** Non-interactive challenges normally resolve in 1-3 s. */
+const NON_INTERACTIVE_TIMEOUT_MS = 10000;
+/** If Cloudflare asks the user to interact, give them time to do so. */
+const INTERACTIVE_TIMEOUT_MS = 120000;
+
+let inFlight: Promise<string | null> | null = null;
+
 /**
- * Ensures a headless container exists in document body for Turnstile challenges.
+ * Creates the (initially hidden) container used for Turnstile challenges.
+ *
+ * The widget is rendered with `appearance: 'interaction-only'`, so Cloudflare
+ * only paints it if the visitor must interact. The container is additionally
+ * kept `display:none` until `before-interactive-callback` fires, so an idle or
+ * already-passed widget can never sit on top of the UI (e.g. the bottom nav).
  */
-function getOrCreateTurnstileContainer(): HTMLElement {
-  let el = document.getElementById('aegis-turnstile-wrapper');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'aegis-turnstile-wrapper';
-    // Position offscreen so interactive challenges can display if needed, but invisible by default
-    el.style.position = 'fixed';
-    el.style.bottom = '12px';
-    el.style.right = '12px';
-    el.style.zIndex = '99999';
-    document.body.appendChild(el);
-  }
+function createTurnstileContainer(): HTMLElement {
+  document.getElementById(CONTAINER_ID)?.remove();
+  const el = document.createElement('div');
+  el.id = CONTAINER_ID;
+  el.setAttribute('aria-live', 'polite');
+  el.style.position = 'fixed';
+  el.style.left = '50%';
+  el.style.top = '50%';
+  el.style.transform = 'translate(-50%, -50%)';
+  el.style.zIndex = '99999';
+  el.style.display = 'none';
+  document.body.appendChild(el);
   return el;
+}
+
+function showContainer(): void {
+  const el = document.getElementById(CONTAINER_ID);
+  if (el) el.style.display = 'block';
+}
+
+/**
+ * Removes the widget iframe and its container from the DOM.
+ * Tokens are single-use, so every acquisition renders a fresh widget.
+ */
+function teardownWidget(turnstile: any): void {
+  if (turnstileWidgetId) {
+    try {
+      turnstile?.remove(turnstileWidgetId);
+    } catch {
+      /* widget already gone */
+    }
+    turnstileWidgetId = null;
+  }
+  document.getElementById(CONTAINER_ID)?.remove();
 }
 
 /**
  * Acquires a fresh single-use Turnstile token for a given action.
+ * Concurrent callers share the same in-flight challenge.
  */
 export async function getTurnstileToken(action = 'ai_generate'): Promise<string | null> {
   if (typeof window === 'undefined') return null;
+  if (inFlight) return inFlight;
 
+  inFlight = acquireTurnstileToken(action).finally(() => {
+    inFlight = null;
+  });
+  return inFlight;
+}
+
+async function acquireTurnstileToken(action: string): Promise<string | null> {
   try {
     await loadTurnstileScript();
   } catch (err) {
@@ -84,65 +127,79 @@ export async function getTurnstileToken(action = 'ai_generate'): Promise<string 
     return null;
   }
 
+  // Never reuse a previous widget: tokens are single-use.
+  teardownWidget(turnstile);
+
   return new Promise<string | null>((resolve) => {
-    try {
-      const container = getOrCreateTurnstileContainer();
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
-      // If a widget was already rendered, reset it or remove it
-      if (turnstileWidgetId) {
+    const finish = (token: string | null) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      teardownWidget(turnstile);
+      resolve(token);
+    };
+
+    const armTimeout = (ms: number) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        let late: string | null = null;
         try {
-          turnstile.reset(turnstileWidgetId);
+          late = turnstileWidgetId ? turnstile.getResponse(turnstileWidgetId) || null : null;
         } catch {
-          try {
-            turnstile.remove(turnstileWidgetId);
-          } catch {}
-          turnstileWidgetId = null;
+          late = null;
         }
-      }
+        if (late) setCachedTurnstileToken(late);
+        finish(late);
+      }, ms);
+    };
 
-      if (!turnstileWidgetId) {
-        turnstileWidgetId = turnstile.render(container, {
-          sitekey: TURNSTILE_SITE_KEY,
-          action,
-          theme: 'dark',
-          size: 'flexible',
-          callback: (token: string) => {
-            setCachedTurnstileToken(token);
-            resolve(token);
-          },
-          'error-callback': (err: any) => {
-            console.warn('[Turnstile] Verification error callback:', err);
-            resolve(null);
-          },
-          'expired-callback': () => {
-            setCachedTurnstileToken(null);
-            resolve(null);
-          },
-        });
-      } else {
-        // Retrieve existing token if valid
-        const currentToken = turnstile.getResponse(turnstileWidgetId);
-        if (currentToken) {
-          setCachedTurnstileToken(currentToken);
-          resolve(currentToken);
-        }
-      }
-
-      // Safety timeout: don't hang requests indefinitely if user is offline
-      setTimeout(() => {
-        const timeoutToken = turnstileWidgetId
-          ? turnstile.getResponse(turnstileWidgetId)
-          : null;
-        if (timeoutToken) {
-          setCachedTurnstileToken(timeoutToken);
-          resolve(timeoutToken);
-        } else {
-          resolve(null);
-        }
-      }, 7000);
+    try {
+      const container = createTurnstileContainer();
+      turnstileWidgetId = turnstile.render(container, {
+        sitekey: TURNSTILE_SITE_KEY,
+        action,
+        theme: 'dark',
+        size: 'flexible',
+        appearance: 'interaction-only',
+        'refresh-expired': 'manual',
+        callback: (token: string) => {
+          setCachedTurnstileToken(token);
+          finish(token);
+        },
+        'before-interactive-callback': () => {
+          showContainer();
+          armTimeout(INTERACTIVE_TIMEOUT_MS);
+        },
+        'error-callback': (err: any) => {
+          console.warn('[Turnstile] Verification error callback:', err);
+          setCachedTurnstileToken(null);
+          finish(null);
+          // Returning true tells Turnstile we handled the error.
+          return true;
+        },
+        'expired-callback': () => {
+          setCachedTurnstileToken(null);
+          finish(null);
+        },
+        'timeout-callback': () => {
+          setCachedTurnstileToken(null);
+          finish(null);
+        },
+      });
+      armTimeout(NON_INTERACTIVE_TIMEOUT_MS);
     } catch (renderError) {
       console.warn('[Turnstile] Execution exception:', renderError);
-      resolve(null);
+      finish(null);
     }
   });
+}
+
+/** Test-only: reset module state. */
+export function __resetTurnstileStateForTests(): void {
+  turnstileWidgetId = null;
+  inFlight = null;
+  document.getElementById(CONTAINER_ID)?.remove();
 }
