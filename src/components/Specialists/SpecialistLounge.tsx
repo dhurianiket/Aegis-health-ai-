@@ -27,6 +27,15 @@ import {
   buildLoungeSystemInstruction,
   buildPatientDataBlock,
 } from "../../services/ai/specialists/loungePrompt";
+import {
+  LOUNGE_EDGE_FEATURE,
+  TRUNCATION_NOTE,
+  buildLoungeGenerationConfig,
+  getLoungeModel,
+  isAbortError,
+  resolveModelUsed,
+} from "../../services/ai/specialists/loungeModelConfig";
+import type { GeminiGenerateResponse } from "../../lib/geminiClient";
 import EmergencyTriageCard from "./EmergencyTriageCard";
 import { trackEvent } from "../../utils/analytics";
 
@@ -164,12 +173,15 @@ export default function SpecialistLounge() {
     fetchChat();
   }, [activeSpecialist, user?.uid, activeProfile?.id]);
 
+  // Stop: cancels the in-flight edge request (AbortController → fetch) and
+  // resets the UI. The aborted reply is never displayed or saved.
   const handleAbort = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
-      setIsTyping(false);
-      setStreamedText("");
+      abortControllerRef.current = null;
     }
+    setIsTyping(false);
+    setStreamedText("");
   };
 
   const SPECIALIST_TABS = Object.values(SPECIALISTS);
@@ -277,6 +289,7 @@ export default function SpecialistLounge() {
       const patientData = await getPatientContext(user.uid, activeProfile);
       // Name withheld: the model does not need it (data minimisation).
       const context = formatContextForPrompt(patientData, { includeName: false });
+      if (controller.signal.aborted) return;
 
       const specialist = getSpecialist(activeSpecialist);
 
@@ -310,6 +323,7 @@ export default function SpecialistLounge() {
       if (isSummaryRequest && historyItems.length === 0) {
         sourceHashForCache = await generateSourceHash(systemPrompt + patientDataBlock + text);
         const cached = await getCachedReport(user.uid, activeProfile.id || "Myself", `SpecialistSummary_${activeSpecialist}`, sourceHashForCache, LOUNGE_PROMPT_VERSION, false);
+        if (controller.signal.aborted) return;
         if (cached) {
           setMessages((prev) => [
             ...prev,
@@ -323,48 +337,44 @@ export default function SpecialistLounge() {
 
       const turnInput = { message: text, contextParts: [patientDataBlock] };
 
-      let chat = ai.chats.create({
-        model: isSummaryRequest ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview",
+      // Pinned stable model; geminiClient handles fallback and reports the model actually used.
+      const requestedModel = getLoungeModel(isSummaryRequest);
+      const chat = ai.chats.create({
+        model: requestedModel,
         history: historyItems,
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.1,
-        }
+        config: buildLoungeGenerationConfig(systemPrompt, isSummaryRequest),
+        signal: controller.signal,
+        feature: LOUNGE_EDGE_FEATURE,
       });
 
-      let stream;
-      try {
-        stream = await chat.sendMessageStream(turnInput);
-      } catch (proError: unknown) {
-        if (isSummaryRequest) {
-          console.warn("Gemini Pro stream failed, falling back to Flash:", proError);
-          chat = ai.chats.create({
-            model: "gemini-3-flash-preview",
-            history: historyItems,
-            config: {
-              systemInstruction: systemPrompt,
-              temperature: 0.1,
-            }
-          });
-          stream = await chat.sendMessageStream(turnInput);
-        } else {
-          throw proError;
-        }
-      }
+      const stream = await chat.sendMessageStream(turnInput);
 
       let finalText = "";
+      let lastChunk: GeminiGenerateResponse | undefined;
       for await (const chunk of stream) {
         if (controller.signal.aborted) break;
+        lastChunk = chunk;
         const chunkText = chunk.text || "";
         finalText += chunkText;
         // Never show raw referral tags, even mid-stream.
         setStreamedText(stripReferralTags(finalText));
       }
 
-      if (!controller.signal.aborted && finalText.length > 0) {
+      // Aborted (Stop pressed or guide switched): discard silently, save nothing.
+      if (controller.signal.aborted) return;
+
+      const truncated = lastChunk?.finishReason === "MAX_TOKENS";
+      if (finalText.trim().length === 0 && truncated) {
+        finalText = "Sorry, I couldn't finish that answer within the length limit. Please try asking a shorter or more specific question.";
+      }
+
+      if (finalText.length > 0) {
         // Referral tags are parsed into suggestions only; nothing is saved
         // until the user taps "Save suggestion".
-        const { cleanText, suggestions } = parseReferralSuggestions(finalText, activeSpecialist);
+        const parsed = parseReferralSuggestions(finalText, activeSpecialist);
+        const cleanText = truncated && parsed.cleanText ? parsed.cleanText + TRUNCATION_NOTE : parsed.cleanText;
+        const { suggestions } = parsed;
+        const modelUsed = resolveModelUsed(lastChunk, requestedModel);
         const assistantMsg: LoungeMessage = { role: "assistant", content: cleanText, timestamp: new Date() };
         const finalMsgs = [...newMsgs, assistantMsg];
         setMessages(finalMsgs);
@@ -383,21 +393,22 @@ export default function SpecialistLounge() {
           );
         }
         
-        if (isSummaryRequest && historyItems.length === 0 && sourceHashForCache) {
+        // Never cache a truncated summary.
+        if (isSummaryRequest && historyItems.length === 0 && sourceHashForCache && !truncated) {
           await saveCachedReport(user.uid, {
             patientId: activeProfile.id || "Myself",
             reportType: `SpecialistSummary_${activeSpecialist}`,
             sourceHash: sourceHashForCache,
             content: cleanText,
-            modelUsed: "gemini-3.1-pro-preview",
+            // Record the model that actually answered (after any fallback).
+            modelUsed,
             promptVersion: LOUNGE_PROMPT_VERSION,
             status: "success"
           });
         }
       }
     } catch (err: unknown) {
-      const name = err && typeof err === "object" ? (err as { name?: unknown }).name : undefined;
-      if (name !== "AbortError") {
+      if (!isAbortError(err) && !controller.signal.aborted) {
         console.error("Specialist chat error:", err);
         const friendlyMsg = getFriendlyErrorMessage(err);
         setMessages((prev) => [
@@ -406,7 +417,12 @@ export default function SpecialistLounge() {
         ]);
       }
     } finally {
-      setIsTyping(false);
+      // Only the latest request may reset the typing state (an aborted older
+      // request must not clobber a newer one).
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+        setIsTyping(false);
+      }
     }
   };
 

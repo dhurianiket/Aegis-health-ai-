@@ -33,10 +33,24 @@ export interface GeminiGenerateParams {
   generationConfig?: Record<string, unknown>;
   safetySettings?: unknown;
   systemInstruction?: unknown;
+  /** Caller cancellation (e.g. the Lounge Stop button). Aborts the in-flight fetch. */
+  signal?: AbortSignal;
+  /**
+   * Feature flag forwarded to the edge Worker in the JSON body (`aegisFeature`),
+   * e.g. "specialist" enables the Lounge output guard. Sent in the body (not a
+   * custom header) so it never triggers a CORS preflight change.
+   */
+  feature?: string;
 }
 
 export interface GeminiGenerateResponse {
   text: string;
+  /** Model id the edge was actually called with (after any fallback). */
+  modelUsed?: string;
+  /** `modelVersion` reported by Gemini in the response, when present. */
+  modelVersion?: string;
+  /** finishReason of the first candidate (e.g. "STOP", "MAX_TOKENS"). */
+  finishReason?: string;
   candidates?: unknown[];
   usageMetadata?: {
     promptTokenCount?: number;
@@ -68,6 +82,24 @@ const FLASH_ALIASES = new Set([
 
 const PRO_ALIASES = new Set(['gemini-2.5-pro', 'gemini-1.5-pro']);
 
+/** True for caller-initiated cancellation (AbortController.abort()). */
+export function isAbortError(err: unknown): boolean {
+  return !!err && typeof err === 'object' && (err as { name?: unknown }).name === 'AbortError';
+}
+
+function createAbortError(): Error {
+  if (typeof DOMException !== 'undefined') {
+    return new DOMException('The operation was aborted.', 'AbortError');
+  }
+  const e = new Error('The operation was aborted.');
+  e.name = 'AbortError';
+  return e;
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw createAbortError();
+}
+
 export function getEdgeApiBaseUrl(): string {
   const raw =
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EDGE_API_URL) ||
@@ -91,8 +123,25 @@ export function normalizeModel(model: string | undefined): string {
   return model;
 }
 
+/**
+ * A pinned model id the project/region can't serve (404 NOT_FOUND or
+ * "model … not found / not supported"). Treated like "unavailable" so pinned
+ * stable models still fall back to the default model.
+ */
+export function isModelNotFoundError(err: unknown): boolean {
+  if (!err || typeof err !== 'object' || isAbortError(err)) return false;
+  const e = err as { status?: unknown; code?: unknown; message?: unknown };
+  const errorMsg = String(e.message || '').toLowerCase();
+  const errorStatus = e.status ?? e.code;
+  return (
+    errorStatus === 404 ||
+    errorStatus === 'NOT_FOUND' ||
+    (errorMsg.includes('model') && (errorMsg.includes('not found') || errorMsg.includes('is not supported')))
+  );
+}
+
 function isUnavailableError(err: unknown): boolean {
-  if (!err || typeof err !== 'object') return false;
+  if (!err || typeof err !== 'object' || isAbortError(err)) return false;
   const e = err as { status?: unknown; code?: unknown; message?: unknown };
   const errorMsg = String(e.message || '').toLowerCase();
   const errorStatus = e.status ?? e.code;
@@ -199,6 +248,9 @@ function buildEdgeBody(params: GeminiGenerateParams, model: string): Record<stri
     model,
     contents: params.contents,
   };
+  if (params.feature) {
+    body.aegisFeature = params.feature;
+  }
 
   if (Object.keys(generationConfig).length > 0) {
     body.generationConfig = generationConfig;
@@ -259,9 +311,14 @@ export async function callEdgeGenerate(
       ? crypto.randomUUID()
       : `aegis-${Date.now()}`);
 
+  throwIfAborted(params.signal);
+
   const timeoutMs = 90_000;
   const controller = new AbortController();
   const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+  // Propagate caller cancellation (Stop button) to the in-flight fetch.
+  const onCallerAbort = () => controller.abort();
+  params.signal?.addEventListener('abort', onCallerAbort, { once: true });
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -282,7 +339,12 @@ export async function callEdgeGenerate(
     });
   } catch (err: unknown) {
     clearTimeout(timeoutHandle);
-    if (err && typeof err === 'object' && (err as { name?: string }).name === 'AbortError') {
+    params.signal?.removeEventListener('abort', onCallerAbort);
+    if (params.signal?.aborted) {
+      // User cancelled: surface a real AbortError (never retried, never shown as an error).
+      throw createAbortError();
+    }
+    if (isAbortError(err)) {
       throw new EdgeGeminiError('Edge Gemini request timed out or was aborted', {
         status: 408,
         requestId,
@@ -293,7 +355,16 @@ export async function callEdgeGenerate(
     clearTimeout(timeoutHandle);
   }
 
-  const rawText = await response.text();
+  let rawText: string;
+  try {
+    rawText = await response.text();
+  } catch (err: unknown) {
+    if (params.signal?.aborted) throw createAbortError();
+    throw err;
+  } finally {
+    params.signal?.removeEventListener('abort', onCallerAbort);
+  }
+  throwIfAborted(params.signal);
   let parsed: unknown = null;
   try {
     parsed = rawText ? JSON.parse(rawText) : null;
@@ -317,8 +388,21 @@ export async function callEdgeGenerate(
       ? (parsed as { usageMetadata?: GeminiGenerateResponse['usageMetadata'] }).usageMetadata
       : undefined;
 
+  const modelVersion =
+    parsed && typeof parsed === 'object' && typeof (parsed as { modelVersion?: unknown }).modelVersion === 'string'
+      ? (parsed as { modelVersion: string }).modelVersion
+      : undefined;
+  const firstCandidate =
+    parsed && typeof parsed === 'object'
+      ? (parsed as { candidates?: Array<{ finishReason?: unknown }> }).candidates?.[0]
+      : undefined;
+  const finishReason = typeof firstCandidate?.finishReason === 'string' ? firstCandidate.finishReason : undefined;
+
   return {
     text: extractText(parsed),
+    modelUsed: model,
+    modelVersion,
+    finishReason,
     candidates:
       parsed && typeof parsed === 'object' && 'candidates' in parsed
         ? (parsed as { candidates?: unknown[] }).candidates
@@ -341,6 +425,7 @@ export async function callEdgeWithPoPRetry(
       return await callEdgeGenerate(params, model, fetchImpl, primaryUrl);
     } catch (err: unknown) {
       lastErr = err;
+      if (params.signal?.aborted || isAbortError(err)) throw err;
       if (isNetworkOrRoutingError(err) && i < 2) {
         await new Promise((r) => setTimeout(r, 150 * (i + 1) + Math.random() * 50));
         continue;
@@ -358,12 +443,16 @@ async function generateWithFallback(
   const originalModel = params.model;
   const effectiveModel = normalizeModel(params.model);
 
-  const attempt = async (model: string) => callEdgeWithPoPRetry(params, model, fetchImpl);
+  const attempt = async (model: string) => {
+    throwIfAborted(params.signal);
+    return callEdgeWithPoPRetry(params, model, fetchImpl);
+  };
+  const shouldFallBack = (err: unknown) => isUnavailableError(err) || isModelNotFoundError(err);
 
   try {
     return await attempt(effectiveModel);
   } catch (err: unknown) {
-    if (!isUnavailableError(err)) throw err;
+    if (!shouldFallBack(err)) throw err;
 
     if (effectiveModel !== DEFAULT_MODEL) {
       console.warn(
@@ -372,7 +461,7 @@ async function generateWithFallback(
       try {
         return await attempt(DEFAULT_MODEL);
       } catch (retryErr: unknown) {
-        if (!isUnavailableError(retryErr)) throw retryErr;
+        if (!shouldFallBack(retryErr)) throw retryErr;
         console.warn(
           `[Gemini Edge] "${DEFAULT_MODEL}" unavailable. Retrying with "${SECONDARY_FALLBACK}"...`,
         );
@@ -411,6 +500,10 @@ export interface EdgeChatCreateParams {
   model?: string;
   history?: unknown;
   config?: GeminiGenerateConfig;
+  /** Caller cancellation for every request made by this session. */
+  signal?: AbortSignal;
+  /** Edge feature flag (see GeminiGenerateParams.feature). */
+  feature?: string;
 }
 
 export interface AegisAI {
@@ -451,6 +544,8 @@ function createChatSession(
   const model = createParams?.model;
   const history = createParams?.history;
   const config = createParams?.config;
+  const signal = createParams?.signal;
+  const feature = createParams?.feature;
 
   const run = (input: EdgeChatMessageInput) =>
     generateWithFallback(
@@ -459,6 +554,8 @@ function createChatSession(
         contents: buildChatContents(history, input),
         config,
         systemInstruction: config?.systemInstruction,
+        signal,
+        feature,
       },
       fetchImpl,
     );
@@ -471,6 +568,8 @@ function createChatSession(
         contents: buildChatContents(history, input),
         config,
         systemInstruction: config?.systemInstruction,
+        signal,
+        feature,
       },
       fetchImpl,
     ),

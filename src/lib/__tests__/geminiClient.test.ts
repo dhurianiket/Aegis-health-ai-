@@ -214,6 +214,75 @@ describe('geminiClient edge proxy + model normalization', () => {
     });
   });
 
+  describe('Lounge limits, cancellation and model labelling', () => {
+    it('passes maxOutputTokens + thinkingConfig through to the edge and the feature flag in the body', async () => {
+      const ai = getAI();
+      const chat = ai.chats.create({
+        model: 'gemini-3.8-flash',
+        config: { systemInstruction: 'S', temperature: 0.1, maxOutputTokens: 1536, thinkingConfig: { thinkingLevel: 'low' } },
+        feature: 'specialist',
+      });
+      await chat.sendMessage('hi');
+      const init = mockFetch.mock.calls[0][1] as RequestInit;
+      const body = JSON.parse(String(init.body));
+      expect(body.model).toBe('gemini-3.8-flash');
+      expect(body.generationConfig).toEqual({ temperature: 0.1, maxOutputTokens: 1536, thinkingConfig: { thinkingLevel: 'low' } });
+      expect(body.aegisFeature).toBe('specialist');
+      // Flag travels in the body, not a custom header (no CORS preflight change).
+      expect(Object.keys(init.headers as Record<string, string>)).not.toContain('X-Aegis-Feature');
+    });
+
+    it('reports modelUsed, modelVersion and finishReason', async () => {
+      mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({
+        candidates: [{ content: { parts: [{ text: 'x' }] }, finishReason: 'MAX_TOKENS' }],
+        modelVersion: 'gemini-3.8-flash-001',
+      }), { status: 200 }));
+      const res = await getAI().models.generateContent({ model: 'gemini-3.8-flash', contents: 'q' });
+      expect(res.modelUsed).toBe('gemini-3.8-flash');
+      expect(res.modelVersion).toBe('gemini-3.8-flash-001');
+      expect(res.finishReason).toBe('MAX_TOKENS');
+    });
+
+    it('falls back from a pinned model that returns 404 and labels the fallback model', async () => {
+      mockFetch
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'models/gemini-3.8-flash is not found for API version v1beta' }), { status: 404 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'fallback' }] } }] }), { status: 200 }));
+      const res = await getAI().models.generateContent({ model: 'gemini-3.8-flash', contents: 'q' });
+      expect(res.text).toBe('fallback');
+      expect(res.modelUsed).toBe('gemini-3.6-flash');
+      const models = mockFetch.mock.calls.map((c) => JSON.parse(String((c[1] as RequestInit).body)).model);
+      expect(models).toEqual(['gemini-3.8-flash', 'gemini-3.6-flash']);
+    });
+
+    it('aborting the caller signal cancels the in-flight fetch with an AbortError (no retry, no fallback)', async () => {
+      let seenSignal: AbortSignal | undefined;
+      mockFetch.mockImplementationOnce((_url: string, init?: RequestInit) => {
+        seenSignal = init?.signal ?? undefined;
+        return new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+        });
+      });
+      const controller = new AbortController();
+      const chat = getAI().chats.create({ model: 'gemini-3.8-flash', signal: controller.signal });
+      // The single-chunk stream starts the request when first iterated.
+      const stream = await chat.sendMessageStream('hi');
+      const pending = stream.next();
+      await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+      controller.abort();
+      await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+      expect(seenSignal?.aborted).toBe(true);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not call the edge at all when the signal is already aborted', async () => {
+      const controller = new AbortController();
+      controller.abort();
+      const chat = getAI().chats.create({ model: 'gemini-3.8-flash', signal: controller.signal });
+      await expect(chat.sendMessage('hi')).rejects.toMatchObject({ name: 'AbortError' });
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Abort and request metadata', () => {
     it('does not PoP-retry when the request is aborted', async () => {
       const abortErr = new DOMException('The operation was aborted.', 'AbortError');
