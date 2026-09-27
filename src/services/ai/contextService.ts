@@ -18,6 +18,7 @@ import {
 import { UserProfile, MedicalDocument } from "../../types/medical";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import { SPECIALISTS } from "./specialists/specialistFactory";
+import { getTriageMessageIndexes, type LoungeMessage } from "./specialists/loungeHistory";
 
 import { WearableBiometrics } from "../../types/wearables";
 
@@ -104,12 +105,25 @@ export const getPatientContext = async (
   const allMedications = Array.from(deduplicatedMeds.values());
   const alerts = getConsolidatedAlerts(labHistory || [], allMedications);
 
-  // Parse specialist consultations across all 10 specialists
+  // Parse specialist consultations across all 10 guides
   const specialistConsultations: SpecialistConsultation[] = (specialistChats || [])
     .filter((c: any) => Array.isArray(c.messages) && c.messages.length > 0)
     .map((c: any) => {
-      const modelMsgs = c.messages.filter((m: any) => m.role === "assistant" || m.role === "model");
-      const userMsgs = c.messages.filter((m: any) => m.role === "user");
+      // Never propagate deterministic emergency-triage turns (crisis message +
+      // fixed card) into other guides' prompts.
+      const triageIdx = getTriageMessageIndexes(
+        (c.messages as Array<{ role?: unknown; content?: unknown; kind?: unknown }>).map(
+          (m): LoungeMessage => ({
+            role: m?.role === "user" ? "user" : "assistant",
+            content: String(m?.content ?? ""),
+            timestamp: new Date(0),
+            kind: m?.kind === "triage" ? "triage" : undefined,
+          }),
+        ),
+      );
+      const safeMsgs = c.messages.filter((_m: unknown, i: number) => !triageIdx.has(i));
+      const modelMsgs = safeMsgs.filter((m: any) => m.role === "assistant" || m.role === "model");
+      const userMsgs = safeMsgs.filter((m: any) => m.role === "user");
       const lastModel = modelMsgs[modelMsgs.length - 1];
       const lastUser = userMsgs[userMsgs.length - 1];
       const specProfile = SPECIALISTS[c.specialistId as SpecialistId];
@@ -130,7 +144,8 @@ export const getPatientContext = async (
         lastUserQuery: lastUser?.content,
         activeReferrals: activeRefs,
       };
-    });
+    })
+    .filter((sc) => sc.lastAssessment.trim().length > 0 || !!sc.lastUserQuery);
 
   // Parse Coach session summary
   let coachSummary: CoachSessionSummary | undefined = undefined;
@@ -185,10 +200,20 @@ export const getPatientContext = async (
   } as PatientContext;
 };
 
+export interface FormatContextOptions {
+  /**
+   * When false, the patient's name is withheld from the prompt (data
+   * minimisation — the model does not need it). Defaults to true for
+   * backwards compatibility with existing callers.
+   */
+  includeName?: boolean;
+}
+
 /**
  * Formats the patient context into a clean, prompt-friendly string.
  */
-export const formatContextForPrompt = (context: any): string => {
+export const formatContextForPrompt = (context: any, options: FormatContextOptions = {}): string => {
+  const includeName = options.includeName ?? true;
   const {
     profile,
     labHistory,
@@ -207,7 +232,9 @@ export const formatContextForPrompt = (context: any): string => {
   } = context;
 
   let prompt = `PATIENT PROFILE:\n`;
-  prompt += `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`;
+  prompt += includeName
+    ? `- Name: ${profile?.name || profile?.fullName || "Unknown"}\n`
+    : `- Name: (withheld)\n`;
   prompt += `- Demographics: Age: ${demographics?.age || "Not provided"}, Gender: ${demographics?.gender || "Not provided"}\n`;
   if (demographics?.height || demographics?.weight) {
     prompt += `- Metrics: `;
@@ -344,13 +371,13 @@ export const formatContextForPrompt = (context: any): string => {
 
   if (specialistConsultations && specialistConsultations.length > 0) {
     prompt += `\nMULTI-SPECIALIST CROSS-CONSULTATIONS & TEAM ASSESSMENTS:\n`;
-    prompt += `(Direct multi-disciplinary awareness: Incorporate colleague assessments for holistic continuity of care)\n`;
+    prompt += `(Unverified earlier AI notes from other guides. They may contain errors; use only for continuity and never as a diagnosis.)\n`;
     specialistConsultations.forEach((sc: SpecialistConsultation) => {
       prompt += `- [${sc.specialistName}] (Last consulted: ${sc.lastUpdated}):\n`;
       if (sc.lastUserQuery) {
         prompt += `  * Patient Question: "${sc.lastUserQuery.replace(/\n/g, ' ')}"\n`;
       }
-      prompt += `  * Assessment & Plan: "${sc.summary.replace(/\n/g, ' ')}"\n`;
+      prompt += `  * Earlier AI note: "${sc.summary.replace(/\n/g, ' ')}"\n`;
       if (sc.activeReferrals && sc.activeReferrals.length > 0) {
         prompt += `  * Referrals Issued: ${sc.activeReferrals.join("; ")}\n`;
       }

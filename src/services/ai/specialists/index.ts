@@ -9,3 +9,4 @@ export * from './psychiatrist';
 export * from './dermatologist';
 export * from './orthopedist';
 export * from './oncologist';
+export * from './safetyCore';

@@ -395,9 +395,16 @@ async function* streamAsSingleChunk(
   yield result;
 }
 
+/**
+ * Chat turn input. `contextParts` are extra user-role text parts placed BEFORE
+ * the message in the same user turn (e.g. a delimited `<patient_data>` block),
+ * so untrusted record data never has to live in the system instruction.
+ */
+export type EdgeChatMessageInput = string | { message: string; contextParts?: readonly string[] };
+
 export interface EdgeChatSession {
-  sendMessageStream: (input: { message: string } | string) => Promise<AsyncGenerator<GeminiGenerateResponse>>;
-  sendMessage: (input: { message: string } | string) => Promise<GeminiGenerateResponse>;
+  sendMessageStream: (input: EdgeChatMessageInput) => Promise<AsyncGenerator<GeminiGenerateResponse>>;
+  sendMessage: (input: EdgeChatMessageInput) => Promise<GeminiGenerateResponse>;
 }
 
 export interface EdgeChatCreateParams {
@@ -419,18 +426,21 @@ export interface AegisAI {
 }
 
 
-function messageToText(input: { message: string } | string): string {
-  return typeof input === 'string' ? input : input.message;
-}
-
-function buildChatContents(history: unknown, userMessage: string): unknown {
+/** @internal exported for unit tests */
+export function buildChatContents(history: unknown, input: EdgeChatMessageInput): unknown[] {
   const contents: unknown[] = [];
   if (Array.isArray(history)) {
     for (const item of history) {
       contents.push(item);
     }
   }
-  contents.push({ role: 'user', parts: [{ text: userMessage }] });
+  const message = typeof input === 'string' ? input : input.message;
+  const contextParts = typeof input === 'string' ? [] : (input.contextParts ?? []);
+  const parts = [
+    ...contextParts.filter((t) => t.trim().length > 0).map((text) => ({ text })),
+    { text: message },
+  ];
+  contents.push({ role: 'user', parts });
   return contents;
 }
 
@@ -442,11 +452,11 @@ function createChatSession(
   const history = createParams?.history;
   const config = createParams?.config;
 
-  const run = (userMessage: string) =>
+  const run = (input: EdgeChatMessageInput) =>
     generateWithFallback(
       {
         model,
-        contents: buildChatContents(history, userMessage),
+        contents: buildChatContents(history, input),
         config,
         systemInstruction: config?.systemInstruction,
       },
@@ -454,11 +464,11 @@ function createChatSession(
     );
 
   return {
-    sendMessage: async (input) => run(messageToText(input)),
+    sendMessage: async (input) => run(input),
     sendMessageStream: async (input) => streamAsSingleChunk(
       {
         model,
-        contents: buildChatContents(history, messageToText(input)),
+        contents: buildChatContents(history, input),
         config,
         systemInstruction: config?.systemInstruction,
       },

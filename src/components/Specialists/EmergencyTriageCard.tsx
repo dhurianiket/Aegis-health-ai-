@@ -62,7 +62,7 @@ export default function EmergencyTriageCard({ result }: EmergencyTriageCardProps
             यह एक मेडिकल इमरजेंसी हो सकती है
           </p>
           <p className="text-sm text-red-900 dark:text-red-100 mt-2">
-            The AI specialist has not answered this message. Please get help from a person now.
+            The AI guide has not answered this message. Please get help from a person now.
           </p>
           <p lang="hi" className="text-sm text-red-900 dark:text-red-100">
             AI विशेषज्ञ ने इस संदेश का जवाब नहीं दिया है। कृपया अभी किसी व्यक्ति से मदद लें।

@@ -10,6 +10,33 @@ import { Medication, DrugInteraction } from "../../types/health";
 import InteractionMatrix from "./InteractionMatrix";
 
 import { useClinicalContext } from "../../hooks/useClinicalContext";
+import { useProfile } from "../../context/ProfileContext";
+
+export interface NewMedicationInput {
+  userId: string;
+  profileId: string | null;
+  name: string;
+  dose: string;
+  frequency: string;
+  startDate: string;
+  rxcui: string | null;
+}
+
+/** Builds the Firestore payload for a manually added medication, scoped to the active profile. */
+export function buildNewMedication(input: NewMedicationInput): Omit<Medication, "id" | "addedAt"> {
+  return {
+    userId: input.userId,
+    profileId: input.profileId,
+    genericName: input.name.trim(),
+    brandName: null,
+    rxcui: input.rxcui,
+    dosage: input.dose.trim() || null,
+    frequency: input.frequency || null,
+    startDate: input.startDate || new Date().toISOString().split("T")[0],
+    endDate: null,
+    prescribedFor: null,
+  };
+}
 
 export default function Medications({
   onOpenChat,
@@ -17,6 +44,7 @@ export default function Medications({
   onOpenChat?: () => void;
 }) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const { labBiomarkers, drugLabContraindications } = useClinicalContext();
 
   const [isAdding, setIsAdding] = useState(false);
@@ -54,17 +82,15 @@ export default function Medications({
       const genericName = name.trim();
       const rxcui = await lookupRxCUI(genericName);
 
-      const newMed: Omit<Medication, 'id' | 'addedAt'> = {
+      const newMed = buildNewMedication({
         userId: user.uid,
-        genericName,
-        brandName: null,
+        profileId: activeProfile?.id ?? null,
+        name: genericName,
+        dose,
+        frequency,
+        startDate,
         rxcui,
-        dosage: dose.trim() || null,
-        frequency: frequency || null,
-        startDate: startDate || new Date().toISOString().split("T")[0],
-        endDate: null,
-        prescribedFor: null
-      };
+      });
 
       await saveMedication(user.uid, newMed);
       await logAuditEvent(user.uid, "ADD_MEDICATION", genericName);

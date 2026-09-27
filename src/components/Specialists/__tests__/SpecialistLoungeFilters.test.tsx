@@ -8,7 +8,7 @@ if (typeof window !== "undefined" && !window.ResizeObserver) {
     observe() {}
     unobserve() {}
     disconnect() {}
-  } as any;
+  } as unknown as typeof ResizeObserver;
 }
 
 const MOCK_USER = { uid: "test-user-123" };
@@ -69,6 +69,10 @@ vi.mock("firebase/firestore", async (importOriginal) => {
 import SpecialistLounge, { HighlightMatch } from "../SpecialistLounge";
 import { within, act } from "@testing-library/react";
 
+// Guide names can be split by <mark> highlights, so match on accessible name.
+const HEART = /Heart Health Guide \(AI\)/;
+const ENDO = /Diabetes & Thyroid Guide \(AI\)/;
+
 describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () => {
   it("renders the search input, pill-style category list, and specialist cards", async () => {
     await act(async () => {
@@ -76,7 +80,7 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
     });
 
     // Search input
-    const searchInput = screen.getByPlaceholderText("Search specialists, expertise, symptoms...");
+    const searchInput = screen.getByPlaceholderText("Search guides, topics, symptoms...");
     expect(searchInput).toBeDefined();
 
     // Category pills container
@@ -91,8 +95,8 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
 
     // Verify specialists initially present in the sidebar list
     const list = screen.getByRole("list");
-    expect(within(list).getByText("AI Cardiologist")).toBeDefined();
-    expect(within(list).getByText("AI Endocrinologist")).toBeDefined();
+    expect(within(list).getByRole("button", { name: HEART })).toBeDefined();
+    expect(within(list).getByRole("button", { name: ENDO })).toBeDefined();
   });
 
   it("filters specialists by category when a category pill is clicked", async () => {
@@ -107,9 +111,9 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
     });
 
     // AI Cardiologist should be visible in the list
-    expect(within(list).getByText("AI Cardiologist")).toBeDefined();
+    expect(within(list).getByRole("button", { name: HEART })).toBeDefined();
     // AI Endocrinologist should be filtered out
-    expect(within(list).queryByText("AI Endocrinologist")).toBeNull();
+    expect(within(list).queryByRole("button", { name: ENDO })).toBeNull();
 
     // Switch to Endocrinology
     const endoPill = screen.getByRole("tab", { name: "Endocrinology" });
@@ -117,8 +121,8 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
       fireEvent.click(endoPill);
     });
 
-    expect(within(list).getByText("AI Endocrinologist")).toBeDefined();
-    expect(within(list).queryByText("AI Cardiologist")).toBeNull();
+    expect(within(list).getByRole("button", { name: ENDO })).toBeDefined();
+    expect(within(list).queryByRole("button", { name: HEART })).toBeNull();
 
     // Switch back to All
     const allPill = screen.getByRole("tab", { name: "All" });
@@ -126,8 +130,8 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
       fireEvent.click(allPill);
     });
 
-    expect(within(list).getByText("AI Cardiologist")).toBeDefined();
-    expect(within(list).getByText("AI Endocrinologist")).toBeDefined();
+    expect(within(list).getByRole("button", { name: HEART })).toBeDefined();
+    expect(within(list).getByRole("button", { name: ENDO })).toBeDefined();
   });
 
   it("filters specialists in real-time when typing in search input", async () => {
@@ -136,15 +140,15 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
     });
     const list = screen.getByRole("list");
 
-    const searchInput = screen.getByPlaceholderText("Search specialists, expertise, symptoms...");
+    const searchInput = screen.getByPlaceholderText("Search guides, topics, symptoms...");
 
     // Search for "Thyroid" which belongs to Endocrinology
     await act(async () => {
       fireEvent.change(searchInput, { target: { value: "Thyroid" } });
     });
 
-    expect(within(list).getByText("AI Endocrinologist")).toBeDefined();
-    expect(within(list).queryByText("AI Cardiologist")).toBeNull();
+    expect(within(list).getByRole("button", { name: ENDO })).toBeDefined();
+    expect(within(list).queryByRole("button", { name: HEART })).toBeNull();
   });
 
   it("renders high-contrast real-time text highlight matches using <mark>", async () => {
@@ -152,7 +156,7 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
       render(<SpecialistLounge />);
     });
 
-    const searchInput = screen.getByPlaceholderText("Search specialists, expertise, symptoms...");
+    const searchInput = screen.getByPlaceholderText("Search guides, topics, symptoms...");
     await act(async () => {
       fireEvent.change(searchInput, { target: { value: "Cardio" } });
     });
@@ -169,7 +173,7 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
     });
     const list = screen.getByRole("list");
 
-    const searchInput = screen.getByPlaceholderText("Search specialists, expertise, symptoms...");
+    const searchInput = screen.getByPlaceholderText("Search guides, topics, symptoms...");
     await act(async () => {
       fireEvent.change(searchInput, { target: { value: "Heart" } });
     });
@@ -182,8 +186,8 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
     });
 
     expect((searchInput as HTMLInputElement).value).toBe("");
-    expect(within(list).getByText("AI Cardiologist")).toBeDefined();
-    expect(within(list).getByText("AI Endocrinologist")).toBeDefined();
+    expect(within(list).getByRole("button", { name: HEART })).toBeDefined();
+    expect(within(list).getByRole("button", { name: ENDO })).toBeDefined();
     expect(screen.queryAllByTestId("search-highlight").length).toBe(0);
   });
 
@@ -193,12 +197,12 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
     });
     const list = screen.getByRole("list");
 
-    const searchInput = screen.getByPlaceholderText("Search specialists, expertise, symptoms...");
+    const searchInput = screen.getByPlaceholderText("Search guides, topics, symptoms...");
     await act(async () => {
       fireEvent.change(searchInput, { target: { value: "QuantumSuperPosition123" } });
     });
 
-    expect(screen.getByText("No specialists match your criteria")).toBeDefined();
+    expect(screen.getByText("No guides match your criteria")).toBeDefined();
     expect(screen.getByText(/QuantumSuperPosition123/)).toBeDefined();
 
     const resetButton = screen.getByRole("button", { name: /Reset filters/i });
@@ -207,8 +211,8 @@ describe("SpecialistLounge Category Filter & Real-Time Highlight Effects", () =>
     });
 
     expect((searchInput as HTMLInputElement).value).toBe("");
-    expect(within(list).getByText("AI Cardiologist")).toBeDefined();
-    expect(within(list).getByText("AI Endocrinologist")).toBeDefined();
+    expect(within(list).getByRole("button", { name: HEART })).toBeDefined();
+    expect(within(list).getByRole("button", { name: ENDO })).toBeDefined();
   });
 
   it("HighlightMatch unit behavior: handles case sensitivity, regex characters, and empty query", () => {
