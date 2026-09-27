@@ -33,6 +33,8 @@ export default function LoadingSpinner({
 
   return (
     <div
+      role="status"
+      aria-label={label || "Loading"}
       className={`flex flex-col items-center justify-center gap-4 ${className}`}
     >
       <motion.div
