@@ -26,7 +26,7 @@ Variables **without** the `VITE_` prefix must never be referenced from client co
 | Secret | Where | Description |
 |--------|-------|-------------|
 | `GEMINI_API_KEY` | Cloudflare Worker `aegishealthai-edge` | Server-side Gemini API key used by the edge proxy. |
-| `EDGE_SHARED_SECRET` | Cloudflare Worker `aegishealthai-edge` | Legacy server-to-server secret. Must never be shipped to the SPA; rotate because the previous value was exposed in the client bundle. |
+| `EDGE_SHARED_SECRET` | ~~Cloudflare Worker `aegishealthai-edge`~~ | **Removed.** The Worker no longer has a shared-secret auth path (Firebase ID token only). Delete it: `npx wrangler@4 secret delete EDGE_SHARED_SECRET`. |
 | `GA_API_SECRET` | Functions/Express only | Server-side only for GA4 Measurement Protocol. The browser must use `gtag`, not MP with a secret. |
 | Firebase service accounts / PEMs | CI secrets / local gitignored files only | Never committed to version control. |
 

@@ -159,7 +159,7 @@ export const getCoachResponse = async (
 ### HEALTH SUMMARY GENERATION RULES
 When the user asks for a health status (e.g., "How am I doing?", "Summarize my labs") or asks what their new lab results mean:
 1. ALWAYS generate a SBAAR-formatted health summary first (Subjective, Background, Assessment, Analysis, Recommendation).
-2. Follow immediately with an "AI Doctor Summary" in plain, empathetic language.
+2. Follow immediately with a "Plain-language summary" in plain, empathetic language (educational information, not a diagnosis).
 3. Use EXACT \`display_value\` strings from the injected lab data (e.g., "< 0.1", not "0").
 4. Show trends: Explicitly compare current values to historical values.
 5. Flag critical values with emojis:

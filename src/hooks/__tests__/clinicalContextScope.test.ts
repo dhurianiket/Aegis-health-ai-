@@ -84,3 +84,26 @@ describe("no cross-profile leakage (synthetic parent + child)", () => {
     expect(labs).toEqual(["LegacyTSH", "ParentLDL"]);
   });
 });
+
+describe("scopeMedicationsForProfile / scopeInteractionsToMedications", () => {
+  const meds = [
+    { id: "a", profileId: "p1", rxcui: "r1" },
+    { id: "b", rxcui: "r2" },
+    { id: "c", profileId: "p2", rxcui: "r3" },
+  ];
+  it("primary sees own + legacy; secondary sees own only; no profile sees nothing", async () => {
+    const { scopeMedicationsForProfile } = await import("../clinicalContextScope");
+    expect(scopeMedicationsForProfile(meds, "p1", true).map((m) => m.id)).toEqual(["a", "b"]);
+    expect(scopeMedicationsForProfile(meds, "p2", false).map((m) => m.id)).toEqual(["c"]);
+    expect(scopeMedicationsForProfile(meds, null, true)).toEqual([]);
+  });
+  it("keeps only interactions whose both drugs are in the scoped meds", async () => {
+    const { scopeInteractionsToMedications } = await import("../clinicalContextScope");
+    const ints = [
+      { id: "x", rxcuiA: "r1", rxcuiB: "r2" },
+      { id: "y", rxcuiA: "r1", rxcuiB: "r3" },
+      { id: "z", rxcuiA: null, rxcuiB: "r1" },
+    ];
+    expect(scopeInteractionsToMedications(ints, [meds[0], meds[1]]).map((i) => i.id)).toEqual(["x"]);
+  });
+});

@@ -7,7 +7,13 @@
  * Authentication Strategy:
  * 1. Primary: Firebase ID Token (JWT RS256 cryptographically verified via Google JWKs)
  * 2. Secondary: Firebase App Check (reCAPTCHA v3 verified via X-Firebase-AppCheck)
- * 3. Fallback: EDGE_SHARED_SECRET (interim secret for transition / internal scripts)
+ *
+ * There is NO shared-secret / static bearer path: only a verified Firebase ID
+ * token authenticates a request (the former EDGE_SHARED_SECRET fallback was
+ * removed because a copy of that bearer once shipped in the public bundle).
+ *
+ * Client aborts are propagated to the upstream Gemini fetch via request.signal
+ * (requires the `enable_request_signal` compatibility flag, set in wrangler.json).
  *
  * Specialist Lounge requests (feature flag "specialist", sent by the SPA as the
  * `aegisFeature` body field or `X-Aegis-Feature` header) additionally get a
@@ -25,7 +31,6 @@ import {
 
 export interface Env {
   GEMINI_API_KEY: string;
-  EDGE_SHARED_SECRET?: string;
   TURNSTILE_SECRET?: string;
   TURNSTILE_ENFORCE?: string;
   FIREBASE_PROJECT_ID?: string;
@@ -332,7 +337,7 @@ export default {
       let authMethod = "none";
       let userUid: string | undefined;
 
-      // Strategy A: Check Firebase ID Token (JWT RS256)
+      // Firebase ID Token (JWT RS256) is the ONLY accepted credential.
       if (bearerToken.includes(".")) {
         const verifyResult = await verifyFirebaseIdToken(bearerToken, projectId);
         if (verifyResult.valid) {
@@ -342,12 +347,6 @@ export default {
         } else {
           console.warn(`[Auth] JWT verification failed for request ${requestId}:`, verifyResult.error);
         }
-      }
-
-      // Strategy B: Check Shared Secret (interim fallback / test scripts)
-      if (!authenticated && env.EDGE_SHARED_SECRET && bearerToken === env.EDGE_SHARED_SECRET) {
-        authenticated = true;
-        authMethod = "shared_secret";
       }
 
       if (!authenticated) {
@@ -387,7 +386,7 @@ export default {
             );
           }
           turnstileVerified = true;
-        } else if (env.TURNSTILE_ENFORCE === "true" && authMethod !== "shared_secret") {
+        } else if (env.TURNSTILE_ENFORCE === "true") {
           return new Response(
             JSON.stringify({
               error: "Forbidden",
@@ -444,9 +443,26 @@ export default {
         // Privacy: do not store prompt/response bodies (PHI) in AI Gateway logs; metadata only.
         "cf-aig-collect-log-payload": "false",
       };
+      if (isLounge) {
+        // Lounge replies are personalised (PHI in the prompt): never serve or store them from the gateway cache.
+        gatewayHeaders["cf-aig-skip-cache"] = "true";
+      }
       if (env.CF_AIG_TOKEN) {
         gatewayHeaders["cf-aig-authorization"] = `Bearer ${env.CF_AIG_TOKEN}`;
       }
+
+      // Propagate client disconnect / Stop to the upstream Gemini call so we
+      // stop spending tokens on a reply nobody will read.
+      const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
+      const directHeaders = {
+        "Content-Type": "application/json",
+        "User-Agent": "AegisHealthAI-Edge/2.0",
+      };
+      const clientClosedResponse = () =>
+        new Response(
+          JSON.stringify({ error: "Client Closed Request", code: "CLIENT_ABORTED", request_id: requestId }),
+          { status: 499, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
 
       let upstreamResponse: Response;
       let usedGateway = true;
@@ -456,6 +472,7 @@ export default {
           method: "POST",
           headers: gatewayHeaders,
           body: payload,
+          signal: clientSignal,
         });
 
         // Failover if Cloudflare AI Gateway encounters transient 502/503/504 or auth error
@@ -463,24 +480,26 @@ export default {
           console.warn(`[AIGateway] Gateway returned HTTP ${upstreamResponse.status}, failing over to direct Google AI Studio`);
           upstreamResponse = await fetch(directGoogleUrl, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "User-Agent": "AegisHealthAI-Edge/2.0",
-            },
+            headers: directHeaders,
             body: payload,
+            signal: clientSignal,
           });
           usedGateway = false;
         }
       } catch (gatewayErr) {
+        if (clientSignal?.aborted) return clientClosedResponse();
         console.warn("[AIGateway] Gateway fetch exception, failing over to direct Google AI Studio:", gatewayErr);
-        upstreamResponse = await fetch(directGoogleUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": "AegisHealthAI-Edge/2.0",
-          },
-          body: payload,
-        });
+        try {
+          upstreamResponse = await fetch(directGoogleUrl, {
+            method: "POST",
+            headers: directHeaders,
+            body: payload,
+            signal: clientSignal,
+          });
+        } catch (directErr) {
+          if (clientSignal?.aborted) return clientClosedResponse();
+          throw directErr;
+        }
         usedGateway = false;
       }
 

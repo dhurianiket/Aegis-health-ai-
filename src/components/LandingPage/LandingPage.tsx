@@ -306,7 +306,7 @@ export default function LandingPage() {
               >
                 <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-400" /> DPDP Act 2023 Aligned</div>
                 <div className="flex items-center gap-2"><Activity className="w-4 h-4 text-teal-400" /> Real-time Lab Analysis</div>
-                <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-cyan-400" /> AI Doctor Visit Prep</div>
+                <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-cyan-400" /> Doctor Visit Prep</div>
                 <div className="flex items-center gap-2"><QrCode className="w-4 h-4 text-orange-400" /> ABHA Gateway Ready</div>
                 <div className="flex items-center gap-2"><FileJson className="w-4 h-4 text-indigo-400" /> FHIR R4 Export</div>
               </motion.div>
