@@ -41,6 +41,12 @@ export interface GeminiGenerateParams {
    * custom header) so it never triggers a CORS preflight change.
    */
   feature?: string;
+  /**
+   * Ask the edge for a guarded SSE stream (`stream: true` in the body). Only
+   * honoured for Lounge requests; any other route (or an older Worker) answers
+   * with plain JSON, which is surfaced as a single chunk.
+   */
+  stream?: boolean;
 }
 
 export interface GeminiGenerateResponse {
@@ -58,12 +64,19 @@ export interface GeminiGenerateResponse {
     totalTokenCount?: number;
     [key: string]: unknown;
   };
+  /**
+   * Streaming only: when true, `text` REPLACES everything received so far
+   * (the edge dosing guard swapped the reply for its fixed safe message).
+   */
+  replace?: boolean;
   raw: unknown;
 }
 
 type EdgeErrorBody = {
   error?: string;
   message?: string;
+  code?: string;
+  resetAt?: string;
   request_id?: string;
 };
 
@@ -251,6 +264,9 @@ function buildEdgeBody(params: GeminiGenerateParams, model: string): Record<stri
   if (params.feature) {
     body.aegisFeature = params.feature;
   }
+  if (params.stream) {
+    body.stream = true;
+  }
 
   if (Object.keys(generationConfig).length > 0) {
     body.generationConfig = generationConfig;
@@ -275,24 +291,93 @@ export class EdgeGeminiError extends Error {
   status?: number | string;
   code?: number | string;
   requestId?: string;
+  /** Machine-readable edge error code, e.g. "LOUNGE_QUOTA_EXCEEDED". */
+  errorCode?: string;
+  /** ISO time the daily quota resets (quota errors only). */
+  resetAt?: string;
+  /** User-facing explanation supplied by the edge (quota errors only). */
+  userMessage?: string;
 
-  constructor(message: string, init?: { status?: number | string; requestId?: string }) {
+  constructor(
+    message: string,
+    init?: { status?: number | string; requestId?: string; errorCode?: string; resetAt?: string; userMessage?: string },
+  ) {
     super(message);
     this.name = 'EdgeGeminiError';
     this.status = init?.status;
     this.code = init?.status;
     this.requestId = init?.requestId;
+    this.errorCode = init?.errorCode;
+    this.resetAt = init?.resetAt;
+    this.userMessage = init?.userMessage;
   }
 }
 
-/** @internal exported for unit tests */
-export async function callEdgeGenerate(
+export const LOUNGE_QUOTA_EXCEEDED = 'LOUNGE_QUOTA_EXCEEDED';
+
+/** True for the edge's per-user daily Lounge quota 429. */
+export function isLoungeQuotaError(err: unknown): err is EdgeGeminiError {
+  return !!err && typeof err === 'object' && (err as { errorCode?: unknown }).errorCode === LOUNGE_QUOTA_EXCEEDED;
+}
+
+function edgeErrorFrom(response: Response, parsed: unknown, requestId: string): EdgeGeminiError {
+  const errBody = (parsed || {}) as EdgeErrorBody;
+  return new EdgeGeminiError(
+    errBody.error || errBody.message || `Edge Gemini request failed (${response.status})`,
+    {
+      status: response.status,
+      requestId: errBody.request_id || response.headers.get('x-request-id') || requestId,
+      errorCode: typeof errBody.code === 'string' ? errBody.code : undefined,
+      resetAt: typeof errBody.resetAt === 'string' ? errBody.resetAt : undefined,
+      userMessage: errBody.code === LOUNGE_QUOTA_EXCEEDED && typeof errBody.message === 'string' ? errBody.message : undefined,
+    },
+  );
+}
+
+function responseFromJson(parsed: unknown, model: string): GeminiGenerateResponse {
+  const usageMetadata =
+    parsed && typeof parsed === 'object' && 'usageMetadata' in parsed
+      ? (parsed as { usageMetadata?: GeminiGenerateResponse['usageMetadata'] }).usageMetadata
+      : undefined;
+
+  const modelVersion =
+    parsed && typeof parsed === 'object' && typeof (parsed as { modelVersion?: unknown }).modelVersion === 'string'
+      ? (parsed as { modelVersion: string }).modelVersion
+      : undefined;
+  const firstCandidate =
+    parsed && typeof parsed === 'object'
+      ? (parsed as { candidates?: Array<{ finishReason?: unknown }> }).candidates?.[0]
+      : undefined;
+  const finishReason = typeof firstCandidate?.finishReason === 'string' ? firstCandidate.finishReason : undefined;
+
+  return {
+    text: extractText(parsed),
+    modelUsed: model,
+    modelVersion,
+    finishReason,
+    candidates:
+      parsed && typeof parsed === 'object' && 'candidates' in parsed
+        ? (parsed as { candidates?: unknown[] }).candidates
+        : undefined,
+    usageMetadata,
+    raw: parsed,
+  };
+}
+
+interface OpenedEdgeRequest {
+  response: Response;
+  requestId: string;
+  /** Stops forwarding caller aborts once the body has been consumed. */
+  detach: () => void;
+}
+
+async function openEdgeRequest(
   params: GeminiGenerateParams,
   model: string,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch,
   baseUrlOverride?: string,
   turnstileTokenOverride?: string,
-): Promise<GeminiGenerateResponse> {
+): Promise<OpenedEdgeRequest> {
   // Auth: user Firebase ID token only (JWT RS256 cryptographically verified at Cloudflare Edge).
   const idToken = await getAuthToken();
   const authBearer = (idToken || '').trim();
@@ -329,6 +414,7 @@ export async function callEdgeGenerate(
     headers['X-Turnstile-Token'] = turnstileToken;
   }
 
+  const detach = () => params.signal?.removeEventListener('abort', onCallerAbort);
   let response: Response;
   try {
     response = await fetchImpl(url, {
@@ -352,9 +438,14 @@ export async function callEdgeGenerate(
     }
     throw err;
   } finally {
+    // The timeout covers time-to-headers only; a stream may legitimately run longer.
     clearTimeout(timeoutHandle);
   }
+  return { response, requestId, detach };
+}
 
+async function readJsonResponse(opened: OpenedEdgeRequest, params: GeminiGenerateParams, model: string): Promise<GeminiGenerateResponse> {
+  const { response, requestId, detach } = opened;
   let rawText: string;
   try {
     rawText = await response.text();
@@ -362,7 +453,7 @@ export async function callEdgeGenerate(
     if (params.signal?.aborted) throw createAbortError();
     throw err;
   } finally {
-    params.signal?.removeEventListener('abort', onCallerAbort);
+    detach();
   }
   throwIfAborted(params.signal);
   let parsed: unknown = null;
@@ -372,44 +463,120 @@ export async function callEdgeGenerate(
     parsed = { raw: rawText };
   }
 
-  if (!response.ok) {
-    const errBody = (parsed || {}) as EdgeErrorBody;
-    throw new EdgeGeminiError(
-      errBody.error || errBody.message || `Edge Gemini request failed (${response.status})`,
-      {
-        status: response.status,
-        requestId: errBody.request_id || response.headers.get('x-request-id') || requestId,
-      },
-    );
+  if (!response.ok) throw edgeErrorFrom(response, parsed, requestId);
+  return responseFromJson(parsed, model);
+}
+
+/** @internal exported for unit tests */
+export async function callEdgeGenerate(
+  params: GeminiGenerateParams,
+  model: string,
+  fetchImpl: typeof fetch = fetch,
+  baseUrlOverride?: string,
+  turnstileTokenOverride?: string,
+): Promise<GeminiGenerateResponse> {
+  const opened = await openEdgeRequest(params, model, fetchImpl, baseUrlOverride, turnstileTokenOverride);
+  return readJsonResponse(opened, params, model);
+}
+
+/** @internal exported for unit tests — parses complete SSE blocks from `buffer`. */
+export function parseSseEvents(buffer: string): { events: Array<{ event: string; data: string }>; rest: string } {
+  const blocks = buffer.split(/\r?\n\r?\n/);
+  const rest = blocks.pop() ?? '';
+  const events: Array<{ event: string; data: string }> = [];
+  for (const block of blocks) {
+    let event = 'message';
+    const data: string[] = [];
+    for (const line of block.split(/\r?\n/)) {
+      if (line.startsWith('event:')) event = line.slice(6).trim();
+      else if (line.startsWith('data:')) data.push(line.slice(5).trimStart());
+    }
+    if (data.length) events.push({ event, data: data.join('\n') });
+  }
+  return { events, rest };
+}
+
+/**
+ * Streaming variant. Yields `delta` chunks (append), a `replace` chunk
+ * (`replace: true`, overwrite everything shown) and a final metadata chunk
+ * (empty text, finishReason/usage). If the edge answers with JSON (non-Lounge
+ * route, error, or an older Worker) the whole reply is yielded as one chunk.
+ *
+ * @internal exported for unit tests
+ */
+export async function* callEdgeGenerateStream(
+  params: GeminiGenerateParams,
+  model: string,
+  fetchImpl: typeof fetch = fetch,
+  baseUrlOverride?: string,
+  turnstileTokenOverride?: string,
+): AsyncGenerator<GeminiGenerateResponse> {
+  const opened = await openEdgeRequest({ ...params, stream: true }, model, fetchImpl, baseUrlOverride, turnstileTokenOverride);
+  const { response, requestId, detach } = opened;
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok || !contentType.includes('text/event-stream') || !response.body) {
+    yield await readJsonResponse(opened, params, model);
+    return;
   }
 
-  const usageMetadata =
-    parsed && typeof parsed === 'object' && 'usageMetadata' in parsed
-      ? (parsed as { usageMetadata?: GeminiGenerateResponse['usageMetadata'] }).usageMetadata
-      : undefined;
-
-  const modelVersion =
-    parsed && typeof parsed === 'object' && typeof (parsed as { modelVersion?: unknown }).modelVersion === 'string'
-      ? (parsed as { modelVersion: string }).modelVersion
-      : undefined;
-  const firstCandidate =
-    parsed && typeof parsed === 'object'
-      ? (parsed as { candidates?: Array<{ finishReason?: unknown }> }).candidates?.[0]
-      : undefined;
-  const finishReason = typeof firstCandidate?.finishReason === 'string' ? firstCandidate.finishReason : undefined;
-
-  return {
-    text: extractText(parsed),
-    modelUsed: model,
-    modelVersion,
-    finishReason,
-    candidates:
-      parsed && typeof parsed === 'object' && 'candidates' in parsed
-        ? (parsed as { candidates?: unknown[] }).candidates
-        : undefined,
-    usageMetadata,
-    raw: parsed,
-  };
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let finished = false;
+  try {
+    for (;;) {
+      let chunk: ReadableStreamReadResult<Uint8Array>;
+      try {
+        chunk = await reader.read();
+      } catch (err: unknown) {
+        if (params.signal?.aborted) throw createAbortError();
+        throw err;
+      }
+      if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, { stream: true });
+      const { events, rest } = parseSseEvents(buffer);
+      buffer = rest;
+      for (const ev of events) {
+        let data: Record<string, unknown>;
+        try {
+          data = JSON.parse(ev.data) as Record<string, unknown>;
+        } catch {
+          continue;
+        }
+        throwIfAborted(params.signal);
+        if (ev.event === 'delta' && typeof data.text === 'string') {
+          yield { text: data.text, modelUsed: model, raw: data };
+        } else if (ev.event === 'replace' && typeof data.text === 'string') {
+          yield { text: data.text, replace: true, modelUsed: model, raw: data };
+        } else if (ev.event === 'done') {
+          finished = true;
+          yield {
+            text: '',
+            modelUsed: model,
+            modelVersion: typeof data.modelVersion === 'string' ? data.modelVersion : undefined,
+            finishReason: typeof data.finishReason === 'string' ? data.finishReason : undefined,
+            usageMetadata: (data.usageMetadata as GeminiGenerateResponse['usageMetadata']) ?? undefined,
+            raw: data,
+          };
+        } else if (ev.event === 'error') {
+          throw new EdgeGeminiError(
+            typeof data.message === 'string' ? data.message : 'The AI stream failed',
+            { status: 502, requestId: response.headers.get('x-request-id') || requestId },
+          );
+        }
+      }
+    }
+    throwIfAborted(params.signal);
+    if (!finished) {
+      throw new EdgeGeminiError('The AI stream ended unexpectedly', {
+        status: 502,
+        requestId: response.headers.get('x-request-id') || requestId,
+      });
+    }
+  } finally {
+    detach();
+    if (!finished) reader.cancel().catch(() => undefined);
+  }
 }
 
 export async function callEdgeWithPoPRetry(
@@ -476,12 +643,45 @@ async function generateWithFallback(
   }
 }
 
-async function* streamAsSingleChunk(
+/**
+ * Streams with the same PoP retry + model fallback as generateWithFallback,
+ * but only BEFORE the first chunk is yielded (never duplicates visible text).
+ */
+async function* streamWithFallback(
   params: GeminiGenerateParams,
   fetchImpl: typeof fetch,
 ): AsyncGenerator<GeminiGenerateResponse> {
-  const result = await generateWithFallback(params, fetchImpl);
-  yield result;
+  const effectiveModel = normalizeModel(params.model);
+  const models =
+    effectiveModel !== DEFAULT_MODEL ? [effectiveModel, DEFAULT_MODEL, SECONDARY_FALLBACK] : [DEFAULT_MODEL, SECONDARY_FALLBACK];
+  const shouldFallBack = (err: unknown) => isUnavailableError(err) || isModelNotFoundError(err);
+  const primaryUrl = getEdgeApiBaseUrl();
+
+  for (let m = 0; m < models.length; m++) {
+    const model = models[m];
+    for (let attempt = 0; attempt < 3; attempt++) {
+      throwIfAborted(params.signal);
+      let yielded = false;
+      try {
+        for await (const chunk of callEdgeGenerateStream(params, model, fetchImpl, primaryUrl)) {
+          yielded = true;
+          yield chunk;
+        }
+        return;
+      } catch (err: unknown) {
+        if (yielded || params.signal?.aborted || isAbortError(err)) throw err;
+        if (isNetworkOrRoutingError(err) && attempt < 2) {
+          await new Promise((r) => setTimeout(r, 150 * (attempt + 1) + Math.random() * 50));
+          continue;
+        }
+        if (shouldFallBack(err) && m < models.length - 1) {
+          console.warn(`[Gemini Edge] "${model}" unavailable. Retrying stream with "${models[m + 1]}"...`);
+          break;
+        }
+        throw err;
+      }
+    }
+  }
 }
 
 /**
@@ -562,7 +762,7 @@ function createChatSession(
 
   return {
     sendMessage: async (input) => run(input),
-    sendMessageStream: async (input) => streamAsSingleChunk(
+    sendMessageStream: async (input) => streamWithFallback(
       {
         model,
         contents: buildChatContents(history, input),
@@ -600,7 +800,7 @@ export function getAI(): AegisAI {
         generateContent: (params: GeminiGenerateParams) =>
           generateWithFallback(params, activeFetch),
         generateContentStream: async (params: GeminiGenerateParams) =>
-          streamAsSingleChunk(params, activeFetch),
+          streamWithFallback(params, activeFetch),
       },
       chats: {
         create: (params?: EdgeChatCreateParams) => createChatSession(params, activeFetch),

@@ -11,6 +11,7 @@ import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
 import getAI from "../../lib/geminiClient";
 import { getFriendlyErrorMessage } from "../../utils/aiUtils";
+import { formatLoungeQuotaMessage, isLoungeQuotaError } from "../../services/lounge/loungeQuotaMessage";
 import { saveActiveReferral, getActiveReferrals, updateReferralStatus } from "../../lib/firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
@@ -408,9 +409,11 @@ export default function SpecialistLounge() {
       let lastChunk: GeminiGenerateResponse | undefined;
       for await (const chunk of stream) {
         if (controller.signal.aborted) break;
-        lastChunk = chunk;
+        // Keep the last chunk that carries metadata (the final "done" chunk).
+        if (chunk.finishReason || chunk.modelVersion || !lastChunk) lastChunk = chunk;
         const chunkText = chunk.text || "";
-        finalText += chunkText;
+        // `replace`: the edge dosing guard swapped the reply for its safe message.
+        finalText = chunk.replace ? chunkText : finalText + chunkText;
         // Never show raw referral tags, even mid-stream.
         setStreamedText(stripReferralTags(finalText));
       }
@@ -465,7 +468,7 @@ export default function SpecialistLounge() {
     } catch (err: unknown) {
       if (!isAbortError(err) && !controller.signal.aborted) {
         console.error("Specialist chat error:", err);
-        const friendlyMsg = getFriendlyErrorMessage(err);
+        const friendlyMsg = isLoungeQuotaError(err) ? formatLoungeQuotaMessage(err) : getFriendlyErrorMessage(err);
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: friendlyMsg, timestamp: new Date() }

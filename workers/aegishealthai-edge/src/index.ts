@@ -20,14 +20,31 @@
  * server-side maxOutputTokens ceiling and a patient-directed-dosing output
  * guard (see ./dosingGuard.ts). Other routes (e.g. report extraction) are
  * never passed through the guard.
+ *
+ * Lounge requests are also subject to a per-user daily quota (messages +
+ * tokens) held in the `LoungeQuota` Durable Object (./quota.ts), and may ask
+ * for a guarded SSE stream with `stream: true` (./loungeStream.ts).
  */
 
 import {
   LOUNGE_FEATURE,
   applyLoungeOutputGuard,
   clampLoungeGenerationConfig,
+  collectRequestText,
+  extractDoseAmounts,
   resolveFeature,
 } from "./dosingGuard";
+import {
+  LOUNGE_QUOTA_LIMITS,
+  buildQuotaExceededBody,
+  quotaClient,
+  resolvePlanTier,
+  type DurableNamespaceLike,
+  type QuotaDecision,
+} from "./quota";
+import { createGuardedLoungeStream } from "./loungeStream";
+
+export { LoungeQuota } from "./quota";
 
 export interface Env {
   GEMINI_API_KEY: string;
@@ -37,6 +54,8 @@ export interface Env {
   CLOUDFLARE_ACCOUNT_ID?: string;
   CF_AI_GATEWAY_ID?: string;
   CF_AIG_TOKEN?: string;
+  /** Durable Object namespace for per-user Lounge quotas (wrangler.json durable_objects). */
+  LOUNGE_QUOTA?: DurableNamespaceLike;
 }
 
 const DEFAULT_FIREBASE_PROJECT_ID = "aegis-health-app-90697";
@@ -107,7 +126,7 @@ async function getGooglePublicKeys(): Promise<any[]> {
 /**
  * Cryptographically verifies a Firebase ID Token using native WebCrypto RS256
  */
-async function verifyFirebaseIdToken(token: string, projectId: string): Promise<{ valid: boolean; uid?: string; email?: string; error?: string }> {
+async function verifyFirebaseIdToken(token: string, projectId: string): Promise<{ valid: boolean; uid?: string; email?: string; claims?: Record<string, unknown>; error?: string }> {
   const parsed = parseJwtParts(token);
   if (!parsed) return { valid: false, error: "Malformed JWT" };
 
@@ -159,7 +178,7 @@ async function verifyFirebaseIdToken(token: string, projectId: string): Promise<
       return { valid: false, error: "Cryptographic signature mismatch" };
     }
 
-    return { valid: true, uid: payload.sub, email: payload.email };
+    return { valid: true, uid: payload.sub, email: payload.email, claims: payload };
   } catch (cryptoErr: any) {
     return { valid: false, error: `Crypto verification failed: ${cryptoErr?.message}` };
   }
@@ -242,6 +261,8 @@ function getCorsHeaders(request: Request): Record<string, string> {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-Id, X-Firebase-AppCheck, X-Turnstile-Token, cf-turnstile-response, X-Aegis-Feature",
+    "Access-Control-Expose-Headers":
+      "X-Request-Id, X-Aegis-Stream, X-Aegis-Output-Guard, X-Aegis-Quota-Remaining, X-Aegis-Quota-Reset, Retry-After",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
@@ -336,6 +357,7 @@ export default {
       let authenticated = false;
       let authMethod = "none";
       let userUid: string | undefined;
+      let userClaims: Record<string, unknown> | undefined;
 
       // Firebase ID Token (JWT RS256) is the ONLY accepted credential.
       if (bearerToken.includes(".")) {
@@ -344,6 +366,7 @@ export default {
           authenticated = true;
           authMethod = "firebase_jwt";
           userUid = verifyResult.uid;
+          userClaims = verifyResult.claims;
         } else {
           console.warn(`[Auth] JWT verification failed for request ${requestId}:`, verifyResult.error);
         }
@@ -411,11 +434,64 @@ export default {
 
       const feature = resolveFeature(request.headers.get("X-Aegis-Feature"), body);
       const isLounge = feature === LOUNGE_FEATURE;
+      const wantsStream = isLounge && body.stream === true;
+
+      const defer = (p: Promise<unknown>) => {
+        const safe = p.catch((err) => console.warn(`[Quota] background update failed for request ${requestId}:`, err));
+        if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(safe);
+      };
+
+      // 3b. Lounge daily quota (per verified uid; plan tier from token claims only).
+      let quota: ReturnType<typeof quotaClient> | null = null;
+      let quotaDecision: QuotaDecision | null = null;
+      const quotaHeaders: Record<string, string> = {};
+      if (isLounge && userUid) {
+        if (!env.LOUNGE_QUOTA) {
+          console.warn(`[Quota] LOUNGE_QUOTA binding missing; quota not enforced for request ${requestId}`);
+        } else {
+          try {
+            quota = quotaClient(env.LOUNGE_QUOTA, userUid);
+            const tier = resolvePlanTier(userClaims);
+            quotaDecision = await quota.reserve(LOUNGE_QUOTA_LIMITS[tier]);
+            quotaHeaders["X-Aegis-Quota-Remaining"] = String(
+              Math.max(0, quotaDecision.limits.messagesPerDay - quotaDecision.usage.messages),
+            );
+            quotaHeaders["X-Aegis-Quota-Reset"] = quotaDecision.resetAt;
+          } catch (quotaErr) {
+            // Fail open: a quota-store outage must not take the Lounge down.
+            console.warn(`[Quota] reserve failed for request ${requestId}; failing open:`, quotaErr);
+            quota = null;
+            quotaDecision = null;
+          }
+          if (quotaDecision && !quotaDecision.allowed) {
+            const retryAfter = Math.max(1, Math.ceil((Date.parse(quotaDecision.resetAt) - Date.now()) / 1000));
+            return new Response(JSON.stringify(buildQuotaExceededBody(quotaDecision, requestId)), {
+              status: 429,
+              headers: {
+                ...corsHeaders,
+                ...quotaHeaders,
+                "Content-Type": "application/json",
+                "Retry-After": String(retryAfter),
+                "X-Request-Id": requestId,
+              },
+            });
+          }
+        }
+      }
+      const refundQuota = () => {
+        if (quota && quotaDecision?.allowed) defer(quota.refund());
+      };
+      const commitQuotaTokens = (usageMetadata: unknown) => {
+        if (!quota || !quotaDecision?.allowed) return;
+        const total = Number((usageMetadata as { totalTokenCount?: unknown } | undefined)?.totalTokenCount ?? 0);
+        if (Number.isFinite(total) && total > 0) defer(quota.commit(total));
+      };
 
       const model = body.model || "gemini-3.6-flash";
       const apiKey = env.GEMINI_API_KEY;
 
       if (!apiKey) {
+        refundQuota();
         return new Response(
           JSON.stringify({ error: "Server Configuration Error", message: "GEMINI_API_KEY is unset on edge", request_id: requestId }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -426,8 +502,9 @@ export default {
       // Fallback: Direct Google AI Studio endpoint for 100% failover resilience
       const accountId = env.CLOUDFLARE_ACCOUNT_ID || "ca163e8753d019d7dfa1937535d7ea57";
       const gatewayId = env.CF_AI_GATEWAY_ID || "aegishealthai";
-      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-ai-studio/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
-      const directGoogleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+      const method = wantsStream ? "streamGenerateContent?alt=sse&" : "generateContent?";
+      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-ai-studio/v1beta/models/${encodeURIComponent(model)}:${method}key=${apiKey}`;
+      const directGoogleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:${method}key=${apiKey}`;
 
       const payload = JSON.stringify({
         contents: body.contents,
@@ -458,11 +535,13 @@ export default {
         "Content-Type": "application/json",
         "User-Agent": "AegisHealthAI-Edge/2.0",
       };
-      const clientClosedResponse = () =>
-        new Response(
+      const clientClosedResponse = () => {
+        refundQuota();
+        return new Response(
           JSON.stringify({ error: "Client Closed Request", code: "CLIENT_ABORTED", request_id: requestId }),
           { status: 499, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
+      };
 
       let upstreamResponse: Response;
       let usedGateway = true;
@@ -498,12 +577,60 @@ export default {
           });
         } catch (directErr) {
           if (clientSignal?.aborted) return clientClosedResponse();
+          refundQuota();
           throw directErr;
         }
         usedGateway = false;
       }
 
-      let upstreamData = await upstreamResponse.json() as any;
+      const aigCacheStatus = upstreamResponse.headers.get("cf-aig-cache-status") || "BYPASS";
+      const commonHeaders: Record<string, string> = {
+        ...corsHeaders,
+        ...quotaHeaders,
+        "X-Auth-Method": authMethod,
+        "X-Request-Id": requestId,
+        "X-AI-Gateway": usedGateway ? gatewayId : "direct-fallback",
+        "X-AI-Cache-Status": aigCacheStatus,
+        "X-Turnstile-Status": turnstileVerified ? "verified" : (env.TURNSTILE_SECRET ? "unverified" : "disabled"),
+      };
+
+      // 3c. Guarded SSE stream (Lounge only, opt-in via body.stream === true).
+      if (wantsStream && upstreamResponse.ok && upstreamResponse.body) {
+        const knownDoses = new Set(extractDoseAmounts(collectRequestText(body.contents)));
+        const stream = createGuardedLoungeStream(upstreamResponse.body, {
+          knownDoses,
+          onComplete: (summary) => {
+            if (summary.replaced) {
+              console.warn(`[OutputGuard] Lounge stream replaced (${summary.reason}) for request ${requestId}`);
+            }
+            // Refund only when the upstream failed before the user saw anything;
+            // a Stop mid-reply still counts as a message.
+            if (summary.error && !summary.clientCancelled && summary.releasedChars === 0 && !summary.replaced) refundQuota();
+            else commitQuotaTokens(summary.usageMetadata);
+          },
+        });
+        return new Response(stream, {
+          status: 200,
+          headers: {
+            ...commonHeaders,
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-store",
+            "X-Aegis-Stream": "1",
+            "X-Aegis-Output-Guard": "stream",
+          },
+        });
+      }
+
+      let upstreamData: any;
+      try {
+        upstreamData = await upstreamResponse.json();
+      } catch (parseErr) {
+        if (clientSignal?.aborted) return clientClosedResponse();
+        refundQuota();
+        throw parseErr;
+      }
+      if (upstreamResponse.ok) commitQuotaTokens(upstreamData?.usageMetadata);
+      else refundQuota();
 
       // Catch Google geographical location restrictions (e.g. India Anycast routing to unsupported region)
       const errorMsg = String(upstreamData?.error?.message || "");
@@ -518,8 +645,6 @@ export default {
           { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "1" } },
         );
       }
-
-      const aigCacheStatus = upstreamResponse.headers.get("cf-aig-cache-status") || "BYPASS";
 
       // Lounge-only output guard: replace patient-directed dosing with a fixed safe reply.
       let outputGuard = "off";
@@ -536,13 +661,8 @@ export default {
       return new Response(JSON.stringify(upstreamData), {
         status: upstreamResponse.status,
         headers: {
-          ...corsHeaders,
+          ...commonHeaders,
           "Content-Type": "application/json",
-          "X-Auth-Method": authMethod,
-          "X-Request-Id": requestId,
-          "X-AI-Gateway": usedGateway ? gatewayId : "direct-fallback",
-          "X-AI-Cache-Status": aigCacheStatus,
-          "X-Turnstile-Status": turnstileVerified ? "verified" : (env.TURNSTILE_SECRET ? "unverified" : "disabled"),
           "X-Aegis-Output-Guard": outputGuard,
         },
       });
