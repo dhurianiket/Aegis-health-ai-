@@ -52,7 +52,7 @@ describe('aiUtils: getFriendlyErrorMessage', () => {
   it('detects edge proxy authentication and security verification errors (401, 403)', () => {
     expect(getFriendlyErrorMessage({ status: 401, message: 'Unauthorized' })).toContain('edge auth or security verification required');
     expect(getFriendlyErrorMessage({ status: 403, message: 'Forbidden' })).toContain('edge auth or security verification required');
-    expect(getFriendlyErrorMessage({ message: 'VITE_AEGIS_EDGE_BEARER is not set' })).toContain('edge auth or security verification required');
+    expect(getFriendlyErrorMessage({ message: 'Authentication required: Please sign in with a verified account to access Aegis AI.' })).toContain('edge auth or security verification required');
   });
 
   it('detects edge service unavailable or gateway errors (502, 503, 504)', () => {

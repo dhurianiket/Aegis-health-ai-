@@ -22,3 +22,13 @@
 3. Write/update tests if applicable.
 4. Run `npm run lint` and `npm run build` to verify there are no basic errors.
 5. Create a pull request explaining your changes.
+
+## Secrets & pre-commit scanning
+
+Read [`SECURITY.md`](SECURITY.md#secrets-policy) before contributing. Install the secret-scanning hook once per clone:
+
+```bash
+pip install pre-commit ggshield && pre-commit install
+```
+
+Never commit `.env*` files (except `.env.example`), keys, or service-account JSON, and never put secrets in `VITE_*` variables.

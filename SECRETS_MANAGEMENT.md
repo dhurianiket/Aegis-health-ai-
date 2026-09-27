@@ -3,6 +3,7 @@
 ## Environment Variables
 
 Never commit `.env` / `.env.local` files to version control. See `.env.example` for the template.
+The binding rule for all contributors and agents is in [`SECURITY.md`](SECURITY.md#secrets-policy). `npm run build` runs `scripts/check-client-env.mjs`, which fails if any `VITE_*` name looks like a secret (`SECRET|TOKEN|BEARER|PRIVATE|PASSWORD`) or if `dist/` contains secret-shaped strings.
 
 ### Client-Exposed Variables (`VITE_*`)
 
@@ -12,7 +13,7 @@ Anything prefixed with `VITE_` is **public in the client JavaScript bundle**.
 |----------|--------|-------------|
 | Firebase web config (`VITE_FIREBASE_*`) | Public by design | Protect data with Auth + Security Rules (+ App Check). Never put Admin SDK keys or service-account JSON in `VITE_*`. |
 | `VITE_EDGE_API_URL` | Public Worker base URL | `https://api.aegishealthai.co.in`. |
-| `VITE_AEGIS_EDGE_BEARER` | **Interim** shared bearer | Interim shared secret for Worker proxy auth. Still leakable from the SPA. Rotate when Firebase JWT verification lands on the Worker. |
+| `VITE_AEGIS_EDGE_BEARER` | **Removed / Forbidden** | Former shared edge bearer. It was compiled into the public bundle, so it is treated as leaked. The SPA now authenticates to the edge **only** with the user's Firebase ID token. Rotate `EDGE_SHARED_SECRET` on the Worker. |
 | `VITE_GA_MEASUREMENT_ID` | Public by design | Standard GA4 measurement stream id (`G-KKGF16H7CY`). |
 | `VITE_GEMINI_API_KEY` | **Deprecated** | Do not set on Hosting after edge cutover. Rotate any key that was ever built into a production bundle. |
 | `VITE_CF_AIG_TOKEN` | **Forbidden** client-side | Cloudflare AI Gateway tokens must remain strictly in server/Worker secrets. |
@@ -25,7 +26,7 @@ Variables **without** the `VITE_` prefix must never be referenced from client co
 | Secret | Where | Description |
 |--------|-------|-------------|
 | `GEMINI_API_KEY` | Cloudflare Worker `aegishealthai-edge` | Server-side Gemini API key used by the edge proxy. |
-| `EDGE_SHARED_SECRET` | Cloudflare Worker `aegishealthai-edge` | Worker secret matching `VITE_AEGIS_EDGE_BEARER` until JWT auth. |
+| `EDGE_SHARED_SECRET` | Cloudflare Worker `aegishealthai-edge` | Legacy server-to-server secret. Must never be shipped to the SPA; rotate because the previous value was exposed in the client bundle. |
 | `GA_API_SECRET` | Functions/Express only | Server-side only for GA4 Measurement Protocol. The browser must use `gtag`, not MP with a secret. |
 | Firebase service accounts / PEMs | CI secrets / local gitignored files only | Never committed to version control. |
 
