@@ -20,7 +20,11 @@ import { trackUsage } from "../../services/usageService";
 import { getActiveMedications } from "../../services/medicationService";
 import { getUpcomingReminders } from "../../services/reminderService";
 import { saveCoachChat, getCoachChat, saveActiveReferral } from "../../lib/firebase/firestore";
-import { SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
+import { parseReferralSuggestions, stripReferralTags } from "../../services/ai/specialists/referrals";
+import ReferralSuggestionChips, { type ReferralSuggestionItem } from "../Specialists/ReferralSuggestionChips";
+import { resolvePrimaryProfileId, scopeMedicationsForProfile } from "../../hooks/clinicalContextScope";
+
+const COACH_REFERRAL_SOURCE = "Aura AI Health Coach";
 
 interface ChatCoachProps {
   externalOpen?: boolean;
@@ -49,7 +53,7 @@ export default function ChatCoach({
   const [isListening, setIsListening] = useState(false);
   const voiceServiceRef = useRef<any>(null);
   const { user } = useAuth();
-  const { activeProfile } = useProfile();
+  const { activeProfile, profiles } = useProfile();
   const { contextString: globalClinicalContext } = useClinicalContext();
 
   useEffect(() => {
@@ -108,6 +112,10 @@ export default function ChatCoach({
   }, []);
   const [contextStats, setContextStats] = useState({ meds: 0, reports: 0 });
   useEffect(() => {
+    setReferralSuggestions([]);
+  }, [activeProfile?.id]);
+
+  useEffect(() => {
     if (isOpen && user && activeProfile) {
       getPatientContext(user.uid, activeProfile).then(ctx => {
         setContextStats({ meds: ctx.medications?.length || 0, reports: ctx.labHistory?.length || 0 });
@@ -125,6 +133,7 @@ export default function ChatCoach({
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [referralSuggestions, setReferralSuggestions] = useState<ReferralSuggestionItem[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [processingMessage, setProcessingMessage] = useState("Analyzing your request...");
@@ -185,6 +194,7 @@ export default function ChatCoach({
     };
 
     setMessages((prev) => [...prev, userMsg]);
+    setReferralSuggestions([]);
     setIsTyping(true);
     setStreamedText("");
     setError(null);
@@ -202,7 +212,14 @@ export default function ChatCoach({
       const patientData = await getPatientContext(user.uid, activeProfile);
       const context = formatContextForPrompt(patientData);
       
-      const activeMeds = await getActiveMedications(user.uid);
+      // Medications are account-level: only include the active profile's
+      // (primary profile also sees untagged legacy records).
+      const primaryProfileId = resolvePrimaryProfileId(profiles ?? []);
+      const activeMeds = scopeMedicationsForProfile(
+        await getActiveMedications(user.uid),
+        activeProfile.id,
+        !!activeProfile.id && activeProfile.id === primaryProfileId,
+      );
       const reminders = await getUpcomingReminders(user.uid, 30);
       
       const medsContext = activeMeds.length > 0 
@@ -233,8 +250,8 @@ STRICT RULES:
 TEAM MULTI-SPECIALIST AWARENESS:
 You can see earlier conversations with the 10 AI health information guides in the Health Guides (AI) lounge (Heart Health, Diabetes & Thyroid, Kidney Health, etc.). These are AI notes, not doctors' opinions, and may contain errors.
 When the user asks what a guide said or about specific organ concerns, refer to those notes. Never approve, start, stop or change medicines; advise discussing medicine decisions with a registered medical practitioner.
-If the user presents symptoms or labs requiring specialized physician evaluation, you can issue an inter-specialist referral using:
-[REFERRAL: specialist_id | Reason for specialist evaluation]
+If a topic would benefit from one of the Health Guides (AI), you may SUGGEST it with a tag (the user decides whether to save it; it is not a medical referral):
+[REFERRAL: specialist_id | Short reason]
 
 Valid specialist_ids: cardiologist, endocrinologist, nephrologist, neurologist, gastroenterologist, pulmonologist, psychiatrist, dermatologist, orthopedist, oncologist.
 
@@ -285,7 +302,8 @@ ${remindersContext}`;
         if (controller.signal.aborted) break;
         const chunkText = chunk.text || "";
         finalText += chunkText;
-        setStreamedText((prev) => prev + chunkText);
+        // Never show raw referral tags, even mid-stream.
+        setStreamedText(stripReferralTags(finalText));
         if (chunk.usageMetadata) finalUsage = chunk.usageMetadata;
       }
       
@@ -344,10 +362,14 @@ ${remindersContext}`;
         }
       }
 
-      if (cleaned.length > 0) {
+      // Referral tags become tap-to-save suggestions; nothing is auto-saved.
+      const parsedReferrals = parseReferralSuggestions(cleaned);
+      const displayText = parsedReferrals.cleanText;
+
+      if (displayText.length > 0) {
         const assistantMsg: ChatMessage = {
           role: "assistant",
-          content: cleaned,
+          content: displayText,
           timestamp: new Date(),
         };
         const updatedMsgs = [...messages, userMsg, assistantMsg];
@@ -357,20 +379,9 @@ ${remindersContext}`;
           saveCoachChat(user.uid, activeProfile?.id || "Myself", updatedMsgs).catch(console.error);
         }
 
-        // Parse any outbound referrals
-        const referralRegex = /\[REFERRAL:\s*([a-zA-Z0-9_-]+)\s*\|\s*([^\]]+)\]/gi;
-        let match;
-        while ((match = referralRegex.exec(cleaned)) !== null) {
-          const target = match[1].toLowerCase().trim();
-          const reason = match[2].trim();
-          if (target in SPECIALISTS && user?.uid) {
-            saveActiveReferral(user.uid, activeProfile?.id || "Myself", {
-              fromAgent: "Aura AI Health Coach",
-              toSpecialist: target,
-              reason,
-            }).catch(console.error);
-          }
-        }
+        setReferralSuggestions(
+          parsedReferrals.suggestions.map((sug) => ({ ...sug, status: "idle" as const })),
+        );
       }
       setStreamedText("");
     } catch (err: any) {
@@ -393,6 +404,28 @@ ${remindersContext}`;
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleSaveReferralSuggestion = async (index: number) => {
+    const suggestion = referralSuggestions[index];
+    if (!user?.uid || !activeProfile?.id || !suggestion) return;
+    if (suggestion.status === "saving" || suggestion.status === "saved") return;
+    setReferralSuggestions((prev) => prev.map((r, i) => (i === index ? { ...r, status: "saving" } : r)));
+    try {
+      const id = await saveActiveReferral(user.uid, activeProfile.id, {
+        fromAgent: COACH_REFERRAL_SOURCE,
+        toSpecialist: suggestion.toSpecialist,
+        reason: suggestion.reason,
+      });
+      setReferralSuggestions((prev) => prev.map((r, i) => (i === index ? { ...r, status: id ? "saved" : "error" } : r)));
+    } catch (saveErr) {
+      console.error("Failed to save referral suggestion", saveErr);
+      setReferralSuggestions((prev) => prev.map((r, i) => (i === index ? { ...r, status: "error" } : r)));
+    }
+  };
+
+  const handleDismissReferralSuggestion = (index: number) => {
+    setReferralSuggestions((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -519,7 +552,7 @@ ${remindersContext}`;
                         <div className="prose prose-sm dark:prose-invert text-slate-100 dark:text-slate-100 max-w-none font-medium">
                           <ReactMarkdown components={{
                             strong: ({node, ...props}) => <strong className="text-indigo-400 dark:text-indigo-300 font-bold" {...props} />
-                          }}>{msg.content}</ReactMarkdown>
+                          }}>{stripReferralTags(String(msg.content ?? ""))}</ReactMarkdown>
                         </div>
                       ) : (
                         <p className="whitespace-pre-wrap font-medium text-white">{msg.content}</p>
@@ -533,6 +566,15 @@ ${remindersContext}`;
                     </div>
                   </div>
                 ))}
+
+                {!isTyping && (
+                  <ReferralSuggestionChips
+                    suggestions={referralSuggestions}
+                    onSave={handleSaveReferralSuggestion}
+                    onDismiss={handleDismissReferralSuggestion}
+                    className="pr-8"
+                  />
+                )}
 
                 {/* Streaming Response Overlay */}
                 {streamedText && (

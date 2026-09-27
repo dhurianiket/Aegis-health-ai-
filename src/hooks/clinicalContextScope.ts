@@ -175,3 +175,32 @@ export function extractLabBiomarkers(
   }
   return out;
 }
+
+/**
+ * Scopes the Medications page list to the active profile using the same rules
+ * as the AI clinical context: tagged records match their profile, untagged
+ * legacy records are shown to the primary profile only.
+ */
+export function scopeMedicationsForProfile<T extends ProfileScopedRecord>(
+  meds: readonly T[],
+  activeProfileId: string | null | undefined,
+  isPrimaryProfile: boolean,
+): T[] {
+  return scopeToProfile(meds, activeProfileId, isPrimaryProfile);
+}
+
+/**
+ * Drug–drug interactions are stored account-wide. Only show interactions whose
+ * BOTH drugs are among the active profile's (already scoped) medications, so
+ * one family member never sees warnings derived from another member's meds.
+ */
+export function scopeInteractionsToMedications<
+  I extends { rxcuiA?: string | null; rxcuiB?: string | null },
+>(interactions: readonly I[], scopedMeds: ReadonlyArray<{ rxcui?: string | null }>): I[] {
+  const allowed = new Set(
+    scopedMeds.map((m) => (typeof m.rxcui === "string" ? m.rxcui.trim() : "")).filter((r) => r.length > 0),
+  );
+  return interactions.filter(
+    (i) => !!i.rxcuiA && !!i.rxcuiB && allowed.has(i.rxcuiA) && allowed.has(i.rxcuiB),
+  );
+}

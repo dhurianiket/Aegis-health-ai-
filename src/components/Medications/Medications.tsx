@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Pill, Clock, Plus, Trash2, ShieldAlert, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -11,6 +11,11 @@ import InteractionMatrix from "./InteractionMatrix";
 
 import { useClinicalContext } from "../../hooks/useClinicalContext";
 import { useProfile } from "../../context/ProfileContext";
+import {
+  resolvePrimaryProfileId,
+  scopeMedicationsForProfile,
+  scopeInteractionsToMedications,
+} from "../../hooks/clinicalContextScope";
 
 export interface NewMedicationInput {
   userId: string;
@@ -44,7 +49,10 @@ export default function Medications({
   onOpenChat?: () => void;
 }) {
   const { user } = useAuth();
-  const { activeProfile } = useProfile();
+  const { activeProfile, profiles } = useProfile();
+  const activeProfileId = activeProfile?.id ?? null;
+  const primaryProfileId = useMemo(() => resolvePrimaryProfileId(profiles ?? []), [profiles]);
+  const isPrimaryProfile = !!activeProfileId && activeProfileId === primaryProfileId;
   const { labBiomarkers, drugLabContraindications } = useClinicalContext();
 
   const [isAdding, setIsAdding] = useState(false);
@@ -60,18 +68,26 @@ export default function Medications({
   const fetchData = async () => {
     if (!user?.uid) return;
     try {
-      const active = await getActiveMedications(user.uid);
+      // Medications live in an account-level collection: scope the list to the
+      // active profile (primary profile also sees untagged legacy records).
+      const active = scopeMedicationsForProfile(
+        await getActiveMedications(user.uid),
+        activeProfileId,
+        isPrimaryProfile,
+      );
       setMeds(active);
       const warns = await getInteractions(user.uid);
-      setInteractions(warns);
+      setInteractions(scopeInteractionsToMedications(warns, active));
     } catch (e) {
       console.error(e);
     }
   };
 
   useEffect(() => {
+    setMeds([]);
+    setInteractions([]);
     fetchData();
-  }, [user?.uid]);
+  }, [user?.uid, activeProfileId, isPrimaryProfile]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();

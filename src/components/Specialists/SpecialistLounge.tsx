@@ -16,11 +16,12 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { saveActiveReferral, getActiveReferrals, updateReferralStatus } from "../../lib/firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft, Search, X } from "lucide-react";
+import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft, Search, X } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
 import { triageMessage, buildEmergencyTranscript, type TriageResult } from "../../services/ai/safety/triage";
 import { buildLoungeGeminiHistory, type LoungeMessage } from "../../services/ai/specialists/loungeHistory";
+import ReferralSuggestionChips, { type ReferralSuggestionStatus } from "./ReferralSuggestionChips";
 import { parseReferralSuggestions, stripReferralTags, type ReferralSuggestion } from "../../services/ai/specialists/referrals";
 import {
   LOUNGE_PROMPT_VERSION,
@@ -49,7 +50,7 @@ interface LoungeReferral {
 
 interface PendingReferralSuggestion extends ReferralSuggestion {
   fromSpecialist: SpecialistId;
-  status: "idle" | "saving" | "saved" | "error";
+  status: ReferralSuggestionStatus;
 }
 
 interface StoredChatMessage {
@@ -545,48 +546,12 @@ export default function SpecialistLounge() {
         
         {emergencyTriage && <EmergencyTriageCard result={emergencyTriage} />}
 
-        {referralSuggestions.length > 0 && (
-          <div data-testid="referral-suggestions" className="flex flex-col gap-2 pr-12">
-            {referralSuggestions.map((sug, i) => {
-              const target = SPECIALISTS[sug.toSpecialist];
-              return (
-                <div
-                  key={`${sug.toSpecialist}-${i}`}
-                  data-testid="referral-suggestion-chip"
-                  className="flex flex-wrap items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-[13px] text-slate-800 dark:text-slate-100"
-                >
-                  <span className="flex-1 min-w-0">
-                    <strong>Suggested: talk to the {target.displayName}</strong>
-                    <span className="block text-[12px] text-slate-600 dark:text-slate-300">{sug.reason}</span>
-                  </span>
-                  {sug.status === "saved" ? (
-                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                      <CheckCircle2 className="w-4 h-4" /> Saved
-                    </span>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => handleSaveReferralSuggestion(i)}
-                        disabled={sug.status === "saving"}
-                        className="rounded-full bg-indigo-600 px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
-                      >
-                        {sug.status === "error" ? "Retry save" : "Save suggestion"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDismissReferralSuggestion(i)}
-                        className="rounded-full px-3 py-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300 hover:underline"
-                      >
-                        Dismiss
-                      </button>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <ReferralSuggestionChips
+          suggestions={referralSuggestions}
+          onSave={handleSaveReferralSuggestion}
+          onDismiss={handleDismissReferralSuggestion}
+          className="pr-12"
+        />
 
         {streamedText && (
           <div className="flex justify-start pr-12 pb-2">

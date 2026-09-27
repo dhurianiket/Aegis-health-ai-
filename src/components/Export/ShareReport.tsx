@@ -114,7 +114,7 @@ export default function ShareReport() {
         className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 hover:text-indigo-200 rounded-full text-sm font-semibold transition-all border border-indigo-500/30 group"
       >
         <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
-        <span>AI Dr. Summary</span>
+        <span>Plain-language Summary</span>
       </button>
 
       <AnimatePresence>

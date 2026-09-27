@@ -102,7 +102,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                   Clinical Handover & Patient Summary
                 </h2>
                 <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider mt-1 font-medium">
-                  SBAR & AI DR Format (Plain Text)
+                  SBAR & Plain-language Summary (Plain Text)
                 </p>
               </div>
               <button
@@ -125,7 +125,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                     Professional SBAR & Patient Summary
                   </h4>
                   <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-                    This summary contains two sections: one designed to be handed to a clinician, and another (AI DR) designed to help you understand your medical reports in clear layperson terms.
+                    This summary contains two sections: one designed to be handed to a clinician, and another (plain-language summary) designed to help you understand your medical reports in clear layperson terms.
                   </p>
                 </div>
               </div>
