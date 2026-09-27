@@ -49,6 +49,9 @@ vi.mock("firebase/firestore", async (importOriginal) => {
   };
 });
 
+vi.mock("../../../services/lounge/loungeStorage", async () => (await import("./loungeTestMocks")).storageModule);
+vi.mock("../../../services/lounge/loungeConsent", async (importOriginal) => (await import("./loungeTestMocks")).consentModule(importOriginal));
+
 import SpecialistLounge from "../SpecialistLounge";
 
 async function send(text: string) {

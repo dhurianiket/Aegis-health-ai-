@@ -69,7 +69,8 @@ This document serves as the single source of truth for the technical architectur
 ### Firestore Collections
 User-owned app data remains exclusively under `users/{userId}/...`
 - `users/{userId}/profiles/{profileId}`: Primary patient context.
-  - `specialistChats/{specialistId}`: Persists historical chat arrays.
+  - `specialistChats/{specialistId}`: Chat meta; messages live in `specialistChats/{specialistId}/messages/{id}` (one doc per message, TTL `expireAt`). See docs/LOUNGE_STORAGE_AND_CONSENT.md.
+  - `consents/{purpose}`: Per-profile consent records (e.g. `specialist_lounge_ai`).
   - `cycleLogs/{logId}`: Dedicated timeline events for reproductive cycle tracking.
 - `users/{userId}/documents/{documentId}`: Report metadata.
 - Storage uploads remain under `users/{userId}/documents/...`

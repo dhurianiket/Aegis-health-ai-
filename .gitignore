@@ -55,3 +55,5 @@ functions/lib/
 
 # Added by ggshield
 .cache_ggshield
+firestore-debug.log
+ui-debug.log

@@ -69,7 +69,11 @@ vi.mock("firebase/firestore", async (importOriginal) => {
   };
 });
 
+vi.mock("../../../services/lounge/loungeStorage", async () => (await import("./loungeTestMocks")).storageModule);
+vi.mock("../../../services/lounge/loungeConsent", async (importOriginal) => (await import("./loungeTestMocks")).consentModule(importOriginal));
+
 import SpecialistLounge from "../SpecialistLounge";
+import { allAppended, resetStorageMocks } from "./loungeTestMocks";
 
 function replyWith(chunk: Chunk) {
   sendMock.mockImplementation(async () => {
@@ -91,16 +95,14 @@ async function send(text: string) {
 }
 
 const lastCreate = (): CreateArgs => createMock.mock.calls[createMock.mock.calls.length - 1][0] as CreateArgs;
-const savedMessages = (): Array<{ role: string; content: string }> => {
-  const last = setDocMock.mock.calls[setDocMock.mock.calls.length - 1][1] as { messages: Array<{ role: string; content: string }> };
-  return last.messages;
-};
+const savedMessages = (): Array<{ role: string; content: string }> => allAppended();
 
 describe("SpecialistLounge — token caps, model pin, Stop", () => {
   beforeEach(() => {
     createMock.mockReset().mockImplementation(() => ({ sendMessageStream: sendMock }));
     sendMock.mockReset();
     setDocMock.mockReset().mockResolvedValue(undefined);
+    resetStorageMocks();
     saveCachedReportMock.mockReset().mockResolvedValue(undefined);
     replyWith({ text: "General info.", modelUsed: "gemini-3.8-flash" });
   });
@@ -183,10 +185,7 @@ describe("SpecialistLounge — token caps, model pin, Stop", () => {
     // No error bubble for a user cancel.
     expect(document.body.textContent).not.toMatch(/error|went wrong/i);
     // Only the user's message was ever persisted.
-    for (const call of setDocMock.mock.calls) {
-      const msgs = (call[1] as { messages: Array<{ role: string }> }).messages;
-      expect(msgs.every((m) => m.role === "user")).toBe(true);
-    }
+    expect(allAppended().every((m) => m.role === "user")).toBe(true);
 
     // The input is usable again: a new message goes through normally.
     createMock.mockImplementation(() => ({ sendMessageStream: sendMock }));

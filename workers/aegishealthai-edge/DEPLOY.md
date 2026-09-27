@@ -15,6 +15,7 @@ npx wrangler@4 deploy                                              # uses wrangl
 
 - Secrets used: `GEMINI_API_KEY`, optional `CF_AIG_TOKEN`, `TURNSTILE_SECRET`/`TURNSTILE_ENFORCE`.
 - Auth: **Firebase ID token only** (RS256, verified against Google JWKs). The shared-secret code path was removed in `fix/lounge-phase1-followups`; after deploying, delete the now-unused secret: `npx wrangler@4 secret delete EDGE_SHARED_SECRET` (safe if it does not exist — wrangler just reports it). Smoke-test with a real signed-in session.
+- `wrangler.json` mirrors production settings: `"workers_dev": true` (without it a deploy disables the workers.dev URL), `"preview_urls": false`, `"observability": {"enabled": true, "head_sampling_rate": 1}`.
 - Compatibility flags (in `wrangler.json`): `nodejs_compat`, `enable_request_signal` (lets the Worker cancel the upstream Gemini call when the client aborts/Stops).
 - Lounge requests send `cf-aig-skip-cache: true` (no AI Gateway caching of personalised replies) and `cf-aig-collect-log-payload: false` (all requests).
 

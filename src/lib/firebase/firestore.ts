@@ -18,6 +18,7 @@ import {
 import { auth, db } from "./config";
 export { auth, db };
 import { parseSafeTimestamp } from "../../utils/dateUtils";
+import { parseMessageDocs } from "../../services/lounge/loungeMessageModel";
 import {
   MedicalDocument,
   LabResult,
@@ -644,10 +645,27 @@ export async function getAllSpecialistChats(userId: string, profileId: string = 
   try {
     const q = collection(db, "users", userId, "profiles", profileId, "specialistChats");
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({
-      specialistId: doc.id,
-      ...(doc.data() as any),
-    }));
+    return await Promise.all(
+      snapshot.docs.map(async (chatDoc) => {
+        const data = chatDoc.data() as Record<string, unknown>;
+        // Schema v1 kept a `messages` array on the chat doc; v2 stores one doc
+        // per message in a subcollection. Read whichever is present.
+        let messages: unknown = data.messages;
+        if (!Array.isArray(messages) || messages.length === 0) {
+          const msgSnap = await getDocs(
+            query(
+              collection(db, "users", userId, "profiles", profileId, "specialistChats", chatDoc.id, "messages"),
+              orderBy("createdAt", "desc"),
+              limit(20),
+            ),
+          );
+          messages = parseMessageDocs(
+            msgSnap.docs.map((d) => ({ id: d.id, data: d.data() as Record<string, unknown> })),
+          ).map((m) => ({ role: m.role, content: m.content, ...(m.kind ? { kind: m.kind } : {}) }));
+        }
+        return { ...data, specialistId: chatDoc.id, messages };
+      }),
+    );
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, pathString);
     return [];

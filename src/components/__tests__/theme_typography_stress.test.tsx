@@ -141,6 +141,9 @@ import VisitPrepWidget from "../Dashboard/VisitPrepWidget";
 import WearableCoachWidget from "../AIHelper/WearableCoachWidget";
 import Medications from "../Medications/Medications";
 import InteractionMatrix from "../Medications/InteractionMatrix";
+vi.mock("../../services/lounge/loungeStorage", async () => (await import("../Specialists/__tests__/loungeTestMocks")).storageModule);
+vi.mock("../../services/lounge/loungeConsent", async (importOriginal) => (await import("../Specialists/__tests__/loungeTestMocks")).consentModule(importOriginal));
+
 import SpecialistLounge from "../Specialists/SpecialistLounge";
 
 // Helper component for testing theme toggles via context
