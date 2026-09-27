@@ -22,6 +22,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, CheckCircle2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft, Search, X } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
+import { triageMessage, buildEmergencyTranscript, type TriageResult } from "../../services/ai/safety/triage";
+import EmergencyTriageCard from "./EmergencyTriageCard";
+import { trackEvent } from "../../utils/analytics";
 
 const PROMPT_VERSION = "v1.0";
 
@@ -68,6 +71,7 @@ export default function SpecialistLounge() {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [streamedText, setStreamedText] = useState("");
+  const [emergencyTriage, setEmergencyTriage] = useState<TriageResult | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -80,7 +84,7 @@ export default function SpecialistLounge() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, streamedText]);
+  }, [messages, streamedText, emergencyTriage]);
 
   const [initialLoading, setInitialLoading] = useState(false);
 
@@ -91,6 +95,7 @@ export default function SpecialistLounge() {
     setMessages([]);
     setStreamedText("");
     setIsTyping(false);
+    setEmergencyTriage(null);
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -192,11 +197,26 @@ export default function SpecialistLounge() {
 
     const userMsg = { role: "user" as const, content: text, timestamp: new Date() };
     const newMsgs = [...messages, userMsg];
+    setInputValue("");
+    setStreamedText("");
+
+    // Deterministic red-flag / crisis pre-check. On a match the message is
+    // NEVER sent to Gemini; a fixed bilingual emergency card is shown instead.
+    const triage = triageMessage(text);
+    if (triage.isEmergency) {
+      setEmergencyTriage(triage);
+      const safetyMsg = { role: "assistant" as const, content: buildEmergencyTranscript(triage), timestamp: new Date() };
+      const withSafety = [...newMsgs, safetyMsg];
+      setMessages(withSafety);
+      saveChatHistory(withSafety);
+      // Category only — never the message text.
+      trackEvent("lounge_emergency_triage", "safety", triage.primary ?? "unknown");
+      return;
+    }
+    setEmergencyTriage(null);
     setMessages(newMsgs);
     saveChatHistory(newMsgs);
-    setInputValue("");
     setIsTyping(true);
-    setStreamedText("");
 
     const SUMMARY_TRIGGER_PHRASES = [
       "how am i doing", "what's my health status", "summarize my labs", 
@@ -483,6 +503,8 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           </div>
         )}
         
+        {emergencyTriage && <EmergencyTriageCard result={emergencyTriage} />}
+
         {streamedText && (
           <div className="flex justify-start pr-12 pb-2">
             <div className="max-w-[100%] rounded-[24px] rounded-bl-[8px] px-5 py-4 text-[16px] leading-[1.6] bg-slate-50 dark:bg-[#1C1C1E] text-slate-900 dark:text-slate-100 relative pb-8 shadow-sm border border-slate-200 dark:border-[#2C2C2E]">

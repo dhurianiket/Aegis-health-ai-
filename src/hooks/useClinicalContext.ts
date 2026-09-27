@@ -1,100 +1,109 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
-import { getActiveMedications } from '../services/medicationService';
 import { calculateBMI } from '../utils/calculateBMI';
 import { getForm, getFormResponses } from '../services/googleFormsService';
 import { db } from '../lib/firebase/config';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, type Query, type DocumentData } from 'firebase/firestore';
 
-import { evaluateDrugLabContraindications, LabBiomarker, DrugLabContraindication } from '../services/drugLabEngine';
+import { evaluateDrugLabContraindications, LabBiomarker } from '../services/drugLabEngine';
+import {
+  resolvePrimaryProfileId,
+  selectActiveMedications,
+  extractLabBiomarkers,
+  type ScopedMedication,
+  type ClinicalDocumentData,
+} from './clinicalContextScope';
+
+/**
+ * Builds a query over an account-level clinical collection scoped to the
+ * active profile. Secondary profiles are filtered server-side by `profileId`;
+ * the primary profile also needs legacy records that have no `profileId`
+ * (Firestore cannot query for a missing field), so it reads the collection
+ * and relies on the client-side scope filter below.
+ */
+function scopedCollectionQuery(
+  uid: string,
+  sub: 'medications' | 'documents',
+  profileId: string,
+  isPrimary: boolean,
+): Query<DocumentData> {
+  const base = collection(db, 'users', uid, sub);
+  return isPrimary ? query(base) : query(base, where('profileId', '==', profileId));
+}
 
 export function useClinicalContext() {
   const { user } = useAuth();
-  const { activeProfile } = useProfile();
-  
-  const [medications, setMedications] = useState<any[]>([]);
+  const { activeProfile, profiles } = useProfile();
+  const activeProfileId = activeProfile?.id ?? null;
+  const primaryProfileId = useMemo(() => resolvePrimaryProfileId(profiles ?? []), [profiles]);
+  const isPrimaryProfile = !!activeProfileId && activeProfileId === primaryProfileId;
+  const uid = user?.uid ?? null;
+
+  const [medications, setMedications] = useState<ScopedMedication[]>([]);
   const [labBiomarkers, setLabBiomarkers] = useState<LabBiomarker[]>([]);
   const [formResponsesText, setFormResponsesText] = useState<string>("");
   const [medsLoading, setMedsLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Listen for real-time medication updates
+  // 1. Real-time medications for the ACTIVE profile only.
+  //    Re-subscribes on profile switch and clears stale data immediately.
   useEffect(() => {
-    if (!user) {
-      setMedications([]);
+    setMedications([]);
+    if (!uid || !activeProfileId) {
       setMedsLoading(false);
       return;
     }
 
+    let active = true;
     setMedsLoading(true);
-    const q = collection(db, 'users', user.uid, 'medications');
+    const q = scopedCollectionQuery(uid, 'medications', activeProfileId, isPrimaryProfile);
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const activeMeds = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() as any }))
-        .filter(med => !med.endDate)
-        .map(med => ({ med, time: new Date(med.addedAt || 0).getTime() }))
-        .sort((a, b) => b.time - a.time)
-        .map(item => item.med);
-      setMedications(activeMeds);
+      if (!active) return;
+      const meds = snapshot.docs.map(
+        (d) => ({ ...(d.data() as Omit<ScopedMedication, 'id'>), id: d.id }) as ScopedMedication,
+      );
+      setMedications(selectActiveMedications(meds, activeProfileId, isPrimaryProfile));
       setMedsLoading(false);
     }, (err) => {
-      console.warn("[useClinicalContext] Failed to load medications via onSnapshot, falling back:", err);
-      // Fallback
-      getActiveMedications(user.uid)
-        .then(activeMeds => {
-          setMedications(activeMeds);
-        })
-        .catch(console.warn)
-        .finally(() => setMedsLoading(false));
+      if (!active) return;
+      // Fail closed: never fall back to an unscoped account-level read.
+      console.warn("[useClinicalContext] Medication listener failed:", err);
+      setMedications([]);
+      setMedsLoading(false);
     });
 
-    return () => unsubscribe();
-  }, [user]);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [uid, activeProfileId, isPrimaryProfile]);
 
-  // 2. Listen for real-time lab document updates (AGENTS.md Rule 3)
+  // 2. Real-time lab documents for the ACTIVE profile only (AGENTS.md Rule 3)
   useEffect(() => {
-    if (!user) {
-      setLabBiomarkers([]);
-      return;
-    }
+    setLabBiomarkers([]);
+    if (!uid || !activeProfileId) return;
 
-    const docQuery = collection(db, 'users', user.uid, 'documents');
+    let active = true;
+    const q = scopedCollectionQuery(uid, 'documents', activeProfileId, isPrimaryProfile);
 
-    const unsubscribe = onSnapshot(docQuery, (snapshot) => {
-      const extractedLabs: LabBiomarker[] = [];
-      snapshot.docs.forEach((docSnap) => {
-        const data = docSnap.data();
-        const extracted = data.extractedData || data;
-        const obs = extracted.lab_values || extracted.observations || extracted.labResults || [];
-        if (Array.isArray(obs)) {
-          obs.forEach((l: any) => {
-            const testName = l.testName || l.marker || l.markerName || "";
-            if (testName) {
-              extractedLabs.push({
-                id: l.id || docSnap.id,
-                testName,
-                marker: testName,
-                value: String(l.value || l.display_value || l.numeric_value || ""),
-                numericValue: typeof l.numericValue === "number" ? l.numericValue : (typeof l.numeric_value === "number" ? l.numeric_value : null),
-                unit: l.unit || l.unitOriginal || "",
-                referenceRange: l.referenceRange || l.reference_range || "",
-                flag: l.flag || l.status || "NORMAL",
-                date: l.date || data.createdAt || data.date,
-              });
-            }
-          });
-        }
-      });
-      setLabBiomarkers(extractedLabs);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!active) return;
+      const docs = snapshot.docs.map((d) => ({ id: d.id, data: d.data() as ClinicalDocumentData }));
+      setLabBiomarkers(extractLabBiomarkers(docs, activeProfileId, isPrimaryProfile));
     }, (err) => {
+      if (!active) return;
       console.warn("[useClinicalContext] Document lab onSnapshot listener warning:", err);
+      setLabBiomarkers([]);
     });
 
-    return () => unsubscribe();
-  }, [user]);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [uid, activeProfileId, isPrimaryProfile]);
 
   // 3. Evaluate real-time drug-lab contraindications
   const drugLabContraindications = useMemo(() => {
@@ -114,6 +123,7 @@ export function useClinicalContext() {
       }
       
       try {
+        setFormResponsesText("");
         setFormLoading(true);
         let formContext = "";
         try {
@@ -136,7 +146,7 @@ export function useClinicalContext() {
              for (const [qId, answerObj] of Object.entries(latest.answers)) {
                  const item = formMeta.items.find(i => i.questionItem?.question?.questionId === qId);
                  const qTitle = item?.title || "Unknown Question";
-                 const ansArr = (answerObj as any).textAnswers?.answers?.map((a:any) => a.value) || [];
+                 const ansArr = ((answerObj as { textAnswers?: { answers?: Array<{ value?: string }> } }).textAnswers?.answers ?? []).map((a) => a.value ?? "");
                  answersText.push(`${qTitle}: ${ansArr.join(", ")}`);
              }
              formContext = `\n[Google Forms Intake Data - ${formMeta.info.title}]\n${answersText.join("\n")}\n`;
@@ -185,7 +195,7 @@ export function useClinicalContext() {
       ctx += `Clinical notes: ${activeProfile.clinicalNotes}\n`;
     }
     if (medications.length > 0) {
-      const medList = medications.map(m => `${m.genericName || m.name} (${m.dosage || 'unknown dosage'})`).join(', ');
+      const medList = medications.map(m => `${m.genericName || m.name || 'Unknown medication'} (${m.dosage || 'unknown dosage'})`).join(', ');
       ctx += `Active medications: ${medList}.\n`;
     } else {
       ctx += `Active medications: None recorded.\n`;
