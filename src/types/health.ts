@@ -22,6 +22,8 @@ export interface Medication {
   endDate: string | null;     // null means currently active
   prescribedFor: string | null;
   addedAt: string;
+  /** Family profile this medication belongs to (users/{uid}/profiles/{pid}). Legacy records may lack it. */
+  profileId?: string | null;
 }
 
 export interface DrugInteraction {

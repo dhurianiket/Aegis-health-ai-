@@ -25,8 +25,8 @@ const SOURCES: Record<string, MedicalSource> = {
     url: "https://www.kidney.org/ata-tests/creatinine-blood-test"
   },
   uric_acid: {
-    name: "Mayo Clinic",
-    url: "https://www.mayoclinic.org/tests-procedures/uric-acid-test/about/pac-20384813"
+    name: "MedlinePlus",
+    url: "https://medlineplus.gov/lab-tests/uric-acid-test/"
   },
   albumin: {
     name: "MedlinePlus",
@@ -352,18 +352,19 @@ export function lookupRelevantGuidelines(text: string, specialistId?: string): C
 export function buildGuidelinePromptAugmentation(guidelines: ClinicalGuideline[]): string {
   if (!guidelines || guidelines.length === 0) return "";
 
-  let prompt = `\n\n### VERIFIED CLINICAL CONSENSUS GUIDELINES GROUNDING\n`;
-  prompt += `You must ground your clinical insights, target thresholds, and therapeutic options in the following verified guidelines:\n\n`;
+  let prompt = `\n\n### GUIDELINE REFERENCES (general, population-level information)\n`;
+  prompt += `You may use these published guideline summaries to explain general targets and concepts. They describe populations, not this user; the user's own doctor sets personal targets and treatment.\n\n`;
 
   guidelines.forEach((g) => {
     prompt += `- **${g.code}** (${g.title}): ${g.summary} [Evidence: ${g.evidenceLevel}]\n`;
   });
 
-  prompt += `\n### CITATION MANDATE\n`;
-  prompt += `Whenever you mention blood pressure targets, cholesterol goals, glycemic control, kidney function management, or drug recommendations, you MUST insert a formatted citation link using this EXACT syntax: \`[${guidelines[0]?.code}](cite:${guidelines[0]?.id})\` (e.g., \`[ACC/AHA 2024](cite:acc_aha_2024)\` or \`[ADA 2025](cite:ada_2025)\` or \`[KDIGO 2024](cite:kdigo_2024)\` or \`[ESC 2025](cite:esc_2025)\`).\n`;
-  prompt += `Do NOT invent fake guidelines. Rely strictly on verified consensus guidelines.\n`;
+  prompt += `\n### CITATION RULES\n`;
+  prompt += `When you state a general target or concept taken from one of the references above, cite it with this exact syntax (use only these ids):\n`;
+  guidelines.forEach((g) => {
+    prompt += `- \`[${g.code}](cite:${g.id})\`\n`;
+  });
+  prompt += `Never cite anything else and never invent guidelines, studies, statistics or links.\n`;
 
   return prompt;
 }
-
-

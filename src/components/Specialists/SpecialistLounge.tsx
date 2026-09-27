@@ -1,9 +1,6 @@
 import { createPortal } from "react-dom";
 import { generateSourceHash, getCachedReport, saveCachedReport } from "../../services/cacheService";
-import { 
-  lookupRelevantGuidelines, 
-  buildGuidelinePromptAugmentation
-} from "../../services/sourceGroundedService";
+import { lookupRelevantGuidelines } from "../../services/sourceGroundedService";
 import { renderCitationLink } from "../Common/CitationBadge";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { SpecialistId } from "../../types/ai";
@@ -23,10 +20,55 @@ import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDo
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
 import { triageMessage, buildEmergencyTranscript, type TriageResult } from "../../services/ai/safety/triage";
+import { buildLoungeGeminiHistory, type LoungeMessage } from "../../services/ai/specialists/loungeHistory";
+import { parseReferralSuggestions, stripReferralTags, type ReferralSuggestion } from "../../services/ai/specialists/referrals";
+import {
+  LOUNGE_PROMPT_VERSION,
+  buildLoungeSystemInstruction,
+  buildPatientDataBlock,
+} from "../../services/ai/specialists/loungePrompt";
 import EmergencyTriageCard from "./EmergencyTriageCard";
 import { trackEvent } from "../../utils/analytics";
 
-const PROMPT_VERSION = "v1.0";
+interface LoungeReferral {
+  id?: string;
+  fromAgent?: string;
+  toSpecialist: string;
+  reason: string;
+  status: string;
+}
+
+interface PendingReferralSuggestion extends ReferralSuggestion {
+  fromSpecialist: SpecialistId;
+  status: "idle" | "saving" | "saved" | "error";
+}
+
+interface StoredChatMessage {
+  role?: unknown;
+  content?: unknown;
+  text?: unknown;
+  createdAt?: unknown;
+  kind?: unknown;
+}
+
+function parseStoredMessages(raw: unknown): LoungeMessage[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((m): m is StoredChatMessage => !!m && typeof m === "object")
+    .map((m) => {
+      const role: LoungeMessage["role"] = m.role === "user" ? "user" : "assistant";
+      const content = String(m.content ?? m.text ?? "");
+      const created = typeof m.createdAt === "string" || typeof m.createdAt === "number" ? new Date(m.createdAt) : new Date();
+      const msg: LoungeMessage = {
+        role,
+        // Legacy replies may still contain raw [REFERRAL: …] tags — never display them.
+        content: role === "assistant" ? stripReferralTags(content) : content,
+        timestamp: Number.isNaN(created.getTime()) ? new Date() : created,
+      };
+      if (m.kind === "triage") msg.kind = "triage";
+      return msg;
+    });
+}
 
 /**
  * Real-time text highlight component.
@@ -64,10 +106,11 @@ export default function SpecialistLounge() {
   const [activeSpecialist, setActiveSpecialist] = useState<SpecialistId>('cardiologist');
   const { user } = useAuth();
   const { activeProfile } = useProfile();
-  const { contextString: globalClinicalContext } = useClinicalContext();
-  const [activeReferrals, setActiveReferrals] = useState<any[]>([]);
-  
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string; timestamp: Date }[]>([]);
+  const { supplementaryContext } = useClinicalContext();
+  const [activeReferrals, setActiveReferrals] = useState<LoungeReferral[]>([]);
+  const [referralSuggestions, setReferralSuggestions] = useState<PendingReferralSuggestion[]>([]);
+
+  const [messages, setMessages] = useState<LoungeMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [streamedText, setStreamedText] = useState("");
@@ -77,7 +120,9 @@ export default function SpecialistLounge() {
 
   useEffect(() => {
     if (!user?.uid || !activeProfile?.id) return;
-    getActiveReferrals(user.uid, activeProfile.id).then(setActiveReferrals).catch(console.error);
+    getActiveReferrals(user.uid, activeProfile.id)
+      .then((refs) => setActiveReferrals((refs ?? []) as LoungeReferral[]))
+      .catch(console.error);
   }, [user?.uid, activeProfile?.id]);
 
   useEffect(() => {
@@ -96,6 +141,7 @@ export default function SpecialistLounge() {
     setStreamedText("");
     setIsTyping(false);
     setEmergencyTriage(null);
+    setReferralSuggestions([]);
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -107,16 +153,7 @@ export default function SpecialistLounge() {
         const chatDoc = await getDoc(doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist));
         if (chatDoc.exists()) {
           const data = chatDoc.data();
-          if (data.messages && Array.isArray(data.messages)) {
-            const parsed = data.messages
-              .filter((m: any) => m && typeof m === 'object')
-              .map((m: any) => ({
-                role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
-                content: (m.content || m.text || '').toString(),
-                timestamp: m.createdAt ? new Date(m.createdAt) : new Date()
-              }));
-            setMessages(parsed);
-          }
+          setMessages(parseStoredMessages(data?.messages));
         }
       } catch (err) {
         console.error("Failed to load chat history", err);
@@ -170,14 +207,16 @@ export default function SpecialistLounge() {
     });
   }, [SPECIALIST_TABS, selectedCategory, searchQuery]);
 
-  const saveChatHistory = async (newMessages: { role: string, content: string, timestamp: Date }[]) => {
+  const saveChatHistory = async (newMessages: LoungeMessage[]) => {
     if (!user?.uid || !activeProfile?.id) return;
     try {
       const chatRef = doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist);
-      const serializableMessages = newMessages.map(m => ({
+      const serializableMessages = newMessages.map((m) => ({
         role: m.role,
         content: m.content,
-        createdAt: m.timestamp.toISOString()
+        createdAt: m.timestamp.toISOString(),
+        // Firestore rejects `undefined` values, so only persist the flag when set.
+        ...(m.kind ? { kind: m.kind } : {}),
       }));
       
       await setDoc(chatRef, {
@@ -195,18 +234,22 @@ export default function SpecialistLounge() {
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || !user || !activeProfile || isTyping) return;
 
-    const userMsg = { role: "user" as const, content: text, timestamp: new Date() };
+    const userMsg: LoungeMessage = { role: "user", content: text, timestamp: new Date() };
     const newMsgs = [...messages, userMsg];
     setInputValue("");
     setStreamedText("");
+    setReferralSuggestions([]);
 
     // Deterministic red-flag / crisis pre-check. On a match the message is
     // NEVER sent to Gemini; a fixed bilingual emergency card is shown instead.
+    // Both turns are flagged `kind: "triage"` so they are never replayed to
+    // the model as history either.
     const triage = triageMessage(text);
     if (triage.isEmergency) {
       setEmergencyTriage(triage);
-      const safetyMsg = { role: "assistant" as const, content: buildEmergencyTranscript(triage), timestamp: new Date() };
-      const withSafety = [...newMsgs, safetyMsg];
+      const flaggedUser: LoungeMessage = { ...userMsg, kind: "triage" };
+      const safetyMsg: LoungeMessage = { role: "assistant", content: buildEmergencyTranscript(triage), timestamp: new Date(), kind: "triage" };
+      const withSafety = [...messages, flaggedUser, safetyMsg];
       setMessages(withSafety);
       saveChatHistory(withSafety);
       // Category only — never the message text.
@@ -232,87 +275,53 @@ export default function SpecialistLounge() {
     try {
       const ai = getAI();
       const patientData = await getPatientContext(user.uid, activeProfile);
-      const context = formatContextForPrompt(patientData);
+      // Name withheld: the model does not need it (data minimisation).
+      const context = formatContextForPrompt(patientData, { includeName: false });
 
       const specialist = getSpecialist(activeSpecialist);
-      let systemPrompt = specialist.systemPrompt;
-      
-      if (globalClinicalContext) {
-        systemPrompt += `\n\n### GLOBAL CLINICAL CONTEXT\n${globalClinicalContext}`;
-      }
-      systemPrompt += `\n\n### PATIENT CONTEXT\n${context}`;
 
-      // Ground specialist guidance in Clinical Consensus Guidelines (ACC/AHA 2024, ADA 2025, KDIGO 2024, ESC 2025)
-      const relevantGuidelines = lookupRelevantGuidelines(
-        text + " " + (globalClinicalContext || "") + " " + context,
-        activeSpecialist
-      );
-      const guidelinePrompt = buildGuidelinePromptAugmentation(relevantGuidelines);
-      if (guidelinePrompt) {
-        systemPrompt += guidelinePrompt;
-      }
+      // Guideline lookup is keyword-based over static, trusted summaries.
+      const relevantGuidelines = lookupRelevantGuidelines(`${text} ${context}`, activeSpecialist);
 
-      // Multidisciplinary Inter-Specialist Referral Instructions
-      systemPrompt += `\n\n### MULTIDISCIPLINARY INTER-SPECIALIST REFERRAL INSTRUCTIONS:
-You are part of an integrated, multidisciplinary AI clinical specialist team.
-If the patient's data, labs, or clinical signs point to an issue outside your domain that requires another specialist's expertise, you should explicitly refer the patient to that specialist using this exact tag:
-[REFERRAL: specialist_id | brief clinical rationale]
-
-Valid specialist_ids: cardiologist, endocrinologist, nephrologist, neurologist, gastroenterologist, pulmonologist, psychiatrist, dermatologist, orthopedist, oncologist.`;
-
-      // Check if there is an active pending referral targeting this specialist
+      // Check if there is an active pending referral targeting this guide
       const incomingReferral = activeReferrals.find(
         (r) => r.toSpecialist === activeSpecialist && r.status === "pending"
       );
-      if (incomingReferral) {
-        systemPrompt += `\n\n### INCOMING CLINICAL REFERRAL FROM ${incomingReferral.fromAgent?.toUpperCase() || "COLLEAGUE"}:
-Referral Reason: "${incomingReferral.reason}"
-Instructions: Acknowledge this referral warmly to the patient ("I see our colleague referred you...") and address the issue directly.`;
-      }
 
-      if (isSummaryRequest) {
-        systemPrompt += `
-### HEALTH SUMMARY GENERATION RULES
-When the user asks for a health status (e.g., "How am I doing?", "Summarize my labs") or asks what their new lab results mean:
-1. ALWAYS generate a SBAAR-formatted health summary first (Subjective, Background, Assessment, Analysis, Recommendation).
-2. Follow immediately with an "AI Doctor Summary" in plain, empathetic language.
-3. Use EXACT \`display_value\` strings from the injected lab data (e.g., "< 0.1", not "0").
-4. Show trends: Explicitly compare current values to historical values.
-5. Flag critical values with emojis:
-   - 🔴 CRITICAL: Life-threatening (e.g., HbA1c > 12)
-   - ⚠️ WARNING: Needs attention (e.g., HbA1c > 7)
-   - 🟡 NOTICE: Monitor closely (e.g., Vitamin D < 20)
-6. ALWAYS include the mandatory medical disclaimer at the end.
+      // Trusted, static instructions only — no record data in here.
+      const systemPrompt = buildLoungeSystemInstruction({
+        specialistId: activeSpecialist,
+        isSummaryRequest,
+        guidelines: relevantGuidelines,
+      });
 
-### SBAAR FORMAT REQUIREMENTS
-- **Subjective:** Symptoms user reported in the chat history.
-- **Background:** Age, gender, conditions, medications (if known).
-- **Assessment:** Markdown table with \`Marker | Your Value | Normal Range | Status\`.
-- **Analysis:** Trend arrows (⬆️⬇️➡️) and chronological comparison.
-- **Recommendation:** Numbered list grouped by Immediate, Lifestyle, and Follow-up.
-`;
-      }
+      // Untrusted record data travels as a delimited user-role part.
+      const patientDataBlock = buildPatientDataBlock({
+        patientContext: context,
+        supplementaryContext,
+        incomingReferral: incomingReferral ? { fromAgent: incomingReferral.fromAgent, reason: incomingReferral.reason } : null,
+      });
 
-      const historyItems = JSON.parse(JSON.stringify(messages.map((m) => ({
-        role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
-        parts: [{ text: String(m.content || "") }],
-      }))));
+      // Triage turns (crisis message + fixed card) are never sent to Gemini.
+      const historyItems = buildLoungeGeminiHistory(messages);
 
       // Check Cache for Specialist Summaries
       let sourceHashForCache = "";
       if (isSummaryRequest && historyItems.length === 0) {
-        sourceHashForCache = await generateSourceHash(systemPrompt + text);
-        const cached = await getCachedReport(user.uid, activeProfile.id || "Myself", `SpecialistSummary_${activeSpecialist}`, sourceHashForCache, PROMPT_VERSION, false);
+        sourceHashForCache = await generateSourceHash(systemPrompt + patientDataBlock + text);
+        const cached = await getCachedReport(user.uid, activeProfile.id || "Myself", `SpecialistSummary_${activeSpecialist}`, sourceHashForCache, LOUNGE_PROMPT_VERSION, false);
         if (cached) {
           setMessages((prev) => [
             ...prev,
-            { role: "assistant", content: cached, timestamp: new Date() }
+            { role: "assistant", content: stripReferralTags(cached), timestamp: new Date() }
           ]);
           setIsTyping(false);
           setStreamedText("");
           return;
         }
       }
+
+      const turnInput = { message: text, contextParts: [patientDataBlock] };
 
       let chat = ai.chats.create({
         model: isSummaryRequest ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview",
@@ -325,8 +334,8 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
 
       let stream;
       try {
-        stream = await chat.sendMessageStream({ message: text });
-      } catch (proError: any) {
+        stream = await chat.sendMessageStream(turnInput);
+      } catch (proError: unknown) {
         if (isSummaryRequest) {
           console.warn("Gemini Pro stream failed, falling back to Flash:", proError);
           chat = ai.chats.create({
@@ -337,7 +346,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
               temperature: 0.1,
             }
           });
-          stream = await chat.sendMessageStream({ message: text });
+          stream = await chat.sendMessageStream(turnInput);
         } else {
           throw proError;
         }
@@ -348,44 +357,30 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         if (controller.signal.aborted) break;
         const chunkText = chunk.text || "";
         finalText += chunkText;
-        setStreamedText((prev) => prev + chunkText);
+        // Never show raw referral tags, even mid-stream.
+        setStreamedText(stripReferralTags(finalText));
       }
 
       if (!controller.signal.aborted && finalText.length > 0) {
-        const assistantMsg = { role: "assistant" as const, content: finalText.trim(), timestamp: new Date() };
+        // Referral tags are parsed into suggestions only; nothing is saved
+        // until the user taps "Save suggestion".
+        const { cleanText, suggestions } = parseReferralSuggestions(finalText, activeSpecialist);
+        const assistantMsg: LoungeMessage = { role: "assistant", content: cleanText, timestamp: new Date() };
         const finalMsgs = [...newMsgs, assistantMsg];
         setMessages(finalMsgs);
         saveChatHistory(finalMsgs);
         setStreamedText("");
+        setReferralSuggestions(
+          suggestions.map((sug) => ({ ...sug, fromSpecialist: activeSpecialist, status: "idle" as const }))
+        );
 
         // Mark incoming referral as reviewed
         if (incomingReferral && incomingReferral.id) {
-          updateReferralStatus(user.uid, activeProfile.id, incomingReferral.id, "reviewed").catch(console.error);
+          const reviewedId = incomingReferral.id;
+          updateReferralStatus(user.uid, activeProfile.id, reviewedId, "reviewed").catch(console.error);
           setActiveReferrals((prev) =>
-            prev.map((r) => (r.id === incomingReferral.id ? { ...r, status: "reviewed" } : r))
+            prev.map((r) => (r.id === reviewedId ? { ...r, status: "reviewed" } : r))
           );
-        }
-
-        // Parse any outbound referrals
-        const referralRegex = /\[REFERRAL:\s*([a-zA-Z0-9_-]+)\s*\|\s*([^\]]+)\]/gi;
-        let match;
-        while ((match = referralRegex.exec(finalText)) !== null) {
-          const target = match[1].toLowerCase().trim();
-          const reason = match[2].trim();
-          if (target in SPECIALISTS) {
-            saveActiveReferral(user.uid, activeProfile.id, {
-              fromAgent: specialist.displayName,
-              toSpecialist: target,
-              reason,
-            }).then((id) => {
-              if (id) {
-                setActiveReferrals((prev) => [
-                  ...prev,
-                  { id, fromAgent: specialist.displayName, toSpecialist: target, reason, status: "pending" },
-                ]);
-              }
-            }).catch(console.error);
-          }
         }
         
         if (isSummaryRequest && historyItems.length === 0 && sourceHashForCache) {
@@ -393,15 +388,16 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
             patientId: activeProfile.id || "Myself",
             reportType: `SpecialistSummary_${activeSpecialist}`,
             sourceHash: sourceHashForCache,
-            content: finalText.trim(),
+            content: cleanText,
             modelUsed: "gemini-3.1-pro-preview",
-            promptVersion: PROMPT_VERSION,
+            promptVersion: LOUNGE_PROMPT_VERSION,
             status: "success"
           });
         }
       }
-    } catch (err: any) {
-      if (err.name !== "AbortError") {
+    } catch (err: unknown) {
+      const name = err && typeof err === "object" ? (err as { name?: unknown }).name : undefined;
+      if (name !== "AbortError") {
         console.error("Specialist chat error:", err);
         const friendlyMsg = getFriendlyErrorMessage(err);
         setMessages((prev) => [
@@ -412,6 +408,34 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleSaveReferralSuggestion = async (index: number) => {
+    const suggestion = referralSuggestions[index];
+    if (!user?.uid || !activeProfile?.id || !suggestion || suggestion.status === "saving" || suggestion.status === "saved") return;
+    const fromAgent = getSpecialist(suggestion.fromSpecialist).displayName;
+    setReferralSuggestions((prev) => prev.map((r, i) => (i === index ? { ...r, status: "saving" } : r)));
+    try {
+      const id = await saveActiveReferral(user.uid, activeProfile.id, {
+        fromAgent,
+        toSpecialist: suggestion.toSpecialist,
+        reason: suggestion.reason,
+      });
+      setReferralSuggestions((prev) => prev.map((r, i) => (i === index ? { ...r, status: id ? "saved" : "error" } : r)));
+      if (id) {
+        setActiveReferrals((prev) => [
+          ...prev,
+          { id, fromAgent, toSpecialist: suggestion.toSpecialist, reason: suggestion.reason, status: "pending" },
+        ]);
+      }
+    } catch (err) {
+      console.error("Failed to save referral suggestion", err);
+      setReferralSuggestions((prev) => prev.map((r, i) => (i === index ? { ...r, status: "error" } : r)));
+    }
+  };
+
+  const handleDismissReferralSuggestion = (index: number) => {
+    setReferralSuggestions((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleDismissReferral = async (referralId: string) => {
@@ -434,7 +458,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
     <>
       <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#121214] flex items-center gap-4 shrink-0 transition-colors z-10">
         <button 
-          aria-label="Back to specialists"
+          aria-label="Back to guides"
           className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-slate-100 transition-colors active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
           onClick={() => setIsMobileChatOpen(false)}
         >
@@ -442,7 +466,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </button>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-slate-900 dark:text-slate-100 text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
-          <div className="text-[13px] text-slate-800 dark:text-slate-200 truncate font-semibold">Guidelines: {activeSpecProfile.guidelines.join(', ')}</div>
+          <div className="text-[13px] text-slate-800 dark:text-slate-200 truncate font-semibold">AI health information guide · not a doctor · References: {activeSpecProfile.guidelines.join(', ')}</div>
         </div>
         <div className="shrink-0">
            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center">
@@ -456,11 +480,11 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
           <div className="flex items-center gap-2 min-w-0">
             <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
             <span className="truncate">
-              <strong>Referral from {currentReferral.fromAgent}:</strong> {currentReferral.reason}
+              <strong>Suggested by {currentReferral.fromAgent || "another AI guide"}:</strong> {currentReferral.reason}
             </span>
           </div>
           <button
-            onClick={() => handleDismissReferral(currentReferral.id)}
+            onClick={() => { if (currentReferral.id) handleDismissReferral(currentReferral.id); }}
             className="underline hover:opacity-80 font-medium ml-3 shrink-0 text-amber-800 dark:text-amber-200"
           >
             Acknowledge
@@ -484,11 +508,11 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 <Stethoscope className="text-slate-600 dark:text-slate-300 w-10 h-10"/>
              </div>
              <p className="text-[15px] text-slate-800 dark:text-slate-200 text-center font-semibold leading-relaxed max-w-sm">
-               Ask {activeSpecProfile.displayName} about your relevant labs, conditions, or symptoms.
+               Ask the {activeSpecProfile.displayName} to explain your reports and help you prepare questions for your doctor.
              </p>
              <div className="flex gap-2 w-full max-w-[280px]">
                 <button 
-                  onClick={() => handleSendMessage("What do my latest results mean for my " + activeSpecialist + " health?")} 
+                  onClick={() => handleSendMessage(`Summarize my labs related to ${activeSpecProfile.specialty.toLowerCase()}`)} 
                   className="w-full bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] text-white hover:opacity-90 text-[15px] font-semibold px-4 py-3.5 rounded-[20px] transition-all active:scale-[0.98] shadow-sm"
                 >
                   Summarize my labs
@@ -498,12 +522,55 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         ) : (
           <div className="flex-1 w-full relative min-h-[450px] h-full flex flex-col">
             <VirtualizedChatList 
-              messages={messages.map((m: any, i) => ({ id: String(i), role: m.role, text: m.content || "" }))} 
+              messages={messages.map((m, i) => ({ id: String(i), role: m.role, text: m.content || "" }))} 
             />
           </div>
         )}
         
         {emergencyTriage && <EmergencyTriageCard result={emergencyTriage} />}
+
+        {referralSuggestions.length > 0 && (
+          <div data-testid="referral-suggestions" className="flex flex-col gap-2 pr-12">
+            {referralSuggestions.map((sug, i) => {
+              const target = SPECIALISTS[sug.toSpecialist];
+              return (
+                <div
+                  key={`${sug.toSpecialist}-${i}`}
+                  data-testid="referral-suggestion-chip"
+                  className="flex flex-wrap items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-[13px] text-slate-800 dark:text-slate-100"
+                >
+                  <span className="flex-1 min-w-0">
+                    <strong>Suggested: talk to the {target.displayName}</strong>
+                    <span className="block text-[12px] text-slate-600 dark:text-slate-300">{sug.reason}</span>
+                  </span>
+                  {sug.status === "saved" ? (
+                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                      <CheckCircle2 className="w-4 h-4" /> Saved
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleSaveReferralSuggestion(i)}
+                        disabled={sug.status === "saving"}
+                        className="rounded-full bg-indigo-600 px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                      >
+                        {sug.status === "error" ? "Retry save" : "Save suggestion"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDismissReferralSuggestion(i)}
+                        className="rounded-full px-3 py-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300 hover:underline"
+                      >
+                        Dismiss
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {streamedText && (
           <div className="flex justify-start pr-12 pb-2">
@@ -556,7 +623,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </form>
         <div className="mt-3 md:mt-4 text-center text-[12px] font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-1.5 w-full">
           <Info className="w-3.5 h-3.5 shrink-0" />
-          Not a substitute for professional medical advice.
+          AI health information, not medical advice. Consult a registered medical practitioner. Emergency: call 112.
         </div>
       </div>
     </>
@@ -570,10 +637,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         </div>
         <div>
           <h2 className="text-xl md:text-3xl font-bold tracking-tight text-[var(--color-text)] mb-1 uppercase tracking-widest">
-            Specialist Consultations
+            Health Guides (AI)
           </h2>
           <p className="text-[var(--color-text-muted)] text-xs md:text-sm font-light">
-            Chat directly with specialized AI physicians acting on your longitudinal record.
+            AI health information guides: understand your reports and prepare questions for your doctor. Not a doctor; does not diagnose or prescribe.
           </p>
         </div>
       </div>
@@ -582,7 +649,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
         {/* Sidebar */}
         <div className={`lg:col-span-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[32px] p-4 md:p-6 overflow-y-auto hidden-scrollbar block lg:block flex flex-col`}>
           <div className="flex items-center justify-between px-1 mb-3">
-            <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Select Specialist</h3>
+            <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Select a Guide</h3>
             <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
               {filteredSpecialists.length} available
             </span>
@@ -595,7 +662,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search specialists, expertise, symptoms..."
+              placeholder="Search guides, topics, symptoms..."
               aria-label="Search specialists"
               className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-2.5 pl-9 pr-8 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-white/20 transition-all shadow-sm"
             />
@@ -647,7 +714,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    No specialists match your criteria
+                    No guides match your criteria
                   </p>
                   {searchQuery && (
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[200px] mx-auto">

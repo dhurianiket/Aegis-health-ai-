@@ -52,7 +52,7 @@ vi.mock("firebase/firestore", async (importOriginal) => {
 import SpecialistLounge from "../SpecialistLounge";
 
 async function send(text: string) {
-  const input = screen.getAllByLabelText(/^Message AI /)[0] as HTMLInputElement;
+  const input = screen.getAllByLabelText(/^Message .*\(AI\)/)[0] as HTMLInputElement;
   await act(async () => {
     fireEvent.change(input, { target: { value: text } });
   });

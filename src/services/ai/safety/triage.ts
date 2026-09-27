@@ -380,10 +380,28 @@ export function triageMessage(input: string): TriageResult {
  * Fixed, non-AI transcript text stored in chat history in place of a model
  * reply, so a reloaded conversation still shows the safety response.
  */
+/** First line of every emergency transcript; used to recognise stored triage replies. */
+export const EMERGENCY_TRANSCRIPT_HEADER =
+  "⚠️ **This may be a medical emergency. The AI guide has not answered this message.**";
+
+/** Header used before the persona reframe (PR #268); still recognised for stored chats. */
+const LEGACY_EMERGENCY_TRANSCRIPT_HEADERS: readonly string[] = [
+  "⚠️ **This may be a medical emergency. The AI specialist has not answered this message.**",
+];
+
+/** True when `content` is a fixed emergency-card transcript produced by buildEmergencyTranscript. */
+export function isEmergencyTranscript(content: string): boolean {
+  const head = content.trimStart();
+  return (
+    head.startsWith(EMERGENCY_TRANSCRIPT_HEADER) ||
+    LEGACY_EMERGENCY_TRANSCRIPT_HEADERS.some((h) => head.startsWith(h))
+  );
+}
+
 export function buildEmergencyTranscript(result: TriageResult): string {
   const { national, ambulance, teleManasShort, teleManasTollFree } = EMERGENCY_HELPLINES;
   const lines = [
-    `⚠️ **This may be a medical emergency. The AI specialist has not answered this message.**`,
+    EMERGENCY_TRANSCRIPT_HEADER,
     `Call **${national.number}** now (national emergency). If it does not connect, call **${ambulance.number}** for an ambulance.`,
     `⚠️ **यह एक मेडिकल इमरजेंसी हो सकती है।** अभी **${national.number}** पर कॉल करें। न लगे तो एम्बुलेंस के लिए **${ambulance.number}** पर कॉल करें।`,
   ];

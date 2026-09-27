@@ -195,6 +195,25 @@ describe('geminiClient edge proxy + model normalization', () => {
   });
 
 
+  describe('Chat contextParts (untrusted data as user-role parts)', () => {
+    it('sends contextParts as separate user parts before the message, never in systemInstruction', async () => {
+      const ai = getAI();
+      const chat = ai.chats.create({
+        model: 'gemini-3.6-flash',
+        history: [{ role: 'user', parts: [{ text: 'earlier q' }] }, { role: 'model', parts: [{ text: 'earlier a' }] }],
+        config: { systemInstruction: 'SYSTEM RULES' },
+      });
+      await chat.sendMessage({ message: 'What is LDL?', contextParts: ['<patient_data>synthetic</patient_data>'] });
+      const body = JSON.parse(String((mockFetch.mock.calls[0][1] as RequestInit).body));
+      expect(body.contents).toHaveLength(3);
+      expect(body.contents[2]).toEqual({
+        role: 'user',
+        parts: [{ text: '<patient_data>synthetic</patient_data>' }, { text: 'What is LDL?' }],
+      });
+      expect(JSON.stringify(body.systemInstruction)).not.toContain('patient_data');
+    });
+  });
+
   describe('Abort and request metadata', () => {
     it('does not PoP-retry when the request is aborted', async () => {
       const abortErr = new DOMException('The operation was aborted.', 'AbortError');

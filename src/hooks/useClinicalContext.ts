@@ -218,8 +218,28 @@ export function useClinicalContext() {
     return ctx.trim();
   }, [activeProfile, medications, labBiomarkers, drugLabContraindications, bmi, formResponsesText]);
 
+  /**
+   * Only the parts of the clinical context that are NOT already produced by
+   * contextService.formatContextForPrompt (drug–lab contraindication alerts and
+   * Google Forms intake answers). Used by the Specialist Lounge to avoid sending
+   * duplicate profile/medication/lab blocks to the model.
+   */
+  const supplementaryContext = useMemo(() => {
+    if (!activeProfile) return "";
+    let ctx = "";
+    if (drugLabContraindications.length > 0) {
+      const contraList = drugLabContraindications.map(c => `[${c.severity.toUpperCase()}] ${c.title}: ${c.plainSummary}`).join('; ');
+      ctx += `Drug–lab contraindication alerts (rule-based): ${contraList}.\n`;
+    }
+    if (formResponsesText) {
+      ctx += formResponsesText;
+    }
+    return ctx.trim();
+  }, [activeProfile, drugLabContraindications, formResponsesText]);
+
   return {
     contextString,
+    supplementaryContext,
     profile: activeProfile,
     medications,
     labBiomarkers,
