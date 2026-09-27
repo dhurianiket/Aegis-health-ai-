@@ -10,6 +10,36 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    function isStrictlyValidatedPath(p) {
+      return string(p).matches('^/?profiles/[^/]+/specialistChats/[^/]+/messages/[^/]+$')
+        || string(p).matches('^/?profiles/[^/]+/consents/[^/]+$');
+    }
+
+    function isValidLoungeMessage(d) {
+      return d.keys().hasAll(['role', 'content', 'createdAt', 'expireAt', 'seq', 'schemaVersion'])
+        && d.keys().hasOnly(['role', 'content', 'createdAt', 'expireAt', 'seq', 'schemaVersion', 'kind'])
+        && d.role in ['user', 'assistant']
+        && d.content is string && d.content.size() <= 20000
+        && d.createdAt is timestamp && d.expireAt is timestamp
+        && d.expireAt > d.createdAt
+        && d.expireAt <= d.createdAt + duration.value(400, 'd')
+        && d.seq is int && d.seq >= 0 && d.seq < 100000
+        && d.schemaVersion == 2
+        && (!('kind' in d) || d.kind == 'triage');
+    }
+
+    function isValidConsent(purpose, d) {
+      return purpose == 'specialist_lounge_ai'
+        && d.keys().hasAll(['purpose', 'version', 'accepted', 'isMinorProfile', 'guardianConfirmed', 'acceptedAt'])
+        && d.keys().hasOnly(['purpose', 'version', 'accepted', 'isMinorProfile', 'guardianConfirmed', 'acceptedAt'])
+        && d.purpose == purpose
+        && d.version is string && d.version.size() > 0 && d.version.size() <= 40
+        && d.accepted == true
+        && d.isMinorProfile is bool && d.guardianConfirmed is bool
+        && (!d.isMinorProfile || d.guardianConfirmed == true)
+        && d.acceptedAt == request.time;
+    }
+
     // User root document and recursively all its nested subcollections
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
@@ -17,8 +47,27 @@ service cloud.firestore {
       allow update: if isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isAdmin()) || isAdmin();
       allow delete: if isOwner(userId) || isAdmin();
 
+      // Specialist Lounge messages (schema v2): owner-only, append-only
+      // (immutable once written), validated shape + size. `expireAt` drives
+      // the Firestore TTL policy on the `messages` collection group.
+      match /profiles/{profileId}/specialistChats/{chatId}/messages/{messageId} {
+        allow read, delete: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidLoungeMessage(request.resource.data);
+        allow update: if false;
+      }
+
+      // Per-profile, per-purpose consent records.
+      match /profiles/{profileId}/consents/{purpose} {
+        allow read, delete: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isValidConsent(purpose, request.resource.data);
+      }
+
+      // Everything else under the user: owner/admin. Writes to the strictly
+      // validated paths above are excluded here (rules are OR-ed, so the
+      // wildcard must not re-allow what the specific rules restrict).
       match /{document=**} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if (isOwner(userId) || isAdmin()) && !isStrictlyValidatedPath(document);
       }
     }
 

@@ -71,7 +71,12 @@ vi.mock("firebase/firestore", async (importOriginal) => {
   };
 });
 
+vi.mock("../../../services/lounge/loungeStorage", async () => (await import("./loungeTestMocks")).storageModule);
+vi.mock("../../../services/lounge/loungeConsent", async (importOriginal) => (await import("./loungeTestMocks")).consentModule(importOriginal));
+
 import SpecialistLounge from "../SpecialistLounge";
+import { appendedBatches, allAppended, resetStorageMocks, storageModule } from "./loungeTestMocks";
+import { normaliseLegacyMessages } from "../../../services/lounge/loungeMessageModel";
 
 function replyWith(text: string) {
   sendMock.mockImplementation(async () => {
@@ -106,6 +111,7 @@ describe("SpecialistLounge safety wiring", () => {
     saveActiveReferralMock.mockReset().mockResolvedValue("ref-new");
     getDocMock.mockReset().mockResolvedValue({ exists: () => false });
     setDocMock.mockReset().mockResolvedValue(undefined);
+    resetStorageMocks();
     createMock.mockImplementation(() => ({ sendMessageStream: sendMock }));
     replyWith("General information. _AI health information, not medical advice._");
   });
@@ -152,9 +158,8 @@ describe("SpecialistLounge safety wiring", () => {
     expect(chip.textContent).toContain("eGFR trend to review");
 
     // Persisted assistant message has no raw tag either.
-    const savedDocs = setDocMock.mock.calls.map((c) => c[1] as { messages: Array<{ content: string }> });
-    const lastSaved = savedDocs[savedDocs.length - 1];
-    expect(JSON.stringify(lastSaved.messages)).not.toContain("[REFERRAL");
+    expect(allAppended().length).toBeGreaterThan(0);
+    expect(JSON.stringify(allAppended())).not.toContain("[REFERRAL");
 
     await act(async () => {
       fireEvent.click(screen.getAllByRole("button", { name: "Save suggestion" })[0]);
@@ -187,8 +192,8 @@ describe("SpecialistLounge safety wiring", () => {
     });
     await send("I can't breathe");
     expect(createMock).not.toHaveBeenCalled();
-    const triageSave = setDocMock.mock.calls[setDocMock.mock.calls.length - 1][1] as { messages: Array<{ kind?: string }> };
-    expect(triageSave.messages.map((m) => m.kind)).toEqual(["triage", "triage"]);
+    const triageSave = appendedBatches[appendedBatches.length - 1];
+    expect(triageSave.map((m) => m.kind)).toEqual(["triage", "triage"]);
 
     await send("What is a normal resting heart rate?");
     const history = lastCreateArgs().history ?? [];
@@ -198,10 +203,9 @@ describe("SpecialistLounge safety wiring", () => {
   });
 
   it("excludes stored (legacy, unflagged) triage turns loaded from Firestore", async () => {
-    getDocMock.mockResolvedValue({
-      exists: () => true,
-      data: () => ({
-        messages: [
+    storageModule.loadLoungeMessages.mockResolvedValue({
+      source: "legacy-fallback",
+      messages: normaliseLegacyMessages([
           { role: "user", content: "What is LDL?", createdAt: "2026-09-26T10:00:00.000Z" },
           { role: "assistant", content: "LDL is a type of cholesterol.", createdAt: "2026-09-26T10:00:05.000Z" },
           { role: "user", content: "seene me dard ho raha hai", createdAt: "2026-09-26T10:01:00.000Z" },
@@ -210,8 +214,7 @@ describe("SpecialistLounge safety wiring", () => {
             content: "⚠️ **This may be a medical emergency. The AI specialist has not answered this message.**\n\nCall **112** now.",
             createdAt: "2026-09-26T10:01:01.000Z",
           },
-        ],
-      }),
+      ]),
     });
     await act(async () => {
       render(<SpecialistLounge />);

@@ -11,16 +11,21 @@ import { useProfile } from "../../context/ProfileContext";
 import { useClinicalContext } from "../../hooks/useClinicalContext";
 import getAI from "../../lib/geminiClient";
 import { getFriendlyErrorMessage } from "../../utils/aiUtils";
-import { db } from "../../lib/firebase/config";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { saveActiveReferral, getActiveReferrals, updateReferralStatus } from "../../lib/firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft, Search, X } from "lucide-react";
+import { Heart, Stethoscope, Droplets, Zap, ShieldCheck, ChevronRight, ChevronDown, TrendingUp, AlertCircle, Clock, ExternalLink, Brain, Loader2, SlidersHorizontal, Info, Square, ArrowUp, ChevronLeft, Search, X, Trash2 } from "lucide-react";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
 import VirtualizedChatList, { ChatMessage } from "../Chat/VirtualizedChatList";
 import { triageMessage, buildEmergencyTranscript, type TriageResult } from "../../services/ai/safety/triage";
 import { buildLoungeGeminiHistory, type LoungeMessage } from "../../services/ai/specialists/loungeHistory";
+import LoungeConsentSheet from "./LoungeConsentSheet";
+import DeleteLoungeDataDialog from "./DeleteLoungeDataDialog";
+import { appendLoungeMessages, deleteLoungeData, loadLoungeMessages } from "../../services/lounge/loungeStorage";
+import type { LoungeMessageInput } from "../../services/lounge/loungeMessageModel";
+import { getLoungeConsent, isLoungeConsentCurrent, saveLoungeConsent } from "../../services/lounge/loungeConsent";
+import { firstNameOnly } from "../../services/lounge/pseudonymise";
+import { isMinor } from "../../services/dpdpPaediatricService";
 import ReferralSuggestionChips, { type ReferralSuggestionStatus } from "./ReferralSuggestionChips";
 import { parseReferralSuggestions, stripReferralTags, type ReferralSuggestion } from "../../services/ai/specialists/referrals";
 import {
@@ -53,32 +58,20 @@ interface PendingReferralSuggestion extends ReferralSuggestion {
   status: ReferralSuggestionStatus;
 }
 
-interface StoredChatMessage {
-  role?: unknown;
-  content?: unknown;
-  text?: unknown;
-  createdAt?: unknown;
-  kind?: unknown;
+function toLoungeMessages(stored: readonly LoungeMessageInput[]): LoungeMessage[] {
+  return stored.map((m) => {
+    const msg: LoungeMessage = {
+      role: m.role,
+      // Legacy replies may still contain raw [REFERRAL: …] tags — never display them.
+      content: m.role === "assistant" ? stripReferralTags(m.content) : m.content,
+      timestamp: m.timestamp,
+    };
+    if (m.kind === "triage") msg.kind = "triage";
+    return msg;
+  });
 }
 
-function parseStoredMessages(raw: unknown): LoungeMessage[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((m): m is StoredChatMessage => !!m && typeof m === "object")
-    .map((m) => {
-      const role: LoungeMessage["role"] = m.role === "user" ? "user" : "assistant";
-      const content = String(m.content ?? m.text ?? "");
-      const created = typeof m.createdAt === "string" || typeof m.createdAt === "number" ? new Date(m.createdAt) : new Date();
-      const msg: LoungeMessage = {
-        role,
-        // Legacy replies may still contain raw [REFERRAL: …] tags — never display them.
-        content: role === "assistant" ? stripReferralTags(content) : content,
-        timestamp: Number.isNaN(created.getTime()) ? new Date() : created,
-      };
-      if (m.kind === "triage") msg.kind = "triage";
-      return msg;
-    });
-}
+type ConsentStatus = "loading" | "required" | "granted";
 
 /**
  * Real-time text highlight component.
@@ -125,8 +118,38 @@ export default function SpecialistLounge() {
   const [isTyping, setIsTyping] = useState(false);
   const [streamedText, setStreamedText] = useState("");
   const [emergencyTriage, setEmergencyTriage] = useState<TriageResult | null>(null);
+  const [consentStatus, setConsentStatus] = useState<ConsentStatus>("loading");
+  const [consentSaving, setConsentSaving] = useState(false);
+  const [consentError, setConsentError] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+  const [historyVersion, setHistoryVersion] = useState(0);
+  const profileFirstName = firstNameOnly(activeProfile?.fullName || activeProfile?.name);
+  const isMinorProfile = !!activeProfile && (isMinor(activeProfile.dob) || activeProfile.paediatricConsent?.isMinor === true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Per-profile consent gate (fail-closed: no consent record → sheet shown).
+  useEffect(() => {
+    let cancelled = false;
+    setConsentStatus("loading");
+    setConsentError(null);
+    setDeleteNotice(null);
+    if (!user?.uid || !activeProfile?.id) return;
+    getLoungeConsent(user.uid, activeProfile.id)
+      .then((rec) => {
+        if (!cancelled) setConsentStatus(isLoungeConsentCurrent(rec) ? "granted" : "required");
+      })
+      .catch((err) => {
+        console.error("Failed to load Lounge consent", err);
+        if (!cancelled) setConsentStatus("required");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid, activeProfile?.id]);
 
   useEffect(() => {
     if (!user?.uid || !activeProfile?.id) return;
@@ -160,11 +183,9 @@ export default function SpecialistLounge() {
       if (!user?.uid || !activeProfile?.id) return;
       setInitialLoading(true);
       try {
-        const chatDoc = await getDoc(doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist));
-        if (chatDoc.exists()) {
-          const data = chatDoc.data();
-          setMessages(parseStoredMessages(data?.messages));
-        }
+        // Schema v2 (one doc per message); legacy array chats are migrated lazily.
+        const loaded = await loadLoungeMessages(user.uid, activeProfile.id, activeSpecialist);
+        setMessages(toLoungeMessages(loaded.messages));
       } catch (err) {
         console.error("Failed to load chat history", err);
       } finally {
@@ -172,7 +193,7 @@ export default function SpecialistLounge() {
       }
     }
     fetchChat();
-  }, [activeSpecialist, user?.uid, activeProfile?.id]);
+  }, [activeSpecialist, user?.uid, activeProfile?.id, historyVersion]);
 
   // Stop: cancels the in-flight edge request (AbortController → fetch) and
   // resets the UI. The aborted reply is never displayed or saved.
@@ -220,32 +241,64 @@ export default function SpecialistLounge() {
     });
   }, [SPECIALIST_TABS, selectedCategory, searchQuery]);
 
-  const saveChatHistory = async (newMessages: LoungeMessage[]) => {
+  /** Appends ONLY the given new messages (one Firestore doc each, with TTL). */
+  const persistMessages = (newMessages: readonly LoungeMessage[]) => {
+    if (!user?.uid || !activeProfile?.id || newMessages.length === 0) return;
+    appendLoungeMessages(
+      user.uid,
+      activeProfile.id,
+      activeSpecialist,
+      newMessages.map((m) => ({ role: m.role, content: m.content, timestamp: m.timestamp, ...(m.kind ? { kind: m.kind } : {}) })),
+    ).catch((err) => console.error("Failed to save chat message", err));
+  };
+
+  const handleAcceptConsent = async ({ guardianConfirmed }: { guardianConfirmed: boolean }) => {
     if (!user?.uid || !activeProfile?.id) return;
+    setConsentSaving(true);
+    setConsentError(null);
     try {
-      const chatRef = doc(db, "users", user.uid, "profiles", activeProfile.id, "specialistChats", activeSpecialist);
-      const serializableMessages = newMessages.map((m) => ({
-        role: m.role,
-        content: m.content,
-        createdAt: m.timestamp.toISOString(),
-        // Firestore rejects `undefined` values, so only persist the flag when set.
-        ...(m.kind ? { kind: m.kind } : {}),
-      }));
-      
-      await setDoc(chatRef, {
-        specialistId: activeSpecialist,
-        profileId: activeProfile.id,
-        userId: user.uid,
-        messages: serializableMessages,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+      await saveLoungeConsent(user.uid, activeProfile.id, { isMinorProfile, guardianConfirmed });
+      setConsentStatus("granted");
+      trackEvent("lounge_consent_granted", "privacy", isMinorProfile ? "guardian" : "self");
     } catch (err) {
-      console.error("Failed to save chat history", err);
+      console.error("Failed to save Lounge consent", err);
+      setConsentError("Couldn't save your choice. Please check your connection and try again.");
+    } finally {
+      setConsentSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!user?.uid || !activeProfile?.id) return;
+    setDeleting(true);
+    setDeleteError(null);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    try {
+      await deleteLoungeData(user.uid, activeProfile.id);
+      setMessages([]);
+      setStreamedText("");
+      setIsTyping(false);
+      setEmergencyTriage(null);
+      setReferralSuggestions([]);
+      setActiveReferrals([]);
+      setDeleteOpen(false);
+      setDeleteNotice("All Health Guides (AI) data for this profile was deleted.");
+      setHistoryVersion((v) => v + 1);
+      trackEvent("lounge_data_deleted", "privacy", "profile");
+    } catch (err) {
+      console.error("Failed to delete Lounge data", err);
+      setDeleteError("Deletion did not complete. Please try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || !user || !activeProfile || isTyping) return;
+    if (consentStatus !== "granted") return;
 
     const userMsg: LoungeMessage = { role: "user", content: text, timestamp: new Date() };
     const newMsgs = [...messages, userMsg];
@@ -264,14 +317,14 @@ export default function SpecialistLounge() {
       const safetyMsg: LoungeMessage = { role: "assistant", content: buildEmergencyTranscript(triage), timestamp: new Date(), kind: "triage" };
       const withSafety = [...messages, flaggedUser, safetyMsg];
       setMessages(withSafety);
-      saveChatHistory(withSafety);
+      persistMessages([flaggedUser, safetyMsg]);
       // Category only — never the message text.
       trackEvent("lounge_emergency_triage", "safety", triage.primary ?? "unknown");
       return;
     }
     setEmergencyTriage(null);
     setMessages(newMsgs);
-    saveChatHistory(newMsgs);
+    persistMessages([userMsg]);
     setIsTyping(true);
 
     const SUMMARY_TRIGGER_PHRASES = [
@@ -314,6 +367,8 @@ export default function SpecialistLounge() {
         patientContext: context,
         supplementaryContext,
         incomingReferral: incomingReferral ? { fromAgent: incomingReferral.fromAgent, reason: incomingReferral.reason } : null,
+        // Used only to pseudonymise the full name out of record text.
+        profileFullName: activeProfile.fullName || activeProfile.name || null,
       });
 
       // Triage turns (crisis message + fixed card) are never sent to Gemini.
@@ -326,10 +381,9 @@ export default function SpecialistLounge() {
         const cached = await getCachedReport(user.uid, activeProfile.id || "Myself", `SpecialistSummary_${activeSpecialist}`, sourceHashForCache, LOUNGE_PROMPT_VERSION, false);
         if (controller.signal.aborted) return;
         if (cached) {
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: stripReferralTags(cached), timestamp: new Date() }
-          ]);
+          const cachedMsg: LoungeMessage = { role: "assistant", content: stripReferralTags(cached), timestamp: new Date() };
+          setMessages((prev) => [...prev, cachedMsg]);
+          persistMessages([cachedMsg]);
           setIsTyping(false);
           setStreamedText("");
           return;
@@ -379,7 +433,7 @@ export default function SpecialistLounge() {
         const assistantMsg: LoungeMessage = { role: "assistant", content: cleanText, timestamp: new Date() };
         const finalMsgs = [...newMsgs, assistantMsg];
         setMessages(finalMsgs);
-        saveChatHistory(finalMsgs);
+        persistMessages([assistantMsg]);
         setStreamedText("");
         setReferralSuggestions(
           suggestions.map((sug) => ({ ...sug, fromSpecialist: activeSpecialist, status: "idle" as const }))
@@ -514,7 +568,15 @@ export default function SpecialistLounge() {
         ref={scrollRef}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {initialLoading ? (
+        {consentStatus === "required" ? (
+          <LoungeConsentSheet
+            profileFirstName={profileFirstName}
+            isMinorProfile={isMinorProfile}
+            saving={consentSaving}
+            error={consentError}
+            onAccept={handleAcceptConsent}
+          />
+        ) : initialLoading || consentStatus === "loading" ? (
           <div className="h-full flex flex-col items-center justify-center space-y-4">
              <Loader2 className="w-8 h-8 text-slate-600 dark:text-slate-300 animate-spin" />
              <p className="text-xs font-bold text-slate-600 dark:text-slate-300 tracking-widest uppercase">Loading Conversation</p>
@@ -596,7 +658,7 @@ export default function SpecialistLounge() {
           <button
             type="submit"
             aria-label="Send Message"
-            disabled={!inputValue.trim() || isTyping}
+            disabled={!inputValue.trim() || isTyping || consentStatus !== "granted"}
             className="absolute right-2.5 top-2.5 bottom-2.5 aspect-square bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-[#2C2C2E] transition-colors active:scale-95"
           >
             <ArrowUp size={20} className="stroke-[3px]" />
@@ -623,8 +685,34 @@ export default function SpecialistLounge() {
           <p className="text-[var(--color-text-muted)] text-xs md:text-sm font-light">
             AI health information guides: understand your reports and prepare questions for your doctor. Not a doctor; does not diagnose or prescribe.
           </p>
+          {deleteNotice && (
+            <p role="status" className="mt-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+              {deleteNotice}
+            </p>
+          )}
+        </div>
+        <div className="md:ml-auto">
+          <button
+            type="button"
+            onClick={() => {
+              setDeleteError(null);
+              setDeleteOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-full border border-red-300 dark:border-red-500/40 px-3.5 py-2 text-xs font-semibold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10"
+          >
+            <Trash2 className="w-4 h-4" /> Delete Lounge data
+          </button>
         </div>
       </div>
+
+      <DeleteLoungeDataDialog
+        open={deleteOpen}
+        profileFirstName={profileFirstName}
+        deleting={deleting}
+        error={deleteError}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:min-h-[600px] lg:h-[max(calc(100vh-200px),600px)]">
         {/* Sidebar */}

@@ -87,6 +87,9 @@ import InteractionMatrix from "../Medications/InteractionMatrix";
 import WearableCoachWidget from "../AIHelper/WearableCoachWidget";
 import Medications from "../Medications/Medications";
 import ReportComparison from "../Dashboard/ReportComparison";
+vi.mock("../../services/lounge/loungeStorage", async () => (await import("../Specialists/__tests__/loungeTestMocks")).storageModule);
+vi.mock("../../services/lounge/loungeConsent", async (importOriginal) => (await import("../Specialists/__tests__/loungeTestMocks")).consentModule(importOriginal));
+
 import SpecialistLounge from "../Specialists/SpecialistLounge";
 import { HeroMetric } from "../Dashboard/HeroMetric";
 
