@@ -163,12 +163,12 @@ export function getFriendlyErrorMessage(err: any): string {
     status === 403 ||
     rawMsg.includes("API key") ||
     rawMsg.includes("VITE_GEMINI_API_KEY") ||
-    rawMsg.includes("VITE_AEGIS_EDGE_BEARER") ||
+    lowerMsg.includes("authentication required") ||
     rawMsg.includes("API_KEY") ||
     lowerMsg.includes("unauthorized") ||
     lowerMsg.includes("forbidden")
   ) {
-    return "Aura AI is temporarily offline (edge auth or security verification required). Please configure VITE_AEGIS_EDGE_BEARER for the Cloudflare Gemini proxy.";
+    return "Aura AI is temporarily offline (edge auth or security verification required). Please sign in again with a verified account and retry.";
   }
 
   // 5. Detect edge service unavailable / gateway errors (502 / 503 / 504)

@@ -7,10 +7,10 @@ coverage/
 pnpm-lock.yaml
 yarn.lock
 .env
-.env.local
-.env.development
-.env.production
+.env.*
 !.env.example
+.dev.vars
+.dev.vars.*
 firebase-applet-config.json
 firebase-blueprint.json
 pwd.txt
@@ -40,6 +40,10 @@ graphify-out/2026-*/
 
 # Secrets & credentials (never commit)
 *.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
 *serviceAccount*.json
 serviceAccount*.json
 

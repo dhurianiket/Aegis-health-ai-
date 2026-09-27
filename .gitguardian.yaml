@@ -1,11 +1,19 @@
+# ggshield / GitGuardian configuration
+# Docs: https://docs.gitguardian.com/ggshield-docs/reference/gitguardian-yaml
+#
+# Keep ignores NARROW. Never blanket-ignore src/, tests/ or real env files:
+# a committed .env.local must be caught, not silenced.
 version: 2
 secret:
   ignored_paths:
-    - "**/.env*"
-    - "**/*service-account*.json"
-    - "**/tests/**"
+    # Dependencies and build output (generated, never hand-edited)
     - "**/node_modules/**"
-    - "**/dist/**"
-    - "**/build/**"
-    - "**/graphify-out/**"
-    - "**/.graphify/**"
+    - "dist/**"
+    - "build/**"
+    - "functions/lib/**"
+    - "coverage/**"
+    # Generated knowledge-graph artefacts
+    - "graphify-out/**"
+    - ".graphify/**"
+    # Template with empty placeholders / public-by-design site keys only
+    - ".env.example"

@@ -9,7 +9,6 @@ describe('geminiClient edge proxy + model normalization', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', 'test-edge-bearer');
     vi.stubEnv('VITE_EDGE_API_URL', 'https://api.aegishealthai.co.in');
 
     mockFetch = vi.fn(async (_url: string, init?: RequestInit) => {
@@ -23,6 +22,8 @@ describe('geminiClient edge proxy + model normalization', () => {
     getAI = mod.getAI;
     __setGeminiFetchForTests = mod.__setGeminiFetchForTests;
     normalizeModel = mod.normalizeModel;
+    // Edge auth is Firebase ID token only (no shared bearer in the SPA).
+    mod.setAuthTokenProvider(async () => 'test-firebase-id-token');
     __setGeminiFetchForTests(mockFetch as unknown as typeof fetch);
   });
 
@@ -31,18 +32,19 @@ describe('geminiClient edge proxy + model normalization', () => {
     __setGeminiFetchForTests(null);
   });
 
-  it('reports edge configuration from bearer env', async () => {
+  it('reports edge configuration only from the Firebase auth token provider', async () => {
     const mod = await import('../geminiClient');
     expect(mod.isEdgeConfigured()).toBe(true);
     vi.resetModules();
-    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
+    // A leftover VITE_ bearer must NOT enable the edge anymore.
+    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', 'legacy-value-must-be-ignored');
     const empty = await import('../geminiClient');
     expect(empty.isEdgeConfigured()).toBe(false);
+    expect(() => empty.getAI()).toThrow(/Authentication required/);
   });
 
-  it('throws when neither user auth nor edge bearer is configured', async () => {
+  it('throws when no signed-in user token provider is configured', async () => {
     vi.resetModules();
-    vi.stubEnv('VITE_AEGIS_EDGE_BEARER', '');
     const mod = await import('../geminiClient');
     mod.setAuthTokenProvider(null);
     expect(() => mod.getAI()).toThrow(/Authentication required/);
@@ -73,7 +75,7 @@ describe('geminiClient edge proxy + model normalization', () => {
       const [url, init] = mockFetch.mock.calls[0];
       expect(url).toBe('https://api.aegishealthai.co.in/api/ai/generate');
       expect((init as RequestInit).headers).toMatchObject({
-        Authorization: 'Bearer test-edge-bearer',
+        Authorization: 'Bearer test-firebase-id-token',
       });
       const body = JSON.parse(String((init as RequestInit).body));
       expect(body.model).toBe(expectedModel);
@@ -277,7 +279,7 @@ describe('geminiClient edge proxy + model normalization', () => {
   });
 
   describe('JWT Token Provider & Auth Isolation', () => {
-    it('prefers Firebase ID token over shared edge bearer', async () => {
+    it('sends the Firebase ID token as the edge bearer', async () => {
       const mod = await import('../geminiClient');
       mod.setAuthTokenProvider(async () => 'user-firebase-id-token-xyz');
 
@@ -292,21 +294,20 @@ describe('geminiClient edge proxy + model normalization', () => {
       mod.setAuthTokenProvider(null);
     });
 
-    it('falls back to shared edge bearer when user ID token is absent', async () => {
+    it('refuses to call the edge when the user has no ID token (no shared-bearer fallback)', async () => {
       vi.resetModules();
-      vi.stubEnv('VITE_AEGIS_EDGE_BEARER', 'test-edge-bearer');
+      vi.stubEnv('VITE_AEGIS_EDGE_BEARER', 'legacy-value-must-be-ignored');
       vi.stubEnv('VITE_EDGE_API_URL', 'https://api.aegishealthai.co.in');
       mockFetch.mockClear();
       const mod = await import('../geminiClient');
       mod.__setGeminiFetchForTests(mockFetch as unknown as typeof fetch);
-      mod.setAuthTokenProvider(null);
+      mod.setAuthTokenProvider(async () => null);
 
       const ai = mod.getAI();
-      await ai.models.generateContent({ contents: 'test message' });
-
-      expect(mockFetch).toHaveBeenCalled();
-      const lastCallInit = mockFetch.mock.calls[0][1];
-      expect(lastCallInit.headers.Authorization).toBe('Bearer test-edge-bearer');
+      await expect(ai.models.generateContent({ contents: 'test message' })).rejects.toThrow(
+        /Authentication required/,
+      );
+      expect(mockFetch).not.toHaveBeenCalled();
     });
   });
 

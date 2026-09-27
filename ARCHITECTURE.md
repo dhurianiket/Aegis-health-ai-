@@ -9,16 +9,15 @@ This document serves as the single source of truth for the technical architectur
 - **Backend & APIs:** Firebase Cloud Functions (Node.js). We use this for backend logic, webhooks, and automation instead of Next.js API routes.
 - **Infrastructure Core:** Firebase Authentication, Cloud Firestore, Firebase Hosting.
 - **AI Analytics Engine:** Google Gemini via Cloudflare Worker **`aegishealthai-edge`** (`https://api.aegishealthai.co.in`), fronting Cloudflare AI Gateway (`aegishealthai` → Google AI Studio).
-  - *SPA path:* `src/lib/geminiClient.ts` → `POST /api/ai/generate` with interim `Authorization: Bearer` (`VITE_AEGIS_EDGE_BEARER`). No `VITE_GEMINI_API_KEY` in the client bundle.
+  - *SPA path:* `src/lib/geminiClient.ts` → `POST /api/ai/generate` with `Authorization: Bearer <Firebase ID token>` (verified RS256 at the Worker). No shared bearer and no `VITE_GEMINI_API_KEY` in the client bundle.
   - *Routing:* Flash for extraction/telemetry; Pro-class models for deep consult threads — model allowlist enforced at the Worker.
   - *Resilience Layer:* Client normalizes deprecated model ids to `gemini-3.6-flash` / `gemini-3.1-pro-preview` and retries 503/high-demand onto `gemini-3.6-flash` then `gemini-3.5-flash`. Stream APIs are polyfilled as a single edge generate until Worker streaming ships.
-  - *Follow-up:* Replace shared bearer with Firebase ID-token verification on the Worker.
 - **Medical Intelligence Hub:** U.S. National Library of Medicine (NLM) RxNorm Datasets.
 
 ## 2. Security & API Management
 - **Firebase Auth Constraint:** Authentication is built on standard Firebase Auth (Identity Platform is NOT enabled). The `authDomain` MUST remain the project's native `firebaseapp.com` domain.
 - **Auth Flow Resilience:** The system relies on `onAuthStateChanged` as the source of truth to seamlessly route users from the landing page to the dashboard. It uses `signInWithPopup` with fallback to `signInWithRedirect`.
-- **API Key Hardening:** Gemini API keys live only as Worker / server secrets. The SPA may carry an **interim** edge bearer (`VITE_AEGIS_EDGE_BEARER`) which is still public-in-bundle — document and rotate; never put `GEMINI_API_KEY` in `VITE_*`.
+- **API Key Hardening:** Gemini API keys live only as Worker / server secrets. The SPA carries **no** edge secret: it authenticates with the user's Firebase ID token only. Never put `GEMINI_API_KEY` or any secret in `VITE_*` (enforced by `scripts/check-client-env.mjs`).
 - **Zero-Trust Hardcoding Guardrail:** Strict architectural rule established: raw API keys or secrets must **never** be hardcoded inside standard files or committed to version control.
 
 ## 2b. Cloudflare Edge (`aegishealthai-edge`)

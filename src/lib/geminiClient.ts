@@ -75,15 +75,13 @@ export function getEdgeApiBaseUrl(): string {
   return String(raw).replace(/\/$/, '');
 }
 
+/**
+ * The SPA authenticates to the edge ONLY with the signed-in user's Firebase ID token.
+ * There is intentionally no shared/static bearer: anything in a VITE_* variable is
+ * compiled into the public JS bundle and must never be a secret.
+ */
 export function isEdgeConfigured(): boolean {
-  return getEdgeBearer().trim().length > 0 || hasAuthTokenProvider();
-}
-
-export function getEdgeBearer(): string {
-  const bearer =
-    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AEGIS_EDGE_BEARER) ||
-    '';
-  return String(bearer);
+  return hasAuthTokenProvider();
 }
 
 export function normalizeModel(model: string | undefined): string {
@@ -243,15 +241,13 @@ export async function callEdgeGenerate(
   baseUrlOverride?: string,
   turnstileTokenOverride?: string,
 ): Promise<GeminiGenerateResponse> {
-  // Primary auth: User Firebase ID token (JWT RS256 cryptographically verified at Cloudflare Edge)
-  // Fallback: Shared edge bearer (during transition or for unauthenticated requests)
+  // Auth: user Firebase ID token only (JWT RS256 cryptographically verified at Cloudflare Edge).
   const idToken = await getAuthToken();
-  const bearer = getEdgeBearer().trim();
-  const authBearer = idToken || bearer;
+  const authBearer = (idToken || '').trim();
 
   if (!authBearer) {
     throw new EdgeGeminiError(
-      'Authentication required: Please sign in with a verified account or configure edge auth.',
+      'Authentication required: Please sign in with a verified account to access Aegis AI.',
     );
   }
 
@@ -482,7 +478,7 @@ export function __setGeminiFetchForTests(fetchImpl: typeof fetch | null): void {
 
 export function getAI(): AegisAI {
   if (!aiInstance) {
-    if (!hasAuthTokenProvider() && !getEdgeBearer()) {
+    if (!hasAuthTokenProvider()) {
       throw new Error(
         'Authentication required: Please sign in with a verified account to access Aegis AI.',
       );

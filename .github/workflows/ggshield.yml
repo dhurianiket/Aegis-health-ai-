@@ -1,0 +1,40 @@
+name: GitGuardian secret scan
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ggshield-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scanning:
+    name: ggshield secret scan
+    runs-on: ubuntu-latest
+    env:
+      GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+    steps:
+      - name: Notice when GITGUARDIAN_API_KEY is not configured
+        if: env.GITGUARDIAN_API_KEY == ''
+        run: |
+          echo "::notice title=ggshield skipped::GITGUARDIAN_API_KEY repository secret is not set (or unavailable to fork PRs). Add it under Settings → Secrets and variables → Actions to enable the scan. Skipping."
+
+      - name: Checkout
+        if: env.GITGUARDIAN_API_KEY != ''
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: GitGuardian scan
+        if: env.GITGUARDIAN_API_KEY != ''
+        uses: GitGuardian/ggshield-action@v1.55.0
+        env:
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}

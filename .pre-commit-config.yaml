@@ -1,0 +1,16 @@
+# Pre-commit hooks — block secrets BEFORE they reach git history.
+#
+# One-time setup (per clone):
+#   pip install pre-commit ggshield      # or: pipx install pre-commit ggshield
+#   ggshield auth login                  # or export GITGUARDIAN_API_KEY
+#   pre-commit install
+#
+# Manual full scan of staged changes:  pre-commit run --all-files
+# Never bypass with `git commit --no-verify`. See SECURITY.md.
+repos:
+  - repo: https://github.com/gitguardian/ggshield
+    rev: v1.55.0
+    hooks:
+      - id: ggshield
+        language_version: python3
+        stages: [pre-commit]
