@@ -324,7 +324,7 @@ export default function ReportHistory() {
                 {/* Accordion Trigger Header */}
                 <button
                   onClick={() => toggleReportExpanded(report.docId)}
-                  className="w-full p-5 flex items-center justify-between text-left hover:bg-[var(--color-bg)]/40 transition-colors focus:outline-none"
+                  className="w-full p-5 flex items-center justify-between text-left hover:bg-[var(--color-bg)]/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface)]"
                   id={`btn-expand-${report.docId}`}
                 >
                   <div className="flex items-center gap-4 min-w-0">
@@ -534,7 +534,7 @@ export default function ReportHistory() {
             <button
               onClick={loadMoreHistory}
               disabled={isExpandingLoad}
-              className="px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-primary)]/40 transition-all disabled:opacity-50 shadow-sm flex items-center gap-2"
+              className="px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-primary)]/40 transition-all disabled:opacity-50 shadow-sm flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
               id="btn-load-more-history"
             >
               {isExpandingLoad ? (
