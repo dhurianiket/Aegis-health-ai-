@@ -105,6 +105,63 @@ export function HighlightMatch({ text, query }: { text: string; query: string })
   );
 }
 
+/**
+ * Tailored, high-yield starter prompt suggestions for each specialist guide.
+ * Framed for report comprehension and doctor discussion preparation.
+ */
+export const SPECIALIST_STARTER_PROMPTS: Record<SpecialistId, string[]> = {
+  cardiologist: [
+    "Summarize my labs related to cardiology",
+    "What are ideal BP & LDL targets under Indian (IHCI/CSI) & ACC/AHA guidelines?",
+    "What questions should I prepare for my cardiologist?",
+  ],
+  endocrinologist: [
+    "Summarize my labs related to endocrinology",
+    "What are RSSDI & ADA target levels for HbA1c & fasting blood glucose?",
+    "What questions should I prepare for my endocrinologist?",
+  ],
+  neurologist: [
+    "Summarize my labs related to neurology",
+    "What are the FAST warning signs of stroke under ICMR guidelines?",
+    "What questions should I prepare for my neurologist?",
+  ],
+  gastroenterologist: [
+    "Summarize my labs related to gastroenterology",
+    "What lifestyle changes does ISG recommend for fatty liver (MASLD) & acid reflux?",
+    "What questions should I prepare for my gastroenterologist?",
+  ],
+  pulmonologist: [
+    "Summarize my labs related to pulmonology",
+    "How are asthma & COPD triggers managed per ICMR & GOLD guidelines?",
+    "What questions should I prepare for my pulmonologist?",
+  ],
+  nephrologist: [
+    "Summarize my labs related to nephrology",
+    "How do KDIGO & ICMR recommend protecting kidney function (eGFR/creatinine)?",
+    "What questions should I prepare for my nephrologist?",
+  ],
+  psychiatrist: [
+    "Summarize my labs related to psychiatry",
+    "What evidence-based sleep & stress management strategies can I discuss with my doctor?",
+    "What mental health helplines (Tele-MANAS 14416) & resources are available?",
+  ],
+  dermatologist: [
+    "Summarize my labs related to dermatology",
+    "How do I evaluate a skin spot or changing mole using the ABCDE rule?",
+    "What questions should I prepare for my dermatologist?",
+  ],
+  orthopedist: [
+    "Summarize my labs related to orthopedics",
+    "What exercises and joint protection measures does IOA/AAOS recommend for joint pain?",
+    "What questions should I prepare for my orthopedist?",
+  ],
+  oncologist: [
+    "Summarize my labs related to oncology",
+    "What routine cancer screening guidelines are recommended by NCG India & NCCN?",
+    "What questions should I prepare for my oncology consultation?",
+  ],
+};
+
 export default function SpecialistLounge() {
   const [activeSpecialist, setActiveSpecialist] = useState<SpecialistId>('cardiologist');
   const { user } = useAuth();
@@ -126,10 +183,27 @@ export default function SpecialistLounge() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
   const [historyVersion, setHistoryVersion] = useState(0);
+  const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
   const profileFirstName = firstNameOnly(activeProfile?.fullName || activeProfile?.name);
   const isMinorProfile = !!activeProfile && (isMinor(activeProfile.dob) || activeProfile.paediatricConsent?.isMinor === true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const activeGuidelines = useMemo(() => {
+    return lookupRelevantGuidelines("", activeSpecialist);
+  }, [activeSpecialist]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowGuidelinesModal(false);
+      }
+    };
+    if (showGuidelinesModal) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showGuidelinesModal]);
 
   // Per-profile consent gate (fail-closed: no consent record → sheet shown).
   useEffect(() => {
@@ -539,6 +613,16 @@ export default function SpecialistLounge() {
           <div className="font-semibold text-slate-900 dark:text-slate-100 text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
           <div className="text-[13px] text-slate-800 dark:text-slate-200 truncate font-semibold">AI health information guide · not a doctor · References: {activeSpecProfile.guidelines.join(', ')}</div>
         </div>
+        <button 
+          type="button"
+          onClick={() => setShowGuidelinesModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-200 border border-teal-200 dark:border-teal-800/80 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors shrink-0"
+          title="View grounded clinical guidelines"
+          aria-label="View grounded clinical guidelines"
+        >
+          <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+          <span className="hidden sm:inline">Guidelines</span>
+        </button>
         <div className="shrink-0">
            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center">
              <Brain className="w-5 h-5 text-slate-600 dark:text-slate-300" />
@@ -582,20 +666,34 @@ export default function SpecialistLounge() {
              <p className="text-xs font-bold text-slate-600 dark:text-slate-300 tracking-widest uppercase">Loading Conversation</p>
           </div>
         ) : messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center opacity-90 space-y-6 px-6">
-             <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center mb-2 shadow-inner border border-slate-200 dark:border-white/10">
-                <Stethoscope className="text-slate-600 dark:text-slate-300 w-10 h-10"/>
+          <div className="h-full flex flex-col items-center justify-center opacity-90 space-y-6 px-6 max-w-xl mx-auto py-8">
+             <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center mb-1 shadow-inner border border-slate-200 dark:border-white/10 shrink-0">
+                <Stethoscope className="text-slate-600 dark:text-slate-300 w-9 h-9"/>
              </div>
-             <p className="text-[15px] text-slate-800 dark:text-slate-200 text-center font-semibold leading-relaxed max-w-sm">
-               Ask the {activeSpecProfile.displayName} to explain your reports and help you prepare questions for your doctor.
-             </p>
-             <div className="flex gap-2 w-full max-w-[280px]">
-                <button 
-                  onClick={() => handleSendMessage(`Summarize my labs related to ${activeSpecProfile.specialty.toLowerCase()}`)} 
-                  className="w-full bg-slate-900 border border-slate-900/10 dark:bg-[#1C1C1E] dark:border-[#2C2C2E] text-white hover:opacity-90 text-[15px] font-semibold px-4 py-3.5 rounded-[20px] transition-all active:scale-[0.98] shadow-sm"
-                >
-                  Summarize my labs
-                </button>
+             <div className="text-center space-y-1.5">
+               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                 {activeSpecProfile.displayName}
+               </h3>
+               <p className="text-[14px] text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                 Ask the {activeSpecProfile.displayName} to explain your reports and help you prepare questions for your doctor.
+               </p>
+             </div>
+             
+             <div className="w-full space-y-2.5 pt-2">
+               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Suggested Topics & Questions</p>
+               <div className="flex flex-col gap-2 w-full">
+                 {(SPECIALIST_STARTER_PROMPTS[activeSpecialist] || [`Summarize my labs related to ${activeSpecProfile.specialty.toLowerCase()}`]).map((promptText, idx) => (
+                   <button
+                     key={idx}
+                     type="button"
+                     onClick={() => handleSendMessage(promptText)}
+                     className="w-full text-left bg-slate-50 hover:bg-slate-100 dark:bg-[#1C1C1E] dark:hover:bg-[#252528] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 text-sm font-medium px-4 py-3 rounded-2xl transition-all active:scale-[0.99] flex items-center justify-between group shadow-sm"
+                   >
+                     <span className="leading-snug">{promptText}</span>
+                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-100 shrink-0 ml-2 transition-transform group-hover:translate-x-0.5" />
+                   </button>
+                 ))}
+               </div>
              </div>
           </div>
         ) : (
@@ -891,6 +989,119 @@ export default function SpecialistLounge() {
               )
             }
           </React.Fragment>
+        )}
+      </AnimatePresence>
+
+      {/* Clinical Guidelines Modal */}
+      <AnimatePresence>
+        {showGuidelinesModal && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="guidelines-modal-title"
+            className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowGuidelinesModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-[#121214] border border-slate-200 dark:border-white/10 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              {/* Header */}
+              <div className="p-5 md:p-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-950/60 flex items-center justify-center text-teal-700 dark:text-teal-300 shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 id="guidelines-modal-title" className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">
+                      Clinical Grounding — {activeSpecProfile.displayName}
+                    </h3>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      Official Indian & international medical guidelines referenced for educational synthesis
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowGuidelinesModal(false)}
+                  aria-label="Close guidelines dialog"
+                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Guidelines List */}
+              <div className="p-5 md:p-6 overflow-y-auto space-y-4 text-left">
+                {activeGuidelines.map((guideline) => (
+                  <div
+                    key={guideline.id}
+                    className="p-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-[#1A1A1E] space-y-2.5"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs uppercase px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-white/15 text-slate-800 dark:text-slate-200">
+                          {guideline.code}
+                        </span>
+                        {guideline.region === "India" ? (
+                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/70 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700">
+                            🇮🇳 India (National)
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700">
+                            🌐 International
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {guideline.organization} · {guideline.year}
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                      {guideline.title}
+                    </h4>
+
+                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                      {guideline.summary}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-1 text-xs">
+                      <span className="text-slate-500 dark:text-slate-400 italic">
+                        Level: {guideline.evidenceLevel}
+                      </span>
+                      <a
+                        href={guideline.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-semibold text-teal-700 dark:text-teal-300 hover:underline"
+                      >
+                        Official Source <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 md:p-5 bg-slate-50 dark:bg-[#161619] border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] leading-relaxed text-center sm:text-left">
+                  Guides synthesize evidence-based guidelines for educational preparation and report comprehension only. They do not diagnose conditions or prescribe treatments.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowGuidelinesModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 font-semibold transition-colors shrink-0 w-full sm:w-auto"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

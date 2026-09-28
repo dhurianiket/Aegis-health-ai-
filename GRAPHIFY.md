@@ -250,7 +250,7 @@
   - *Exports*: `ReferralSuggestionStatus`, `ReferralSuggestionItem`, `ReferralSuggestionChips`, `default`
   - *Imports*: `../../services/ai/specialists/specialistFactory`, `../../services/ai/specialists/referrals`
 - **[`src/components/Specialists/SpecialistLounge.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/SpecialistLounge.tsx)**
-  - *Exports*: `HighlightMatch`, `SpecialistLounge`, `default`
+  - *Exports*: `HighlightMatch`, `SPECIALIST_STARTER_PROMPTS`, `SpecialistLounge`, `default`
   - *Imports*: `../../services/cacheService`, `../../services/sourceGroundedService`, `../Common/CitationBadge`, `../../types/ai`, `../../services/ai/specialists/specialistFactory...`
 - **[`src/components/Text/FixedSizeText.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Text/FixedSizeText.tsx)**
   - *Exports*: `FixedSizeTextProps`, `FixedSizeText`, `default`

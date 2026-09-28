@@ -23,7 +23,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Cardiology',
     description: 'AI health information guide for heart topics: blood pressure, cholesterol, heart rhythm and heart tests',
     expertise: ['Coronary artery disease', 'Heart failure', 'Atrial fibrillation', 'Lipid disorders'],
-    guidelines: ['ACC/AHA 2024', 'ESC 2025'],
+    guidelines: ['IHCI/ICMR 2024', 'CSI Lipid 2024', 'ACC/AHA 2024', 'ESC 2025'],
     systemPrompt: getCardiologistPrompt(),
   },
   endocrinologist: {
@@ -33,7 +33,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Endocrinology',
     description: 'AI health information guide for diabetes, thyroid and hormone-related reports',
     expertise: ['Type 1 & Type 2 Diabetes', 'Thyroid disorders', 'PCOS', 'Osteoporosis'],
-    guidelines: ['ADA Standards of Care 2025', 'ATA Guidelines 2024'],
+    guidelines: ['RSSDI 2024', 'ICMR T2D STW', 'ADA Standards of Care 2025'],
     systemPrompt: getEndocrinologistPrompt(),
   },
   neurologist: {
@@ -43,7 +43,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Neurology',
     description: 'AI health information guide for headache, seizures, stroke awareness and memory topics',
     expertise: ['Headaches', 'Epilepsy', 'Stroke', 'Dementia'],
-    guidelines: ['AAN 2024'],
+    guidelines: ['ICMR Stroke STW', 'AAN 2024'],
     systemPrompt: getNeurologistPrompt(),
   },
   gastroenterologist: {
@@ -53,7 +53,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Gastroenterology',
     description: 'AI health information guide for stomach, bowel and liver topics and liver function tests',
     expertise: ['IBS', 'IBD', 'GERD', 'Liver Disease'],
-    guidelines: ['ACG/AGA'],
+    guidelines: ['ISG MASLD 2024', 'ICMR GERD STW', 'ACG/AGA 2024'],
     systemPrompt: getGastroenterologistPrompt(),
   },
   pulmonologist: {
@@ -63,7 +63,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Pulmonology',
     description: 'AI health information guide for asthma, COPD, breathing tests and sleep apnoea',
     expertise: ['Asthma', 'COPD', 'Sleep Apnea'],
-    guidelines: ['ATS/ERS', 'GOLD'],
+    guidelines: ['ICMR Asthma/COPD STW', 'GOLD 2025', 'ATS/ERS 2024'],
     systemPrompt: getPulmonologistPrompt(),
   },
   nephrologist: {
@@ -73,7 +73,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Nephrology',
     description: 'AI health information guide for kidney function tests, CKD and electrolytes',
     expertise: ['CKD', 'Hypertension', 'Electrolytes'],
-    guidelines: ['KDIGO'],
+    guidelines: ['ICMR CKD STW', 'KDIGO 2024'],
     systemPrompt: getNephrologistPrompt(),
   },
   psychiatrist: {
@@ -83,7 +83,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Psychiatry',
     description: 'AI health information guide for stress, mood, anxiety and sleep, with helpline signposting',
     expertise: ['Depression', 'Anxiety', 'Bipolar Disorder'],
-    guidelines: ['DSM-5-TR', 'APA'],
+    guidelines: ['Tele-MANAS/NMHP 2024', 'APA/DSM-5-TR 2024'],
     systemPrompt: getPsychiatristPrompt(),
   },
   dermatologist: {
@@ -93,7 +93,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Dermatology',
     description: 'AI health information guide for skin, hair and nail topics',
     expertise: ['Melanoma', 'Eczema', 'Psoriasis'],
-    guidelines: ['AAD'],
+    guidelines: ['IADVL 2024', 'AAD 2024'],
     systemPrompt: getDermatologistPrompt(),
   },
   orthopedist: {
@@ -103,7 +103,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Orthopedics',
     description: 'AI health information guide for bone, joint and muscle topics and bone density reports',
     expertise: ['Fractures', 'Joint Replacement', 'Sports Injuries'],
-    guidelines: ['AAOS'],
+    guidelines: ['IOA/ICMR STW 2024', 'AAOS 2024'],
     systemPrompt: getOrthopedistPrompt(),
   },
   oncologist: {
@@ -113,7 +113,7 @@ export const SPECIALISTS: Record<SpecialistId, SpecialistProfile> = {
     specialty: 'Oncology',
     description: 'AI health information guide for cancer screening, reports and treatment side-effect topics',
     expertise: ['Solid Tumors', 'Leukemia', 'Lymphoma'],
-    guidelines: ['NCCN'],
+    guidelines: ['NCG India 2024', 'NCCN 2025'],
     systemPrompt: getOncologistPrompt(),
   }
 };

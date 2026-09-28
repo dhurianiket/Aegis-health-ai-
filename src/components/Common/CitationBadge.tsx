@@ -71,11 +71,13 @@ export const renderCitationLink = ({ href, children }: { href?: string; children
     const guideline = CLINICAL_GUIDELINES[guidelineId];
 
     let colorClass = "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80";
-    if (guideline?.organization === "ACC/AHA") {
+    if (guideline?.region === "India") {
+      colorClass = "bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 border-teal-300 dark:border-teal-700/80 hover:bg-teal-100 dark:hover:bg-teal-900/80";
+    } else if (guideline?.organization === "ACC/AHA" || guideline?.organization === "ESC") {
       colorClass = "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60 hover:bg-rose-100 dark:hover:bg-rose-900/80";
-    } else if (guideline?.organization === "ADA") {
+    } else if (guideline?.organization === "ADA" || guideline?.organization === "AAN") {
       colorClass = "bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/60 hover:bg-sky-100 dark:hover:bg-sky-900/80";
-    } else if (guideline?.organization === "KDIGO") {
+    } else if (guideline?.organization === "KDIGO" || guideline?.organization === "GOLD") {
       colorClass = "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80";
     }
 

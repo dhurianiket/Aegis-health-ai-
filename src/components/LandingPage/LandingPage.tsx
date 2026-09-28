@@ -64,16 +64,16 @@ const CHAOS_TEXT = [
 ];
 
 const SPECIALISTS_SHOWCASE = [
-  { title: "AI Cardiologist", icon: Heart, guidelines: "ACC/AHA 2024" },
-  { title: "AI Endocrinologist", icon: Zap, guidelines: "ADA 2025" },
-  { title: "AI Neurologist", icon: Brain, guidelines: "AAN 2024" },
-  { title: "AI Gastroenterologist", icon: Droplets, guidelines: "ACG/AGA" },
-  { title: "AI Pulmonologist", icon: Activity, guidelines: "ATS/ERS" },
-  { title: "AI Nephrologist", icon: Droplets, guidelines: "KDIGO" },
-  { title: "AI Psychiatrist", icon: Sparkles, guidelines: "APA" },
-  { title: "AI Dermatologist", icon: ShieldCheck, guidelines: "AAD" },
-  { title: "AI Orthopedist", icon: Stethoscope, guidelines: "AAOS" },
-  { title: "AI Oncologist", icon: Activity, guidelines: "NCCN" },
+  { title: "AI Cardiologist", icon: Heart, guidelines: "IHCI/ICMR & ACC/AHA" },
+  { title: "AI Endocrinologist", icon: Zap, guidelines: "RSSDI & ADA 2025" },
+  { title: "AI Neurologist", icon: Brain, guidelines: "ICMR & AAN 2024" },
+  { title: "AI Gastroenterologist", icon: Droplets, guidelines: "ISG & ACG/AGA" },
+  { title: "AI Pulmonologist", icon: Activity, guidelines: "ICMR & GOLD 2025" },
+  { title: "AI Nephrologist", icon: Droplets, guidelines: "ICMR & KDIGO 2024" },
+  { title: "AI Psychiatrist", icon: Sparkles, guidelines: "Tele-MANAS & APA" },
+  { title: "AI Dermatologist", icon: ShieldCheck, guidelines: "IADVL & AAD" },
+  { title: "AI Orthopedist", icon: Stethoscope, guidelines: "IOA/ICMR & AAOS" },
+  { title: "AI Oncologist", icon: Activity, guidelines: "NCG India & NCCN" },
 ];
 
 // ----------------------------------------------------------------------
