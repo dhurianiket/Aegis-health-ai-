@@ -182,7 +182,7 @@
   - *Exports*: `InteractionMatrix`, `default`
   - *Imports*: `../../types/health`, `../../services/drugLabEngine`, `../../services/drugInteractionService`
 - **[`src/components/Medications/Medications.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Medications/Medications.tsx)**
-  - *Exports*: `Medications`, `default`
+  - *Exports*: `NewMedicationInput`, `buildNewMedication`, `Medications`, `default`
   - *Imports*: `../../context/AuthContext`, `../../lib/firebase/config`, `../../lib/auditLogger`, `../../services/medicationService`, `../../types/health...`
 - **[`src/components/Notifications/NotificationCenter.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Notifications/NotificationCenter.tsx)**
   - *Exports*: `NotificationCenter`, `default`
@@ -238,6 +238,17 @@
 - **[`src/components/Settings/ZeroKnowledgeVaultModal.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Settings/ZeroKnowledgeVaultModal.tsx)**
   - *Exports*: `ZeroKnowledgeVaultModal`
   - *Imports*: `../../services/zeroKnowledgeCryptoService`, `../../services/auditLogService`
+- **[`src/components/Specialists/DeleteLoungeDataDialog.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/DeleteLoungeDataDialog.tsx)**
+  - *Exports*: `DeleteLoungeDataDialog`, `default`
+- **[`src/components/Specialists/EmergencyTriageCard.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/EmergencyTriageCard.tsx)**
+  - *Exports*: `EmergencyTriageCard`, `default`
+  - *Imports*: `../../services/ai/safety/triage`
+- **[`src/components/Specialists/LoungeConsentSheet.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/LoungeConsentSheet.tsx)**
+  - *Exports*: `LoungeConsentSheet`, `default`
+  - *Imports*: `../../services/lounge/loungeConsent`
+- **[`src/components/Specialists/ReferralSuggestionChips.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/ReferralSuggestionChips.tsx)**
+  - *Exports*: `ReferralSuggestionStatus`, `ReferralSuggestionItem`, `ReferralSuggestionChips`, `default`
+  - *Imports*: `../../services/ai/specialists/specialistFactory`, `../../services/ai/specialists/referrals`
 - **[`src/components/Specialists/SpecialistLounge.tsx`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/components/Specialists/SpecialistLounge.tsx)**
   - *Exports*: `HighlightMatch`, `SpecialistLounge`, `default`
   - *Imports*: `../../services/cacheService`, `../../services/sourceGroundedService`, `../Common/CitationBadge`, `../../types/ai`, `../../services/ai/specialists/specialistFactory...`
@@ -277,7 +288,7 @@
   - *Imports*: `../authTokenProvider`
 - **[`src/lib/firebase/firestore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/firebase/firestore.ts)**
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`
-  - *Imports*: `./config`, `../../utils/dateUtils`, `../../types/medical`, `../../types/wearables`
+  - *Imports*: `./config`, `../../utils/dateUtils`, `../../services/lounge/loungeMessageModel`, `../../types/medical`, `../../types/wearables`
 - **[`src/services/abdmService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/abdmService.ts)**
   - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`, `generateDataProvenanceReceipt`, `downloadProvenanceReceiptJson`
   - *Imports*: `../types/abdm`, `./fhirService`
@@ -293,7 +304,7 @@
   - *Exports*: `ConsensusStatus`, `ConsensusObservation`, `ConsensusPrescription`, `DualModelConsensusReport`, `normalizeMarkerName`, `valuesMatch`
   - *Imports*: `./bedrockService`, `./promptFramework`, `../../utils/aiUtils`
 - **[`src/services/ai/contextService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/contextService.ts)**
-  - *Exports*: `getPatientContext`, `formatContextForPrompt`
+  - *Exports*: `getPatientContext`, `FormatContextOptions`, `formatContextForPrompt`
   - *Imports*: `../../lib/firebase/firestore`, `../alertService`, `../../types/ai`, `../../types/medical`, `../../utils/dateUtils...`
 - **[`src/services/ai/entityExtractorService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/entityExtractorService.ts)**
   - *Exports*: `ExtractedClinicalEntities`, `extractClinicalEntities`
@@ -309,32 +320,58 @@
   - *Imports*: `../../lib/geminiClient`, `../../utils/aiUtils`, `../../lib/firebase/config`, `../usageService`, `../cacheService`
 - **[`src/services/ai/regionalVoiceService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/regionalVoiceService.ts)**
   - *Exports*: `IndianLanguageOption`, `INDIAN_LANGUAGES`, `SpeechState`, `regionalVoiceService`
+- **[`src/services/ai/safety/triage.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/safety/triage.ts)**
+  - *Exports*: `TriageCategory`, `TriageResult`, `Helpline`, `EMERGENCY_HELPLINES`, `TRIAGE_PRIORITY`, `normalizeForTriage`, `triageMessage`, `EMERGENCY_TRANSCRIPT_HEADER`, `isEmergencyTranscript`, `buildEmergencyTranscript`
 - **[`src/services/ai/safetyGuardrail.test.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/safetyGuardrail.test.ts)**
   - *Imports*: `./safetyGuardrail`
 - **[`src/services/ai/safetyGuardrail.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/safetyGuardrail.ts)**
   - *Exports*: `SafetyCheckResult`, `SafetyCheckOptions`, `runSafetyCheck`
 - **[`src/services/ai/specialists/cardiologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/cardiologist.ts)**
   - *Exports*: `getCardiologistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/dermatologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/dermatologist.ts)**
   - *Exports*: `getDermatologistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/endocrinologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/endocrinologist.ts)**
   - *Exports*: `getEndocrinologistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/gastroenterologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/gastroenterologist.ts)**
   - *Exports*: `getGastroenterologistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/index.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/index.ts)**
   - *Imports*: `./specialistFactory`, `./cardiologist`, `./endocrinologist`, `./neurologist`, `./gastroenterologist...`
+- **[`src/services/ai/specialists/loungeHistory.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/loungeHistory.ts)**
+  - *Exports*: `LoungeMessage`, `GeminiHistoryItem`, `getTriageMessageIndexes`, `buildLoungeGeminiHistory`
+  - *Imports*: `../safety/triage`
+- **[`src/services/ai/specialists/loungeModelConfig.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/loungeModelConfig.ts)**
+  - *Exports*: `LOUNGE_CHAT_MODEL`, `LOUNGE_SUMMARY_MODEL`, `LOUNGE_FALLBACK_MODEL`, `LOUNGE_CHAT_MAX_OUTPUT_TOKENS`, `LOUNGE_SUMMARY_MAX_OUTPUT_TOKENS`, `LOUNGE_THINKING_LEVEL`, `LOUNGE_EDGE_FEATURE`, `LoungeGenerationConfig`, `getLoungeModel`, `buildLoungeGenerationConfig`, `resolveModelUsed`, `TRUNCATION_NOTE`, `isAbortError`
+  - *Imports*: `../../../lib/geminiClient`
+- **[`src/services/ai/specialists/loungePrompt.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/loungePrompt.ts)**
+  - *Exports*: `LOUNGE_PROMPT_VERSION`, `IncomingReferralNote`, `LoungeSystemInstructionInput`, `LoungePatientDataInput`, `REFERRAL_PROTOCOL`, `SUMMARY_FORMAT_RULES`, `escapeDataBlockContent`, `buildLoungeSystemInstruction`, `buildPatientDataBlock`
+  - *Imports*: `../../../types/ai`, `../../lounge/pseudonymise`, `../../sourceGroundedService`, `./specialistFactory`, `./safetyCore`
 - **[`src/services/ai/specialists/nephrologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/nephrologist.ts)**
   - *Exports*: `getNephrologistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/neurologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/neurologist.ts)**
   - *Exports*: `getNeurologistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/oncologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/oncologist.ts)**
   - *Exports*: `getOncologistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/orthopedist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/orthopedist.ts)**
   - *Exports*: `getOrthopedistPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/psychiatrist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/psychiatrist.ts)**
   - *Exports*: `getPsychiatristPrompt`
+  - *Imports*: `./safetyCore`
 - **[`src/services/ai/specialists/pulmonologist.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/pulmonologist.ts)**
   - *Exports*: `getPulmonologistPrompt`
+  - *Imports*: `./safetyCore`
+- **[`src/services/ai/specialists/referrals.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/referrals.ts)**
+  - *Exports*: `ReferralSuggestion`, `MAX_REFERRAL_REASON_LENGTH`, `stripReferralTags`, `parseReferralSuggestions`
+  - *Imports*: `../../../types/ai`, `./specialistFactory`
+- **[`src/services/ai/specialists/safetyCore.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/safetyCore.ts)**
+  - *Exports*: `PATIENT_DATA_TAG`, `PATIENT_DATA_OPEN`, `PATIENT_DATA_CLOSE`, `SAFETY_CORE`, `withSafetyCore`
 - **[`src/services/ai/specialists/specialistFactory.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/ai/specialists/specialistFactory.ts)**
   - *Exports*: `SPECIALISTS`, `getSpecialist`, `getSpecialistSystemPrompt`
   - *Imports*: `../../../types/ai`, `./cardiologist`, `./endocrinologist`, `./neurologist`, `./gastroenterologist...`
@@ -384,6 +421,16 @@
 - **[`src/services/integrationService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/integrationService.ts)**
   - *Exports*: `exportToCSV`, `exportToFHIR`
   - *Imports*: `./fhirService`
+- **[`src/services/lounge/loungeConsent.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/lounge/loungeConsent.ts)**
+  - *Exports*: `LOUNGE_CONSENT_PURPOSE`, `LOUNGE_CONSENT_VERSION`, `LOUNGE_CONSENT_DISCLOSURES`, `LoungeConsentRecord`, `isLoungeConsentCurrent`, `canSubmitLoungeConsent`
+  - *Imports*: `../../lib/firebase/config`
+- **[`src/services/lounge/loungeMessageModel.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/lounge/loungeMessageModel.ts)**
+  - *Exports*: `LOUNGE_SCHEMA_VERSION`, `LOUNGE_MESSAGE_TTL_DAYS`, `LOUNGE_MESSAGE_MAX_CHARS`, `LOUNGE_MESSAGE_LOAD_LIMIT`, `LoungeStoredRole`, `LoungeMessageInput`, `LoungeMessageRecord`, `computeExpireAt`, `buildMessageRecord`, `buildMessageId`, `buildLegacyMessageId`, `normaliseLegacyMessages`, `StoredMessageDoc`, `parseMessageDocs`
+- **[`src/services/lounge/loungeStorage.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/lounge/loungeStorage.ts)**
+  - *Exports*: `LOUNGE_SUMMARY_CACHE_PREFIX`, `LoungeLoadSource`, `LoungeLoadResult`, `LoungeDeleteResult`
+  - *Imports*: `../../lib/firebase/config`, `../ai/specialists/specialistFactory`, `./loungeMessageModel`
+- **[`src/services/lounge/pseudonymise.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/lounge/pseudonymise.ts)**
+  - *Exports*: `REDACTION`, `redactIdentifiers`, `firstNameOnly`, `pseudonymiseName`, `pseudonymiseRecordText`
 - **[`src/services/measurementProtocolService.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/services/measurementProtocolService.ts)**
   - *Exports*: `GA_MEASUREMENT_ID`, `getGaApiSecret`, `GA_API_SECRET`, `MeasurementProtocolEvent`, `SendTelemetryOptions`, `getOrCreateClientId`
   - *Imports*: `../utils/analytics`
@@ -451,9 +498,12 @@
   - *Exports*: `ToastProvider`, `useToast`
 
 ### 🪝 Custom Hooks
+- **[`src/hooks/clinicalContextScope.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/clinicalContextScope.ts)**
+  - *Exports*: `ProfileScopedRecord`, `ProfileLike`, `ScopedMedication`, `ClinicalDocumentData`, `toMillis`, `resolvePrimaryProfileId`, `belongsToProfile`, `scopeToProfile`, `selectActiveMedications`, `extractLabBiomarkers`, `scopeMedicationsForProfile`, `scopeInteractionsToMedications`
+  - *Imports*: `../types/health`, `../services/drugLabEngine`
 - **[`src/hooks/useClinicalContext.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/useClinicalContext.ts)**
   - *Exports*: `useClinicalContext`
-  - *Imports*: `../context/ProfileContext`, `../context/AuthContext`, `../services/medicationService`, `../utils/calculateBMI`, `../services/googleFormsService...`
+  - *Imports*: `../context/ProfileContext`, `../context/AuthContext`, `../utils/calculateBMI`, `../services/googleFormsService`, `../lib/firebase/config...`
 - **[`src/hooks/useCoach.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/hooks/useCoach.ts)**
   - *Exports*: `useCoach`
   - *Imports*: `../services/ai/coachService`, `../services/ai/contextService`, `../services/ai/safetyGuardrail`, `../types/ai`, `../types/medical...`
@@ -491,7 +541,7 @@
 - **[`src/lib/authTokenProvider.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/authTokenProvider.ts)**
   - *Exports*: `TokenProvider`, `setAuthTokenProvider`, `hasAuthTokenProvider`
 - **[`src/lib/geminiClient.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiClient.ts)**
-  - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `getEdgeApiBaseUrl`, `isEdgeConfigured`, `getEdgeBearer`, `normalizeModel`, `isLocationRoutingError`, `isNetworkOrRoutingError`, `normalizeSystemInstruction`, `EdgeGeminiError`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `__setGeminiFetchForTests`, `getAI`, `default`
+  - *Exports*: `GeminiGenerateConfig`, `GeminiGenerateParams`, `GeminiGenerateResponse`, `isAbortError`, `getEdgeApiBaseUrl`, `isEdgeConfigured`, `normalizeModel`, `isModelNotFoundError`, `isLocationRoutingError`, `isNetworkOrRoutingError`, `normalizeSystemInstruction`, `EdgeGeminiError`, `EdgeChatMessageInput`, `EdgeChatSession`, `EdgeChatCreateParams`, `AegisAI`, `buildChatContents`, `__setGeminiFetchForTests`, `getAI`, `default`
   - *Imports*: `./authTokenProvider`, `./turnstileTokenProvider`
 - **[`src/lib/geminiUtils.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/lib/geminiUtils.ts)**
   - *Exports*: `Type`
@@ -520,7 +570,7 @@
   - *Exports*: `default`
   - *Imports*: `../lib/geminiClient`
 - **[`src/utils/recaptcha.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/recaptcha.ts)**
-  - *Exports*: `getRecaptchaToken`
+  - *Exports*: `getRecaptchaToken`, `__resetRecaptchaStateForTests`
 - **[`src/utils/reportComparison.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/reportComparison.ts)**
   - *Exports*: `ComparisonRow`, `compareReports`
   - *Imports*: `./trendAnalysis`
@@ -530,7 +580,7 @@
   - *Exports*: `CLINICAL_STABILITY_THRESHOLDS`, `TrendSummary`, `computeTrend`, `computeAllTrends`, `formatTrendForPrompt`
   - *Imports*: `../types/health`
 - **[`src/utils/turnstile.ts`](file:////Volumes/DEOYANI SSD/antigravity workspace /aniket /Aegis-health-ai-/src/utils/turnstile.ts)**
-  - *Exports*: `TURNSTILE_SITE_KEY`
+  - *Exports*: `TURNSTILE_SITE_KEY`, `__resetTurnstileStateForTests`
   - *Imports*: `../lib/turnstileTokenProvider`
 
 ### ⚙️ Configuration
