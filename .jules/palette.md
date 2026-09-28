@@ -25,3 +25,4 @@
 ## 2025-05-18 - Accordion Keyboard Support Missing
 **Learning:** Found a pattern in this application where clickable `div` elements act as accordions (e.g., in the Document List of UploadCenter) but were implemented without keyboard access, `role="button"`, or `tabIndex`.
 **Action:** Always ensure custom accordion headers have `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (listening for Space/Enter), and focus indicators via `focus-visible`.
+## 2026-08-25 - Improve keyboard accessibility for Accordions\n**Learning:** Found an accordion in ReportHistory that used a native button but lacked keyboard focus states, making it difficult for keyboard users to see which report they are navigating to.\n**Action:** When creating accordion headers or "load more" buttons, always add `focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]` to ensure keyboard accessibility without degrading mouse click experience.
