@@ -1,25 +1,25 @@
 # Graph Report - .  (2026-09-28)
 
 ## Corpus Check
-- 355 files · ~312,951 words
+- 355 files · ~313,237 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1774 nodes · 4548 edges · 97 communities detected
+- 1777 nodes · 4556 edges · 96 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
-- Edge kinds: contains: 1141 · imports: 1104 · imports_from: 776 · MODIFIES: 634 · PARENT_OF: 318 · ON_BRANCH: 273 · calls: 242 · method: 37 · inherits: 15 · re_exports: 8
+- Edge kinds: contains: 1141 · imports: 1104 · imports_from: 776 · MODIFIES: 636 · PARENT_OF: 321 · ON_BRANCH: 276 · calls: 242 · method: 37 · inherits: 15 · re_exports: 8
 
 
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
 - Included files: 355 · Candidates: 386
-- Excluded: 0 untracked · 49463 ignored · 5 sensitive · 0 missing committed
+- Excluded: 0 untracked · 49646 ignored · 5 sensitive · 0 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `c81c3f0`
+- Built from Git commit: `a011117`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
 1. `useAuth()` - 37 edges
@@ -34,16 +34,16 @@
 10. `getDocuments()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `025a577 feat(health-sync): 3D glassmorphic redesign, permission toggles, drag-drop file import, enhanced XML/JSON parsing, sleep architecture inputs, live connection badges` --ON_BRANCH--> `main`  [EXTRACTED]
-  git → git  _Bridges community 0 → community 3_
-- `025a577 feat(health-sync): 3D glassmorphic redesign, permission toggles, drag-drop file import, enhanced XML/JSON parsing, sleep architecture inputs, live connection badges` --PARENT_OF--> `f622d7c docs: record Snapshot XLIV — 3D glassmorphic health sync redesign with permission toggles, drag-drop, enhanced parsing`  [EXTRACTED]
-  git → git  _Bridges community 0 → community 54_
 - `03511c4 fix(security): bump vitest to 4.1.11 resolving CVE-2026-84373 path traversal` --PARENT_OF--> `1497fcb fix(security): harden firestore rules, storage limits, csp headers, and url sanitization`  [EXTRACTED]
-  git → git  _Bridges community 3 → community 11_
+  git → git  _Bridges community 2 → community 11_
 - `0531e0c 🎨 Palette: [Accessibility improvements]` --ON_BRANCH--> `main`  [EXTRACTED]
-  git → git  _Bridges community 61 → community 3_
+  git → git  _Bridges community 60 → community 2_
 - `05d41a9 feat(graphify): update knowledge graph with Pillar 3 nodes (1,235 nodes, 3,081 edges, 98 communities)` --PARENT_OF--> `a87820d feat(pillar-4): implement WebCrypto Zero-Knowledge Vault & Immutable SHA-256 Security Audit Trail`  [EXTRACTED]
-  git → git  _Bridges community 3 → community 24_
+  git → git  _Bridges community 2 → community 24_
+- `0863013 Merge PR 215: 🎨 Palette: Add aria-labels to icon-only buttons` --ON_BRANCH--> `main`  [EXTRACTED]
+  git → git  _Bridges community 74 → community 2_
+- `0863013 Merge PR 215: 🎨 Palette: Add aria-labels to icon-only buttons` --PARENT_OF--> `14a61c2 Merge PR 216: ⚡ Bolt: [performance improvement] Optimize date parsing sort in VisualLabReportCard`  [EXTRACTED]
+  git → git  _Bridges community 74 → community 13_
 
 ## Communities
 
@@ -56,12 +56,12 @@ Cohesion: 0.05
 Nodes (62): formatContextForPrompt(), FormatContextOptions, getPatientContext(), VoiceService, VoiceServiceOptions, ChatCoachProps, 0cb5158 feat(ai): establish cross-agent clinical context bus and inter-agent referral protocol, b1db321 feat(lounge): reframe personas as AI health information guides + shared safety core (#269) (+54 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.07
-Nodes (39): 18ac6c1 fix(ai): normalize systemInstruction schema and enhance empathetic edge error handling, 2791756 chore(graphify): synchronize codebase knowledge graph and update full script, 54af24c fix(security): enforce custom-claims-only admin rules, remove X-Aegis-Shared-Bearer leak, and eliminate window.__aegisAuth, 5cf780b fix: prefer edge shared bearer so Aura auth matches Worker (#253), 610cf9f fix(security): resolve external security audit findings and improve specialist lounge, 878cb29 fix(edge): resolve Anycast location restrictions with Singapore placement and immediate network failover, 945282b chore(graphify): synchronize knowledge graph and exclude hidden AppleDouble files, a021fb8 fix(auth): purge SPA shared bearer, rotate edge secret, deploy claims-only rules (+31 more)
+Cohesion: 0.06
+Nodes (55): main, 03511c4 fix(security): bump vitest to 4.1.11 resolving CVE-2026-84373 path traversal, 05d41a9 feat(graphify): update knowledge graph with Pillar 3 nodes (1,235 nodes, 3,081 edges, 98 communities), 08633f7 ⚡ Bolt: [performance improvement] Optimize global stats aggregation, 0b5c375 docs: finalize Victory Audit verification handoff (57 test suites, 565 tests passing, 100% clean build), 0d693bd feat(admin): enable live CMS telemetry, real-time sync, auth backfill, and deploy firestore rules, 0f3d105 docs: update CURRENT_STATE.md with Snapshot XXVII Aura AI Chat contrast fix, 12e0344 fix(ci): align dompurify override so npm ci succeeds (#263) (+47 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.08
-Nodes (43): main, 03511c4 fix(security): bump vitest to 4.1.11 resolving CVE-2026-84373 path traversal, 05d41a9 feat(graphify): update knowledge graph with Pillar 3 nodes (1,235 nodes, 3,081 edges, 98 communities), 08633f7 ⚡ Bolt: [performance improvement] Optimize global stats aggregation, 0b5c375 docs: finalize Victory Audit verification handoff (57 test suites, 565 tests passing, 100% clean build), 0d693bd feat(admin): enable live CMS telemetry, real-time sync, auth backfill, and deploy firestore rules, 0f3d105 docs: update CURRENT_STATE.md with Snapshot XXVII Aura AI Chat contrast fix, 1529b26 fix(security): add Google Analytics GA4 & GTM domains to Content-Security-Policy to unblock analytics data collection (+35 more)
+Cohesion: 0.07
+Nodes (39): 18ac6c1 fix(ai): normalize systemInstruction schema and enhance empathetic edge error handling, 2791756 chore(graphify): synchronize codebase knowledge graph and update full script, 54af24c fix(security): enforce custom-claims-only admin rules, remove X-Aegis-Shared-Bearer leak, and eliminate window.__aegisAuth, 5cf780b fix: prefer edge shared bearer so Aura auth matches Worker (#253), 610cf9f fix(security): resolve external security audit findings and improve specialist lounge, 878cb29 fix(edge): resolve Anycast location restrictions with Singapore placement and immediate network failover, 945282b chore(graphify): synchronize knowledge graph and exclude hidden AppleDouble files, a021fb8 fix(auth): purge SPA shared bearer, rotate edge secret, deploy claims-only rules (+31 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.05
@@ -284,104 +284,104 @@ Cohesion: 0.15
 Nodes (1): InfoPageLayoutProps
 
 ### Community 59 - "Community 59"
-Cohesion: 0.17
-Nodes (12): 12e0344 fix(ci): align dompurify override so npm ci succeeds (#263), 266030d ⚡ Bolt: Optimize ExportModal inline sorting using Schwartzian transform (#255), 2963026 chore(graphify): update knowledge graph (1,455 nodes, 3,826 edges, 92 communities), 3784dd9 perf: short-circuit SpecialistLounge search filtering (#261), 53794cd fix(security): redact exposed Cloudflare Turnstile secret key in CURRENT_STATE.md, 625c121 fix(security): sanitize OPD PDF HTML with DOMPurify (#260), 926e08b 🎨 Palette: [UX improvement] Enhance focus visible states in Chat Coach and Specialist Lounge (#257), 9e60aa5 chore(security): enforce ggshield pre-commit defense rule and refresh knowledge graph (+4 more)
-
-### Community 60 - "Community 60"
 Cohesion: 0.26
 Nodes (9): 57fefa6 feat(graphify): update knowledge graph & CURRENT_STATE.md with Pillar 2 nodes (1,220 nodes, 3,057 edges, 96 communities), e38e912 feat(pillar-3): implement Food-Drug Contraindication Matrix & 1-Page Printable Doctor OPD Consultation PDF, DEFAULT_SAMPLE_MEDS, FoodInteractionMatrixProps, DetectedFoodInteraction, evaluateFoodInteractions(), FOOD_RULES, FoodContraindicationRule (+1 more)
 
-### Community 61 - "Community 61"
+### Community 60 - "Community 60"
 Cohesion: 0.29
 Nodes (8): 0531e0c 🎨 Palette: [Accessibility improvements], 1a79d8c Merge pull request #198 from dhurianiket/palette-ux-improvements-14009109037605028381, bdd1404 Merge pull request #205 from dhurianiket/palette/disabled-tooltips-3132111819375758759, c3aac85 🎨 Palette: Add hover titles to disabled buttons, d3b5918 Merge pull request #199 from dhurianiket/bolt-optimize-filter-sets-9452934895080612040, d88c046 feat(ui): add aria-labels and focus states to dashboard buttons, df57864 Merge pull request #197 from dhurianiket/palette-a11y-dashboard-buttons-17849235882835041170, fa8603d perf(dashboard): extract static arrays to Sets for O(1) filtering
 
-### Community 62 - "Community 62"
+### Community 61 - "Community 61"
 Cohesion: 0.25
 Nodes (10): 2d614dd Merge pull request #201 from dhurianiket/bolt/optimize-upload-filter-896614611142847168, 792000d 🛡️ Sentinel: [HIGH] Fix XSS vulnerability in PDF Generation, a4991f2 Merge pull request #202 from dhurianiket/sentinel-fix-pdf-xss-11065736594836799695, a995a45 fix(ui-responsive): fix Dashboard layout grid compression and refine mobile-responsive 3D glassmorphism, c01bbba feat(graphify): update knowledge graph with Pillar 4 nodes (1,256 nodes, 3,133 edges, 97 communities), cbe8a7d docs: record Snapshot LIV in CURRENT_STATE.md, de2386e refactor: short-circuit array filter logic for UploadCenter search, escapeHtml() (+2 more)
 
-### Community 63 - "Community 63"
+### Community 62 - "Community 62"
 Cohesion: 0.25
 Nodes (8): canSubmitLoungeConsent(), consentRef(), getLoungeConsent(), isLoungeConsentCurrent(), LOUNGE_CONSENT_DISCLOSURES, LoungeConsentRecord, saveLoungeConsent(), LoungeConsentSheetProps
 
-### Community 64 - "Community 64"
+### Community 63 - "Community 63"
 Cohesion: 0.18
 Nodes (5): consentMocks, AUTH, CLINICAL, { createMock, sendMock, state }, SendArgs
 
-### Community 65 - "Community 65"
+### Community 64 - "Community 64"
 Cohesion: 0.24
 Nodes (9): 259681e chore(agents): make GRAPHIFY.md auto-read mandatory every session — no user prompt needed, 2f5b70c Merge pull request #200 from dhurianiket/sentinel-fix-stack-trace-6159085393350306254, 39c2534 fix: remove stack trace from error response in logger, 3d61a4a docs: record Snapshot L in CURRENT_STATE.md, 77c840d feat(landing): add ABHA/ABDM India Health Stack section & FHIR R4 badges, 7ffcab1 fix(abdm): surface ABHA Gateway & IntegrationsPanel in Settings page, 81b0bc9 docs: record Snapshot XLVIII — CSP fix for GA4 data collection, 97d9c27 feat(graphify): install & run official Graphify-Labs/graphify knowledge graph (+1 more)
 
-### Community 66 - "Community 66"
+### Community 65 - "Community 65"
 Cohesion: 0.29
 Nodes (6): 7d1c74e feat(security): integrate Cloudflare Turnstile bot defense on edge and frontend, useTurnstile(), UseTurnstileOptions, UseTurnstileReturn, Window, TurnstileWidgetProps
 
-### Community 67 - "Community 67"
+### Community 66 - "Community 66"
 Cohesion: 0.20
 Nodes (5): logger, AIErrorBoundary, Component, Props, State
 
-### Community 68 - "Community 68"
+### Community 67 - "Community 67"
 Cohesion: 0.27
 Nodes (9): generateGraphifyMarkdown(), getCategory(), GraphNode, LESSONS_FILE, main(), OUTPUT_FILE, parseFile(), scanDirectory() (+1 more)
 
-### Community 69 - "Community 69"
+### Community 68 - "Community 68"
 Cohesion: 0.24
 Nodes (6): calculateContrastRatio(), getRelativeLuminance(), hexToRgb(), MOCK_12_MEDICATIONS, MOCK_DRUG_INTERACTIONS, MOCK_STRESS_BIOMARKERS
 
-### Community 70 - "Community 70"
+### Community 69 - "Community 69"
 Cohesion: 0.25
 Nodes (7): 02b8b11 docs: update CURRENT_STATE.md with Snapshot XXXIV teamwork feature and test suite completion, 06a2db1 docs: update CURRENT_STATE.md with Snapshot XXXVI, 3e697af docs: confirm final victory audit and full test suite passing in CURRENT_STATE.md, 5d23629 fix(ci): target direct Firebase Hosting endpoint to bypass Cloudflare bot challenge on headless CI runners, 6d39262 fix(ci): add CDN propagation delay and filter third-party network noise in Playwright smoke test, 748659f docs: update CURRENT_STATE.md with Snapshot XXXV GitHub Actions workflow fix, 783855a fix(ci): trigger smoke test workflow after deployment completes to eliminate race condition check failures
 
-### Community 71 - "Community 71"
+### Community 70 - "Community 70"
 Cohesion: 0.28
 Nodes (5): 45bd982 merge main into pr-242, b65d2ca fix(deploy): resolve cloud functions buildpack pnpm issue and apply apple design polish, BottomSheetProps, NotificationCategory, NotificationDropdownProps
 
-### Community 72 - "Community 72"
+### Community 71 - "Community 71"
 Cohesion: 0.39
 Nodes (7): e9eaa96 fix(upload): make reCAPTCHA gate work when App Check already loaded api.js (#265), executeWithFallback(), getGrecaptcha(), getOrRenderWidget(), getRecaptchaToken(), loadRecaptchaScript(), __resetRecaptchaStateForTests()
 
-### Community 73 - "Community 73"
+### Community 72 - "Community 72"
 Cohesion: 0.25
 Nodes (4): Component, ErrorBoundary, Props, State
 
-### Community 74 - "Community 74"
+### Community 73 - "Community 73"
 Cohesion: 0.22
 Nodes (6): ALL_DOCS, ALL_MEDS, CHILD, h, Listener, PARENT
 
-### Community 75 - "Community 75"
+### Community 74 - "Community 74"
 Cohesion: 0.29
 Nodes (7): AbdmScanShareModal(), AbdmScanShareModalProps, 0863013 Merge PR 215: 🎨 Palette: Add aria-labels to icon-only buttons, 37a06ea Add aria-label to icon-only close buttons in modals, 3b0df16 Merge PR 220: Fix insecure randomness in ABDM service, f97bcaf Fix insecure randomness in ABDM service, generateScanAndShareQrPayload()
 
-### Community 76 - "Community 76"
+### Community 75 - "Community 75"
 Cohesion: 0.36
 Nodes (8): 2939618 🛡️ Sentinel: Fix insecure randomness in auditLogService, 5572b6f Merge pull request #211 from dhurianiket/sentinel-fix-audit-log-id-8306300698070896645, 8465af8 ⚡ Bolt: Optimize date parsing in sort comparator using Schwartzian transform, a68e2e5 Merge pull request #212 from dhurianiket/palette/focus-visible-settings-14773763513275308991, b2329a3 🛡️ Sentinel: [CRITICAL] Fix privilege escalation in firestore rules, b859df5 Merge pull request #213 from dhurianiket/sentinel/fix-firestore-privilege-escalation-15940020795618893858, df9ac7f Add keyboard focus visibility to settings buttons, fa09cb6 Merge pull request #210 from dhurianiket/bolt-optimize-array-filter-12301290249497449695
 
-### Community 77 - "Community 77"
+### Community 76 - "Community 76"
 Cohesion: 0.36
 Nodes (4): AlertsContext, AlertsContextType, AlertsProvider(), useAlerts()
 
-### Community 78 - "Community 78"
+### Community 77 - "Community 77"
 Cohesion: 0.32
 Nodes (7): CachedReport, FirestoreErrorInfo, generateSourceHash(), getCachedReport(), handleFirestoreError(), OperationType, saveCachedReport()
 
-### Community 79 - "Community 79"
+### Community 78 - "Community 78"
 Cohesion: 0.29
 Nodes (5): AlertContextType, AlertSeverity, AlertType, HealthAlert, AlertBannerProps
 
-### Community 80 - "Community 80"
+### Community 79 - "Community 79"
 Cohesion: 0.25
 Nodes (4): Component, Props, SectionErrorBoundary, State
 
-### Community 81 - "Community 81"
+### Community 80 - "Community 80"
 Cohesion: 0.38
 Nodes (5): 30e36d8 fix(security): resolve root and functions vulnerabilities, synchronize package-lock.json files, update graphify AST, 800c537 Merge pull request #203 from dhurianiket/bolt-correlation-matrix-optimization-9970654191168527559, 8c5a252 feat(ui): complete overhaul of 3D Holographic Body Scanner with multi-layer SVG anatomy, physiological animations, rotating base rings, and cyber HUD biometrics, dd6a99f ⚡ Bolt: Optimize array math aggregations in calculateCorrelation, CorrelationMatrixProps
 
-### Community 82 - "Community 82"
+### Community 81 - "Community 81"
 Cohesion: 0.29
 Nodes (3): 7ff7d21 feat(ui-ux-3d): implement Apple-inspired 3D glassmorphic design system overhaul & canvas particle mesh, Particle, Hero3DHealthGaugeProps
 
-### Community 83 - "Community 83"
+### Community 82 - "Community 82"
 Cohesion: 0.29
 Nodes (5): getAI(), getEdgeBearer(), isEdgeConfigured(), streamGenerate(), Type
+
+### Community 83 - "Community 83"
+Cohesion: 0.33
+Nodes (4): 2f561cd 🎨 Palette: Add accessibility attributes to LoadingSpinner (#273), 9a83b2a chore(graphify): synchronize knowledge graph after Lounge & security merge (214 nodes, 1,774 AST nodes), a011117 ⚡ Bolt: Optimize Admin Dashboard array aggregations (#264), LoadingSpinnerProps
 
 ### Community 84 - "Community 84"
 Cohesion: 0.33
@@ -420,18 +420,14 @@ Cohesion: 0.67
 Nodes (1): SplashScreenProps
 
 ### Community 94 - "Community 94"
-Cohesion: 0.67
-Nodes (1): LoadingSpinnerProps
+Cohesion: 1.00
+Nodes (1): http
 
 ### Community 95 - "Community 95"
 Cohesion: 1.00
 Nodes (1): http
 
-### Community 96 - "Community 96"
-Cohesion: 1.00
-Nodes (1): http
-
-### Community 102 - "Community 102"
+### Community 101 - "Community 101"
 Cohesion: 1.00
 Nodes (1): content
 
@@ -448,19 +444,17 @@ Nodes (1): content
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 93`** (1 nodes): `SplashScreenProps`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 94`** (1 nodes): `LoadingSpinnerProps`
+- **Thin community `Community 94`** (1 nodes): `http`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 95`** (1 nodes): `http`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 96`** (1 nodes): `http`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 102`** (1 nodes): `content`
+- **Thin community `Community 101`** (1 nodes): `content`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useAuth()` connect `Community 42` to `Community 6`, `Community 35`, `Community 1`, `Community 0`, `Community 36`, `Community 77`, `Community 38`, `Community 49`, `Community 14`, `Community 37`, `Community 54`, `Community 43`, `Community 46`, `Community 5`, `Community 29`, `Community 58`, `Community 22`, `Community 57`, `Community 47`, `Community 26`, `Community 28`, `Community 4`, `Community 17`, `Community 39`?**
+- **Why does `useAuth()` connect `Community 42` to `Community 6`, `Community 35`, `Community 1`, `Community 0`, `Community 36`, `Community 76`, `Community 38`, `Community 49`, `Community 14`, `Community 37`, `Community 54`, `Community 43`, `Community 46`, `Community 5`, `Community 29`, `Community 58`, `Community 22`, `Community 57`, `Community 47`, `Community 26`, `Community 28`, `Community 4`, `Community 17`, `Community 39`?**
   _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Why does `PaperclipJulesCoordinator` connect `Community 50` to `Community 41`?**
   _High betweenness centrality (0.010) - this node is a cross-community bridge._
@@ -473,4 +467,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.05071119356833643 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.07439613526570048 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06464646464646465 - nodes in this community are weakly interconnected._
