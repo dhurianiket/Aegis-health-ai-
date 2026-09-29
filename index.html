@@ -43,11 +43,50 @@
       })();
     </script>
     <div id="root">
-      <div style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: sans-serif;">
-        <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: #3b82f6; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-        <p style="color: #9ca3af; font-size: 14px;" id="loading-text">Waking up Aegis Health...</p>
+      <div style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #030712; color: #f3f4f6; padding: 24px; text-align: center;">
+        <div style="max-width: 680px; width: 100%; border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 20px; padding: 32px 24px; background: rgba(17, 24, 39, 0.8); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 36px; height: 36px; border: 3px solid rgba(59, 130, 246, 0.2); border-radius: 50%; border-top-color: #3b82f6; animation: spin 1s linear infinite;"></div>
+            <h1 style="font-size: 26px; font-weight: 700; margin: 0; color: #ffffff; letter-spacing: -0.02em;">Aegis Health AI</h1>
+          </div>
+          
+          <p style="color: #60a5fa; font-size: 15px; font-weight: 600; margin: 0 0 16px 0;">Clinical-Grade Medical Intelligence & Longitudinal Health Records</p>
+          <p style="color: #9ca3af; font-size: 14px; line-height: 1.6; margin: 0 0 24px 0;">
+            Aegis Health AI empowers patients and families by converting fragmented lab reports, pathology tests, and prescriptions into structured clinical narratives, metabolic trend lines, and physician-ready SBAR summaries using Google Gemini models and secure cloud infrastructure.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; text-align: left; font-size: 13px;">
+            <div style="background: rgba(31, 41, 55, 0.6); padding: 12px; border-radius: 10px; border: 1px solid rgba(75, 85, 99, 0.3);">
+              <strong style="color: #e5e7eb; display: block; margin-bottom: 4px;">🏢 Registered Enterprise</strong>
+              <span style="color: #9ca3af;">Aegis Health AI (Govt of India MSME Udyam: UDYAM-MH-33-0782403)</span>
+            </div>
+            <div style="background: rgba(31, 41, 55, 0.6); padding: 12px; border-radius: 10px; border: 1px solid rgba(75, 85, 99, 0.3);">
+              <strong style="color: #e5e7eb; display: block; margin-bottom: 4px;">📍 Location & Leadership</strong>
+              <span style="color: #9ca3af;">Founded by Aniket Dhuri. Dombivli West, Thane, Maharashtra, India.</span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;">
+            <a href="/how-it-works.html" style="color: #93c5fd; text-decoration: none; font-size: 13px; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">How It Works</a>
+            <a href="/engineering-playbook.html" style="color: #93c5fd; text-decoration: none; font-size: 13px; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">Engineering Playbook</a>
+            <a href="/security.html" style="color: #93c5fd; text-decoration: none; font-size: 13px; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">Security & Privacy</a>
+            <a href="/about.html" style="color: #93c5fd; text-decoration: none; font-size: 13px; padding: 6px 12px; background: rgba(59, 130, 246, 0.15); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">About Us</a>
+          </div>
+
+          <p style="color: #6b7280; font-size: 11px; margin: 0; line-height: 1.4;">
+            Independent product enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or aegishealth.com.
+          </p>
+        </div>
       </div>
     </div>
+    <noscript>
+      <div style="background-color: #030712; color: #f3f4f6; padding: 40px 20px; font-family: sans-serif; text-align: center;">
+        <h2>Aegis Health AI</h2>
+        <p>Aegis Health AI is a medical intelligence system empowering Indian families with clear lab insights, clinical trend lines, and physician summaries.</p>
+        <p>Registered Micro-Enterprise: Govt of India MSME UDYAM-MH-33-0782403 | Founded by Aniket Dhuri in Dombivli West, Maharashtra, India.</p>
+        <p><a href="/how-it-works.html" style="color: #3b82f6;">How It Works</a> | <a href="/security.html" style="color: #3b82f6;">Security</a> | <a href="/about.html" style="color: #3b82f6;">About Us</a></p>
+      </div>
+    </noscript>
     <script>
       (function() {
         var root = document.getElementById('root');
