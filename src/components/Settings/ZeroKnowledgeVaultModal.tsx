@@ -107,7 +107,7 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
           {isUnlocked ? (
             <button
               onClick={handleLock}
-              className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+              className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <Lock className="w-4 h-4 text-rose-400" /> Lock Vault Now
             </button>
@@ -156,7 +156,7 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
             <button
               onClick={handleUnlock}
               disabled={isProcessing || !passphrase}
-              className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <Unlock className="w-4 h-4" /> Unlock Vault
             </button>
@@ -187,7 +187,7 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
               <button
                 onClick={handleTestEncrypt}
                 disabled={isProcessing}
-                className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+                className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               >
                 <Lock className="w-3.5 h-3.5" /> Encrypt (AES-256-GCM)
               </button>
@@ -195,7 +195,7 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
               <button
                 onClick={handleTestDecrypt}
                 disabled={isProcessing || !encryptedPayload}
-                className="px-4 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               >
                 <Unlock className="w-3.5 h-3.5" /> Decrypt Payload
               </button>
@@ -231,7 +231,7 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
             </div>
             <button
               onClick={handleDpdpErasure}
-              className="px-3.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold flex items-center gap-1.5 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <Trash2 className="w-3.5 h-3.5 text-rose-400" /> Right to Erasure (Wipe Vault)
             </button>
