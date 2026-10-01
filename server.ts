@@ -42,9 +42,12 @@ async function startServer() {
 
        // Using the highly stable, reliable and supported gemini-3.5-flash model
        let targetModel = "gemini-3.5-flash";
-       let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${gApiKey}`, {
+       let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent`, {
          method: "POST",
-         headers: { "Content-Type": "application/json" },
+         headers: {
+             "Content-Type": "application/json",
+             "x-goog-api-key": gApiKey
+         },
          body: JSON.stringify({
              contents: [{ role: "user", parts: [{ text: prompt }]}]
          })
