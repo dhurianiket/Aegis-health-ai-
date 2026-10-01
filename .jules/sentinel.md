@@ -6,3 +6,7 @@
 **Vulnerability:** Use of innerHTML without robust HTML sanitization leaves application vulnerable to Cross-Site Scripting (XSS). Custom escape functions may be bypassed.
 **Learning:** Always use a well-maintained library like DOMPurify when assigning untrusted data to innerHTML, even if it's meant to be hidden or converted to an image.
 **Prevention:** Strictly enforce the use of DOMPurify for all innerHTML assignments across the codebase.
+## 2025-03-09 - API Key Leakage via URL
+**Vulnerability:** Passing sensitive API keys (e.g., Google Gemini API keys) in the URL query string (`?key=...`) during `fetch` calls.
+**Learning:** URLs (including query parameters) are often logged by intermediate proxies, load balancers, and server access logs, leading to credential leakage.
+**Prevention:** Always authenticate external service requests by passing API keys via secure HTTP headers (e.g., `x-goog-api-key` or `Authorization: Bearer`) rather than query parameters.
