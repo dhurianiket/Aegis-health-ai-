@@ -11,21 +11,26 @@ function SmartAlerts({ labs }: { labs?: any[] }) {
     if (!labs) return [];
     // Only looking at the latest report (history[0]) since it's already sorted by Date
     const alerts: any[] = [];
-    labs.forEach((lab: any) => {
+    for (let i = 0; i < labs.length; i++) {
+      if (alerts.length >= 3) break;
+      const lab = labs[i];
       const isHigh = lab.status === 'high' || lab.status === 'abnormal';
       const isLow = lab.status === 'low';
       if (isHigh || isLow) {
-        alerts.push({
-          id: `alert-${lab.markerName}`,
-          type: isHigh ? 'critical' : 'warning',
-          title: `Abnormal Level: ${lab.markerName}`,
-          message: `Your recent test shows a ${isHigh ? 'High' : 'Low'} value of ${lab.value} ${lab.unit}. Ref: ${lab.referenceRange}`,
-          actionLabel: 'View details',
-          date: lab.date
-        });
+        const id = `alert-${lab.markerName}`;
+        if (!dismissedIds.has(id)) {
+          alerts.push({
+            id,
+            type: isHigh ? 'critical' : 'warning',
+            title: `Abnormal Level: ${lab.markerName}`,
+            message: `Your recent test shows a ${isHigh ? 'High' : 'Low'} value of ${lab.value} ${lab.unit}. Ref: ${lab.referenceRange}`,
+            actionLabel: 'View details',
+            date: lab.date
+          });
+        }
       }
-    });
-    return alerts.filter((a) => !dismissedIds.has(a.id)).slice(0, 3);
+    }
+    return alerts;
   }, [labs, dismissedIds]);
 
   const handleAction = (id: string) => {
