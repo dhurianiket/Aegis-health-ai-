@@ -291,14 +291,14 @@ export default function SpecialistLounge() {
   }, [SPECIALIST_TABS]);
 
   const filteredSpecialists = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return SPECIALIST_TABS.filter((s) => {
       // Category filter
       if (selectedCategory !== "All" && s.specialty !== selectedCategory) {
         return false;
       }
       // Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
+      if (q) {
         if (s.name.toLowerCase().includes(q)) return true;
         if (s.displayName.toLowerCase().includes(q)) return true;
         if (s.specialty.toLowerCase().includes(q)) return true;
@@ -903,12 +903,26 @@ export default function SpecialistLounge() {
             ) : (
               filteredSpecialists.map((s) => {
                 const q = searchQuery.toLowerCase().trim();
-                const matchingExpertise = q
-                  ? s.expertise.filter((e) => e.toLowerCase().includes(q))
-                  : [];
-                const displayedExpertise = matchingExpertise.length > 0
-                  ? [matchingExpertise[0], ...s.expertise.filter((e) => e !== matchingExpertise[0])].slice(0, 2)
-                  : s.expertise.slice(0, 2);
+                let displayedExpertise = s.expertise.slice(0, 2);
+                if (q) {
+                  let matching = "";
+                  for (let i = 0; i < s.expertise.length; i++) {
+                    if (s.expertise[i].toLowerCase().includes(q)) {
+                      matching = s.expertise[i];
+                      break;
+                    }
+                  }
+                  if (matching) {
+                    let second = "";
+                    for (let i = 0; i < s.expertise.length; i++) {
+                      if (s.expertise[i] !== matching) {
+                        second = s.expertise[i];
+                        break;
+                      }
+                    }
+                    displayedExpertise = second ? [matching, second] : [matching];
+                  }
+                }
 
                 return (
                   <div key={s.id} role="listitem" className="w-full">
