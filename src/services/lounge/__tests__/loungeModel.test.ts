@@ -23,8 +23,8 @@ describe("loungeMessageModel", () => {
   });
 
   it("builds sortable message ids and deterministic legacy ids", () => {
-    const a = buildMessageId(new Date(1000), 0, () => 0.1);
-    const b = buildMessageId(new Date(2000), 0, () => 0.1);
+    const a = buildMessageId(new Date(1000), 0);
+    const b = buildMessageId(new Date(2000), 0);
     expect(a < b).toBe(true);
     expect(buildLegacyMessageId(7)).toBe("legacy-00007");
   });
