@@ -70,10 +70,12 @@ export function buildMessageRecord(
  * Sortable, collision-resistant id: zero-padded epoch millis + batch sequence +
  * random suffix. Lexicographic order == chronological order.
  */
-export function buildMessageId(createdAt: Date, seq: number, random: () => number = Math.random): string {
+export function buildMessageId(createdAt: Date, seq: number): string {
   const ms = String(Math.max(0, createdAt.getTime())).padStart(13, "0");
   const s = String(seq).padStart(3, "0");
-  const r = Math.floor(random() * 36 ** 6).toString(36).padStart(6, "0");
+  const r = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID().split("-")[0].slice(0, 6)
+    : Math.floor(Math.random() * 36 ** 6).toString(36).padStart(6, "0");
   return `${ms}-${s}-${r}`;
 }
 
