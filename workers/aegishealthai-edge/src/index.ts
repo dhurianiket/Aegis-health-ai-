@@ -426,8 +426,8 @@ export default {
       // Fallback: Direct Google AI Studio endpoint for 100% failover resilience
       const accountId = env.CLOUDFLARE_ACCOUNT_ID || "ca163e8753d019d7dfa1937535d7ea57";
       const gatewayId = env.CF_AI_GATEWAY_ID || "aegishealthai";
-      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-ai-studio/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
-      const directGoogleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-ai-studio/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+      const directGoogleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
       const payload = JSON.stringify({
         contents: body.contents,
@@ -440,6 +440,7 @@ export default {
       const gatewayHeaders: Record<string, string> = {
         "Content-Type": "application/json",
         "User-Agent": "AegisHealthAI-Edge/2.0",
+        "x-goog-api-key": apiKey,
         // Privacy: do not store prompt/response bodies (PHI) in AI Gateway logs; metadata only.
         "cf-aig-collect-log-payload": "false",
       };
@@ -457,6 +458,7 @@ export default {
       const directHeaders = {
         "Content-Type": "application/json",
         "User-Agent": "AegisHealthAI-Edge/2.0",
+        "x-goog-api-key": apiKey,
       };
       const clientClosedResponse = () =>
         new Response(
