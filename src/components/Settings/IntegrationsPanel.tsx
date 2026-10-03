@@ -443,8 +443,16 @@ export default function IntegrationsPanel({
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* FHIR Export */}
           <div
-            className="p-8 border-r border-[var(--color-border)] hover:bg-[var(--color-bg)]/50 transition-colors cursor-pointer group"
+            role="button"
+            tabIndex={0}
+            className="p-8 border-r border-[var(--color-border)] hover:bg-[var(--color-bg)]/50 transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             onClick={() => exportToFHIR(activeProfile)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                exportToFHIR(activeProfile);
+              }
+            }}
           >
             <div className="flex items-center gap-4 mb-4">
               <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400">
@@ -464,8 +472,16 @@ export default function IntegrationsPanel({
 
           {/* CSV Export */}
           <div
-            className="p-8 hover:bg-[var(--color-bg)]/50 transition-colors cursor-pointer group"
+            role="button"
+            tabIndex={0}
+            className="p-8 hover:bg-[var(--color-bg)]/50 transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             onClick={handleCSVExport}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCSVExport();
+              }
+            }}
           >
             <div className="flex items-center gap-4 mb-4">
               <div className="p-2 bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400">

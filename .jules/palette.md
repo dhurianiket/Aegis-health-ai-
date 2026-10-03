@@ -25,3 +25,6 @@
 ## 2025-05-18 - Accordion Keyboard Support Missing
 **Learning:** Found a pattern in this application where clickable `div` elements act as accordions (e.g., in the Document List of UploadCenter) but were implemented without keyboard access, `role="button"`, or `tabIndex`.
 **Action:** Always ensure custom accordion headers have `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (listening for Space/Enter), and focus indicators via `focus-visible`.
+## 2025-03-09 - Accessible interactive cards
+**Learning:** Found interactive data export options using generic `div` elements with `onClick` handlers but lacking keyboard support.
+**Action:** Always add `role="button"`, `tabIndex={0}`, `onKeyDown` handlers for "Enter" and " ", and `focus-visible:ring-*` styles to interactive non-button elements to ensure keyboard accessibility.
