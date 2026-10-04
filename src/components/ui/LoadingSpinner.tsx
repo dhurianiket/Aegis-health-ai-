@@ -49,6 +49,7 @@ export default function LoadingSpinner({
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-slate-400 font-medium tracking-tight"
+          aria-hidden="true"
         >
           {label}
         </motion.p>
