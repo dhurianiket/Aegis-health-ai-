@@ -32,6 +32,8 @@ export default function OfflineIndicator() {
     <AnimatePresence>
       {(isOffline || showStatus) && (
         <motion.div
+          role="alert"
+          aria-live="assertive"
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -50, opacity: 0 }}
@@ -43,7 +45,7 @@ export default function OfflineIndicator() {
         >
           {isOffline ? (
             <>
-              <WifiOff className="w-5 h-5 animate-pulse" />
+              <WifiOff className="w-5 h-5 animate-pulse" aria-hidden="true" />
               <div className="flex flex-col">
                 <span className="text-sm font-bold tracking-tight">
                   Offline Mode
@@ -55,7 +57,7 @@ export default function OfflineIndicator() {
             </>
           ) : (
             <>
-              <Wifi className="w-5 h-5" />
+              <Wifi className="w-5 h-5" aria-hidden="true" />
               <span className="text-sm font-bold tracking-tight">
                 Connection Restored
               </span>

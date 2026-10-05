@@ -66,14 +66,41 @@ export function buildMessageRecord(
   return record;
 }
 
+function defaultRandomSuffix(): string {
+  if (typeof crypto !== "undefined") {
+    if (typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID().split("-")[0].slice(0, 6);
+    }
+    if (typeof crypto.getRandomValues === "function") {
+      const bytes = new Uint8Array(4);
+      crypto.getRandomValues(bytes);
+      const num = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+      return Math.abs(num).toString(36).padStart(6, "0").slice(0, 6);
+    }
+  }
+  return Math.floor(Math.random() * 36 ** 6).toString(36).padStart(6, "0");
+}
+
 /**
  * Sortable, collision-resistant id: zero-padded epoch millis + batch sequence +
  * random suffix. Lexicographic order == chronological order.
  */
-export function buildMessageId(createdAt: Date, seq: number, random: () => number = Math.random): string {
+export function buildMessageId(
+  createdAt: Date,
+  seq: number,
+  random?: () => number | string
+): string {
   const ms = String(Math.max(0, createdAt.getTime())).padStart(13, "0");
   const s = String(seq).padStart(3, "0");
-  const r = Math.floor(random() * 36 ** 6).toString(36).padStart(6, "0");
+  let r: string;
+  if (random) {
+    const val = random();
+    r = typeof val === "number"
+      ? Math.floor(val * 36 ** 6).toString(36).padStart(6, "0")
+      : String(val).padStart(6, "0").slice(0, 6);
+  } else {
+    r = defaultRandomSuffix();
+  }
   return `${ms}-${s}-${r}`;
 }
 
