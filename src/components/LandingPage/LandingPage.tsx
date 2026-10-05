@@ -173,7 +173,7 @@ export default function LandingPage() {
               <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
               
               <div className="relative group py-2">
-                <button className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none cursor-pointer">
+                <button aria-haspopup="menu" className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none cursor-pointer">
                   Articles <span className="text-xs">▾</span>
                 </button>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-[#0F2A4A] border border-white/10 rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -205,6 +205,8 @@ export default function LandingPage() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle Menu"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
                 className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-100 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
               >
                 {mobileMenuOpen ? (
@@ -224,6 +226,7 @@ export default function LandingPage() {
           <AnimatePresence>
             {mobileMenuOpen && (
               <motion.div
+                id="mobile-menu"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
