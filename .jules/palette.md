@@ -25,3 +25,7 @@
 ## 2025-05-18 - Accordion Keyboard Support Missing
 **Learning:** Found a pattern in this application where clickable `div` elements act as accordions (e.g., in the Document List of UploadCenter) but were implemented without keyboard access, `role="button"`, or `tabIndex`.
 **Action:** Always ensure custom accordion headers have `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (listening for Space/Enter), and focus indicators via `focus-visible`.
+
+## 2025-05-18 - Improve Mobile Menu Toggle Accessibility
+**Learning:** Icon-only buttons handling important responsive UI interactions (like the mobile menu toggle) should use accessible attributes (e.g. `aria-expanded`, `aria-controls`) to inform screen readers of the state of the component they control.
+**Action:** When implementing expandable menus, explicitly link the trigger button with `aria-expanded` corresponding to the menu open state.
