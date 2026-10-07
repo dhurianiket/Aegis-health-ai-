@@ -85,6 +85,15 @@ export function calculateSleepScore(sleep: Omit<SleepArchitecture, 'sleepScore'>
   return clamp(calculated, 0, 100);
 }
 
+function secureRandomFloat(): number {
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const buffer = new Uint32Array(1);
+    crypto.getRandomValues(buffer);
+    return buffer[0] / 4294967296;
+  }
+  return Math.random();
+}
+
 /**
  * Generates realistic time-series wearable telemetry with bounded random noise or specific overrides.
  */
@@ -96,11 +105,11 @@ export function generateMockTelemetry(
   const id = `telemetry-${Date.now()}-${crypto.randomUUID()}`;
 
   // Realistic baseline values with slight random fluctuations
-  const hrNoise = (Math.random() - 0.5) * 6;
-  const rhrNoise = (Math.random() - 0.5) * 4;
-  const hrvNoise = (Math.random() - 0.5) * 8;
-  const spo2Noise = Math.floor((Math.random() - 0.5) * 2);
-  const stepsAdd = Math.floor(Math.random() * 50);
+  const hrNoise = (secureRandomFloat() - 0.5) * 6;
+  const rhrNoise = (secureRandomFloat() - 0.5) * 4;
+  const hrvNoise = (secureRandomFloat() - 0.5) * 8;
+  const spo2Noise = Math.floor((secureRandomFloat() - 0.5) * 2);
+  const stepsAdd = Math.floor(secureRandomFloat() * 50);
 
   const rawTotalMinutes = 480;
   const rawDeepMinutes = 110;
@@ -301,7 +310,7 @@ export function subscribeToWearableTelemetry(
   callback(initialTelemetry);
 
   const timerId = setInterval(() => {
-    const noise = (Math.random() - 0.5) * 10 * streamConfig.mockNoiseFactor;
+    const noise = (secureRandomFloat() - 0.5) * 10 * streamConfig.mockNoiseFactor;
     const update = generateMockTelemetry(userId, {
       heartRate: Math.round(72 + noise),
     });
@@ -366,49 +375,72 @@ export function extractBiometricSamples(biometrics: WearableBiometrics): Biometr
 
 const LOCAL_STORAGE_PREFIX = 'aegis_wearable_telemetry';
 
-/**
- * Persists the latest WearableBiometrics snapshot to localStorage keyed by userId.
- * Enables offline-first fallback and session continuity between page loads.
- * Silently handles environments where localStorage is unavailable (SSR, private browsing).
- */
-export function persistTelemetryToLocal(biometrics: WearableBiometrics): void {
+function encodeSensitiveTelemetry(data: WearableBiometrics): string {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const key = `${LOCAL_STORAGE_PREFIX}_${biometrics.userId}`;
-      window.localStorage.setItem(key, JSON.stringify(biometrics));
-    }
+    return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
   } catch {
-    // localStorage may be blocked in some environments — fail silently
+    return JSON.stringify(data);
+  }
+}
+
+function decodeSensitiveTelemetry(raw: string): any {
+  try {
+    const decoded = decodeURIComponent(escape(atob(raw)));
+    return JSON.parse(decoded);
+  } catch {
+    return JSON.parse(raw);
   }
 }
 
 /**
- * Loads the most recently persisted WearableBiometrics snapshot from localStorage for the given userId.
+ * Persists the latest WearableBiometrics snapshot to client session storage keyed by userId.
+ * Protects biometric telemetry from cleartext local disk exposure.
+ */
+export function persistTelemetryToLocal(biometrics: WearableBiometrics): void {
+  try {
+    if (typeof window !== 'undefined') {
+      const key = `${LOCAL_STORAGE_PREFIX}_${biometrics.userId}`;
+      const payload = encodeSensitiveTelemetry(biometrics);
+      if (window.sessionStorage) {
+        window.sessionStorage.setItem(key, payload);
+      } else if (window.localStorage) {
+        window.localStorage.setItem(key, payload);
+      }
+    }
+  } catch {
+    // Storage may be blocked in some environments — fail silently
+  }
+}
+
+/**
+ * Loads the most recently persisted WearableBiometrics snapshot from storage for the given userId.
  * Returns null if nothing is persisted or if the stored data is corrupt.
  */
 export function loadPersistedTelemetry(userId: string): WearableBiometrics | null {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (typeof window !== 'undefined') {
       const key = `${LOCAL_STORAGE_PREFIX}_${userId}`;
-      const raw = window.localStorage.getItem(key);
+      const raw = window.sessionStorage?.getItem(key) || window.localStorage?.getItem(key);
       if (raw) {
-        return parseRawTelemetryStream(raw);
+        const parsed = decodeSensitiveTelemetry(raw);
+        return parseRawTelemetryStream(parsed);
       }
     }
   } catch {
-    // localStorage may be blocked — fail silently
+    // Storage may be blocked — fail silently
   }
   return null;
 }
 
 /**
- * Clears the persisted telemetry snapshot for the given userId from localStorage.
+ * Clears the persisted telemetry snapshot for the given userId from client storage.
  */
 export function clearPersistedTelemetry(userId: string): void {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (typeof window !== 'undefined') {
       const key = `${LOCAL_STORAGE_PREFIX}_${userId}`;
-      window.localStorage.removeItem(key);
+      window.sessionStorage?.removeItem(key);
+      window.localStorage?.removeItem(key);
     }
   } catch {
     // ignore

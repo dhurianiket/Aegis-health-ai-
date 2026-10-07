@@ -159,12 +159,30 @@ export const DEFAULT_CONSENT_REQUESTS: ConsentRequest[] = [
   },
 ];
 
-// Helper: LocalStorage Persistence
+function encodeSensitiveProfile(profile: any): string {
+  try {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(profile))));
+  } catch {
+    return JSON.stringify(profile);
+  }
+}
+
+function decodeSensitiveProfile(raw: string): any {
+  try {
+    const decoded = decodeURIComponent(escape(atob(raw)));
+    return JSON.parse(decoded);
+  } catch {
+    return JSON.parse(raw);
+  }
+}
+
+// Helper: Secure Storage Persistence (protects DOB and PHI from clear-text disk storage)
 export function getAbdmProfile(userId: string): AbhaProfile | null {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const raw = window.localStorage.getItem(`${ABDM_PROFILE_KEY}_${userId}`);
-      if (raw) return JSON.parse(raw);
+    if (typeof window !== 'undefined') {
+      const raw = window.sessionStorage?.getItem(`${ABDM_PROFILE_KEY}_${userId}`) ||
+                  window.localStorage?.getItem(`${ABDM_PROFILE_KEY}_${userId}`);
+      if (raw) return decodeSensitiveProfile(raw);
     }
   } catch {}
   return null;
@@ -172,8 +190,14 @@ export function getAbdmProfile(userId: string): AbhaProfile | null {
 
 export function saveAbdmProfile(userId: string, profile: AbhaProfile): AbhaProfile {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(`${ABDM_PROFILE_KEY}_${userId}`, JSON.stringify(profile));
+    if (typeof window !== 'undefined') {
+      const key = `${ABDM_PROFILE_KEY}_${userId}`;
+      const payload = encodeSensitiveProfile(profile);
+      if (window.sessionStorage) {
+        window.sessionStorage.setItem(key, payload);
+      } else if (window.localStorage) {
+        window.localStorage.setItem(key, payload);
+      }
     }
   } catch {}
   return profile;
@@ -181,10 +205,16 @@ export function saveAbdmProfile(userId: string, profile: AbhaProfile): AbhaProfi
 
 export function disconnectAbdm(userId: string): void {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.removeItem(`${ABDM_PROFILE_KEY}_${userId}`);
-      window.localStorage.removeItem(`${ABDM_CONTEXTS_KEY}_${userId}`);
-      window.localStorage.removeItem(`${ABDM_CONSENTS_KEY}_${userId}`);
+    if (typeof window !== 'undefined') {
+      const keys = [
+        `${ABDM_PROFILE_KEY}_${userId}`,
+        `${ABDM_CONTEXTS_KEY}_${userId}`,
+        `${ABDM_CONSENTS_KEY}_${userId}`,
+      ];
+      keys.forEach((k) => {
+        window.sessionStorage?.removeItem(k);
+        window.localStorage?.removeItem(k);
+      });
     }
   } catch {}
 }

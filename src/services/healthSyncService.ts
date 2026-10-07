@@ -92,6 +92,15 @@ export function saveHealthSyncState(
   return updatedState;
 }
 
+function secureRandomFloat(): number {
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const buffer = new Uint32Array(1);
+    crypto.getRandomValues(buffer);
+    return buffer[0] / 4294967296;
+  }
+  return Math.random();
+}
+
 /**
  * Simulates real-time Apple Health (HealthKit) sync, generating realistic telemetry
  * from Apple Watch / iOS HealthKit API payloads.
@@ -104,11 +113,11 @@ export async function syncAppleHealth(userId: string): Promise<SyncResult> {
       id: `apple-health-${Date.now()}`,
       userId,
       timestamp,
-      heartRate: Math.round(68 + (Math.random() - 0.5) * 4),
-      restingHeartRate: Math.round(60 + (Math.random() - 0.5) * 2),
-      heartRateVariability: Math.round(58 + (Math.random() - 0.5) * 6),
-      spo2: Math.min(100, Math.max(97, Math.round(98 + (Math.random() - 0.5) * 2))),
-      steps: Math.floor(7800 + Math.random() * 400),
+      heartRate: Math.round(68 + (secureRandomFloat() - 0.5) * 4),
+      restingHeartRate: Math.round(60 + (secureRandomFloat() - 0.5) * 2),
+      heartRateVariability: Math.round(58 + (secureRandomFloat() - 0.5) * 6),
+      spo2: Math.min(100, Math.max(97, Math.round(98 + (secureRandomFloat() - 0.5) * 2))),
+      steps: Math.floor(7800 + secureRandomFloat() * 400),
       sleep: {
         totalMinutes: 465,
         deepMinutes: 115,
@@ -167,11 +176,11 @@ export async function syncGoogleHealth(userId: string): Promise<SyncResult> {
       id: `google-health-${Date.now()}`,
       userId,
       timestamp,
-      heartRate: Math.round(71 + (Math.random() - 0.5) * 5),
-      restingHeartRate: Math.round(63 + (Math.random() - 0.5) * 3),
-      heartRateVariability: Math.round(52 + (Math.random() - 0.5) * 5),
-      spo2: Math.min(100, Math.max(96, Math.round(98 + (Math.random() - 0.5) * 2))),
-      steps: Math.floor(8200 + Math.random() * 500),
+      heartRate: Math.round(71 + (secureRandomFloat() - 0.5) * 5),
+      restingHeartRate: Math.round(63 + (secureRandomFloat() - 0.5) * 3),
+      heartRateVariability: Math.round(52 + (secureRandomFloat() - 0.5) * 5),
+      spo2: Math.min(100, Math.max(96, Math.round(98 + (secureRandomFloat() - 0.5) * 2))),
+      steps: Math.floor(8200 + secureRandomFloat() * 500),
       sleep: {
         totalMinutes: 480,
         deepMinutes: 120,
