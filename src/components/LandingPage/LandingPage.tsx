@@ -5,6 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import LegalModal from './LegalModal';
+import { SpotlightCard } from '../ui/SpotlightCard';
+import { DecryptedText } from '../ui/DecryptedText';
+import { CountUp } from '../ui/CountUp';
 
 // ----------------------------------------------------------------------
 // MOCK DATA
@@ -263,7 +266,7 @@ export default function LandingPage() {
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 mb-6 shadow-[0_0_25px_rgba(45,212,191,0.2)] backdrop-blur-md">
                 <span className="h-2 w-2 rounded-full bg-teal-400 animate-ping"></span>
-                <span>Next-Gen Health Intelligence 2.0</span>
+                <DecryptedText text="Next-Gen Health Intelligence 2.0" animateOn="view" speed={30} />
               </span>
 
               <motion.h1 
@@ -411,6 +414,45 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+
+        {/* ─── LIVE CLINICAL INTELLIGENCE BENCHMARKS ─── */}
+        <section className="w-full relative z-20 bg-[#071325]/90 border-y border-white/10 py-10 px-6 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-emerald-400 font-mono flex items-center justify-center gap-0.5">
+                <CountUp to={99.4} decimals={1} duration={2} />
+                <span>%</span>
+              </div>
+              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">Vision Extraction Precision</p>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-light">Multimodal OCR & Schema Check</p>
+            </div>
+            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-teal-400 font-mono flex items-center justify-center gap-0.5">
+                <CountUp to={10} decimals={0} duration={1.5} />
+                <span>+</span>
+              </div>
+              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">Polyclinic Specialists</p>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-light">ACC, ADA, KDIGO Guidelines</p>
+            </div>
+            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-cyan-400 font-mono flex items-center justify-center gap-0.5">
+                <CountUp to={100} decimals={0} duration={2} />
+                <span>%</span>
+              </div>
+              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">DPDP 2023 Aligned</p>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-light">Zero-Knowledge Encrypted Vault</p>
+            </div>
+            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-indigo-400 font-mono flex items-center justify-center gap-0.5">
+                <span>&lt;</span>
+                <CountUp to={450} decimals={0} duration={2} />
+                <span className="text-base font-normal">ms</span>
+              </div>
+              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">Edge Inference Latency</p>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-light">Cloudflare Edge AI Gateway</p>
+            </div>
+          </div>
+        </section>
 
         {/* EXPLORE AEGIS PAGES DIRECTORY */}
         <section id="explore" className="w-full relative z-20 bg-[#0A192F] border-t border-b border-white/5 py-20 px-6">
@@ -714,12 +756,10 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
 
               {/* Card 1: ABHA ID Creation */}
-              <motion.div
-                whileHover={{ y: -6, scale: 1.01 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white/5 backdrop-blur-2xl border border-orange-500/30 rounded-[32px] p-8 relative overflow-hidden group shadow-2xl hover:border-orange-400/60 hover:shadow-[0_20px_60px_rgba(249,115,22,0.2)] flex flex-col"
+              <SpotlightCard
+                spotlightColor="rgba(249, 115, 22, 0.25)"
+                className="border-orange-500/30 rounded-[32px] group shadow-2xl hover:border-orange-400/60 transition-all duration-300"
               >
-                <div className="absolute -top-16 -right-16 w-48 h-48 bg-orange-500/15 rounded-full blur-[60px] pointer-events-none" />
                 <div className="flex items-center gap-3 mb-5">
                   <div className="p-3 rounded-2xl bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.3)]">
                     <QrCode className="w-6 h-6" />
@@ -738,15 +778,13 @@ export default function LandingPage() {
                   <div className="font-mono text-orange-300 text-sm font-bold tracking-widest">91-2345-6789-0123</div>
                   <div className="text-slate-400 text-[11px]">Handle: <span className="text-orange-300 font-semibold">aniket.dhuri@abdm</span></div>
                 </div>
-              </motion.div>
+              </SpotlightCard>
 
               {/* Card 2: Care-Context Linking */}
-              <motion.div
-                whileHover={{ y: -6, scale: 1.01 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white/5 backdrop-blur-2xl border border-amber-500/30 rounded-[32px] p-8 relative overflow-hidden group shadow-2xl hover:border-amber-400/60 hover:shadow-[0_20px_60px_rgba(245,158,11,0.2)] flex flex-col"
+              <SpotlightCard
+                spotlightColor="rgba(245, 158, 11, 0.25)"
+                className="border-amber-500/30 rounded-[32px] group shadow-2xl hover:border-amber-400/60 transition-all duration-300"
               >
-                <div className="absolute -top-16 -right-16 w-48 h-48 bg-amber-500/15 rounded-full blur-[60px] pointer-events-none" />
                 <div className="flex items-center gap-3 mb-5">
                   <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
                     <Link2 className="w-6 h-6" />
@@ -770,15 +808,13 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </SpotlightCard>
 
               {/* Card 3: FHIR R4 Encrypted Transfer */}
-              <motion.div
-                whileHover={{ y: -6, scale: 1.01 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white/5 backdrop-blur-2xl border border-indigo-500/30 rounded-[32px] p-8 relative overflow-hidden group shadow-2xl hover:border-indigo-400/60 hover:shadow-[0_20px_60px_rgba(99,102,241,0.2)] flex flex-col"
+              <SpotlightCard
+                spotlightColor="rgba(99, 102, 241, 0.25)"
+                className="border-indigo-500/30 rounded-[32px] group shadow-2xl hover:border-indigo-400/60 transition-all duration-300"
               >
-                <div className="absolute -top-16 -right-16 w-48 h-48 bg-indigo-500/15 rounded-full blur-[60px] pointer-events-none" />
                 <div className="flex items-center gap-3 mb-5">
                   <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
                     <FileJson className="w-6 h-6" />
@@ -800,7 +836,7 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
-              </motion.div>
+              </SpotlightCard>
             </div>
 
             {/* Full-width compliance banner */}
