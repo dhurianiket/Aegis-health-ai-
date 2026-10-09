@@ -39,7 +39,7 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/95 backdrop-blur-2xl rounded-t-[32px] z-50 md:hidden border-t border-white/20 dark:border-white/10 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] pb-safe pointer-events-auto overscroll-contain max-h-[85dvh] overflow-y-auto"
           >
-            <div className="flex justify-center p-3 cursor-grab" onClick={onClose}>
+            <div role="button" tabIndex={0} aria-label="Close bottom sheet" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClose(); } }} className="flex justify-center p-3 cursor-grab focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] rounded-full" onClick={onClose}>
               <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full" />
             </div>
             <button
