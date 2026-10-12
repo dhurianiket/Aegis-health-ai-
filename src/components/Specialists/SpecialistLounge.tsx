@@ -901,16 +901,20 @@ export default function SpecialistLounge() {
                 </button>
               </div>
             ) : (
-              filteredSpecialists.map((s) => {
+              (() => {
+                // ⚡ Bolt: Performance optimization
+                // Hoisted searchQuery normalization outside the map loop to prevent
+                // O(N) redundant string allocations during render cycles.
                 const q = searchQuery.toLowerCase().trim();
-                const matchingExpertise = q
-                  ? s.expertise.filter((e) => e.toLowerCase().includes(q))
-                  : [];
-                const displayedExpertise = matchingExpertise.length > 0
-                  ? [matchingExpertise[0], ...s.expertise.filter((e) => e !== matchingExpertise[0])].slice(0, 2)
-                  : s.expertise.slice(0, 2);
+                return filteredSpecialists.map((s) => {
+                  const matchingExpertise = q
+                    ? s.expertise.filter((e) => e.toLowerCase().includes(q))
+                    : [];
+                  const displayedExpertise = matchingExpertise.length > 0
+                    ? [matchingExpertise[0], ...s.expertise.filter((e) => e !== matchingExpertise[0])].slice(0, 2)
+                    : s.expertise.slice(0, 2);
 
-                return (
+                  return (
                   <div key={s.id} role="listitem" className="w-full">
                     <button
                       type="button"
@@ -958,7 +962,8 @@ export default function SpecialistLounge() {
                     </button>
                   </div>
                 );
-              })
+                });
+              })()
             )}
           </div>
         </div>
