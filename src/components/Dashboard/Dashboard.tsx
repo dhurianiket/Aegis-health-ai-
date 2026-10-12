@@ -617,7 +617,7 @@ export default function Dashboard({
                   const source = getSourceForMarker(lab.markerName);
 
                   return (
-                    <div key={i} onClick={() => window.location.hash = "reports"} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group">
+                    <div key={i} role="button" tabIndex={0} onClick={() => window.location.hash = "reports"} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.location.hash = "reports"; } }} className="flex flex-col p-4 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] transition-all cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]">
                        <div className="flex justify-between items-start gap-2 mb-2">
                           <span className="font-bold text-sm text-[var(--color-text)] leading-tight">{lab.markerName}</span>
                           <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider shrink-0 ${urgency.badgeClass}`}>
