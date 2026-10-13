@@ -29,3 +29,6 @@
 ## 2025-05-18 - Improve Mobile Menu Toggle Accessibility
 **Learning:** Icon-only buttons handling important responsive UI interactions (like the mobile menu toggle) should use accessible attributes (e.g. `aria-expanded`, `aria-controls`) to inform screen readers of the state of the component they control.
 **Action:** When implementing expandable menus, explicitly link the trigger button with `aria-expanded` corresponding to the menu open state.
+## 2026-10-13 - Explicit linkage of mobile BottomSheet menus
+**Learning:** Found that the "more" trigger button in the mobile app navigation bar was conditionally rendering a `BottomSheet` menu, but lacked `aria-expanded` and `aria-controls` explicitly linked to the content `div` ID.
+**Action:** When implementing interactive, collapsible elements (like mobile menus or dropdowns), ensure the trigger button explicitly uses `aria-expanded` reflecting the state and `aria-controls` mapped to the specific `id` of the collapsible container for proper screen reader accessibility.
