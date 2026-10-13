@@ -5,6 +5,9 @@ import {
   getUserUsageStats,
   markUserActive,
   trackUsage,
+  getUserSubscription,
+  updateUserSubscription,
+  checkCanUploadReport,
 } from "../usageService";
 import * as firestore from "firebase/firestore";
 
@@ -257,5 +260,219 @@ describe("usageService", () => {
       );
     });
   });
+
+  describe("Early Access Beta Subscription & Report Quota Exemption", () => {
+    it("should grant unlimited monthlyScanLimit (Infinity) for default free users during beta", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => false,
+      });
+
+      const sub = await getUserSubscription("user_beta_default");
+      expect(sub.planId).toBe("free");
+      expect(sub.planName).toBe("Early Access Beta");
+      expect(sub.monthlyScanLimit).toBe(Infinity);
+    });
+
+    it("should override legacy cached free subscription limits to Infinity", async () => {
+      const mockStorage: Record<string, string> = {
+        aegis_user_sub_legacy_user: JSON.stringify({
+          planId: "free",
+          planName: "Free Basic",
+          status: "active",
+          scansUsedThisMonth: 12,
+          monthlyScanLimit: 3,
+          expiresAt: null,
+          updatedAt: new Date().toISOString(),
+        }),
+      };
+
+      vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) => mockStorage[key] || null);
+
+      const sub = await getUserSubscription("legacy_user");
+      expect(sub.monthlyScanLimit).toBe(Infinity);
+      expect(sub.planName).toBe("Early Access Beta");
+
+      vi.restoreAllMocks();
+    });
+
+    it("should always allow report uploads and never block via checkCanUploadReport", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => false,
+      });
+
+      const res = await checkCanUploadReport("user_consecutive_uploads");
+      expect(res.allowed).toBe(true);
+      expect(res.limit).toBe(Infinity);
+    });
+
+    it("should migrate expired Firestore subscription to Early Access Beta with Infinity scan limit", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => true,
+        data: () => ({
+          planId: "b2c_monthly",
+          planName: "Aegis Pro Monthly",
+          status: "expired",
+          scansUsedThisMonth: 18,
+          monthlyScanLimit: 3,
+          expiresAt: "2023-01-01T00:00:00Z",
+          updatedAt: "2023-01-01T00:00:00Z",
+        }),
+      });
+
+      const sub = await getUserSubscription("expired_firestore_user");
+      expect(sub.planId).toBe("free");
+      expect(sub.planName).toBe("Early Access Beta");
+      expect(sub.monthlyScanLimit).toBe(Infinity);
+    });
+
+    it("should gracefully return allowed: true if getUserSubscription throws or fails in checkCanUploadReport", async () => {
+      (firestore.getDoc as any).mockRejectedValue(new Error("Firestore network disconnect"));
+
+      const res = await checkCanUploadReport("network_offline_user");
+      expect(res.allowed).toBe(true);
+      expect(res.limit).toBe(Infinity);
+      expect(res.planId).toBe("free");
+    });
+
+    it("should enforce Infinity limit when updateUserSubscription is called during beta", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => false,
+      });
+
+      const updated = await updateUserSubscription("user_update_test", {
+        planId: "free",
+        monthlyScanLimit: 3,
+      });
+
+      expect(updated.monthlyScanLimit).toBe(Infinity);
+      expect(updated.planName).toBe("Early Access Beta");
+    });
+
+    it("should allow users with 50+ recorded scans in Firestore to upload without quota blocks", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => true,
+        data: () => ({
+          planId: "free",
+          planName: "Early Access Beta",
+          status: "active",
+          scansUsedThisMonth: 65,
+          monthlyScanLimit: 3, // legacy limit
+          expiresAt: null,
+          updatedAt: new Date().toISOString(),
+        }),
+      });
+
+      const res = await checkCanUploadReport("heavy_user_with_scans");
+      expect(res.allowed).toBe(true);
+      expect(res.scansUsed).toBe(65);
+      expect(res.limit).toBe(Infinity);
+    });
+
+    it("should migrate canceled Firestore subscription to Early Access Beta with Infinity scan limit", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => true,
+        data: () => ({
+          planId: "b2c_monthly",
+          planName: "Aegis Pro Monthly",
+          status: "canceled",
+          scansUsedThisMonth: 5,
+          monthlyScanLimit: 3,
+          expiresAt: null,
+          updatedAt: "2023-01-01T00:00:00Z",
+        }),
+      });
+
+      const sub = await getUserSubscription("canceled_firestore_user");
+      expect(sub.planId).toBe("free");
+      expect(sub.planName).toBe("Early Access Beta");
+      expect(sub.monthlyScanLimit).toBe(Infinity);
+      expect(sub.status).toBe("active");
+    });
+
+    it("should handle empty or whitespace user ID safely without erroring", async () => {
+      const sub1 = await getUserSubscription("");
+      expect(sub1.monthlyScanLimit).toBe(Infinity);
+      expect(sub1.planName).toBe("Early Access Beta");
+
+      const sub2 = await getUserSubscription("   ");
+      expect(sub2.monthlyScanLimit).toBe(Infinity);
+      expect(sub2.planName).toBe("Early Access Beta");
+
+      const res = await checkCanUploadReport("   ");
+      expect(res.allowed).toBe(true);
+      expect(res.limit).toBe(Infinity);
+    });
+
+    it("should normalize arbitrary legacy plan names on free tier to Early Access Beta", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => true,
+        data: () => ({
+          planId: "free",
+          planName: "Old Starter Tier",
+          status: "active",
+          scansUsedThisMonth: 2,
+          monthlyScanLimit: 3,
+          expiresAt: null,
+          updatedAt: new Date().toISOString(),
+        }),
+      });
+
+      const sub = await getUserSubscription("legacy_named_user");
+      expect(sub.planId).toBe("free");
+      expect(sub.planName).toBe("Early Access Beta");
+      expect(sub.monthlyScanLimit).toBe(Infinity);
+    });
+
+    it("should handle non-string or numeric userId safely without TypeError", async () => {
+      const sub = await getUserSubscription(12345 as any);
+      expect(sub.monthlyScanLimit).toBe(Infinity);
+      expect(sub.planName).toBe("Early Access Beta");
+
+      const res = await checkCanUploadReport(12345 as any);
+      expect(res.allowed).toBe(true);
+      expect(res.limit).toBe(Infinity);
+    });
+
+    it("should migrate canceled status in updateUserSubscription to active Early Access Beta", async () => {
+      (firestore.getDoc as any).mockResolvedValue({
+        exists: () => true,
+        data: () => ({
+          planId: "b2c_monthly",
+          planName: "Aegis Pro",
+          status: "active",
+          monthlyScanLimit: 100,
+        }),
+      });
+
+      const updated = await updateUserSubscription("user_canceling_sub", {
+        status: "canceled",
+      });
+
+      expect(updated.planId).toBe("free");
+      expect(updated.planName).toBe("Early Access Beta");
+      expect(updated.status).toBe("active");
+      expect(updated.monthlyScanLimit).toBe(Infinity);
+    });
+
+    it("should populate default fields when localStorage contains partial subscription object", async () => {
+      const mockStorage: Record<string, string> = {
+        aegis_user_sub_partial_user: JSON.stringify({
+          planId: "free",
+        }),
+      };
+
+      vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) => mockStorage[key] || null);
+
+      const sub = await getUserSubscription("partial_user");
+      expect(sub.planId).toBe("free");
+      expect(sub.planName).toBe("Early Access Beta");
+      expect(sub.status).toBe("active");
+      expect(sub.scansUsedThisMonth).toBe(0);
+      expect(sub.monthlyScanLimit).toBe(Infinity);
+
+      vi.restoreAllMocks();
+    });
+  });
 });
+
 

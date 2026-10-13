@@ -174,6 +174,9 @@ export default function LandingPage() {
               <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
               <Link to="/about.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">About Us</Link>
               <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
+              <a href="#pricing" className="text-xs font-bold tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors uppercase flex items-center gap-1">
+                Beta Access
+              </a>
               
               <div className="relative group py-2">
                 <button aria-haspopup="menu" className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none cursor-pointer">
@@ -240,6 +243,9 @@ export default function LandingPage() {
                   <Link to="/how-it-works.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">How It Works</Link>
                   <Link to="/about.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">About Us</Link>
                   <Link to="/security.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">Security First</Link>
+                  <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-emerald-400 hover:text-emerald-300 transition-colors py-2 border-b border-white/5 uppercase flex items-center gap-1.5">
+                    Beta Access (Free)
+                  </a>
                   
                   <div className="py-2">
                     <span className="text-xs uppercase tracking-widest text-slate-400 font-extrabold block mb-2">Articles & Playbooks</span>
@@ -986,46 +992,50 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* PRICING & LAUNCH SPECIAL COUPON SECTION */}
+        {/* 100% FREE EARLY ACCESS BETA SHOWCASE SECTION */}
         <section id="pricing" className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 py-24 px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16 max-w-3xl mx-auto">
               <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                <Sparkles className="w-3.5 h-3.5" /> Launch Offer: Promo Code AEGIS100 (100 Slots)
+                <Sparkles className="w-3.5 h-3.5" /> Early Access Beta Program • 100% Free Access
               </div>
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
-                Affordable India-First Pricing
+                Full Health Intelligence. <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">100% Free in Beta.</span>
               </h2>
-              <p className="text-lg text-slate-400 font-light leading-relaxed">
-                Choose the plan tailored for your family's health or your clinical practice. Try full access for 1 month free using coupon <strong className="text-emerald-400 font-bold">AEGIS100</strong>.
+              <p className="text-lg text-slate-300 font-light leading-relaxed">
+                During our Early Access Beta, every single feature — from multimodal report ingestion and multi-profile tracking to our 10+ clinical specialist lounges — is completely unlocked for all registered users. No subscription paywalls, no scan counters, and no payment barriers.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {/* Free Basic Tier */}
-              <div className="rounded-3xl p-8 border border-white/10 bg-white/5 backdrop-blur-md flex flex-col justify-between hover:border-slate-400/30 transition-all">
+              {/* Card 1: Clinical Intelligence Engine */}
+              <div className="rounded-3xl p-8 border border-white/10 bg-white/5 backdrop-blur-md flex flex-col justify-between hover:border-teal-400/40 transition-all">
                 <div>
-                  <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                    Free Tier
+                  <span className="text-xs font-mono font-bold text-teal-400 uppercase tracking-widest bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">
+                    Clinical Intelligence
                   </span>
-                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Free Basic</h3>
+                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multimodal Lab AI</h3>
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-4xl font-black text-white">₹0</span>
-                    <span className="text-sm font-medium text-slate-400">/ month</span>
+                    <span className="text-sm font-medium text-emerald-400 font-bold ml-1">Free Early Access</span>
                   </div>
 
                   <ul className="space-y-3 mb-8 text-sm text-slate-300 font-light">
                     <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
-                      3 Report OCR Scans / Month
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <strong className="text-white font-medium">Unlimited</strong> Lab Report Vision Scans
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
-                      Basic Biomarker & Vitals Tracking
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      Instant Unit Normalization & Anomaly Alerts
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
-                      Single User Profile
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      Automated SBAR Doctor Handover Reports
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      FHIR R4 Diagnostic Bundles & Export
                     </li>
                   </ul>
                 </div>
@@ -1033,46 +1043,45 @@ export default function LandingPage() {
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Start Free
+                  Start Free Ingestion
                 </button>
               </div>
 
-              {/* B2C Aegis Pro Tier */}
+              {/* Card 2: Multi-Profile & Digital Twin (Featured) */}
               <div className="rounded-3xl p-8 border-2 border-emerald-500 bg-gradient-to-b from-emerald-500/10 to-teal-500/5 backdrop-blur-md flex flex-col justify-between relative shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-0.5 rounded-full bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest shadow-md">
-                  🔥 50% OFF SPECIAL OFFER
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-0.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs uppercase tracking-widest shadow-md">
+                  ✨ ALL FEATURES UNLOCKED
                 </div>
 
                 <div>
                   <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                    Consumer Pro
+                    Family & Wearables
                   </span>
-                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Aegis Pro</h3>
+                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multi-Profile Vault</h3>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-4xl font-black text-emerald-400">₹99</span>
-                    <span className="text-sm font-medium text-slate-400">/ mo</span>
-                    <span className="text-xs font-bold text-emerald-400/80">(₹149 / 3 mos)</span>
+                    <span className="text-4xl font-black text-emerald-400">₹0</span>
+                    <span className="text-sm font-medium text-emerald-300 font-bold">100% Free Beta</span>
                   </div>
-                  <p className="text-xs font-bold text-emerald-400 mb-6">Free for 1 Month with code AEGIS100</p>
+                  <p className="text-xs font-bold text-emerald-400 mb-6">Unlimited tracking for you & your loved ones</p>
 
                   <ul className="space-y-3 mb-8 text-sm text-slate-200">
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <strong className="text-white font-semibold">Unlimited</strong> Lab Report Vision Scans
+                      <strong className="text-white font-semibold">Multi-Profile</strong> Family & Patient Tracking
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <strong className="text-white font-semibold">24/7 Aura AI</strong> Health Coach
+                      Apple Health & Google Health Auto-Sync
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      Apple & Google Health Auto-Sync
+                      3D Holographic Body Scanner & Digital Twin
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      Up to 5 Family Profiles
+                      Longitudinal Historical Trend Sparklines
                     </li>
                   </ul>
                 </div>
@@ -1080,28 +1089,28 @@ export default function LandingPage() {
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Claim Free Trial (Code: AEGIS100)
+                  Join Early Access Beta
                 </button>
               </div>
 
-              {/* B2B Clinic Pro Tier */}
+              {/* Card 3: Specialist Lounge & Clinical Practice */}
               <div className="rounded-3xl p-8 border border-indigo-500/40 bg-indigo-500/5 backdrop-blur-md flex flex-col justify-between hover:border-indigo-500/80 transition-all">
                 <div>
                   <span className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                    Doctors & OPDs
+                    Specialist Lounge
                   </span>
-                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Clinic Pro</h3>
+                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">10+ AI Specialists</h3>
                   <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-4xl font-black text-indigo-400">₹999</span>
-                    <span className="text-sm font-medium text-slate-400">/ month</span>
+                    <span className="text-4xl font-black text-indigo-400">₹0</span>
+                    <span className="text-sm font-medium text-indigo-300 font-bold ml-1">Included in Beta</span>
                   </div>
 
                   <ul className="space-y-3 mb-8 text-sm text-slate-300">
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      Automated SBAR Doctor Summaries
+                      <strong className="text-white font-semibold">Specialist Lounge</strong> (Cardio, Endo, Nephro & more)
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
@@ -1109,11 +1118,11 @@ export default function LandingPage() {
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      FHIR R4 JSON & CSV Exports
+                      Plain-English Clinical Explanations & Diets
                     </li>
                     <li className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      Priority Gemini 3.1 Pro Inference
+                      DPDP 2023 Aligned Zero-Knowledge Client Vault
                     </li>
                   </ul>
                 </div>
@@ -1121,11 +1130,18 @@ export default function LandingPage() {
                 <button
                   onClick={handleSignIn}
                   disabled={isSigningIn}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Try Clinic Pro
+                  Explore Specialist Lounge
                 </button>
               </div>
+            </div>
+
+            {/* Bottom Early Access Guarantee Banner */}
+            <div className="mt-12 max-w-4xl mx-auto rounded-2xl p-4 bg-emerald-500/10 border border-emerald-500/20 text-center">
+              <p className="text-xs md:text-sm text-emerald-300 font-medium">
+                🛡️ <strong className="text-white">Early Access Guarantee:</strong> No credit card required. No scan quotas. No paywalls. Enjoy full platform capabilities with zero charges during our beta testing period.
+              </p>
             </div>
           </div>
         </section>
@@ -1308,6 +1324,11 @@ export default function LandingPage() {
               <div className="text-center md:text-left">
                 <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Explore Aegis</h4>
                 <ul className="space-y-3">
+                  <li>
+                    <a href="#pricing" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors text-sm">
+                      Beta Access (100% Free)
+                    </a>
+                  </li>
                   <li>
                     <Link to="/how-it-works.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
                       How It Works

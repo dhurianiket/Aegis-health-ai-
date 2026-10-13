@@ -31,7 +31,7 @@ export interface UserSubscription {
   planName: string;
   status: 'active' | 'expired' | 'canceled';
   scansUsedThisMonth: number;
-  monthlyScanLimit: number; // 3 for Free, Infinity for Pro/Clinic
+  monthlyScanLimit: number; // Infinity during Early Access Beta
   expiresAt: string | null;
   paymentId?: string;
   updatedAt: string;
@@ -52,10 +52,10 @@ export const getUserSubscription = async (userId: string, userEmail?: string): P
 
   const defaultFreeSub: UserSubscription = {
     planId: 'free',
-    planName: 'Free Basic',
+    planName: 'Early Access Beta',
     status: 'active',
     scansUsedThisMonth: 0,
-    monthlyScanLimit: 3,
+    monthlyScanLimit: Infinity,
     expiresAt: null,
     updatedAt: new Date().toISOString(),
   };
@@ -64,21 +64,39 @@ export const getUserSubscription = async (userId: string, userEmail?: string): P
     return masterAdminSub;
   }
 
-  if (!userId) return defaultFreeSub;
+  if (!userId || typeof userId !== 'string' || !userId.trim()) return defaultFreeSub;
+
+  const cleanUserId = userId.trim();
 
   // 1. Check Local Storage first for fast offline UI state
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
-      const cached = window.localStorage.getItem(`${LOCAL_SUB_PREFIX}_${userId}`);
+      const cached = window.localStorage.getItem(`${LOCAL_SUB_PREFIX}_${cleanUserId}`);
       if (cached) {
         const parsed = JSON.parse(cached);
-        // Check if subscription expired
-        if (parsed.expiresAt && new Date(parsed.expiresAt).getTime() < Date.now()) {
-          parsed.planId = 'free';
-          parsed.planName = 'Free Basic';
-          parsed.monthlyScanLimit = 3;
+        if (parsed && typeof parsed === 'object') {
+          // Early Access Beta: Ensure free/expired/canceled subscriptions receive unlimited beta quota
+          const isExpired =
+            parsed.status === 'expired' ||
+            parsed.status === 'canceled' ||
+            Boolean(parsed.expiresAt && !isNaN(new Date(parsed.expiresAt).getTime()) && new Date(parsed.expiresAt).getTime() < Date.now());
+          if (isExpired || !parsed.planId || parsed.planId === 'free') {
+            parsed.planId = 'free';
+            parsed.planName = 'Early Access Beta';
+            parsed.status = 'active';
+            parsed.monthlyScanLimit = Infinity;
+          }
+          if (!parsed.monthlyScanLimit || parsed.monthlyScanLimit < 100) {
+            parsed.planName = 'Early Access Beta';
+            parsed.monthlyScanLimit = Infinity;
+          }
+          return {
+            ...defaultFreeSub,
+            ...parsed,
+            monthlyScanLimit: Infinity,
+            planName: parsed.planId === 'free' ? 'Early Access Beta' : (parsed.planName || 'Early Access Beta'),
+          };
         }
-        return parsed;
       }
     }
   } catch {
@@ -87,14 +105,36 @@ export const getUserSubscription = async (userId: string, userEmail?: string): P
 
   // 2. Fetch from Firestore doc users/{userId}/subscription/main
   try {
-    const docRef = doc(db, `users/${userId}/subscription/main`);
+    const docRef = doc(db, `users/${cleanUserId}/subscription/main`);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      const data = docSnap.data() as UserSubscription;
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(`${LOCAL_SUB_PREFIX}_${userId}`, JSON.stringify(data));
+      const data = (docSnap.data() || {}) as Partial<UserSubscription>;
+      // Early Access Beta: Ensure expired/canceled subscriptions receive unlimited beta quota
+      const isExpired =
+        data.status === 'expired' ||
+        data.status === 'canceled' ||
+        Boolean(data.expiresAt && !isNaN(new Date(data.expiresAt).getTime()) && new Date(data.expiresAt).getTime() < Date.now());
+      if (isExpired || !data.planId || data.planId === 'free') {
+        data.planId = 'free';
+        data.planName = 'Early Access Beta';
+        data.status = 'active';
+        data.monthlyScanLimit = Infinity;
       }
-      return data;
+      // Early Access Beta: Lift report quotas for all registered users on free plan
+      if (!data.monthlyScanLimit || data.monthlyScanLimit < 100) {
+        data.monthlyScanLimit = Infinity;
+        data.planName = 'Early Access Beta';
+      }
+      const fullSub: UserSubscription = {
+        ...defaultFreeSub,
+        ...data,
+        monthlyScanLimit: Infinity,
+        planName: data.planId === 'free' ? 'Early Access Beta' : (data.planName || 'Early Access Beta'),
+      };
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(`${LOCAL_SUB_PREFIX}_${cleanUserId}`, JSON.stringify(fullSub));
+      }
+      return fullSub;
     }
   } catch {
     // Return default free plan on network offline
@@ -114,15 +154,31 @@ export const updateUserSubscription = async (
     updatedAt: new Date().toISOString(),
   };
 
+  // Early Access Beta: Enforce unlimited quota and normalize canceled/expired plans during beta
+  if (
+    updated.status === 'canceled' ||
+    updated.status === 'expired' ||
+    updated.planId === 'free' ||
+    !updated.monthlyScanLimit ||
+    updated.monthlyScanLimit < 100
+  ) {
+    updated.planId = 'free';
+    updated.planName = 'Early Access Beta';
+    updated.status = 'active';
+    updated.monthlyScanLimit = Infinity;
+  }
+
+  const cleanUserId = typeof userId === 'string' ? userId.trim() : '';
+
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(`${LOCAL_SUB_PREFIX}_${userId}`, JSON.stringify(updated));
+    if (cleanUserId && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(`${LOCAL_SUB_PREFIX}_${cleanUserId}`, JSON.stringify(updated));
     }
   } catch {}
 
-  if (userId) {
+  if (cleanUserId) {
     try {
-      const docRef = doc(db, `users/${userId}/subscription/main`);
+      const docRef = doc(db, `users/${cleanUserId}/subscription/main`);
       await setDoc(docRef, updated, { merge: true });
     } catch {}
   }
@@ -133,15 +189,23 @@ export const updateUserSubscription = async (
 export const checkCanUploadReport = async (
   userId: string
 ): Promise<{ allowed: boolean; scansUsed: number; limit: number; planId: string }> => {
-  const sub = await getUserSubscription(userId);
-  const isUnlimited = sub.planId !== 'free';
-
-  if (isUnlimited) {
-    return { allowed: true, scansUsed: sub.scansUsedThisMonth, limit: Infinity, planId: sub.planId };
+  try {
+    const sub = await getUserSubscription(userId);
+    // Early Access Beta: All registered users receive unlimited monthly report processing quota
+    return {
+      allowed: true,
+      scansUsed: sub?.scansUsedThisMonth || 0,
+      limit: Infinity,
+      planId: sub?.planId || 'free',
+    };
+  } catch {
+    return {
+      allowed: true,
+      scansUsed: 0,
+      limit: Infinity,
+      planId: 'free',
+    };
   }
-
-  const allowed = sub.scansUsedThisMonth < sub.monthlyScanLimit;
-  return { allowed, scansUsed: sub.scansUsedThisMonth, limit: sub.monthlyScanLimit, planId: sub.planId };
 };
 
 export const getEstCost = (prompt: number = 0, resp: number = 0, think: number = 0): number => {

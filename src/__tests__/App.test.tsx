@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
@@ -27,6 +27,10 @@ vi.mock("../context/AlertsContext", () => ({
 }));
 
 describe("App Critical Flow (Smoke)", () => {
+  beforeEach(() => {
+    localStorage.setItem("aegis_consent_granted", "true");
+  });
+
   it("should render the dashboard layout with user signed in", async () => {
     (authCtx.useAuth as any).mockReturnValue({
       user: { uid: "u1", email: "test@example.com" },
@@ -50,6 +54,33 @@ describe("App Critical Flow (Smoke)", () => {
     
     await waitFor(() => {
       expect(getAllByText(/John Doe|AEGIS|Aura|Dashboard|Overview/i).length).toBeGreaterThan(0);
+    }, { timeout: 4000 });
+  }, 10000);
+
+  it("should render the Beta Access badge and not display any Upgrade (₹99) button in the header", async () => {
+    (authCtx.useAuth as any).mockReturnValue({
+      user: { uid: "u1", email: "test@example.com" },
+      signIn: vi.fn(),
+      logOut: vi.fn(),
+      authResolved: true,
+      loading: false,
+    });
+
+    (profileCtx.useProfile as any).mockReturnValue({
+      profiles: [{ id: "p1", name: "John Doe" }],
+      activeProfile: { id: "p1", name: "John Doe" },
+      setActiveProfile: vi.fn(),
+    });
+
+    const { queryByText, getByText } = render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(getByText("Beta Access")).not.toBeNull();
+      expect(queryByText(/Upgrade \(₹99\)/i)).toBeNull();
     }, { timeout: 4000 });
   }, 10000);
 });

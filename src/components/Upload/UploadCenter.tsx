@@ -32,7 +32,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { extractMedicalReports } from "../../services/ai/gemini";
 import { reconcileDualModelConsensus } from "../../services/ai/consensusExtractionService";
-import { trackStorageUsage, checkCanUploadReport, getUserSubscription, updateUserSubscription } from "../../services/usageService";
+import { trackStorageUsage, checkCanUploadReport } from "../../services/usageService";
 import {
   saveDocument,
   saveLabResult,
@@ -605,13 +605,8 @@ export default function UploadCenter({
         setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'processing' } : f));
         
         try {
-          const { allowed, scansUsed, limit } = await checkCanUploadReport(user.uid);
-          if (!allowed) {
-            showToast(`Free plan limit reached (${scansUsed}/${limit} scans used this month). Please upgrade to Aegis Pro for unlimited report processing!`, "warning");
-            setFileQueue(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f));
-            setIsProcessing(false);
-            return;
-          }
+          // Early Access Beta: report scanning is never blocked by paywalls or quota limits
+          await checkCanUploadReport(user.uid);
 
           // Status 1: Uploading...
           setProcessingStep(0);

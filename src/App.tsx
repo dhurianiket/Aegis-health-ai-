@@ -429,14 +429,14 @@ function MainApp() {
               </AnimatePresence>
             </div>
 
-            {/* Upgrade / Plan Badge */}
-            <button
-              onClick={() => setIsPricingModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 shadow-md transition-all active:scale-95 duration-100 cursor-pointer"
+            {/* Early Access Beta Badge */}
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-300 shadow-sm select-none"
+              title="Aegis Health AI — 100% Free Early Access Beta"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              {userSub && userSub.planId !== 'free' ? userSub.planName : 'Upgrade (₹99)'}
-            </button>
+              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+              <span>Beta Access</span>
+            </div>
 
             {user ? (
               <div className="relative">
@@ -452,15 +452,9 @@ function MainApp() {
                     <div className="px-4 py-3 text-xs text-muted border-b border-surface">
                       {user.email}
                     </div>
-                    <button
-                      onClick={() => {
-                        setShowLogout(false);
-                        setIsPricingModalOpen(true);
-                      }}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-teal-400 hover:bg-surface transition-colors border-b border-surface"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" /> Subscription & Billing
-                    </button>
+                    <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-teal-400 border-b border-surface">
+                      <Sparkles className="w-3.5 h-3.5" /> Early Access Beta
+                    </div>
                     <button
                       onClick={logOut}
                       className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-500 hover:bg-surface transition-colors"
