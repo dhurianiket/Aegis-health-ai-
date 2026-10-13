@@ -26,6 +26,7 @@ import {
   LabObservationItem,
 } from '../../services/organHealthService';
 import { WearableBiometrics } from '../../types/wearables';
+import { ThreeBodyScanner3D } from './ThreeBodyScanner3D';
 
 export interface HolographicBodyScannerProps {
   labObservations?: LabObservationItem[];
@@ -70,12 +71,13 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
 
   const [selectedOrgan, setSelectedOrgan] = useState<OrganSystemScore | null>(null);
   const [scanActive, setScanActive] = useState<boolean>(true);
-  const [viewMode, setViewMode] = useState<'3d-mesh' | 'hologram-scan'>('3d-mesh');
+  const [viewMode, setViewMode] = useState<'3d-webgl' | 'coronal-slice'>('3d-webgl');
   const [mouseRotation, setMouseRotation] = useState<{ rx: number; ry: number }>({ rx: 0, ry: 0 });
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 250, y: 250 });
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Mouse move 3D tilt tracking
+  // Mouse move 3D tilt tracking & SpotlightCard dynamic cursor lighting (react-bits inspired)
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -84,6 +86,7 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
     const rx = -(y / (rect.height / 2)) * 8;
     const ry = (x / (rect.width / 2)) * 12;
     setMouseRotation({ rx, ry });
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
   const handleMouseLeave = () => {
@@ -165,7 +168,7 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
   const cardiacDuration = heartRate && heartRate > 0 ? 60 / heartRate : 1.2;
   const breathDuration = breathingRate && breathingRate > 0 ? 60 / breathingRate : 4.0;
 
-  const isWireframeMode = viewMode === 'hologram-scan';
+  const isWireframeMode = viewMode === 'coronal-slice';
 
   return (
     <div
@@ -178,7 +181,13 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
       {/* Background Ambient Hologram Glow */}
       <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
+      {/* Dynamic Cursor Spotlight (dev-resources/react-bits/SpotlightCard inspired) */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(650px circle at ${mousePos.x}px ${mousePos.y}px, rgba(34, 211, 238, 0.09), transparent 70%)`,
+        }}
+      />
 
       {/* Header Toolbar */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-5 relative z-10">
@@ -204,15 +213,16 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
         {/* Action / Laser Scan Switcher Controls */}
         <div className="flex items-center gap-2.5 self-stretch sm:self-auto justify-end">
           <button
-            onClick={() => setViewMode(viewMode === '3d-mesh' ? 'hologram-scan' : '3d-mesh')}
+            onClick={() => setViewMode(viewMode === '3d-webgl' ? 'coronal-slice' : '3d-webgl')}
             className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all min-h-[44px] flex items-center gap-2 cursor-pointer ${
-              isWireframeMode
-                ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 glow-indigo-3d'
+              viewMode === '3d-webgl'
+                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 glow-cyan-3d'
                 : 'bg-white/5 border-white/15 text-slate-200 hover:text-white'
             }`}
+            aria-label="Toggle 3D WebGL / Coronal Slice View"
           >
-            <Eye className="w-4 h-4 text-cyan-400" />
-            <span>{isWireframeMode ? 'Wireframe Mode' : 'Anatomical View'}</span>
+            <Layers className="w-4 h-4 text-cyan-400" />
+            <span>{viewMode === '3d-webgl' ? '3D WebGL Hologram' : '2D Coronal View'}</span>
           </button>
 
           <button
@@ -233,15 +243,25 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
       {/* Main Grid: Left 3D Anatomical Body Viewport, Right Live Biometrics HUD */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 items-center">
         {/* Left: 3D Holographic Body Stage (7 Cols) */}
-        <div
-          className="lg:col-span-7 flex flex-col items-center justify-center p-4 rounded-3xl relative overflow-hidden min-h-[540px]"
-          style={{
-            perspective: 1000,
-            background: 'radial-gradient(ellipse at 50% 40%, rgba(6, 182, 212, 0.08) 0%, rgba(2, 6, 23, 0.98) 72%)',
-            border: '1px solid rgba(34, 211, 238, 0.25)',
-            boxShadow: '0 0 60px -10px rgba(6, 182, 212, 0.15), inset 0 0 80px -20px rgba(6, 182, 212, 0.08)',
-          }}
-        >
+        <div className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[540px]">
+          {viewMode === '3d-webgl' ? (
+            <ThreeBodyScanner3D
+              overview={overview}
+              telemetry={telemetry}
+              selectedOrganKey={selectedOrgan?.key ?? null}
+              onSelectOrgan={(key) => setSelectedOrgan(overview.organSystems[key])}
+              scanActive={scanActive}
+            />
+          ) : (
+            <div
+              className="w-full flex flex-col items-center justify-center p-4 rounded-3xl relative overflow-hidden min-h-[540px]"
+              style={{
+                perspective: 1000,
+                background: 'radial-gradient(ellipse at 50% 40%, rgba(6, 182, 212, 0.08) 0%, rgba(2, 6, 23, 0.98) 72%)',
+                border: '1px solid rgba(34, 211, 238, 0.25)',
+                boxShadow: '0 0 60px -10px rgba(6, 182, 212, 0.15), inset 0 0 80px -20px rgba(6, 182, 212, 0.08)',
+              }}
+            >
           {/* Animated Holographic Floor Base with Rotating Concentric Rings */}
           <div className="absolute bottom-2 inset-x-4 h-44 flex items-end justify-center pointer-events-none">
             {/* Perspective floor grid */}
@@ -833,6 +853,8 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
             </svg>
           </div>
         </div>
+      )}
+    </div>
 
         {/* Right: Live Biometrics Cyber HUD (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
@@ -1052,7 +1074,15 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
           return (
             <button
               key={hotspot.key}
+              role="button"
+              aria-label={`Inspect ${organScore?.displayName || hotspot.label}`}
               onClick={() => setSelectedOrgan(organScore)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedOrgan(organScore);
+                }
+              }}
               className={`p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-2 hover:-translate-y-1 min-h-[96px] ${
                 selectedOrgan?.key === hotspot.key
                   ? 'bg-slate-900 border-cyan-400 glow-cyan-3d shadow-xl'
