@@ -72,7 +72,6 @@ const Hero3DHealthGauge = lazy(() => import("./Hero3DHealthGauge").then(m => ({ 
  * )
  */
 import RemindersWidget from "./RemindersWidget";
-import FeedbackWidget from "./FeedbackWidget";
 import VisitPrepWidget from "./VisitPrepWidget";
 
 const ATTENTION_STATUSES = new Set(['high', 'abnormal', 'low', 'critical']);
@@ -430,7 +429,7 @@ export default function Dashboard({
             <Suspense fallback={<SkeletonLoader className="h-64 mt-4" />}>
               <WearableCoachWidget
                 labResults={keyLabs}
-                telemetry={liveWearable ?? undefined}
+                telemetry={liveWearable}
                 onSyncRequest={saveTelemetry}
               />
             </Suspense>
@@ -566,7 +565,7 @@ export default function Dashboard({
               referenceLow: (l as any).refLow,
               referenceHigh: (l as any).refHigh,
             }))}
-            telemetry={liveWearable ?? undefined}
+            telemetry={liveWearable}
             onSelectSpecialist={(spec) => {
               window.location.hash = 'specialists';
             }}
@@ -700,7 +699,6 @@ export default function Dashboard({
       </div>
         </div>
       )}
-      <FeedbackWidget />
     </motion.div>
   );
 }

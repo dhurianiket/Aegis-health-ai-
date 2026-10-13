@@ -147,10 +147,11 @@ export function calculateOrganSystemScores(labs: LabObservationItem[] = []): Org
       score: cardioScore,
       status: getStatus(cardioScore),
       primaryBiomarkers: organMap.cardiovascular.markers.length ? organMap.cardiovascular.markers : [
-        { name: 'Lipid Profile (LDL)', value: '110 mg/dL', status: 'normal' },
-        { name: 'Blood Pressure', value: '120/80 mmHg', status: 'normal' },
+        { name: 'Lipid / Cardiac Marker', value: 'Pending Lab Upload', status: 'normal' },
       ],
-      summary: cardioScore < 85 ? 'Elevated lipid markers detected. Monitor vascular risk.' : 'Vascular and heart biomarkers are well balanced.',
+      summary: organMap.cardiovascular.markers.length
+        ? cardioScore < 85 ? 'Elevated lipid markers detected. Monitor vascular risk.' : 'Vascular and heart biomarkers are well balanced.'
+        : 'No active laboratory panels recorded for this system. Upload a lab report to evaluate targeted cardiovascular biomarkers.',
       recommendedSpecialist: 'AI Cardiologist (ACC/AHA 2024 Guidelines)',
     },
     pulmonary: {
@@ -160,10 +161,11 @@ export function calculateOrganSystemScores(labs: LabObservationItem[] = []): Org
       score: pulmoScore,
       status: getStatus(pulmoScore),
       primaryBiomarkers: organMap.pulmonary.markers.length ? organMap.pulmonary.markers : [
-        { name: 'SpO2 Oxygen Saturation', value: '98%', status: 'normal' },
-        { name: 'Respiratory Rate', value: '16 /min', status: 'normal' },
+        { name: 'Pulmonary / SpO2 Marker', value: 'Pending Lab Upload', status: 'normal' },
       ],
-      summary: pulmoScore < 85 ? 'Sub-optimal oxygen exchange metrics.' : 'Lung gas exchange and oxygen saturation are optimal.',
+      summary: organMap.pulmonary.markers.length
+        ? pulmoScore < 85 ? 'Sub-optimal oxygen exchange metrics.' : 'Lung gas exchange and oxygen saturation are optimal.'
+        : 'No active pulmonary panels recorded. Upload lab or spirometry findings to evaluate respiratory health.',
       recommendedSpecialist: 'AI Pulmonologist (ATS 2024 Standard)',
     },
     metabolic: {
@@ -173,10 +175,11 @@ export function calculateOrganSystemScores(labs: LabObservationItem[] = []): Org
       score: metaScore,
       status: getStatus(metaScore),
       primaryBiomarkers: organMap.metabolic.markers.length ? organMap.metabolic.markers : [
-        { name: 'HbA1c', value: '5.6%', status: 'normal' },
-        { name: 'Fasting Glucose', value: '92 mg/dL', status: 'normal' },
+        { name: 'Glycemic / Insulin Marker', value: 'Pending Lab Upload', status: 'normal' },
       ],
-      summary: metaScore < 85 ? 'Borderline glycemic variability detected.' : 'Glucose homeostasis and insulin response are well regulated.',
+      summary: organMap.metabolic.markers.length
+        ? metaScore < 85 ? 'Borderline glycemic variability detected.' : 'Glucose homeostasis and insulin response are well regulated.'
+        : 'No active glycemic panels recorded. Upload HbA1c or fasting glucose tests to evaluate metabolic health.',
       recommendedSpecialist: 'AI Endocrinologist (ADA 2025 Standard)',
     },
     renal: {
@@ -186,10 +189,11 @@ export function calculateOrganSystemScores(labs: LabObservationItem[] = []): Org
       score: renalScore,
       status: getStatus(renalScore),
       primaryBiomarkers: organMap.renal.markers.length ? organMap.renal.markers : [
-        { name: 'Serum Creatinine', value: '0.9 mg/dL', status: 'normal' },
-        { name: 'eGFR', value: '95 mL/min', status: 'normal' },
+        { name: 'Renal Panel (Creatinine / eGFR)', value: 'Pending Lab Upload', status: 'normal' },
       ],
-      summary: renalScore < 85 ? 'Glomerular filtration rate requires monitoring.' : 'Kidney filtration and fluid-electrolyte balance are healthy.',
+      summary: organMap.renal.markers.length
+        ? renalScore < 85 ? 'Glomerular filtration rate requires monitoring.' : 'Kidney filtration and fluid-electrolyte balance are healthy.'
+        : 'No renal panels recorded. Upload kidney function tests (KFT) to evaluate glomerular filtration rate.',
       recommendedSpecialist: 'AI Nephrologist (KDIGO 2024 Standard)',
     },
     hepatic: {
@@ -199,10 +203,11 @@ export function calculateOrganSystemScores(labs: LabObservationItem[] = []): Org
       score: hepaticScore,
       status: getStatus(hepaticScore),
       primaryBiomarkers: organMap.hepatic.markers.length ? organMap.hepatic.markers : [
-        { name: 'ALT (SGPT)', value: '24 U/L', status: 'normal' },
-        { name: 'AST (SGOT)', value: '22 U/L', status: 'normal' },
+        { name: 'Liver Function Test (LFT)', value: 'Pending Lab Upload', status: 'normal' },
       ],
-      summary: hepaticScore < 85 ? 'Mild liver enzyme elevation detected.' : 'Liver enzymes and protein synthesis are in optimal range.',
+      summary: organMap.hepatic.markers.length
+        ? hepaticScore < 85 ? 'Mild liver enzyme elevation detected.' : 'Liver enzymes and protein synthesis are in optimal range.'
+        : 'No hepatic panels recorded. Upload liver function tests (LFT) to evaluate enzyme balance and protein synthesis.',
       recommendedSpecialist: 'AI Gastroenterologist (AASLD Standard)',
     },
     hematology: {
@@ -212,10 +217,11 @@ export function calculateOrganSystemScores(labs: LabObservationItem[] = []): Org
       score: hemaScore,
       status: getStatus(hemaScore),
       primaryBiomarkers: organMap.hematology.markers.length ? organMap.hematology.markers : [
-        { name: 'Hemoglobin', value: '14.2 g/dL', status: 'normal' },
-        { name: 'Vitamin D', value: '38 ng/mL', status: 'normal' },
+        { name: 'Complete Blood Count (CBC)', value: 'Pending Lab Upload', status: 'normal' },
       ],
-      summary: hemaScore < 85 ? 'Mild anemia or vitamin deficiency indicated.' : 'Complete blood count and bone vitamin levels are optimal.',
+      summary: organMap.hematology.markers.length
+        ? hemaScore < 85 ? 'Mild anemia or vitamin deficiency indicated.' : 'Complete blood count and bone vitamin levels are optimal.'
+        : 'No hematology panels recorded. Upload a complete blood count (CBC) or vitamin panel to evaluate blood network health.',
       recommendedSpecialist: 'AI Hematologist & Internal Medicine Specialist',
     },
   };

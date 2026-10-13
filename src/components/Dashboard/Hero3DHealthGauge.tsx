@@ -15,9 +15,9 @@ interface Hero3DHealthGaugeProps {
 export const Hero3DHealthGauge: React.FC<Hero3DHealthGaugeProps> = ({
   score = 85,
   userName = 'Aniket Dhuri',
-  heartRate = 68,
-  hrv = 55,
-  spo2 = 98,
+  heartRate,
+  hrv,
+  spo2,
   onOpenScanShare,
   onOpenSbar,
 }) => {
@@ -120,7 +120,15 @@ export const Hero3DHealthGauge: React.FC<Hero3DHealthGaugeProps> = ({
               <Heart className="w-4 h-4 text-rose-400 shrink-0" />
               <div>
                 <div className="text-[10px] text-slate-400 uppercase font-bold">Heart Rate</div>
-                <div className="font-mono font-bold text-white text-sm">{heartRate} <span className="text-[10px] text-slate-400">bpm</span></div>
+                <div className="font-mono font-bold text-white text-sm">
+                  {typeof heartRate === 'number' && heartRate > 0 ? (
+                    <>
+                      {heartRate} <span className="text-[10px] text-slate-400">bpm</span>
+                    </>
+                  ) : (
+                    <span className="text-slate-400">-- <span className="text-[9px] font-normal">bpm</span></span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -128,7 +136,15 @@ export const Hero3DHealthGauge: React.FC<Hero3DHealthGaugeProps> = ({
               <Activity className="w-4 h-4 text-teal-400 shrink-0" />
               <div>
                 <div className="text-[10px] text-slate-400 uppercase font-bold">HRV Index</div>
-                <div className="font-mono font-bold text-white text-sm">{hrv} <span className="text-[10px] text-slate-400">ms</span></div>
+                <div className="font-mono font-bold text-white text-sm">
+                  {typeof hrv === 'number' && hrv > 0 ? (
+                    <>
+                      {hrv} <span className="text-[10px] text-slate-400">ms</span>
+                    </>
+                  ) : (
+                    <span className="text-slate-400">-- <span className="text-[9px] font-normal">ms</span></span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -136,7 +152,13 @@ export const Hero3DHealthGauge: React.FC<Hero3DHealthGaugeProps> = ({
               <Zap className="w-4 h-4 text-amber-400 shrink-0" />
               <div>
                 <div className="text-[10px] text-slate-400 uppercase font-bold">SpO2 Oxygen</div>
-                <div className="font-mono font-bold text-white text-sm">{spo2}%</div>
+                <div className="font-mono font-bold text-white text-sm">
+                  {typeof spo2 === 'number' && spo2 > 0 ? (
+                    `${spo2}%`
+                  ) : (
+                    <span className="text-slate-400">--%</span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -144,7 +166,13 @@ export const Hero3DHealthGauge: React.FC<Hero3DHealthGaugeProps> = ({
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               <div>
                 <div className="text-[10px] text-slate-400 uppercase font-bold">Physiology</div>
-                <div className="font-mono font-bold text-emerald-300 text-xs">Optimal</div>
+                <div className="font-mono font-bold text-xs">
+                  {typeof heartRate === 'number' && heartRate > 0 ? (
+                    <span className="text-emerald-300">Optimal</span>
+                  ) : (
+                    <span className="text-slate-400">Standby</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

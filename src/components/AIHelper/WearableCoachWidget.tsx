@@ -45,7 +45,7 @@ import { useAuth } from "../../context/AuthContext";
 import HealthConnectModal from "../Settings/HealthConnectModal";
 
 export interface WearableCoachWidgetProps {
-  telemetry?: WearableBiometrics;
+  telemetry?: WearableBiometrics | null;
   correlation?: BiometricDiagnosticCorrelation;
   labResults?: LabResult[];
   imagingFindings?: string[] | MedicalDocument[];
@@ -63,10 +63,13 @@ export default function WearableCoachWidget({
   onSyncRequest,
 }: WearableCoachWidgetProps) {
   const { user } = useAuth();
+  const isDisconnected = initialTelemetry === null;
+
   // Use state to allow mock toggles/updates if interactive
-  const [telemetry, setTelemetry] = useState<WearableBiometrics>(
-    () => initialTelemetry || generateMockTelemetry("demo_user")
-  );
+  const [telemetry, setTelemetry] = useState<WearableBiometrics>(() => {
+    if (initialTelemetry) return initialTelemetry;
+    return generateMockTelemetry("demo_user");
+  });
   const activeUserId = user?.uid || telemetry.userId || 'demo-user-id';
   const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
@@ -91,6 +94,14 @@ export default function WearableCoachWidget({
 
   // Readiness color theme calculation
   const readinessTheme = useMemo(() => {
+    if (isDisconnected) {
+      return {
+        label: "Standby · Wearable Needed",
+        badgeBg: "bg-slate-800 text-slate-300 border-slate-700",
+        progressFill: "bg-slate-600",
+        textColor: "text-slate-300",
+      };
+    }
     if (readinessScore >= 80) {
       return {
         label: "Optimal Readiness",
@@ -113,30 +124,33 @@ export default function WearableCoachWidget({
         textColor: "text-rose-700 dark:text-rose-300",
       };
     }
-  }, [readinessScore]);
+  }, [readinessScore, isDisconnected]);
 
   // Data for Panel 2: Sleep Architecture Recharts
+  const hasSleepData = Boolean(!isDisconnected && telemetry.sleep && telemetry.sleep.totalMinutes > 0);
   const sleepData = useMemo(() => {
-    const sleep = telemetry.sleep || {
-      totalMinutes: 480,
-      deepMinutes: 110,
-      remMinutes: 110,
-      lightMinutes: 260,
-      sleepScore: 82,
-    };
-
+    if (!hasSleepData || !telemetry.sleep) return [];
     return [
       {
         name: "Stage Minutes",
-        Deep: sleep.deepMinutes,
-        REM: sleep.remMinutes,
-        Light: sleep.lightMinutes,
+        Deep: telemetry.sleep.deepMinutes,
+        REM: telemetry.sleep.remMinutes,
+        Light: telemetry.sleep.lightMinutes,
       },
     ];
-  }, [telemetry.sleep]);
+  }, [telemetry.sleep, hasSleepData]);
 
-  // Mock historical micro-trend data for Panel 3 sparklines
+  // Historical micro-trend data for Panel 3 sparklines
   const sparklineData = useMemo(() => {
+    if (isDisconnected) {
+      return [
+        { day: "M", rhr: 0, hrv: 0, spo2: 0, steps: 0 },
+        { day: "T", rhr: 0, hrv: 0, spo2: 0, steps: 0 },
+        { day: "W", rhr: 0, hrv: 0, spo2: 0, steps: 0 },
+        { day: "T", rhr: 0, hrv: 0, spo2: 0, steps: 0 },
+        { day: "F", rhr: 0, hrv: 0, spo2: 0, steps: 0 },
+      ];
+    }
     const rhrBase = telemetry.rhr || 65;
     const hrvBase = telemetry.hrv || 50;
     const spo2Base = telemetry.spo2 || 98;
@@ -149,7 +163,7 @@ export default function WearableCoachWidget({
       { day: "T", rhr: rhrBase + 3, hrv: hrvBase - 3, spo2: 97, steps: stepsBase + 200 },
       { day: "F", rhr: rhrBase, hrv: hrvBase + 2, spo2: 98, steps: stepsBase },
     ];
-  }, [telemetry]);
+  }, [telemetry, isDisconnected]);
 
   const handleSync = async (overrides?: Partial<WearableBiometrics>) => {
     if (!onSyncRequest) return;
@@ -215,11 +229,15 @@ export default function WearableCoachWidget({
             <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-50">
               AI Health Coach Fusion & Biometrics
             </h2>
-            {(isAppleConnected || isGoogleConnected) && (
+            {isDisconnected ? (
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-slate-800 border border-slate-700 text-slate-400">
+                ○ Standby · No Watch Synced
+              </span>
+            ) : (isAppleConnected || isGoogleConnected) ? (
               <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/20 border border-emerald-400/40 text-emerald-300">
                 <CheckCircle2 className="w-3 h-3" /> Live Connected
               </span>
-            )}
+            ) : null}
           </div>
           <p className="text-xs md:text-sm text-slate-200 font-medium">
             Real-time wearable telemetry cross-correlated with lab panels & diagnostic imaging
@@ -353,7 +371,7 @@ export default function WearableCoachWidget({
           <div className="flex items-baseline justify-between">
             <div>
               <span className="text-5xl font-extrabold text-slate-50 tracking-tight">
-                {readinessScore}
+                {isDisconnected ? '--' : readinessScore}
               </span>
               <span className="text-lg font-bold text-slate-300 ml-1">
                 /100
@@ -361,10 +379,10 @@ export default function WearableCoachWidget({
             </div>
             <div className="text-right">
               <p className="text-xs font-bold text-slate-300">
-                Sleep Contribution: {Math.round(((telemetry.sleep?.sleepScore ?? 80) / 100) * 35)}/35 pts
+                Sleep Contribution: {isDisconnected ? '--' : Math.round(((telemetry.sleep?.sleepScore ?? 80) / 100) * 35)}/35 pts
               </p>
               <p className="text-xs font-bold text-slate-300">
-                HRV Baseline: {telemetry?.hrv ?? 0} ms
+                HRV Baseline: {isDisconnected ? '--' : (telemetry?.hrv ?? 0)} ms
               </p>
             </div>
           </div>
@@ -374,7 +392,7 @@ export default function WearableCoachWidget({
             <div className="w-full h-4 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${readinessTheme.progressFill}`}
-                style={{ width: `${Math.max(5, Math.min(100, readinessScore))}%` }}
+                style={{ width: isDisconnected ? '0%' : `${Math.max(5, Math.min(100, readinessScore))}%` }}
               />
             </div>
             <div className="flex justify-between text-[11px] font-bold text-slate-300">
@@ -395,31 +413,45 @@ export default function WearableCoachWidget({
               </h3>
             </div>
             <span className="text-xs font-bold text-indigo-300">
-              Score: {telemetry.sleep?.sleepScore ?? 0}/100
+              {isDisconnected ? 'No Sleep Synced' : `Score: ${telemetry.sleep?.sleepScore ?? 0}/100`}
             </span>
           </div>
 
           {/* Recharts Boundary Envelope: Strict h-[300px] min-h-[300px] (AGENTS.md Rule 3) */}
           <div className="h-[300px] min-h-[300px] w-full relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={sleepData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-                <XAxis dataKey="name" stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} />
-                <YAxis stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} unit="m" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(15, 23, 42, 0.95)",
-                    borderColor: "#334155",
-                    borderRadius: "12px",
-                    color: "#f8fafc",
-                    fontWeight: "bold",
-                  }}
-                />
-                <Legend wrapperStyle={{ paddingTop: "10px", fontWeight: "bold" }} />
-                <Bar dataKey="Deep" fill="#6366f1" radius={[4, 4, 0, 0]} name="Deep Sleep (min)" />
-                <Bar dataKey="REM" fill="#a855f7" radius={[4, 4, 0, 0]} name="REM Sleep (min)" />
-                <Bar dataKey="Light" fill="#38bdf8" radius={[4, 4, 0, 0]} name="Light Sleep (min)" />
-              </BarChart>
-            </ResponsiveContainer>
+            {hasSleepData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={sleepData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                  <XAxis dataKey="name" stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} />
+                  <YAxis stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} unit="m" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(15, 23, 42, 0.95)",
+                      borderColor: "#334155",
+                      borderRadius: "12px",
+                      color: "#f8fafc",
+                      fontWeight: "bold",
+                    }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: "10px", fontWeight: "bold" }} />
+                  <Bar dataKey="Deep" fill="#6366f1" radius={[4, 4, 0, 0]} name="Deep Sleep (min)" />
+                  <Bar dataKey="REM" fill="#a855f7" radius={[4, 4, 0, 0]} name="REM Sleep (min)" />
+                  <Bar dataKey="Light" fill="#38bdf8" radius={[4, 4, 0, 0]} name="Light Sleep (min)" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-700/60 rounded-2xl bg-slate-950/40 space-y-3">
+                <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+                  <Moon className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-slate-200">No Sleep Telemetry Recorded</h4>
+                  <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
+                    Wear your smartwatch to sleep and sync data in the morning to view Deep, REM, and Light sleep stages with clinical recovery score.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -436,12 +468,12 @@ export default function WearableCoachWidget({
           <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">Resting HR</span>
-              <span className={`text-xs font-extrabold ${(telemetry?.rhr ?? 0) > 100 ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
-                {(telemetry?.rhr ?? 0) > 100 ? "Tachycardic" : "Normal"}
+              <span className={`text-xs font-extrabold ${isDisconnected ? "text-slate-400" : (telemetry?.rhr ?? 0) > 100 ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
+                {isDisconnected ? "No Device" : (telemetry?.rhr ?? 0) > 100 ? "Tachycardic" : "Normal"}
               </span>
             </div>
             <div className="text-2xl font-extrabold text-slate-50">
-              {telemetry?.rhr ?? 0} <span className="text-xs font-semibold text-slate-300">bpm</span>
+              {isDisconnected ? "--" : (telemetry?.rhr ?? 0)} <span className="text-xs font-semibold text-slate-300">bpm</span>
             </div>
             <div className="h-10 w-full relative min-w-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -456,10 +488,12 @@ export default function WearableCoachWidget({
           <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">HRV (rMSSD)</span>
-              <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300">Good</span>
+              <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
+                {isDisconnected ? "Standby" : "Good"}
+              </span>
             </div>
             <div className="text-2xl font-extrabold text-slate-50">
-              {telemetry?.hrv ?? 0} <span className="text-xs font-semibold text-slate-300">ms</span>
+              {isDisconnected ? "--" : (telemetry?.hrv ?? 0)} <span className="text-xs font-semibold text-slate-300">ms</span>
             </div>
             <div className="h-10 w-full relative min-w-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -474,12 +508,12 @@ export default function WearableCoachWidget({
           <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">Blood Oxygen (SpO2)</span>
-              <span className={`text-xs font-extrabold ${(telemetry?.spo2 ?? 0) < 92 ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
-                {(telemetry?.spo2 ?? 0) < 92 ? "Hypoxic" : "Optimal"}
+              <span className={`text-xs font-extrabold ${isDisconnected ? "text-slate-400" : (telemetry?.spo2 ?? 0) < 92 ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
+                {isDisconnected ? "No Device" : (telemetry?.spo2 ?? 0) < 92 ? "Hypoxic" : "Optimal"}
               </span>
             </div>
             <div className="text-2xl font-extrabold text-slate-50">
-              {telemetry?.spo2 ?? 0}%
+              {isDisconnected ? "--%" : `${telemetry?.spo2 ?? 0}%`}
             </div>
             <div className="h-10 w-full relative min-w-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -494,10 +528,12 @@ export default function WearableCoachWidget({
           <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100">Daily Steps</span>
-              <span className="text-xs font-extrabold text-cyan-700 dark:text-cyan-300">Active</span>
+              <span className="text-xs font-extrabold text-cyan-700 dark:text-cyan-300">
+                {isDisconnected ? "Ready to Sync" : "Active"}
+              </span>
             </div>
             <div className="text-2xl font-extrabold text-slate-50">
-              {(telemetry?.steps ?? 0).toLocaleString()}
+              {isDisconnected ? "--" : (telemetry?.steps ?? 0).toLocaleString()}
             </div>
             <div className="h-10 w-full relative min-w-0">
               <ResponsiveContainer width="100%" height="100%">
