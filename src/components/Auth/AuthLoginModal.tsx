@@ -161,10 +161,11 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
             {/* Email ID + Password Form */}
             <form onSubmit={handleEmailFormSubmit} className="space-y-3.5 mb-5">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                <label htmlFor="login-email" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
                   Email ID
                 </label>
                 <input
+                  id="login-email"
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
@@ -174,10 +175,11 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                <label htmlFor="login-password" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
                   Password
                 </label>
                 <input
+                  id="login-password"
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
