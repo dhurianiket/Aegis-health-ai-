@@ -73,6 +73,7 @@ const Hero3DHealthGauge = lazy(() => import("./Hero3DHealthGauge").then(m => ({ 
  */
 import RemindersWidget from "./RemindersWidget";
 import VisitPrepWidget from "./VisitPrepWidget";
+import { DEMO_DOCUMENTS, DEMO_HEALTH_SCORES, DEMO_INSIGHTS } from "../../data/sandboxDemoData";
 
 const ATTENTION_STATUSES = new Set(['high', 'abnormal', 'low', 'critical']);
 const TRACKED_NAMES = new Set(['hba1c', 'hemoglobin', 'ldl', 'hdl', 'uric acid', 'crp', 'vitamin d', 'egfr']);
@@ -165,10 +166,16 @@ export default function Dashboard({
   useEffect(() => {
     let isMounted = true;
     async function fetchData() {
-      if (!authResolved) return;
+      if (user && !authResolved) return;
       if (!user) {
-        setLoading(false);
-        setIsSyncing(false);
+        if (isMounted) {
+          setHealthScores(DEMO_HEALTH_SCORES);
+          setLatestInsights(DEMO_INSIGHTS);
+          setKeyLabs(aggregateLabs(DEMO_DOCUMENTS));
+          setError(null);
+          setLoading(false);
+          setIsSyncing(false);
+        }
         return;
       }
       

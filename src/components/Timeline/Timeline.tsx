@@ -31,6 +31,7 @@ import {
 import { getSourceForMarker, getUrgencyAndNextStep } from "../../services/sourceGroundedService";
 import { AIErrorBoundary } from "../ui/AIErrorBoundary";
 import { LabObservation } from "../../types/health";
+import { DEMO_DOCUMENTS } from "../../data/sandboxDemoData";
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string }> = {
   [DocumentType.LAB_REPORT]: { icon: Droplets, color: "emerald" },
@@ -63,6 +64,21 @@ export default function Timeline() {
   useEffect(() => {
     async function fetchDocs() {
       if (!user) {
+        setDocuments(DEMO_DOCUMENTS);
+        const obs: LabObservation[] = [];
+        DEMO_DOCUMENTS.forEach((doc: any) => {
+          const rawObs =
+            doc.extractedData?.observations ||
+            doc.extractedData?.lab_values ||
+            [];
+          rawObs.forEach((o: any) => {
+            obs.push({
+              ...o,
+              collectedAt: o.collectedAt || doc.date,
+            } as LabObservation);
+          });
+        });
+        setTrends(computeAllTrends(obs));
         setIsLoading(false);
         return;
       }

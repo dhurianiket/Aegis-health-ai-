@@ -59,6 +59,7 @@ import { getUserSubscription, UserSubscription } from "./services/usageService";
 import { validateProfileName } from "./lib/validation";
 import { logger } from "./lib/logger";
 import { getDocuments } from "./lib/firebase/firestore";
+import { DEMO_SBAR } from "./data/sandboxDemoData";
 
 declare global {
   interface Window {
@@ -136,6 +137,10 @@ function MainApp() {
   const [sbarKey, setSbarKey] = useState(0);
 
   useEffect(() => {
+    if ((isSBAROpen || activeTab === "sbar") && !user) {
+      setSbarData(DEMO_SBAR);
+      return;
+    }
     if ((isSBAROpen || activeTab === "sbar") && activeProfile && user) {
       if (!sbarData && !isGeneratingSBAR && !sbarError) {
         const fetchSBAR = async () => {
@@ -429,13 +434,13 @@ function MainApp() {
               </AnimatePresence>
             </div>
 
-            {/* Early Access Beta Badge */}
+            {/* Production v2.0 Badge */}
             <div
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-300 shadow-sm select-none"
-              title="Aegis Health AI — 100% Free Early Access Beta"
+              title="Aegis Health AI — Production v2.0 Open Access"
             >
               <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-              <span>Beta Access</span>
+              <span>Production v2.0</span>
             </div>
 
             {user ? (
@@ -483,9 +488,26 @@ function MainApp() {
 
         {/* Scrollable Content View */}
         <div className="flex-1 overflow-y-auto w-full">
+          {!user && (
+            <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-emerald-300 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                <span>
+                  <strong className="text-white">Live Interactive Product Workspace:</strong> Viewing sample clinical telemetry for <em>Aarav Sharma (42M)</em>. Explore all modules freely, or Sign In to encrypt your personal records.
+                </span>
+              </div>
+              <button
+                onClick={signIn}
+                disabled={isSigningIn}
+                className="px-3 py-1 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all cursor-pointer shrink-0"
+              >
+                {isSigningIn ? "Signing In..." : "Sign In with Google"}
+              </button>
+            </div>
+          )}
           <ErrorBoundary>
             <Suspense fallback={<Fallback />}>
-              {user && isConsentGranted === true && (
+              {(!user || isConsentGranted === true) && (
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
@@ -801,27 +823,12 @@ function MainApp() {
 }
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading: authLoading } = useAuth();
-  const [splashTimeout, setSplashTimeout] = useState(true);
+  const { loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setSplashTimeout(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const isLoading = authLoading || splashTimeout;
-  if (import.meta.env.DEV) console.log("[ProtectedRoute] Render state:", { authLoading, splashTimeout, isLoading, hasUser: !!user });
-
-  if (isLoading) {
+  if (authLoading) {
     return <SplashScreen />;
   }
 
-  if (!user) {
-    console.warn("[ProtectedRoute] No user found and splash timeout completed! Redirecting back to /");
-    return <Navigate to="/" replace />;
-  }
-
-  if (import.meta.env.DEV) console.log("[ProtectedRoute] Authentication resolved and user exists! Rendering child components...");
   return <>{children}</>;
 };
 
@@ -879,6 +886,7 @@ export default function App() {
         <Route path="/engineering-playbook" element={<EngineeringPlaybook />} />
         <Route path="/engineering-playbook.html" element={<EngineeringPlaybook />} />
 
+        <Route path="/demo" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
         <Route path="*" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
       </Routes>

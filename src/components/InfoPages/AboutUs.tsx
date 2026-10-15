@@ -1,7 +1,7 @@
 import React from "react";
 import InfoPageLayout from "./InfoPageLayout";
 import { motion } from "motion/react";
-import { Heart, Sparkles, Star, Users, Award, ShieldAlert, Mail, MapPin } from "lucide-react";
+import { Heart, Sparkles, Star, Users, Award, ShieldAlert, Mail, MapPin, Github, Linkedin, ExternalLink, ShieldCheck, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function AboutUs() {
@@ -9,7 +9,7 @@ export default function AboutUs() {
     {
       icon: "❤️",
       title: "Family First",
-      desc: "Our platform is build with deep empathy. We want your grandmother, your parents, and your kids to understand what their numbers mean without feeling fear or anxiety.",
+      desc: "Our platform is built with deep empathy. We want your grandmother, your parents, and your kids to understand what their numbers mean without feeling fear or anxiety.",
     },
     {
       icon: "🇮🇳",
@@ -39,7 +39,7 @@ export default function AboutUs() {
             animate={{ opacity: 1, y: 0 }}
             className="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold tracking-widest rounded-full uppercase mb-4"
           >
-            Our Mission
+            Our Mission & Leadership
           </motion.span>
           <motion.h1 
             initial={{ opacity: 0, y: 10 }}
@@ -54,15 +54,98 @@ export default function AboutUs() {
             transition={{ delay: 0.2 }}
             className="text-lg md:text-xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed"
           >
-            Meet the story behind Aegis Health AI—making blood tests and clinical records understandable for everyday families across India.
+            Meet the founder and legal enterprise behind Aegis Health AI—making blood tests and clinical records understandable for everyday families across India.
           </motion.p>
         </div>
       </section>
 
-      {/* Founder's Story Section */}
-      <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      {/* Founder & Core Leadership Verification Section */}
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
+          {/* Founder Profile & Third-Party Verification Card */}
+          <div className="lg:col-span-5">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-[#0F2A4A] to-[#0A192F] border border-emerald-500/30 rounded-3xl p-8 relative overflow-hidden shadow-2xl"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
+              
+              <div className="flex flex-col items-center text-center mb-6">
+                <img
+                  src="https://lh3.googleusercontent.com/d/11-MtBvMJRl6OpfL60wypuMn-LCw2jC50"
+                  alt="Aniket Rajesh Dhuri — Founder & CEO of Aegis Health AI"
+                  className="w-36 h-36 rounded-full object-cover object-[center_35%] border-2 border-emerald-400/50 shadow-lg mb-4 bg-slate-800"
+                />
+                <h3 className="text-2xl font-bold text-white">Aniket Rajesh Dhuri</h3>
+                <p className="text-xs font-mono uppercase tracking-widest text-emerald-400 mt-1">
+                  Founder, CEO & Lead AI Systems Architect
+                </p>
+                <p className="text-xs text-slate-300 mt-2 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                  Dombivli West, Thane, Maharashtra 421202, India
+                </p>
+              </div>
+
+              {/* Active Third-Party Verification Links */}
+              <div className="space-y-3 border-t border-white/10 pt-5 mb-6">
+                <span className="text-[11px] font-mono uppercase tracking-widest text-slate-400 block">
+                  Verified Third-Party Public Profiles
+                </span>
+                <a
+                  href="https://www.linkedin.com/in/aniket-dhuri-273094225"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-400/40 text-sm text-white transition-all"
+                >
+                  <span className="flex items-center gap-2.5 font-medium">
+                    <Linkedin className="w-4 h-4 text-emerald-400" />
+                    LinkedIn — Aniket Dhuri
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </a>
+                <a
+                  href="https://github.com/dhurianiket/Aegis-health-ai-"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-400/40 text-sm text-white transition-all"
+                >
+                  <span className="flex items-center gap-2.5 font-medium">
+                    <Github className="w-4 h-4 text-emerald-400" />
+                    GitHub — dhurianiket/Aegis-health-ai-
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </a>
+                <a
+                  href="https://aniket.aegishealthai.co.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-400/40 text-sm text-white transition-all"
+                >
+                  <span className="flex items-center gap-2.5 font-medium">
+                    <Award className="w-4 h-4 text-emerald-400" />
+                    Founder Portfolio & Living CV
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </a>
+              </div>
+
+              {/* Government Registration Block */}
+              <div className="bg-[#0A192F]/80 border border-white/10 rounded-2xl p-4 text-xs text-slate-300 space-y-1.5">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold uppercase tracking-wider">
+                  <Building2 className="w-4 h-4" />
+                  Registered Indian Enterprise
+                </div>
+                <p><strong>Legal Name:</strong> AEGIS HEALTH AI</p>
+                <p><strong>Govt. of India MSME Udyam:</strong> <span className="font-mono text-white">UDYAM-MH-33-0782403</span></p>
+                <p><strong>NIC Classification:</strong> 62011 (Health Informatics & AI Engineering)</p>
+                <p><strong>Registered Office:</strong> Flat 301, Padu Niwas, Ganesh Nagar, Dombivli West, Thane, Maharashtra 421202</p>
+              </div>
+            </motion.div>
+          </div>
+
           {/* Text Content */}
           <div className="lg:col-span-7 space-y-6">
             <span className="text-xs uppercase tracking-widest text-emerald-400 font-bold block">The Motivation</span>
@@ -74,34 +157,22 @@ export default function AboutUs() {
               In India, millions of diagnostic tests are run every single morning. Yet, most families walk away with pieces of paper covered in clinical codes, reference brackets, and intimidating bold numbers without any patient-friendly explanation. Translating this clinical jargon is a fundamental gap that leaves families anxious while they wait to consult their busy physicians.
             </p>
             <p className="text-slate-300 font-light text-base leading-relaxed">
-              I built <strong>Aegis Health AI</strong> to tackle this exact problem. By combining advanced, localized AI capabilities with a strict zero-ad/offline-first-friendly security posture, we want to give families a warm, comforting translator. Aegis acts as a patient's preparatory assistant, transforming cold lab values into high-context health summaries, trend graphs, and physician-focused notes before your appointment starts.
+              I built <strong>Aegis Health AI</strong> to tackle this exact problem. By combining Google Gemini multimodal intelligence with a strict zero-ad, offline-ready security posture, we give families a warm, accurate clinical translator. Aegis transforms raw lab values into high-context health summaries, 30-60-90 day biomarker trajectories, 3D organ scores, and physician-ready SBAR consultation sheets before your appointment starts.
             </p>
             <p className="text-slate-200 font-medium italic text-base">
               "We believe information is medicine. When people understand their own markers, they have better conversations with their doctors and lead healthier lives."
             </p>
-            <div className="pt-4">
-              <p className="text-white font-bold text-base">Aniket Dhuri</p>
-              <p className="text-xs text-slate-400 uppercase tracking-widest font-mono">Founder, Aegis Health AI</p>
-            </div>
-          </div>
 
-          {/* Visual card */}
-          <div className="lg:col-span-5">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="bg-gradient-to-br from-[#0F2A4A] to-[#0A192F] border border-white/10 rounded-3xl p-8 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
-              <h3 className="text-white font-bold text-lg mb-4 tracking-wide uppercase text-emerald-400 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
-                The Aegis Standard
+            {/* The Aegis Standard */}
+            <div className="bg-[#0F2A4A]/60 border border-white/10 rounded-2xl p-6 mt-6">
+              <h3 className="text-white font-bold text-base mb-4 tracking-wide uppercase text-emerald-400 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-emerald-400" />
+                The Aegis Clinical & Engineering Standard
               </h3>
-              <ul className="space-y-4 text-xs text-slate-300 leading-relaxed font-light">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 leading-relaxed font-light">
                 <li className="flex gap-2">
                   <span className="text-emerald-400 font-medium font-mono">✓</span>
-                  <span><strong>Empathetic Tone:</strong> Explains complex medical items warmly without alarms or panic.</span>
+                  <span><strong>Empathetic Translation:</strong> Explains complex medical items warmly without alarms or panic.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-400 font-medium font-mono">✓</span>
@@ -109,15 +180,16 @@ export default function AboutUs() {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-400 font-medium font-mono">✓</span>
-                  <span><strong>Sovereign Control:</strong> Instant, self-contained data wiping at any time.</span>
+                  <span><strong>Sovereign Control:</strong> Instant, self-contained data wiping and FHIR R4 export at any time.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-400 font-medium font-mono">✓</span>
-                  <span><strong>India Grounded:</strong> Understands traditional metrics, regional diets, and seasonal factors.</span>
+                  <span><strong>India Grounded:</strong> Aligned with ICMR, RSSDI, ABDM, and DPDP Act 2023 standards.</span>
                 </li>
               </ul>
-            </motion.div>
+            </div>
           </div>
+
         </div>
       </section>
 
@@ -135,7 +207,7 @@ export default function AboutUs() {
                 key={idx}
                 className="bg-[#0F2A4A] border border-white/5 rounded-2xl p-6 md:p-8 hover:border-emerald-500/20 transition-all flex gap-4"
               >
-                <span className="text-3xl shrink-0 selectivity-none">{v.icon}</span>
+                <span className="text-3xl shrink-0">{v.icon}</span>
                 <div>
                   <h3 className="text-white font-bold text-lg mb-2 tracking-wide">{v.title}</h3>
                   <p className="text-slate-300 font-light text-sm leading-relaxed">{v.desc}</p>
@@ -146,20 +218,24 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* Public Safe FAQ Callout or Quick Info block */}
+      {/* Public Contact & Verification Callout */}
       <section className="py-24 px-6 max-w-5xl mx-auto text-center">
         <div className="bg-[#0F2A4A]/50 border border-white/5 rounded-3xl p-8 md:p-12">
           <Star className="w-8 h-8 text-emerald-400 mx-auto mb-6 animate-pulse" />
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">We're Open & Community Driven</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Direct Communication & Verification</h2>
           <p className="text-slate-300 text-sm max-w-2xl mx-auto leading-relaxed font-light mb-8">
-            Aegis is developed as a reliable public utility. We are dedicated to providing permanent patient features free of annoying friction points, because we believe everyone deserves immediate health insight.
+            Aegis Health AI is an independent Indian health technology enterprise (Govt. of India MSME UDYAM-MH-33-0782403), not affiliated with Aegis Health Ai Ltd (UK) or aegishealth.com.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-6 text-sm">
-            <div className="flex items-center justify-center gap-2 text-slate-300 bg-[#0A192F] py-3 px-6 rounded-xl border border-white/5">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 text-sm">
+            <a href="mailto:founder@aegishealthai.co.in" className="flex items-center justify-center gap-2 text-slate-200 hover:text-emerald-400 bg-[#0A192F] py-3 px-6 rounded-xl border border-white/10 transition-colors">
               <Mail className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs">support@aegishealthai.co.in</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-slate-300 bg-[#0A192F] py-3 px-6 rounded-xl border border-white/5">
+              <span className="text-xs font-medium">founder@aegishealthai.co.in</span>
+            </a>
+            <a href="mailto:support@aegishealthai.co.in" className="flex items-center justify-center gap-2 text-slate-200 hover:text-emerald-400 bg-[#0A192F] py-3 px-6 rounded-xl border border-white/10 transition-colors">
+              <Mail className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-medium">support@aegishealthai.co.in</span>
+            </a>
+            <div className="flex items-center justify-center gap-2 text-slate-300 bg-[#0A192F] py-3 px-6 rounded-xl border border-white/10">
               <MapPin className="w-4 h-4 text-emerald-400" />
               <span className="text-xs">Dombivli West, Maharashtra, India</span>
             </div>
@@ -170,18 +246,18 @@ export default function AboutUs() {
       {/* CTA Strip */}
       <section className="relative overflow-hidden py-24 px-6 bg-[#0F2A4A] border-t border-white/5 text-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-3xl mx-auto relative z-10 flex flex-col items-center animate">
+        <div className="max-w-3xl mx-auto relative z-10 flex flex-col items-center">
           <Sparkles className="w-8 h-8 text-emerald-400 mb-6" />
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">Empower Your Health Literacy</h2>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">Explore the Live Product Workspace</h2>
           <p className="text-slate-300 text-sm max-w-xl mb-8 leading-relaxed font-light">
-            Start checking trends, plotting standard parameters, and having comfortable health discussions easily with our secure, patient-focused web tools.
+            Launch our live clinical dashboard with pre-loaded sample patient telemetry—no login required—or sign in to upload your own lab reports.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link 
               to="/dashboard"
               className="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-[#0A192F] font-extrabold uppercase text-xs tracking-widest rounded-full transition-all"
             >
-              Launch Sandbox Portal
+              Launch Live Product Workspace
             </Link>
             <Link 
               to="/how-it-works.html"

@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase/config";
 import { UserProfile, Gender } from "../types/medical";
+import { DEMO_PROFILE } from "../data/sandboxDemoData";
 
 export interface Profile extends UserProfile {
   // Alias for compatibility if needed, but we should prefer UserProfile
@@ -32,14 +33,14 @@ export const ProfileContext = createContext<ProfileContextType | undefined>(unde
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [profiles, setProfiles] = useState<UserProfile[]>([]);
-  const [activeProfile, setActiveProfile] = useState<UserProfile | null>(null);
+  const [profiles, setProfiles] = useState<UserProfile[]>([DEMO_PROFILE]);
+  const [activeProfile, setActiveProfile] = useState<UserProfile | null>(DEMO_PROFILE);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
-      setProfiles([]);
-      setActiveProfile(null);
+      setProfiles([DEMO_PROFILE]);
+      setActiveProfile(DEMO_PROFILE);
       setIsLoading(false);
       return;
     }
