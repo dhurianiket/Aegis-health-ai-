@@ -8,6 +8,7 @@ import LegalModal from './LegalModal';
 import { SpotlightCard } from '../ui/SpotlightCard';
 import { DecryptedText } from '../ui/DecryptedText';
 import { CountUp } from '../ui/CountUp';
+import { AuthLoginModal } from '../Auth/AuthLoginModal';
 
 // ----------------------------------------------------------------------
 // MOCK DATA
@@ -229,7 +230,11 @@ export default function LandingPage() {
 
             {/* Desktop Center Navigation Links */}
             <div className="hidden lg:flex items-center gap-6">
-              <button onClick={handleSignIn} className="text-xs font-bold tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors uppercase flex items-center gap-1 cursor-pointer">
+              <button
+                onClick={handleSignIn}
+                className="px-3 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[11px] font-bold tracking-widest text-emerald-300 hover:text-emerald-200 transition-all uppercase flex items-center gap-1.5 cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3 text-emerald-400" />
                 Email / Reviewer Login
               </button>
               <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
@@ -1542,152 +1547,10 @@ export default function LandingPage() {
         </main>
 
         {/* Email ID + Password + Google Sign-In Modal */}
-        <AnimatePresence>
-          {isLoginModalOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
-              onClick={() => setIsLoginModalOpen(false)}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 12 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md bg-[#0F2A4A] border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl relative text-white"
-              >
-                <button
-                  onClick={() => setIsLoginModalOpen(false)}
-                  className="absolute top-5 right-5 text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
-                  aria-label="Close Login Modal"
-                >
-                  ✕
-                </button>
-
-                <div className="flex items-center gap-2.5 mb-2">
-                  <ShieldCheck className="w-7 h-7 text-emerald-400" />
-                  <h2 className="text-xl font-bold tracking-tight">Sign In to Aegis Health AI</h2>
-                </div>
-                <p className="text-xs text-slate-300 mb-6">
-                  Sign in with your Email ID &amp; Password, use the pre-loaded Reviewer credentials below, or continue with Google.
-                </p>
-
-                {/* Official Reviewer Demo Credentials Box */}
-                <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-300">
-                      ✨ Official Reviewer Demo Login
-                    </span>
-                    <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-200 px-2 py-0.5 rounded-full">
-                      Pre-Loaded Lab Data
-                    </span>
-                  </div>
-                  <div className="space-y-1 text-xs font-mono text-slate-200 mb-3">
-                    <div>
-                      <span className="text-slate-400">Email ID: </span>
-                      <span className="text-emerald-300 select-all font-bold">{demoAccountEmail}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Access Code: </span>
-                      <span className="text-emerald-300 select-all font-bold">{demoAccountPass}</span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleReviewerLogin}
-                    disabled={isEmailSigningIn || isSigningIn}
-                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {isEmailSigningIn ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Signing In Reviewer...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4" /> 1-Click Auto-Fill &amp; Login as Reviewer
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Email ID + Password Form */}
-                <form onSubmit={handleEmailFormSubmit} className="space-y-4 mb-5">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                      Email ID
-                    </label>
-                    <input
-                      type="email"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="reviewer@aegishealthai.co.in"
-                      required
-                      className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      placeholder="Enter password"
-                      required
-                      className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
-                    />
-                  </div>
-
-                  {loginError && (
-                    <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-xs text-rose-200">
-                      {loginError}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isEmailSigningIn || isSigningIn}
-                    className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 font-black text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {isEmailSigningIn ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Signing In...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="w-4 h-4" /> Sign In with Email ID
-                      </>
-                    )}
-                  </button>
-                </form>
-
-                <div className="relative flex py-2 items-center mb-4">
-                  <div className="flex-grow border-t border-white/10"></div>
-                  <span className="flex-shrink mx-3 text-xs text-slate-400 uppercase tracking-widest">Or</span>
-                  <div className="flex-grow border-t border-white/10"></div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={isSigningIn || isEmailSigningIn}
-                  className="w-full py-3 px-6 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isSigningIn ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Connecting to Google...
-                    </>
-                  ) : (
-                    <>Continue with Google Account</>
-                  )}
-                </button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <AuthLoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+        />
 
         {/* Legal Modal */}
         <LegalModal 
@@ -1699,3 +1562,4 @@ export default function LandingPage() {
     </ErrorBoundary>
   );
 }
+
