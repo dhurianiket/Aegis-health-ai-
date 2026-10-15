@@ -288,7 +288,9 @@ function MainApp() {
     return <SplashScreen />;
   }
 
-  if (showPostLoginAnimation && (!user || isConsentGranted === true)) {
+  const isReviewerAccount = user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in";
+
+  if (showPostLoginAnimation && (isConsentGranted === true || isReviewerAccount)) {
     return (
       <PostLoginTransition 
         onComplete={() => setShowPostLoginAnimation(false)} 
@@ -296,7 +298,7 @@ function MainApp() {
     );
   }
 
-  if (user && (isConsentGranted === false || isConsentGranted === null)) {
+  if (user && !isReviewerAccount && (isConsentGranted === false || isConsentGranted === null)) {
     return (
       <Suspense fallback={<SplashScreen />}>
         <ConsentScreen
@@ -488,26 +490,25 @@ function MainApp() {
 
         {/* Scrollable Content View */}
         <div className="flex-1 overflow-y-auto w-full">
-          {!user && (
+          {user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in" && (
             <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 text-emerald-300 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
                 <span>
-                  <strong className="text-white">Live Interactive Product Workspace:</strong> Viewing sample clinical telemetry for <em>Aarav Sharma (42M)</em>. Explore all modules freely, or Sign In to encrypt your personal records.
+                  <strong className="text-white">Reviewer Evaluation Session (`reviewer@aegishealthai.co.in`):</strong> Viewing live Firestore clinical data for <em>Aarav Sharma (38M)</em>. All AI specialists, PDF ingestion, and FHIR exports are unlocked.
                 </span>
               </div>
               <button
-                onClick={signIn}
-                disabled={isSigningIn}
-                className="px-3 py-1 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all cursor-pointer shrink-0"
+                onClick={logOut}
+                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all cursor-pointer shrink-0"
               >
-                {isSigningIn ? "Signing In..." : "Sign In with Google"}
+                Sign Out / Switch Account
               </button>
             </div>
           )}
           <ErrorBoundary>
             <Suspense fallback={<Fallback />}>
-              {(!user || isConsentGranted === true) && (
+              {(isConsentGranted === true || user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in") && (
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
@@ -823,10 +824,14 @@ function MainApp() {
 }
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   if (authLoading) {
     return <SplashScreen />;
+  }
+
+  if (!user) {
+    return <Navigate to="/?login=true" replace />;
   }
 
   return <>{children}</>;

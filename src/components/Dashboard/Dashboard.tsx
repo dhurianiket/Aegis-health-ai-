@@ -166,16 +166,9 @@ export default function Dashboard({
   useEffect(() => {
     let isMounted = true;
     async function fetchData() {
-      if (user && !authResolved) return;
+      if (!authResolved) return;
       if (!user) {
-        if (isMounted) {
-          setHealthScores(DEMO_HEALTH_SCORES);
-          setLatestInsights(DEMO_INSIGHTS);
-          setKeyLabs(aggregateLabs(DEMO_DOCUMENTS));
-          setError(null);
-          setLoading(false);
-          setIsSyncing(false);
-        }
+        if (isMounted) setLoading(false);
         return;
       }
       

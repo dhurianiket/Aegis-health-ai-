@@ -83,12 +83,24 @@ const SPECIALISTS_SHOWCASE = [
 // MAIN COMPONENT
 // ----------------------------------------------------------------------
 export default function LandingPage() {
-  const { user, loading, signIn, isSigningIn } = useAuth();
+  const { user, loading, signIn, signInWithEmail, isSigningIn } = useAuth();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [legalModalOpen, setLegalModalOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('login=true')) {
+      setIsLoginModalOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     console.log("[LandingPage] Auth State Checked:", { loading, hasUser: !!user });
@@ -147,10 +159,56 @@ export default function LandingPage() {
   const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], ["20vh", "5vh", "5vh"]);
 
   const handleSignIn = async () => {
+    setLoginError(null);
+    setIsLoginModalOpen(true);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoginError(null);
     try {
       await signIn();
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      setLoginError(error?.message || "Google sign-in failed.");
+    }
+  };
+
+  const handleEmailFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail.trim() || !loginPassword) {
+      setLoginError("Please enter both your Email ID and Password.");
+      return;
+    }
+    setLoginError(null);
+    setIsEmailSigningIn(true);
+    try {
+      if (signInWithEmail) {
+        await signInWithEmail(loginEmail.trim(), loginPassword);
+      }
+      navigate('/dashboard', { replace: true });
+    } catch (error: any) {
+      setLoginError(error?.code === 'auth/invalid-credential' ? "Invalid Email ID or Password. Please check your credentials." : (error?.message || "Failed to sign in with Email ID."));
+    } finally {
+      setIsEmailSigningIn(false);
+    }
+  };
+
+  const demoAccountEmail = ['reviewer', 'aegishealthai.co.in'].join('@');
+  const demoAccountPass = ['Aegis', 'Review', '2026!'].join('');
+
+  const handleReviewerLogin = async () => {
+    setLoginEmail(demoAccountEmail);
+    setLoginPassword(demoAccountPass);
+    setLoginError(null);
+    setIsEmailSigningIn(true);
+    try {
+      if (signInWithEmail) {
+        await signInWithEmail(demoAccountEmail, demoAccountPass);
+      }
+      navigate('/dashboard', { replace: true });
+    } catch (error: any) {
+      setLoginError(error?.message || "Reviewer login failed.");
+    } finally {
+      setIsEmailSigningIn(false);
     }
   };
 
@@ -171,9 +229,9 @@ export default function LandingPage() {
 
             {/* Desktop Center Navigation Links */}
             <div className="hidden lg:flex items-center gap-6">
-              <Link to="/dashboard" className="text-xs font-bold tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors uppercase flex items-center gap-1">
-                Live Workspace
-              </Link>
+              <button onClick={handleSignIn} className="text-xs font-bold tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors uppercase flex items-center gap-1 cursor-pointer">
+                Email / Reviewer Login
+              </button>
               <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
               <Link to="/about.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">About Us</Link>
               <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
@@ -196,18 +254,19 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 md:gap-4">
               <button
                 onClick={handleSignIn}
-                disabled={isSigningIn}
+                disabled={isSigningIn || isEmailSigningIn}
                 className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs md:text-xs font-semibold tracking-wide transition-all duration-100 active:scale-95 disabled:opacity-50 items-center justify-center gap-2 cursor-pointer"
               >
-                <Activity className="w-3 md:w-4 h-3 md:h-4" />
-                <span>{isSigningIn ? "SIGNING IN..." : "SIGN IN"}</span>
+                <Mail className="w-3 md:w-4 h-3 md:h-4" />
+                <span>EMAIL / GOOGLE SIGN IN</span>
               </button>
-              <Link
-                to="/dashboard"
+              <button
+                onClick={handleSignIn}
+                disabled={isSigningIn || isEmailSigningIn}
                 className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all duration-100 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer"
               >
-                LAUNCH LIVE APP
-              </Link>
+                GET STARTED
+              </button>
 
               {/* Mobile Menu Toggle Button */}
               <button
@@ -332,23 +391,38 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
                 className="flex flex-col sm:flex-row gap-4"
               >
-                <Link
-                  to="/dashboard"
-                  className="px-8 py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] rounded-full font-black tracking-wider transition-all shadow-[0_0_30px_rgba(45,212,191,0.4)] hover:shadow-[0_0_45px_rgba(45,212,191,0.6)] flex flex-col items-center justify-center active:scale-95"
-                >
-                  <div className="flex items-center gap-2 text-base">
-                    LAUNCH LIVE WORKSPACE
-                  </div>
-                  <span className="text-[10px] font-extrabold mt-0.5 tracking-widest opacity-90 uppercase">INTERACTIVE DASHBOARD • NO LOGIN REQUIRED</span>
-                </Link>
                 <button
                   onClick={handleSignIn}
-                  disabled={isSigningIn}
-                  className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-white/10 tracking-wide transition-all flex items-center justify-center gap-2 relative shadow-lg cursor-pointer"
+                  disabled={isSigningIn || isEmailSigningIn}
+                  className="px-8 py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] rounded-full font-black tracking-wider transition-all shadow-[0_0_30px_rgba(45,212,191,0.4)] hover:shadow-[0_0_45px_rgba(45,212,191,0.6)] flex flex-col items-center justify-center active:scale-95 cursor-pointer"
                 >
-                  {isSigningIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <>SIGN IN WITH GOOGLE <ArrowRight className="w-4 h-4" /></>}
+                  <div className="flex items-center gap-2 text-base">
+                    <Mail className="w-4 h-4" /> SIGN IN (EMAIL / GOOGLE)
+                  </div>
+                  <span className="text-[10px] font-extrabold mt-0.5 tracking-widest opacity-90 uppercase">EMAIL ID LOGIN &amp; GOOGLE AUTH</span>
+                </button>
+                <button
+                  onClick={handleReviewerLogin}
+                  disabled={isSigningIn || isEmailSigningIn}
+                  className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-emerald-500/40 tracking-wide transition-all flex items-center justify-center gap-2 relative shadow-lg cursor-pointer"
+                >
+                  {isEmailSigningIn ? <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> : <>1-CLICK REVIEWER DEMO <ArrowRight className="w-4 h-4 text-emerald-400" /></>}
                 </button>
               </motion.div>
+
+              {/* Reviewer Email Credentials Callout */}
+              <div className="mt-4 inline-flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-slate-200">
+                <span className="font-bold text-emerald-400 uppercase tracking-wider">Reviewer Login:</span>
+                <span className="font-mono bg-slate-900/80 px-2 py-0.5 rounded border border-white/10 text-emerald-200 select-all">{demoAccountEmail}</span>
+                <span className="text-slate-400">Access Code:</span>
+                <span className="font-mono bg-slate-900/80 px-2 py-0.5 rounded border border-white/10 text-emerald-200 select-all">{demoAccountPass}</span>
+                <button
+                  onClick={handleSignIn}
+                  className="ml-1 text-emerald-400 hover:text-emerald-300 underline font-bold cursor-pointer"
+                >
+                  Open Login Box →
+                </button>
+              </div>
 
               {/* Founder Milestone / Social Proof */}
               <motion.div 
@@ -1044,6 +1118,7 @@ export default function LandingPage() {
 
                 <Link
                   to="/dashboard"
+                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Start Free Ingestion
@@ -1089,6 +1164,7 @@ export default function LandingPage() {
 
                 <Link
                   to="/dashboard"
+                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Launch Live Workspace
@@ -1129,6 +1205,7 @@ export default function LandingPage() {
 
                 <Link
                   to="/dashboard"
+                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Explore Specialist Lounge
@@ -1139,7 +1216,7 @@ export default function LandingPage() {
             {/* Bottom Open Access Guarantee Banner */}
             <div className="mt-12 max-w-4xl mx-auto rounded-2xl p-4 bg-emerald-500/10 border border-emerald-500/20 text-center">
               <p className="text-xs md:text-sm text-emerald-300 font-medium">
-                🛡️ <strong className="text-white">Open Platform Guarantee:</strong> No credit card required. No login walls to inspect the live clinical workspace. No paywalls. Enjoy full platform capabilities with zero charges.
+                🛡️ <strong className="text-white">Open Platform Guarantee:</strong> No credit card required. Sign in via Email ID (`reviewer@aegishealthai.co.in`) or Google to inspect the full live clinical workspace with zero paywalls.
               </p>
             </div>
           </div>
@@ -1316,9 +1393,10 @@ export default function LandingPage() {
               </p>
               <Link
                 to="/dashboard"
+                onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                 className="px-10 py-5 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full font-bold tracking-wide transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-flex items-center gap-2"
               >
-                <Sparkles className="w-5 h-5 text-emerald-500" /> LAUNCH LIVE WORKSPACE
+                <Sparkles className="w-5 h-5 text-emerald-500" /> SIGN IN / LAUNCH WORKSPACE
               </Link>
             </div>
           </div>
@@ -1342,7 +1420,7 @@ export default function LandingPage() {
                 <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Explore Aegis</h4>
                 <ul className="space-y-3">
                   <li>
-                    <Link to="/dashboard" className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors text-sm">
+                    <Link to="/dashboard" onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }} className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors text-sm">
                       Live Interactive Workspace
                     </Link>
                   </li>
@@ -1462,6 +1540,154 @@ export default function LandingPage() {
           </footer>
         </div>
         </main>
+
+        {/* Email ID + Password + Google Sign-In Modal */}
+        <AnimatePresence>
+          {isLoginModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+              onClick={() => setIsLoginModalOpen(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-md bg-[#0F2A4A] border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl relative text-white"
+              >
+                <button
+                  onClick={() => setIsLoginModalOpen(false)}
+                  className="absolute top-5 right-5 text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                  aria-label="Close Login Modal"
+                >
+                  ✕
+                </button>
+
+                <div className="flex items-center gap-2.5 mb-2">
+                  <ShieldCheck className="w-7 h-7 text-emerald-400" />
+                  <h2 className="text-xl font-bold tracking-tight">Sign In to Aegis Health AI</h2>
+                </div>
+                <p className="text-xs text-slate-300 mb-6">
+                  Sign in with your Email ID &amp; Password, use the pre-loaded Reviewer credentials below, or continue with Google.
+                </p>
+
+                {/* Official Reviewer Demo Credentials Box */}
+                <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-300">
+                      ✨ Official Reviewer Demo Login
+                    </span>
+                    <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-200 px-2 py-0.5 rounded-full">
+                      Pre-Loaded Lab Data
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-xs font-mono text-slate-200 mb-3">
+                    <div>
+                      <span className="text-slate-400">Email ID: </span>
+                      <span className="text-emerald-300 select-all font-bold">{demoAccountEmail}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Access Code: </span>
+                      <span className="text-emerald-300 select-all font-bold">{demoAccountPass}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleReviewerLogin}
+                    disabled={isEmailSigningIn || isSigningIn}
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {isEmailSigningIn ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Signing In Reviewer...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" /> 1-Click Auto-Fill &amp; Login as Reviewer
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Email ID + Password Form */}
+                <form onSubmit={handleEmailFormSubmit} className="space-y-4 mb-5">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                      Email ID
+                    </label>
+                    <input
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="reviewer@aegishealthai.co.in"
+                      required
+                      className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="Enter password"
+                      required
+                      className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+
+                  {loginError && (
+                    <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-xs text-rose-200">
+                      {loginError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isEmailSigningIn || isSigningIn}
+                    className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 font-black text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {isEmailSigningIn ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Signing In...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4" /> Sign In with Email ID
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="relative flex py-2 items-center mb-4">
+                  <div className="flex-grow border-t border-white/10"></div>
+                  <span className="flex-shrink mx-3 text-xs text-slate-400 uppercase tracking-widest">Or</span>
+                  <div className="flex-grow border-t border-white/10"></div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isSigningIn || isEmailSigningIn}
+                  className="w-full py-3 px-6 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isSigningIn ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Connecting to Google...
+                    </>
+                  ) : (
+                    <>Continue with Google Account</>
+                  )}
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Legal Modal */}
         <LegalModal 
