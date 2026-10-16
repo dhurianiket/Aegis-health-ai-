@@ -114,12 +114,14 @@ const aggregateLabs = (docs: MedicalDocument[]): any[] => {
      const latest = vals[0];
      const previous = vals.length > 1 ? vals[1] : null;
      let trend = 'stable';
-     if (previous && !isNaN(parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''))) && !isNaN(parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, '')))) {
+     if (previous) {
         const latestNum = parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''));
         const previousNum = parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, ''));
-        const diff = latestNum - previousNum;
-        if (diff > 0) trend = 'up';
-        else if (diff < 0) trend = 'down';
+        if (!isNaN(latestNum) && !isNaN(previousNum)) {
+           const diff = latestNum - previousNum;
+           if (diff > 0) trend = 'up';
+           else if (diff < 0) trend = 'down';
+        }
      }
      aggregatedLabs.push({
         markerName: latest.marker || latest.name || latest.label || latest.markerName || normalizedMarker,
