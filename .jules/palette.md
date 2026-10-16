@@ -32,3 +32,8 @@
 ## 2025-05-18 - Improve Accordion Toggle Accessibility
 **Learning:** Collapsible components (accordions) should use `aria-controls` on the button trigger pointing to the `id` of the content panel so screen readers understand what content is being toggled.
 **Action:** When implementing expandable content elements, always link the trigger button with `aria-controls` to the matching `id` of the panel it opens.
+
+## 2026-10-13 - Explicit linkage of mobile BottomSheet menus
+**Learning:** Found that the "more" trigger button in the mobile app navigation bar was conditionally rendering a `BottomSheet` menu, but lacked `aria-expanded` and `aria-controls` explicitly linked to the content `div` ID.
+**Action:** When implementing interactive, collapsible elements (like mobile menus or dropdowns), ensure the trigger button explicitly uses `aria-expanded` reflecting the state and `aria-controls` mapped to the specific `id` of the collapsible container for proper screen reader accessibility.
+

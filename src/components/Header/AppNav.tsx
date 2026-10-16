@@ -171,6 +171,8 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 aria-current={isActive ? "page" : undefined}
+                aria-expanded={tab.id === "more" ? isMoreOpen : undefined}
+                aria-controls={tab.id === "more" ? "more-menu-content" : undefined}
                 className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-12 gap-1 rounded-xl transition-all duration-100 ease-out active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] relative pointer-events-auto ${
                   isActive
                     ? "text-[var(--color-primary)]"
@@ -198,7 +200,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
       </div>
 
       <BottomSheet isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)}>
-        <div className="grid grid-cols-2 gap-4">
+        <div id="more-menu-content" className="grid grid-cols-2 gap-4">
           <button
             onClick={() => handleTabChange("settings")}
             className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"
