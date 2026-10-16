@@ -37,9 +37,10 @@ const ALL_DESKTOP_TABS = [
   { id: "specialist", label: "Specialist Lounge", icon: Stethoscope },
   { id: "chat", label: "Aura AI", icon: Sparkles },
   null, // divider
+  { id: "family", label: "Family Hub", icon: Users },
+  { id: "medications", label: "Medications", icon: Pill },
   { id: "caremap", label: "Care Map", icon: Map },
   { id: "calendar", label: "Calendar Sync", icon: Calendar },
-  { id: "medications", label: "Medications", icon: Pill },
   { id: "settings", label: "Settings", icon: Settings },
   { id: "profile", label: "Profile", icon: User },
 ];

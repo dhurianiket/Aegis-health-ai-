@@ -7,7 +7,7 @@
     "dev": "tsx server.ts",
     "prebuild": "node scripts/check-client-env.mjs",
     "build": "vite build",
-    "postbuild": "node scripts/check-client-env.mjs --dist",
+    "postbuild": "node scripts/prerender-routes.mjs && node scripts/check-client-env.mjs --dist",
     "start": "node server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",

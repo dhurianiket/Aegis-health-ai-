@@ -72,7 +72,7 @@ declare global {
 }
 
 import Dashboard from "./components/Dashboard/Dashboard";
-const UploadCenter = lazy(() => import("./components/Upload/UploadCenter"));
+import UploadCenter from "./components/Upload/UploadCenter";
 import Timeline from "./components/Timeline/Timeline";
 import SpecialistLounge from "./components/Specialists/SpecialistLounge";
 import Medications from "./components/Medications/Medications";
@@ -82,6 +82,7 @@ const ProfileManagement = lazy(
 const FamilyHub = lazy(() => import("./components/Profile/FamilyHub"));
 const SettingsPage = lazy(() => import("./components/Settings/SettingsPage"));
 import LabReportsSection from "./components/Reports/LabReportsSection";
+import ClinicalHandover from "./components/Reports/ClinicalHandover";
 const AdminDashboard = lazy(() => import("./components/Admin/AdminDashboard"));
 const FeedbackWidget = lazy(() => import("./components/Dashboard/FeedbackWidget"));
 const CareMap = lazy(() => import("./components/CareMap/CareMap"));
@@ -593,6 +594,11 @@ function MainApp() {
                     {activeTab === "trends" && (
                       <SectionErrorBoundary sectionName="Timeline">
                         <Timeline />
+                      </SectionErrorBoundary>
+                    )}
+                    {activeTab === "sbar" && (
+                      <SectionErrorBoundary sectionName="SBAR Summary">
+                        <ClinicalHandover />
                       </SectionErrorBoundary>
                     )}
                     {activeTab === "specialist" && (

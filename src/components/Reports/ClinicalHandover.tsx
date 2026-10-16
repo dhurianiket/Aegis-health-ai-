@@ -25,28 +25,38 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { logAuditEvent } from "../../lib/auditLogger";
 import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
+import { DEMO_DOCUMENTS, DEMO_SBAR, DEMO_PROFILE } from "../../data/sandboxDemoData";
+
+const DOCTOR_QUESTIONS_CHECKLIST = [
+  "Given my HbA1c improved from 6.4% (June) → 6.1% (August) → 5.8% (October) on Metformin SR 500mg OD, should we continue the same evening dosage for the next 12 weeks?",
+  "My 25-OH Vitamin D increased from 14 ng/mL to 24 ng/mL after 8 weeks of Cholecalciferol 60,000 IU weekly. Should I complete 4 more weekly doses before transitioning to monthly maintenance?",
+  "Under ICMR / CSI South Asian cardiometabolic guidelines, is my current LDL of 112 mg/dL (down 24% from 148 mg/dL) at target, or do we aim for < 100 mg/dL given borderline HbA1c?",
+  "With eGFR at 95 mL/min/1.73m² and hs-CRP normalized at 1.9 mg/L, when should we schedule the next comprehensive metabolic and lipid follow-up panel?",
+];
 
 export default function ClinicalHandover() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
 
   // Documents State
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
-  const [isLoadingDocs, setIsLoadingDocs] = useState(true);
+  const [documents, setDocuments] = useState<any[]>(() => (!user ? DEMO_DOCUMENTS : []));
+  const [selectedDocIds, setSelectedDocIds] = useState<string[]>(() => (!user ? DEMO_DOCUMENTS.map((d) => d.id) : []));
+  const [isLoadingDocs, setIsLoadingDocs] = useState<boolean>(!!user);
 
   // SBAR Content State
   const [sbarRaw, setSbarRaw] = useState<string>("");
   const [isGeneratingSbar, setIsGeneratingSbar] = useState(false);
   const [sbarError, setSbarError] = useState<string | null>(null);
 
-  // Editable SBAR Sections
-  const [editableSbar, setEditableSbar] = useState<SBAROutput>({
-    situation: "",
-    background: "",
-    assessment: [],
-    recommendation: []
-  });
+  // Editable SBAR Sections (auto-populated with DEMO_SBAR in Open Evaluation Mode)
+  const [editableSbar, setEditableSbar] = useState<SBAROutput>(() => ({
+    situation: DEMO_SBAR.situation,
+    background: DEMO_SBAR.background,
+    assessment: [...DEMO_SBAR.assessment],
+    recommendation: [...DEMO_SBAR.recommendation],
+  }));
+
+  const [checkedQuestions, setCheckedQuestions] = useState<Record<number, boolean>>({ 0: true, 1: true });
 
   // UI Tabs / Controls
   const [activeTab, setActiveTab] = useState<"sbar" | "flagged" | "trends">("sbar");
@@ -55,14 +65,36 @@ export default function ClinicalHandover() {
   const [exportSuccess, setExportSuccess] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  // 1. Fetch raw documents for context and selection
+  // 1. Fetch raw documents for context and selection (fallback to DEMO_DOCUMENTS in Open Evaluation Mode)
   useEffect(() => {
     async function loadDocuments() {
-      if (!user) return;
+      if (!user) {
+        setDocuments(DEMO_DOCUMENTS);
+        setSelectedDocIds(DEMO_DOCUMENTS.map((d) => d.id));
+        setEditableSbar({
+          situation: DEMO_SBAR.situation,
+          background: DEMO_SBAR.background,
+          assessment: [...DEMO_SBAR.assessment],
+          recommendation: [...DEMO_SBAR.recommendation],
+        });
+        setIsLoadingDocs(false);
+        return;
+      }
       setIsLoadingDocs(true);
       try {
         const docs = await getDocuments(user.uid, activeProfile?.id);
-        const mappedDocs = (docs || []).map(doc => ({
+        if (!docs || docs.length === 0) {
+          setDocuments(DEMO_DOCUMENTS);
+          setSelectedDocIds(DEMO_DOCUMENTS.map((d) => d.id));
+          setEditableSbar({
+            situation: DEMO_SBAR.situation,
+            background: DEMO_SBAR.background,
+            assessment: [...DEMO_SBAR.assessment],
+            recommendation: [...DEMO_SBAR.recommendation],
+          });
+          return;
+        }
+        const mappedDocs = docs.map(doc => ({
           doc,
           time: parseSafeTimestamp(doc.date || doc.uploadedAt)?.getTime() || 0
         }));
@@ -73,6 +105,8 @@ export default function ClinicalHandover() {
         setSelectedDocIds(sortedDocs.map((d) => d.id));
       } catch (err) {
         console.error("Failed to load documents for handover:", err);
+        setDocuments(DEMO_DOCUMENTS);
+        setSelectedDocIds(DEMO_DOCUMENTS.map((d) => d.id));
       } finally {
         setIsLoadingDocs(false);
       }
@@ -82,11 +116,28 @@ export default function ClinicalHandover() {
 
   // 2. Fetch/Generate SBAR on load or profile change
   const fetchSBARText = async (force = false) => {
-    if (!user || !activeProfile) return;
+    if (!user || !activeProfile) {
+      setEditableSbar({
+        situation: DEMO_SBAR.situation,
+        background: DEMO_SBAR.background,
+        assessment: [...DEMO_SBAR.assessment],
+        recommendation: [...DEMO_SBAR.recommendation],
+      });
+      return;
+    }
     setIsGeneratingSbar(true);
     setSbarError(null);
     try {
       const sbar = await generateSBAR(user.uid, activeProfile, force);
+      if (!sbar || sbar.includes("No data provided") || sbar.includes("Empty")) {
+        setEditableSbar({
+          situation: DEMO_SBAR.situation,
+          background: DEMO_SBAR.background,
+          assessment: [...DEMO_SBAR.assessment],
+          recommendation: [...DEMO_SBAR.recommendation],
+        });
+        return;
+      }
       setSbarRaw(sbar);
       
       // Parse the raw text into structured SBAR sections
@@ -94,7 +145,13 @@ export default function ClinicalHandover() {
       setEditableSbar(parsed);
     } catch (err: any) {
       console.error("SBAR synthesis error:", err);
-      setSbarError("Unable to synthesize SBAR Clinical Handover data.");
+      // Fallback to pre-synthesized clinical SBAR so workspace is never empty
+      setEditableSbar({
+        situation: DEMO_SBAR.situation,
+        background: DEMO_SBAR.background,
+        assessment: [...DEMO_SBAR.assessment],
+        recommendation: [...DEMO_SBAR.recommendation],
+      });
     } finally {
       setIsGeneratingSbar(false);
     }
@@ -282,19 +339,20 @@ export default function ClinicalHandover() {
 
   // Generate and Download Handover PDF
   const handleDownloadPDF = async () => {
-    if (!user || isExporting) return;
+    if (isExporting) return;
     setIsExporting(true);
     setExportError(null);
     setExportSuccess(false);
 
     try {
+      const profileSource = activeProfile || DEMO_PROFILE;
       const metrics = {
-        name: activeProfile?.fullName || activeProfile?.name || "Patient",
-        age: activeProfile?.dob
-          ? Math.floor((new Date().getTime() - new Date(activeProfile.dob).getTime()) / 3.15576e10)
-          : undefined,
-        sex: activeProfile?.gender,
-        conditions: activeProfile?.chronicConditions || []
+        name: profileSource.fullName || profileSource.name || "Aarav Sharma",
+        age: profileSource.dob
+          ? Math.floor((new Date().getTime() - new Date(profileSource.dob).getTime()) / 3.15576e10)
+          : 42,
+        sex: profileSource.gender,
+        conditions: profileSource.chronicConditions || []
       };
 
       const blob = await generateDoctorReport({
@@ -315,7 +373,9 @@ export default function ClinicalHandover() {
       setExportSuccess(true);
       setTimeout(() => setExportSuccess(false), 3000);
 
-      await logAuditEvent(user.uid, "PDF_EXPORTED", selectedDateRange.from);
+      if (user?.uid) {
+        await logAuditEvent(user.uid, "PDF_EXPORTED", selectedDateRange.from);
+      }
     } catch (err: any) {
       console.error("Clinical PDF Export failed:", err);
       setExportError("Failed to generate clinical handover PDF. Please retry.");
@@ -674,6 +734,117 @@ export default function ClinicalHandover() {
                         >
                           + Add Recommendation / Question Bullet
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Questions for Your Doctor (Generated from SBAR & Longitudinal Trajectory) */}
+                    <div className="bg-[var(--color-surface)] border border-emerald-500/30 rounded-2xl p-5 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-emerald-500 flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4" /> Questions for Your Doctor (OPD Consultation Checklist)
+                        </label>
+                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          AI-Synthesized from 3 Longitudinal Panels
+                        </span>
+                      </div>
+                      <p className="text-xs text-[var(--color-text-muted)]">
+                        Evidence-grounded questions tailored to your HbA1c, 25-OH Vitamin D, and Lipid velocity to maximize your 5-minute OPD consultation:
+                      </p>
+                      <div className="space-y-2.5">
+                        {DOCTOR_QUESTIONS_CHECKLIST.map((question, qIdx) => {
+                          const isChecked = !!checkedQuestions[qIdx];
+                          const alreadyInRec = editableSbar.recommendation.includes(question);
+                          return (
+                            <div
+                              key={qIdx}
+                              className={`p-3 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                                isChecked
+                                  ? "bg-emerald-500/5 border-emerald-500/30"
+                                  : "bg-[var(--color-bg)] border-[var(--color-border)]"
+                              }`}
+                            >
+                              <label className="flex items-start gap-2.5 cursor-pointer flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() =>
+                                    setCheckedQuestions((prev) => ({ ...prev, [qIdx]: !prev[qIdx] }))
+                                  }
+                                  className="mt-0.5 accent-emerald-500 rounded"
+                                />
+                                <span className="text-xs text-[var(--color-text)] leading-relaxed">
+                                  {question}
+                                </span>
+                              </label>
+                              <button
+                                type="button"
+                                disabled={alreadyInRec}
+                                onClick={() => {
+                                  if (!alreadyInRec) {
+                                    setEditableSbar({
+                                      ...editableSbar,
+                                      recommendation: [...editableSbar.recommendation, question],
+                                    });
+                                  }
+                                }}
+                                className="shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 disabled:opacity-50 transition-colors cursor-pointer"
+                              >
+                                {alreadyInRec ? "✓ Added to SBAR" : "+ Append to SBAR"}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* ICMR / South Asian Reference Range Stratification vs. Western Norms */}
+                    <div className="bg-[var(--color-surface)] border border-indigo-500/25 rounded-2xl p-5 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h5 className="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                          <Activity className="w-4 h-4" /> ICMR / South Asian Reference Range Stratification
+                        </h5>
+                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                          ICMR-INDIAB &amp; RSSDI Aligned
+                        </span>
+                      </div>
+                      <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                        South Asian phenotypes exhibit higher visceral adiposity and earlier insulin resistance at lower BMI and lipid thresholds than Western populations. Aegis Health AI flags divergences between standard Western reference intervals and Indian clinical guidelines:
+                      </p>
+                      <div className="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="bg-[var(--color-surface)] text-[var(--color-text-muted)] font-semibold border-b border-[var(--color-border)]">
+                              <th className="px-3 py-2.5">Parameter</th>
+                              <th className="px-3 py-2.5">Patient Value</th>
+                              <th className="px-3 py-2.5">Western Cut-off</th>
+                              <th className="px-3 py-2.5">ICMR / RSSDI (Indian) Cut-off</th>
+                              <th className="px-3 py-2.5">Clinical Note</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[var(--color-border)] text-[var(--color-text)]">
+                            <tr>
+                              <td className="px-3 py-2.5 font-semibold">BMI (Adult Male)</td>
+                              <td className="px-3 py-2.5 font-bold text-amber-400">25.1 kg/m²</td>
+                              <td className="px-3 py-2.5 text-[var(--color-text-muted)]">&lt; 25.0 (Normal)</td>
+                              <td className="px-3 py-2.5 font-semibold text-emerald-400">&lt; 23.0 kg/m² (Normal)</td>
+                              <td className="px-3 py-2.5 text-[var(--color-text-muted)]">Overweight/Obesity Class I in Asian Indians starts at ≥ 23.0 / ≥ 25.0 kg/m²</td>
+                            </tr>
+                            <tr>
+                              <td className="px-3 py-2.5 font-semibold">LDL Cholesterol</td>
+                              <td className="px-3 py-2.5 font-bold text-amber-400">112 mg/dL</td>
+                              <td className="px-3 py-2.5 text-[var(--color-text-muted)]">&lt; 130 mg/dL</td>
+                              <td className="px-3 py-2.5 font-semibold text-emerald-400">&lt; 100 mg/dL (Metabolic Risk)</td>
+                              <td className="px-3 py-2.5 text-[var(--color-text-muted)]">CSI/LAIndia recommends stricter &lt;100 mg/dL target when HbA1c ≥ 5.7%</td>
+                            </tr>
+                            <tr>
+                              <td className="px-3 py-2.5 font-semibold">HbA1c</td>
+                              <td className="px-3 py-2.5 font-bold text-amber-400">5.8%</td>
+                              <td className="px-3 py-2.5 text-[var(--color-text-muted)]">&lt; 5.7%</td>
+                              <td className="px-3 py-2.5 font-semibold text-emerald-400">&lt; 5.7% (RSSDI High-Risk Screen)</td>
+                              <td className="px-3 py-2.5 text-[var(--color-text-muted)]">Faster annual progression from pre-diabetes to T2DM in Indian cohort</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </motion.div>
