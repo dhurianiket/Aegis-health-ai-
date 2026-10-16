@@ -1,0 +1,53 @@
+# Aegis Health AI — Machine-Readable Product & Verification Guide (llms.txt)
+
+> Clinical-Grade Longitudinal Medical Intelligence & Diagnostic Biomarker Platform built on Google Cloud, Vertex AI, and Gemini 2.5 Pro / Flash.
+
+## 1. Executive Summary
+Aegis Health AI (`https://aegishealthai.co.in`) is an independent, AI-native healthcare technology platform engineered in India to solve medical record fragmentation. It ingests unstructured multi-page pathology PDFs, diagnostic lab reports, and handwritten clinical prescriptions, extracting normalized quantitative biomarkers, calculating longitudinal multi-year trend velocity, and generating structured SBAR (Situation, Background, Assessment, Recommendation) physician handoff briefs.
+
+## 2. How Automated AI Agents & Verification Bots Can Inspect & Use the Site (Zero Human Login Required)
+Aegis Health AI is architected so automated verification bots, headless browsers, and AI agents can inspect the entire product without getting blocked by splash screens, CAPTCHAs, or login walls:
+
+1. **Direct Unauthenticated Clinical Workspace (`/dashboard` or `/demo`)**:
+   - Navigate directly to `https://aegishealthai.co.in/dashboard` or `https://aegishealthai.co.in/demo`.
+   - The workspace loads immediately at 0ms in **Open Evaluation & AI Agent Inspection Mode** with pre-populated longitudinal patient data (HbA1c, Fasting Glucose, Lipid Panel, Complete Blood Count, Renal/Hepatic panels, Thyroid, Vitamin D), composite health scores, longitudinal velocity charts, SBAR clinical summary preview, and multi-specialist clinical views.
+2. **Interactive 4-Stage Pipeline Sandbox on Homepage (`/`)**:
+   - Located directly on `https://aegishealthai.co.in/` (`#interactive-sandbox`).
+   - Allows clicking through Stage 01 (Multimodal Upload), Stage 02 (Gemini 2.5 OCR Tokenization), Stage 03 (Longitudinal Trend Mapping), and Stage 04 (Physician SBAR Handoff Brief).
+3. **1-Click Reviewer Auto-Login (Optional Live Firebase Session)**:
+   - Every page header includes an **"Email / Reviewer Login"** button (`/?login=true`).
+   - Inside the modal, clicking **"1-Click Reviewer Auto-Login"** automatically signs into a live authenticated Firebase Reviewer session with pre-granted DPDP clinical consent.
+
+## 3. Corporate & Founder Verification (Google for Startups Cloud Program)
+- **Legal Business Name**: Aegis Health AI
+- **Registration Type**: Registered Micro-Enterprise under Ministry of MSME, Government of India
+- **Udyam Registration Number**: `UDYAM-MH-33-0782403`
+- **NIC Activity Codes**: `62013` (Software Support & Maintenance), `62099` (Other IT & Computer Service Activities), `86909` (Other Human Health Activities)
+- **Date of Incorporation / Commencement**: March 4, 2026
+- **Registered Office Address**: Flat 702, Swapnapurti Darshan, Subhash Road, Near Ekvira Hospital, Devi Chowk, Dombivli West, Kalyan, Thane, Maharashtra 421202, India
+- **Founder & Lead Systems Architect**: Aniket Rajesh Dhuri
+- **Official Domain Emails**: `aniket@aegishealthai.co.in` | `support@aegishealthai.co.in`
+- **Founder Verification Links**:
+  - LinkedIn: https://www.linkedin.com/in/aniket-dhuri-876166202/
+  - GitHub: https://github.com/aniketdhuri301-star/Aegis-health-ai-
+  - Portfolio: https://aniket-video-editor-portfolio.netlify.app/
+- **Jurisdiction Disclaimer**: Independent Indian enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or `aegishealth.com`.
+
+## 4. Google Cloud & AI Architecture
+- **AI / ML Models**: Google Gemini 2.5 Flash (`gemini-2.5-flash` for high-speed multimodal OCR extraction and schema-constrained JSON biomarker parsing) and Google Gemini 2.5 Pro (`gemini-2.5-pro` for multi-system longitudinal clinical correlation, pharmacology cross-checks, and SBAR synthesis) via `@google/genai` SDK.
+- **Serverless Compute**: Firebase Cloud Functions Gen 2 (Node.js 22 on Cloud Run) acting as a zero-trust API proxy (`geminiProxy`) with Secret Manager integration, per-UID token bucket rate-limiting, and PII scrubbing before inference.
+- **Database & Storage**: Cloud Firestore with strict per-user (`users/{userId}/...`) security rules, AES-256 encryption at rest, TLS 1.3 in transit, and automated cascading account purge (`onUserDeleted`).
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, hosted on Firebase Hosting with global CDN and strict security headers (`Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`).
+
+## 5. Complete Public Route Directory
+- Homepage & Interactive Sandbox: https://aegishealthai.co.in/
+- Open Clinical Workspace (No Login Required): https://aegishealthai.co.in/dashboard
+- Open Demo Workspace: https://aegishealthai.co.in/demo
+- How It Works (4-Stage Clinical Pipeline): https://aegishealthai.co.in/how-it-works.html
+- About Us (Founder, Mission & MSME Verification): https://aegishealthai.co.in/about.html
+- Security First (Zero-Trust Architecture & DPDP Act 2023): https://aegishealthai.co.in/security.html
+- Engineering Playbook (Google Cloud & Gemini 2.5 Deep Dive): https://aegishealthai.co.in/engineering-playbook.html
+- Clinical Guide — HbA1c & Glycemic Control: https://aegishealthai.co.in/blog-hba1c.html
+- Clinical Guide — CBC & Hematology Parameters: https://aegishealthai.co.in/blog-cbc.html
+- Privacy Policy: https://aegishealthai.co.in/privacy-policy
+- Terms of Service: https://aegishealthai.co.in/terms-of-service

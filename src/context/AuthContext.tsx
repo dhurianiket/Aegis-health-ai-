@@ -62,18 +62,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
        }
     };
 
-    const initializeAuth = async () => {
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-      } catch (err) {
-        console.error("Failed to set persistence:", err);
+    // Safety timeout so headless bots/crawlers with restricted IndexedDB never hang on loading
+    const botSafetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setLoading(false);
+        setAuthResolved(true);
       }
+    }, 1200);
 
-      // Step 1: Register onAuthStateChanged as the primary source of truth IMMEDIATELY
+    const initializeAuth = async () => {
+      // Step 1: Register onAuthStateChanged IMMEDIATELY before awaiting setPersistence
       unsubscribeFn = onAuthStateChanged(
         auth,
         (u) => {
           if (isMounted) {
+            clearTimeout(botSafetyTimer);
             if (import.meta.env.DEV) console.log("[Auth] onAuthStateChanged fired with user:", u ? u.uid : "null");
             if (u) {
               markUserActive(u.uid, u.email, u.displayName, u.photoURL).catch((err) => console.error("Error marking user active:", err));
@@ -84,10 +87,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         (error) => {
           console.error("Auth observer error:", error);
           if (isMounted) {
+            clearTimeout(botSafetyTimer);
             resolveAuth(null);
           }
         }
       );
+
+      setPersistence(auth, browserLocalPersistence).catch((err) => {
+        console.error("Failed to set persistence:", err);
+      });
 
       // Step 2: Extract redirect credential if available, but do not block on it
       try {
@@ -125,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     return () => {
       isMounted = false;
+      clearTimeout(botSafetyTimer);
       if (unsubscribeFn) {
         unsubscribeFn();
       }
