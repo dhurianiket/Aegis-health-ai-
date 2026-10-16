@@ -1,51 +1,22 @@
-1. **Optimize array filtering in `SpecialistLounge.tsx`**
-   - The `filteredSpecialists` memoized array in `src/components/Specialists/SpecialistLounge.tsx` eagerly evaluates all boolean match conditions for filtering specialists before returning, which causes O(N*M) bottlenecks.
-   - I will replace the eager evaluation with short-circuit early returns and replace `.some()` closures with `for` loops.
-   - Exact code replacement:
-     ```typescript
-<<<<<<< SEARCH
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchesName = s.name.toLowerCase().includes(q);
-        const matchesDisplayName = s.displayName.toLowerCase().includes(q);
-        const matchesSpecialty = s.specialty.toLowerCase().includes(q);
-        const matchesDesc = s.description.toLowerCase().includes(q);
-        const matchesExpertise = s.expertise.some((exp) => exp.toLowerCase().includes(q));
-        const matchesGuidelines = s.guidelines.some((g) => g.toLowerCase().includes(q));
-        return matchesName || matchesDisplayName || matchesSpecialty || matchesDesc || matchesExpertise || matchesGuidelines;
-      }
-      return true;
-=======
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        if (s.name.toLowerCase().includes(q)) return true;
-        if (s.displayName.toLowerCase().includes(q)) return true;
-        if (s.specialty.toLowerCase().includes(q)) return true;
-        if (s.description.toLowerCase().includes(q)) return true;
-        for (let i = 0; i < s.expertise.length; i++) {
-          if (s.expertise[i].toLowerCase().includes(q)) return true;
-        }
-        for (let i = 0; i < s.guidelines.length; i++) {
-          if (s.guidelines[i].toLowerCase().includes(q)) return true;
-        }
-        return false;
-      }
-      return true;
->>>>>>> REPLACE
-     ```
+Let's review `src/components/Dashboard/Dashboard.tsx`
+```typescript
+     let trend = 'stable';
+     if (previous && !isNaN(parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''))) && !isNaN(parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, '')))) {
+        const latestNum = parseFloat(String(latest.value || latest.display_value).replace(/[^0-9.-]/g, ''));
+        const previousNum = parseFloat(String(previous.value || previous.display_value).replace(/[^0-9.-]/g, ''));
+        const diff = latestNum - previousNum;
+        if (diff > 0) trend = 'up';
+        else if (diff < 0) trend = 'down';
+     }
+```
 
-2. **Verify Changes**
-   - I will verify the changes are correct and don't introduce regressions by running:
-     - `pnpm lint`
-     - `pnpm build`
-     - `pnpm test`
+Wait, `parseFloat(String(x).replace(...))` inside an if condition is executed, then repeated inside the true block. By saving it to variables first, we cut the evaluations strictly by half. And since this is iterating over arrays of lab map, avoiding duplicate allocations in a hot path fits the goal.
+I will formulate the plan around this.
 
-3. **Complete Pre-commit Steps**
-   - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
-
-4. **Submit PR**
-   - I will submit a pull request with the title `⚡ Bolt: [performance improvement]` and description format:
-     - 💡 What: Implement short-circuit array filtering in `SpecialistLounge.tsx`
-     - 🎯 Why: Eager evaluation of expensive string checks and nested loops creates O(N * M) render bottlenecks
-     - 📊 Impact: Substantially reduces CPU usage and memory allocation during specialist search, preventing lag when typing
-     - 🔬 Measurement: Verify search functionality in Specialist Lounge is responsive and correct.
+Plan:
+1. Open `src/components/Dashboard/Dashboard.tsx`.
+2. Locate the `aggregateLabs` function where the trend calculation performs redundant `parseFloat` and `.replace` operations inside the `if` condition and again inside the block.
+3. Replace the `if` condition and block to calculate `latestNum` and `previousNum` first.
+4. Use `!isNaN(latestNum)` and `!isNaN(previousNum)` in a nested `if` condition to assign `trend = 'up'` or `trend = 'down'`.
+5. Run tests.
+6. Commit.
