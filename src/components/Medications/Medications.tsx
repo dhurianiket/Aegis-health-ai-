@@ -194,10 +194,11 @@ export default function Medications({
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
+                <label htmlFor="med-name" className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
                   Name
                 </label>
                 <input
+                  id="med-name"
                   required
                   type="text"
                   value={name}
@@ -207,10 +208,11 @@ export default function Medications({
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
+                <label htmlFor="med-dose" className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
                   Dose
                 </label>
                 <input
+                  id="med-dose"
                   type="text"
                   value={dose}
                   onChange={(e) => setDose(e.target.value)}
@@ -219,10 +221,11 @@ export default function Medications({
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
+                <label htmlFor="med-frequency" className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
                   Frequency
                 </label>
                 <select
+                  id="med-frequency"
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value)}
                   className="w-full bg-surface border border-surface rounded-xl px-4 py-3 text-theme focus:outline-none focus:border-indigo-500 appearance-none"
@@ -234,10 +237,11 @@ export default function Medications({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
+                <label htmlFor="med-start-date" className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
                   Start Date
                 </label>
                 <input
+                  id="med-start-date"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
