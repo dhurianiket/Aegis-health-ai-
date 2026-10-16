@@ -1,4 +1,44 @@
+# Aegis Health AI — Robots & AI Agent Crawling Policy
+# Explicitly open to all Google verification crawlers, search bots, and AI agents.
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-InspectionTool
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Google-CloudVertexBot
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
 User-agent: *
 Allow: /
 
 Sitemap: https://aegishealthai.co.in/sitemap.xml
+# AI Agent & LLM Documentation: https://aegishealthai.co.in/llms.txt

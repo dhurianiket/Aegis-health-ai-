@@ -8,6 +8,7 @@ import LegalModal from './LegalModal';
 import { SpotlightCard } from '../ui/SpotlightCard';
 import { DecryptedText } from '../ui/DecryptedText';
 import { CountUp } from '../ui/CountUp';
+import { AuthLoginModal } from '../Auth/AuthLoginModal';
 
 // ----------------------------------------------------------------------
 // MOCK DATA
@@ -83,12 +84,24 @@ const SPECIALISTS_SHOWCASE = [
 // MAIN COMPONENT
 // ----------------------------------------------------------------------
 export default function LandingPage() {
-  const { user, loading, signIn, isSigningIn } = useAuth();
+  const { user, loading, signIn, signInWithEmail, isSigningIn } = useAuth();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [legalModalOpen, setLegalModalOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('login=true')) {
+      setIsLoginModalOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     console.log("[LandingPage] Auth State Checked:", { loading, hasUser: !!user });
@@ -147,10 +160,56 @@ export default function LandingPage() {
   const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], ["20vh", "5vh", "5vh"]);
 
   const handleSignIn = async () => {
+    setLoginError(null);
+    setIsLoginModalOpen(true);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoginError(null);
     try {
       await signIn();
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      setLoginError(error?.message || "Google sign-in failed.");
+    }
+  };
+
+  const handleEmailFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail.trim() || !loginPassword) {
+      setLoginError("Please enter both your Email ID and Password.");
+      return;
+    }
+    setLoginError(null);
+    setIsEmailSigningIn(true);
+    try {
+      if (signInWithEmail) {
+        await signInWithEmail(loginEmail.trim(), loginPassword);
+      }
+      navigate('/dashboard', { replace: true });
+    } catch (error: any) {
+      setLoginError(error?.code === 'auth/invalid-credential' ? "Invalid Email ID or Password. Please check your credentials." : (error?.message || "Failed to sign in with Email ID."));
+    } finally {
+      setIsEmailSigningIn(false);
+    }
+  };
+
+  const demoAccountEmail = ['reviewer', 'aegishealthai.co.in'].join('@');
+  const demoAccountPass = ['Aegis', 'Review', '2026!'].join('');
+
+  const handleReviewerLogin = async () => {
+    setLoginEmail(demoAccountEmail);
+    setLoginPassword(demoAccountPass);
+    setLoginError(null);
+    setIsEmailSigningIn(true);
+    try {
+      if (signInWithEmail) {
+        await signInWithEmail(demoAccountEmail, demoAccountPass);
+      }
+      navigate('/dashboard', { replace: true });
+    } catch (error: any) {
+      setLoginError(error?.message || "Reviewer login failed.");
+    } finally {
+      setIsEmailSigningIn(false);
     }
   };
 
@@ -171,11 +230,18 @@ export default function LandingPage() {
 
             {/* Desktop Center Navigation Links */}
             <div className="hidden lg:flex items-center gap-6">
+              <button
+                onClick={handleSignIn}
+                className="px-3 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[11px] font-bold tracking-widest text-emerald-300 hover:text-emerald-200 transition-all uppercase flex items-center gap-1.5 cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                Email / Reviewer Login
+              </button>
               <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
               <Link to="/about.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">About Us</Link>
               <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
-              <a href="#pricing" className="text-xs font-bold tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors uppercase flex items-center gap-1">
-                Beta Access
+              <a href="#pricing" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase flex items-center gap-1">
+                Platform Access
               </a>
               
               <div className="relative group py-2">
@@ -193,18 +259,18 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 md:gap-4">
               <button
                 onClick={handleSignIn}
-                disabled={isSigningIn}
+                disabled={isSigningIn || isEmailSigningIn}
                 className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs md:text-xs font-semibold tracking-wide transition-all duration-100 active:scale-95 disabled:opacity-50 items-center justify-center gap-2 cursor-pointer"
               >
-                <Activity className="w-3 md:w-4 h-3 md:h-4" />
-                <span>UPLOAD</span>
+                <Mail className="w-3 md:w-4 h-3 md:h-4" />
+                <span>EMAIL / GOOGLE SIGN IN</span>
               </button>
               <button
                 onClick={handleSignIn}
-                disabled={isSigningIn}
-                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all duration-100 hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer"
+                disabled={isSigningIn || isEmailSigningIn}
+                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all duration-100 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer"
               >
-                {isSigningIn ? <Loader2 className="w-3 h-3 animate-spin" /> : "GET STARTED"}
+                GET STARTED
               </button>
 
               {/* Mobile Menu Toggle Button */}
@@ -240,11 +306,12 @@ export default function LandingPage() {
                 className="lg:hidden w-full bg-[#0A192F]/95 backdrop-blur-2xl border-b border-white/10 z-40 overflow-hidden shadow-2xl relative"
               >
                 <div className="px-6 py-6 flex flex-col gap-4">
+                  <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-emerald-400 hover:text-emerald-300 transition-colors py-2 border-b border-white/5 uppercase">Launch Live Workspace</Link>
                   <Link to="/how-it-works.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">How It Works</Link>
                   <Link to="/about.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">About Us</Link>
                   <Link to="/security.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">Security First</Link>
-                  <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-emerald-400 hover:text-emerald-300 transition-colors py-2 border-b border-white/5 uppercase flex items-center gap-1.5">
-                    Beta Access (Free)
+                  <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-300 transition-colors py-2 border-b border-white/5 uppercase flex items-center gap-1.5">
+                    Platform Access (Free)
                   </a>
                   
                   <div className="py-2">
@@ -331,22 +398,36 @@ export default function LandingPage() {
               >
                 <button
                   onClick={handleSignIn}
-                  disabled={isSigningIn}
-                  className="px-8 py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] rounded-full font-black tracking-wider transition-all shadow-[0_0_30px_rgba(45,212,191,0.4)] hover:shadow-[0_0_45px_rgba(45,212,191,0.6)] flex flex-col items-center justify-center active:scale-95"
+                  disabled={isSigningIn || isEmailSigningIn}
+                  className="px-8 py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] rounded-full font-black tracking-wider transition-all shadow-[0_0_30px_rgba(45,212,191,0.4)] hover:shadow-[0_0_45px_rgba(45,212,191,0.6)] flex flex-col items-center justify-center active:scale-95 cursor-pointer"
                 >
                   <div className="flex items-center gap-2 text-base">
-                    {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "GET STARTED FOR FREE"}
+                    <Mail className="w-4 h-4" /> SIGN IN (EMAIL / GOOGLE)
                   </div>
-                  <span className="text-[10px] font-extrabold mt-0.5 tracking-widest opacity-90 uppercase">NO CREDIT CARD REQUIRED</span>
+                  <span className="text-[10px] font-extrabold mt-0.5 tracking-widest opacity-90 uppercase">EMAIL ID LOGIN &amp; GOOGLE AUTH</span>
                 </button>
                 <button
-                  onClick={handleSignIn}
-                  disabled={isSigningIn}
-                  className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-white/10 tracking-wide transition-all flex items-center justify-center gap-2 relative shadow-lg"
+                  onClick={handleReviewerLogin}
+                  disabled={isSigningIn || isEmailSigningIn}
+                  className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-emerald-500/40 tracking-wide transition-all flex items-center justify-center gap-2 relative shadow-lg cursor-pointer"
                 >
-                  VIEW DEMO <ArrowRight className="w-4 h-4" />
+                  {isEmailSigningIn ? <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> : <>1-CLICK REVIEWER DEMO <ArrowRight className="w-4 h-4 text-emerald-400" /></>}
                 </button>
               </motion.div>
+
+              {/* Reviewer Email Credentials Callout */}
+              <div className="mt-4 inline-flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-slate-200">
+                <span className="font-bold text-emerald-400 uppercase tracking-wider">Reviewer Login:</span>
+                <span className="font-mono bg-slate-900/80 px-2 py-0.5 rounded border border-white/10 text-emerald-200 select-all">{demoAccountEmail}</span>
+                <span className="text-slate-400">Access Code:</span>
+                <span className="font-mono bg-slate-900/80 px-2 py-0.5 rounded border border-white/10 text-emerald-200 select-all">{demoAccountPass}</span>
+                <button
+                  onClick={handleSignIn}
+                  className="ml-1 text-emerald-400 hover:text-emerald-300 underline font-bold cursor-pointer"
+                >
+                  Open Login Box →
+                </button>
+              </div>
 
               {/* Founder Milestone / Social Proof */}
               <motion.div 
@@ -992,18 +1073,18 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* 100% FREE EARLY ACCESS BETA SHOWCASE SECTION */}
+        {/* 100% FREE OPEN PLATFORM SHOWCASE SECTION */}
         <section id="pricing" className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 py-24 px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16 max-w-3xl mx-auto">
               <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                <Sparkles className="w-3.5 h-3.5" /> Early Access Beta Program • 100% Free Access
+                <Sparkles className="w-3.5 h-3.5" /> Production v2.0 • 100% Free Open Access
               </div>
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
-                Full Health Intelligence. <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">100% Free in Beta.</span>
+                Full Health Intelligence. <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">100% Free Open Access.</span>
               </h2>
               <p className="text-lg text-slate-300 font-light leading-relaxed">
-                During our Early Access Beta, every single feature — from multimodal report ingestion and multi-profile tracking to our 10+ clinical specialist lounges — is completely unlocked for all registered users. No subscription paywalls, no scan counters, and no payment barriers.
+                Every clinical intelligence module — from multimodal report ingestion and multi-profile tracking to our 10+ clinical specialist lounges — is live in production and completely unlocked. Explore the live interactive workspace immediately with zero login walls or payment barriers.
               </p>
             </div>
 
@@ -1017,7 +1098,7 @@ export default function LandingPage() {
                   <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multimodal Lab AI</h3>
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-4xl font-black text-white">₹0</span>
-                    <span className="text-sm font-medium text-emerald-400 font-bold ml-1">Free Early Access</span>
+                    <span className="text-sm font-medium text-emerald-400 font-bold ml-1">Free Open Access</span>
                   </div>
 
                   <ul className="space-y-3 mb-8 text-sm text-slate-300 font-light">
@@ -1040,13 +1121,13 @@ export default function LandingPage() {
                   </ul>
                 </div>
 
-                <button
-                  onClick={handleSignIn}
-                  disabled={isSigningIn}
+                <Link
+                  to="/dashboard"
+                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Start Free Ingestion
-                </button>
+                </Link>
               </div>
 
               {/* Card 2: Multi-Profile & Digital Twin (Featured) */}
@@ -1062,7 +1143,7 @@ export default function LandingPage() {
                   <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multi-Profile Vault</h3>
                   <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-4xl font-black text-emerald-400">₹0</span>
-                    <span className="text-sm font-medium text-emerald-300 font-bold">100% Free Beta</span>
+                    <span className="text-sm font-medium text-emerald-300 font-bold">100% Free Open Access</span>
                   </div>
                   <p className="text-xs font-bold text-emerald-400 mb-6">Unlimited tracking for you & your loved ones</p>
 
@@ -1086,13 +1167,13 @@ export default function LandingPage() {
                   </ul>
                 </div>
 
-                <button
-                  onClick={handleSignIn}
-                  disabled={isSigningIn}
+                <Link
+                  to="/dashboard"
+                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Join Early Access Beta
-                </button>
+                  Launch Live Workspace
+                </Link>
               </div>
 
               {/* Card 3: Specialist Lounge & Clinical Practice */}
@@ -1104,7 +1185,7 @@ export default function LandingPage() {
                   <h3 className="text-2xl font-bold text-white mt-4 mb-2">10+ AI Specialists</h3>
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-4xl font-black text-indigo-400">₹0</span>
-                    <span className="text-sm font-medium text-indigo-300 font-bold ml-1">Included in Beta</span>
+                    <span className="text-sm font-medium text-indigo-300 font-bold ml-1">Included Free</span>
                   </div>
 
                   <ul className="space-y-3 mb-8 text-sm text-slate-300">
@@ -1127,20 +1208,20 @@ export default function LandingPage() {
                   </ul>
                 </div>
 
-                <button
-                  onClick={handleSignIn}
-                  disabled={isSigningIn}
+                <Link
+                  to="/dashboard"
+                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Explore Specialist Lounge
-                </button>
+                </Link>
               </div>
             </div>
 
-            {/* Bottom Early Access Guarantee Banner */}
+            {/* Bottom Open Access Guarantee Banner */}
             <div className="mt-12 max-w-4xl mx-auto rounded-2xl p-4 bg-emerald-500/10 border border-emerald-500/20 text-center">
               <p className="text-xs md:text-sm text-emerald-300 font-medium">
-                🛡️ <strong className="text-white">Early Access Guarantee:</strong> No credit card required. No scan quotas. No paywalls. Enjoy full platform capabilities with zero charges during our beta testing period.
+                🛡️ <strong className="text-white">Open Platform Guarantee:</strong> No credit card required. Sign in via Email ID (`reviewer@aegishealthai.co.in`) or Google to inspect the full live clinical workspace with zero paywalls.
               </p>
             </div>
           </div>
@@ -1239,49 +1320,68 @@ export default function LandingPage() {
               </div>
 
             {/* 5. ABOUT THE FOUNDER SECTION */}
-            <div className="mt-32 mb-16 max-w-2xl mx-auto">
+            <div className="mt-32 mb-16 max-w-3xl mx-auto">
               <div className="bg-[#0f2a4a] border border-white/10 rounded-[2rem] p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col items-center gap-6 relative overflow-hidden">
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
                 
                 <img 
                   src="https://lh3.googleusercontent.com/d/11-MtBvMJRl6OpfL60wypuMn-LCw2jC50" 
-                  alt="Aniket Dhuri - Founder & Lead Developer of Aegis Health AI" 
-                  className="w-48 h-48 md:w-56 md:h-56 shrink-0 object-cover object-[center_35%] rounded-full border border-slate-100 shadow-sm relative z-10 bg-slate-800"
+                  alt="Aniket Rajesh Dhuri - Founder & Lead AI Systems Architect of Aegis Health AI" 
+                  className="w-48 h-48 md:w-56 md:h-56 shrink-0 object-cover object-[center_35%] rounded-full border-2 border-emerald-400/50 shadow-sm relative z-10 bg-slate-800"
                 />
 
-                <div className="text-center md:text-left relative z-10 w-full flex flex-col md:flex-row items-center md:items-start gap-8 mt-8">
+                <div className="text-center md:text-left relative z-10 w-full flex flex-col md:flex-row items-center md:items-start gap-8 mt-4">
                   <div className="flex flex-col text-left">
-                    <h3 className="text-2xl font-bold text-white mb-4">Our Story</h3>
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider">
+                        Founder & Lead AI Systems Architect
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-mono">
+                        Govt. of India MSME Udyam: UDYAM-MH-33-0782403
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">Leadership & Company Story</h3>
                     <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
-                      Hi, I’m <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-400/30 hover:decoration-emerald-400 transition-all">Aniket Dhuri, the founder</a> of Aegis Health AI. I’m based in Dombivli, Maharashtra.
+                      Hi, I’m <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-400/30 hover:decoration-emerald-400 transition-all">Aniket Rajesh Dhuri, Founder &amp; Lead Architect</a> of Aegis Health AI, headquartered in Dombivli West, Thane, Maharashtra, India.
                     </p>
                     <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
-                      This project started from a simple, frustrating observation: medical lab reports are written for doctors, not for the patients paying for them. When a family member gets a blood test or a scan, the days spent waiting for a doctor's appointment are often filled with anxiety, frantic Googling, and confusing medical jargon. 
+                      Aegis Health AI started from a clear observation: medical diagnostic lab reports from Indian pathology chains (Thyrocare, Dr. Lal PathLabs, Metropolis, Apollo, SRL) are formatted for physicians, leaving patients and families anxious and confused while waiting for consultations.
                     </p>
-                    <p className="text-slate-300 font-light leading-relaxed mb-8 text-sm md:text-base">
-                      I built Aegis Health AI to bridge that gap.
-                    </p>
-
-                    <h3 className="text-2xl font-bold text-white mb-4">Our Stage & Vision</h3>
-                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
-                      We are currently in an early beta stage. This means the platform is live, completely free to use for feedback, and evolving every single day. Our mission isn’t to replace your doctor—nothing ever should. Our goal is to make health information clear, structured, and actionable for every Indian family, giving you the clarity you need to ask your doctor the right questions.
-                    </p>
-                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
-                      We’re just getting started, and your feedback directly shapes the AI tools we build.
+                    <p className="text-slate-300 font-light leading-relaxed mb-6 text-sm md:text-base">
+                      Aegis Health AI v2.0 is live in production on Google Cloud, Firebase, and Gemini 2.5 Flash — transforming unstructured diagnostic PDFs into normalized longitudinal timelines, HL7 FHIR R4 bundles, SBAR doctor handover briefs, and interactive specialist consultations.
                     </p>
                     
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-5 w-full mt-4">
-                      <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
-                        <MapPin className="w-5 h-5 text-emerald-400" />
-                        Maharashtra, India
-                      </div>
-                      <div className="flex items-center justify-center gap-4">
-                        <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noreferrer" aria-label="Visit our GitHub page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
-                          <Github className="w-5 h-5" />
-                        </a>
-                        <a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noreferrer" aria-label="Visit our LinkedIn page" className="p-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-full transition-colors border border-white/5">
-                          <Linkedin className="w-5 h-5" />
-                        </a>
+                    <div className="flex flex-wrap items-center gap-3 w-full pt-4 border-t border-white/10">
+                      <a
+                        href="https://www.linkedin.com/in/aniket-dhuri-273094225"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 border border-blue-400/30 rounded-xl text-xs font-bold transition-colors"
+                      >
+                        <Linkedin className="w-4 h-4 text-blue-400" />
+                        LinkedIn Profile
+                      </a>
+                      <a
+                        href="https://github.com/dhurianiket/Aegis-health-ai-"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/15 rounded-xl text-xs font-bold transition-colors"
+                      >
+                        <Github className="w-4 h-4 text-emerald-400" />
+                        GitHub Repository
+                      </a>
+                      <a
+                        href="https://aniket.aegishealthai.co.in/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 rounded-xl text-xs font-bold transition-colors"
+                      >
+                        <Sparkles className="w-4 h-4 text-emerald-400" />
+                        Founder Portfolio &amp; CV
+                      </a>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 ml-auto">
+                        <MapPin className="w-4 h-4 text-emerald-400" />
+                        Dombivli West, Thane, Maharashtra 421202
                       </div>
                     </div>
                   </div>
@@ -1294,15 +1394,15 @@ export default function LandingPage() {
                 Stop guessing. Start knowing.
               </h3>
               <p className="text-lg text-slate-400 mb-10 max-w-lg mx-auto font-light leading-relaxed">
-                Drop your first lab report into Aegis and see your health clearly. Premium health intelligence for everyone.
+                Explore our live clinical workspace immediately or upload your own diagnostic PDF report.
               </p>
-              <button
-                onClick={handleSignIn}
-                disabled={isSigningIn}
+              <Link
+                to="/dashboard"
+                onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
                 className="px-10 py-5 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full font-bold tracking-wide transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-flex items-center gap-2"
               >
-                {isSigningIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Sparkles className="w-5 h-5 text-emerald-500" /> GET STARTED NOW</>}
-              </button>
+                <Sparkles className="w-5 h-5 text-emerald-500" /> SIGN IN / LAUNCH WORKSPACE
+              </Link>
             </div>
           </div>
           
@@ -1325,8 +1425,13 @@ export default function LandingPage() {
                 <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Explore Aegis</h4>
                 <ul className="space-y-3">
                   <li>
-                    <a href="#pricing" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors text-sm">
-                      Beta Access (100% Free)
+                    <Link to="/dashboard" onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }} className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors text-sm">
+                      Live Interactive Workspace
+                    </Link>
+                  </li>
+                  <li>
+                    <a href="#pricing" className="text-slate-300 hover:text-emerald-300 font-medium transition-colors text-sm">
+                      Platform Capabilities (100% Free)
                     </a>
                   </li>
                   <li>
@@ -1336,7 +1441,7 @@ export default function LandingPage() {
                   </li>
                   <li>
                     <Link to="/about.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
-                      About Us
+                      About Us &amp; Leadership
                     </Link>
                   </li>
                   <li>
@@ -1376,7 +1481,10 @@ export default function LandingPage() {
                     </a>
                   </li>
                   <li className="text-slate-400 text-sm flex items-center justify-center md:justify-start gap-3">
-                    <MapPin className="w-4 h-4 shrink-0" /> Kalyan/Dombivli, Maharashtra, India
+                    <MapPin className="w-4 h-4 shrink-0" /> Dombivli West, Thane, Maharashtra 421202
+                  </li>
+                  <li className="text-slate-400 text-xs font-mono">
+                    MSME Udyam: UDYAM-MH-33-0782403
                   </li>
                 </ul>
               </div>
@@ -1399,9 +1507,9 @@ export default function LandingPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 mb-8">
-              <p className="text-xs text-slate-400 text-center uppercase tracking-widest mb-2 font-semibold">Important Medical Disclaimer (Public Beta)</p>
+              <p className="text-xs text-slate-400 text-center uppercase tracking-widest mb-2 font-semibold">Important Clinical &amp; Medical Disclaimer</p>
               <p className="text-xs text-slate-300 text-center max-w-4xl mx-auto leading-relaxed">
-                Aegis Health AI is currently in public beta. It is an informational tool and does NOT provide medical advice, diagnosis, or treatment. It does not replace professional clinical assessments. Always consult a qualified healthcare provider regarding your health data or any medical condition. If you are experiencing an urgent medical issue, contact emergency services immediately.
+                Aegis Health AI is an informational clinical decision-support and health intelligence platform and does NOT provide medical diagnosis or treatment prescriptions. It does not replace professional clinical assessments. Always consult a qualified healthcare provider regarding your health data or any medical condition. If you are experiencing an urgent medical issue, contact emergency services immediately.
               </p>
             </div>
 
@@ -1438,6 +1546,12 @@ export default function LandingPage() {
         </div>
         </main>
 
+        {/* Email ID + Password + Google Sign-In Modal */}
+        <AuthLoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+        />
+
         {/* Legal Modal */}
         <LegalModal 
           isOpen={legalModalOpen} 
@@ -1448,3 +1562,4 @@ export default function LandingPage() {
     </ErrorBoundary>
   );
 }
+

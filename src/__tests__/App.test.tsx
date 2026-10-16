@@ -57,7 +57,7 @@ describe("App Critical Flow (Smoke)", () => {
     }, { timeout: 4000 });
   }, 10000);
 
-  it("should render the Beta Access badge and not display any Upgrade (₹99) button in the header", async () => {
+  it("should render the Production v2.0 badge and not display any Upgrade (₹99) button in the header", async () => {
     (authCtx.useAuth as any).mockReturnValue({
       user: { uid: "u1", email: "test@example.com" },
       signIn: vi.fn(),
@@ -79,7 +79,7 @@ describe("App Critical Flow (Smoke)", () => {
     );
 
     await waitFor(() => {
-      expect(getByText("Beta Access")).not.toBeNull();
+      expect(getByText("Production v2.0")).not.toBeNull();
       expect(queryByText(/Upgrade \(₹99\)/i)).toBeNull();
     }, { timeout: 4000 });
   }, 10000);

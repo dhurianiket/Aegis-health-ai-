@@ -1,8 +1,18 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import { OrganHealthOverview, OrganSystemKey, OrganSystemScore } from '../../services/organHealthService';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrganHealthOverview, OrganSystemKey } from '../../services/organHealthService';
 import { WearableBiometrics } from '../../types/wearables';
-import { Rotate3d, ZoomIn, ZoomOut, RefreshCw, Eye, Sparkles } from 'lucide-react';
+import {
+  Rotate3d,
+  ZoomIn,
+  ZoomOut,
+  RefreshCw,
+  Sparkles,
+  Focus,
+  Maximize2,
+  Eye,
+} from 'lucide-react';
 
 export interface ThreeBodyScanner3DProps {
   overview: OrganHealthOverview;
@@ -13,24 +23,140 @@ export interface ThreeBodyScanner3DProps {
   className?: string;
 }
 
-interface OrganNodeDef {
-  key: OrganSystemKey;
-  name: string;
-  position: [number, number, number];
-  size: [number, number, number];
-  shape: 'sphere' | 'box' | 'cylinder' | 'kidney';
+interface AnatomicalMeshMeta {
+  meshName: string;
+  organKey: OrganSystemKey;
+  displayName: string;
+  anatomicalColor: number;
+  emissiveColor: number;
+  baseOpacity: number;
 }
 
-const ORGAN_NODES: OrganNodeDef[] = [
-  { key: 'cardiovascular', name: 'Heart', position: [-0.14, 1.28, 0.18], size: [0.18, 0.22, 0.16], shape: 'sphere' },
-  { key: 'pulmonary', name: 'Lungs', position: [-0.32, 1.25, 0.05], size: [0.26, 0.42, 0.22], shape: 'sphere' },
-  { key: 'pulmonary', name: 'Right Lung', position: [0.32, 1.25, 0.05], size: [0.26, 0.42, 0.22], shape: 'sphere' },
-  { key: 'hepatic', name: 'Liver', position: [0.28, 0.88, 0.15], size: [0.35, 0.24, 0.24], shape: 'sphere' },
-  { key: 'metabolic', name: 'Pancreas', position: [0.04, 0.74, 0.08], size: [0.32, 0.1, 0.12], shape: 'cylinder' },
-  { key: 'renal', name: 'Left Kidney', position: [-0.28, 0.58, -0.12], size: [0.13, 0.18, 0.12], shape: 'kidney' },
-  { key: 'renal', name: 'Right Kidney', position: [0.28, 0.58, -0.12], size: [0.13, 0.18, 0.12], shape: 'kidney' },
-  { key: 'hematology', name: 'Blood Network', position: [0, 0.1, 0.05], size: [0.12, 1.1, 0.12], shape: 'cylinder' },
+const ANATOMICAL_ORGAN_MAP: Record<string, AnatomicalMeshMeta> = {
+  heart: {
+    meshName: 'heart',
+    organKey: 'cardiovascular',
+    displayName: 'Heart (Cardiovascular)',
+    anatomicalColor: 0xf43f5e,
+    emissiveColor: 0xe11d48,
+    baseOpacity: 0.94,
+  },
+  lungs: {
+    meshName: 'lungs',
+    organKey: 'pulmonary',
+    displayName: 'Lungs & Bronchi',
+    anatomicalColor: 0x38bdf8,
+    emissiveColor: 0x0284c7,
+    baseOpacity: 0.78,
+  },
+  liver: {
+    meshName: 'liver',
+    organKey: 'hepatic',
+    displayName: 'Liver (Hepatic)',
+    anatomicalColor: 0xf97316,
+    emissiveColor: 0xc2410c,
+    baseOpacity: 0.9,
+  },
+  pancreas: {
+    meshName: 'pancreas',
+    organKey: 'metabolic',
+    displayName: 'Pancreas (Metabolic)',
+    anatomicalColor: 0xfacc15,
+    emissiveColor: 0xca8a04,
+    baseOpacity: 0.92,
+  },
+  kidney_left: {
+    meshName: 'kidney_left',
+    organKey: 'renal',
+    displayName: 'Left Kidney (Renal)',
+    anatomicalColor: 0xa855f7,
+    emissiveColor: 0x7e22ce,
+    baseOpacity: 0.92,
+  },
+  kidney_right: {
+    meshName: 'kidney_right',
+    organKey: 'renal',
+    displayName: 'Right Kidney (Renal)',
+    anatomicalColor: 0xa855f7,
+    emissiveColor: 0x7e22ce,
+    baseOpacity: 0.92,
+  },
+  vasculature: {
+    meshName: 'vasculature',
+    organKey: 'hematology',
+    displayName: 'Aorta & Vena Cava',
+    anatomicalColor: 0xec4899,
+    emissiveColor: 0xbe185d,
+    baseOpacity: 0.88,
+  },
+};
+
+const QUICK_ORGAN_PILLS: {
+  key: OrganSystemKey;
+  label: string;
+  dotColor: string;
+  side: 'left' | 'right';
+}[] = [
+  { key: 'pulmonary', label: 'Pulmonary 3D', dotColor: '#38bdf8', side: 'left' },
+  { key: 'hepatic', label: 'Hepatic 3D', dotColor: '#f97316', side: 'left' },
+  { key: 'hematology', label: 'Vasculature 3D', dotColor: '#ec4899', side: 'left' },
+  { key: 'cardiovascular', label: 'Cardiac 3D', dotColor: '#f43f5e', side: 'right' },
+  { key: 'metabolic', label: 'Metabolic 3D', dotColor: '#facc15', side: 'right' },
+  { key: 'renal', label: 'Renal 3D', dotColor: '#a855f7', side: 'right' },
 ];
+
+// Custom GLSL X-Ray Fresnel Hologram Shader for NIH Visible Human Skin Shell
+const XRAY_VERTEX_SHADER = `
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  varying vec3 vWorldPos;
+
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    vWorldPos = position;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const XRAY_FRAGMENT_SHADER = `
+  uniform vec3 uRimColor;
+  uniform vec3 uCoreColor;
+  uniform float uScanY;
+  uniform float uScanActive;
+  uniform float uTime;
+  uniform float uShellOpacity;
+
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  varying vec3 vWorldPos;
+
+  void main() {
+    vec3 normal = normalize(vNormal);
+    vec3 viewDir = normalize(vViewPosition);
+
+    // Angle-dependent Fresnel rim illumination:
+    // Center of torso is crystal-clear (dot ~ 1 -> fresnel ~ 0),
+    // Anatomical contours & musculature edges glow brightly (dot ~ 0 -> fresnel ~ 1)
+    float viewDot = abs(dot(normal, viewDir));
+    float fresnel = pow(1.0 - viewDot, 2.15);
+
+    // Subtle micro-holographic horizontal scanlines
+    float scanline = 0.88 + 0.12 * sin(vWorldPos.y * 210.0 - uTime * 2.5);
+
+    // Live volumetric laser cross-section ring
+    float distToScan = abs(vWorldPos.y - uScanY);
+    float laserLine = uScanActive * smoothstep(0.018, 0.0, distToScan);
+    float laserHalo = uScanActive * smoothstep(0.11, 0.0, distToScan) * 0.38;
+
+    vec3 baseCol = mix(uCoreColor, uRimColor, fresnel) * scanline;
+    vec3 finalCol = baseCol + vec3(0.45, 0.98, 1.0) * (laserLine * 1.6 + laserHalo);
+
+    float alpha = (0.025 + fresnel * 0.64) * uShellOpacity + laserLine * 0.75 + laserHalo;
+    gl_FragColor = vec4(finalCol, clamp(alpha, 0.0, 0.92));
+  }
+`;
 
 export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
   overview,
@@ -44,42 +170,78 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [hoveredOrgan, setHoveredOrgan] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number; name: string; status: string; score: number } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{
+    x: number;
+    y: number;
+    name: string;
+    status: string;
+    score: number;
+  } | null>(null);
   const [isRotating, setIsRotating] = useState<boolean>(true);
   const [webGLSupported, setWebGLSupported] = useState<boolean>(true);
+  const [modelLoaded, setModelLoaded] = useState<boolean>(false);
+  const [cameraPreset, setCameraPreset] = useState<'full-body' | 'torso-focus'>('full-body');
+  const [xrayIntensity, setXrayIntensity] = useState<'standard' | 'deep-organ'>('standard');
 
-  // Interaction refs
+  // Latest props in refs so event handlers & render loop don't tear down WebGL context
+  const propsRef = useRef({
+    overview,
+    telemetry,
+    selectedOrganKey,
+    onSelectOrgan,
+    scanActive,
+    isRotating,
+    xrayIntensity,
+  });
+  useEffect(() => {
+    propsRef.current = {
+      overview,
+      telemetry,
+      selectedOrganKey,
+      onSelectOrgan,
+      scanActive,
+      isRotating,
+      xrayIntensity,
+    };
+  }, [overview, telemetry, selectedOrganKey, onSelectOrgan, scanActive, isRotating, xrayIntensity]);
+
+  // Camera & orbit state (calibrated using ModelViewer.tsx bounding-sphere math for 1.824m NIH body)
   const stateRef = useRef({
     isDragging: false,
     prevMouseX: 0,
     prevMouseY: 0,
-    rotY: 0,
-    rotX: 0,
+    rotY: -0.18,
+    rotX: 0.04,
     velY: 0,
     velX: 0,
-    zoom: 5.4,
-    targetZoom: 5.4,
-    scanY: 2.2,
+    zoom: 2.82,
+    targetZoom: 2.82,
+    camY: -0.01,
+    targetCamY: -0.01,
+    scanY: 0.9,
     scanDir: -1,
   });
 
-  const getOrganColor = useCallback(
-    (key: OrganSystemKey) => {
-      const score = overview.organSystems[key];
-      if (!score) return 0x22d3ee;
-      if (score.status === 'critical') return 0xf43f5e;
-      if (score.status === 'warning') return 0xf59e0b;
-      return 0x10b981;
-    },
-    [overview]
-  );
+  const applyCameraPreset = useCallback((preset: 'full-body' | 'torso-focus') => {
+    setCameraPreset(preset);
+    if (preset === 'torso-focus') {
+      // Focuses directly on thoracic & abdominal organs (Y: +0.05m to +0.68m)
+      stateRef.current.targetCamY = 0.38;
+      stateRef.current.targetZoom = 1.18;
+      stateRef.current.rotX = 0.06;
+    } else {
+      // Full 1.824m NIH Visible Human standing anatomy (Y: -0.913m to +0.911m) with zero clipping
+      stateRef.current.targetCamY = -0.01;
+      stateRef.current.targetZoom = 2.82;
+      stateRef.current.rotX = 0.02;
+    }
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    // Safe pre-check for WebGL context
     const hasWebGL = (() => {
       try {
         const testCanvas = document.createElement('canvas');
@@ -97,7 +259,6 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       return;
     }
 
-    // Verify WebGL availability
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
@@ -111,295 +272,195 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       return;
     }
 
-    const width = container.clientWidth || 400;
+    const width = container.clientWidth || 460;
     const height = container.clientHeight || 540;
 
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x020617, 0.08);
 
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    camera.position.set(0, 0.4, 5.4);
+    // FOV = 36 deg for distortion-free medical orthographic-like perspective
+    const camera = new THREE.PerspectiveCamera(36, width / height, 0.05, 50);
+    camera.position.set(0, stateRef.current.camY, stateRef.current.zoom);
 
-    // Ambient & Directional Lights
-    const ambientLight = new THREE.AmbientLight(0x083344, 1.2);
+    // 3-Point Medical Studio Lighting for sculpted 3D organ topography
+    const ambientLight = new THREE.AmbientLight(0xdbeafe, 1.35);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0x22d3ee, 2.0);
-    keyLight.position.set(2, 4, 3);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
+    keyLight.position.set(1.8, 2.5, 3.2);
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x818cf8, 1.5);
-    rimLight.position.set(-3, -2, -2);
+    const fillLight = new THREE.DirectionalLight(0x22d3ee, 1.6);
+    fillLight.position.set(-2.5, 0.8, 2.0);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0x818cf8, 1.8);
+    rimLight.position.set(0, -2.0, -2.5);
     scene.add(rimLight);
 
     // Root Hologram Pivot
     const holoPivot = new THREE.Group();
     scene.add(holoPivot);
 
-    // ─────────────────────────────────────────────────────────────
-    // 1. PROCEDURAL 3D ANATOMICAL HUMAN MESH & POINT CLOUD
-    // ─────────────────────────────────────────────────────────────
-    const particlePositions: number[] = [];
-    const particleColors: number[] = [];
-    const baseColor = new THREE.Color(0x22d3ee);
-    const spineColor = new THREE.Color(0x818cf8);
-
-    // Helper: Add points on an ellipse ring
-    const addRing = (
-      cy: number,
-      rx: number,
-      rz: number,
-      count: number,
-      color: THREE.Color = baseColor,
-      yJitter = 0.02
-    ) => {
-      for (let i = 0; i < count; i++) {
-        const theta = (i / count) * Math.PI * 2;
-        const x = Math.cos(theta) * rx + (Math.random() - 0.5) * 0.02;
-        const z = Math.sin(theta) * rz + (Math.random() - 0.5) * 0.02;
-        const y = cy + (Math.random() - 0.5) * yJitter;
-        particlePositions.push(x, y, z);
-        particleColors.push(color.r, color.g, color.b);
-      }
+    // X-Ray Fresnel Shader Material for the outer NIH Visible Human skin mesh
+    const bodyShellUniforms = {
+      uRimColor: { value: new THREE.Color(0x22d3ee) },
+      uCoreColor: { value: new THREE.Color(0x083344) },
+      uScanY: { value: 0.9 },
+      uScanActive: { value: 1.0 },
+      uTime: { value: 0.0 },
+      uShellOpacity: { value: 1.0 },
     };
 
-    // Head (Cranium & Jaw)
-    for (let y = 1.95; y <= 2.55; y += 0.04) {
-      const ny = (y - 2.25) / 0.3;
-      const r = Math.sqrt(Math.max(0, 1 - ny * ny)) * 0.28;
-      addRing(y, r, r * 1.12, 32);
-    }
-    // Neck
-    for (let y = 1.76; y <= 1.92; y += 0.04) {
-      addRing(y, 0.15, 0.16, 20);
-    }
-    // Shoulders & Clavicle
-    addRing(1.72, 0.72, 0.26, 48);
-    addRing(1.68, 0.68, 0.25, 48);
-
-    // Ribcage / Thorax (Barrel shaped)
-    for (let y = 1.05; y <= 1.64; y += 0.04) {
-      const progress = (y - 1.05) / 0.59;
-      const rx = 0.44 + Math.sin(progress * Math.PI) * 0.14;
-      const rz = 0.24 + Math.sin(progress * Math.PI) * 0.08;
-      addRing(y, rx, rz, 44);
-    }
-
-    // Spine Column (Center Points)
-    for (let y = -0.1; y <= 2.0; y += 0.035) {
-      particlePositions.push(0, y, -0.06);
-      particleColors.push(spineColor.r, spineColor.g, spineColor.b);
-    }
-
-    // Abdomen & Waist (Tapered)
-    for (let y = 0.65; y <= 1.02; y += 0.04) {
-      const rx = 0.38 + (1 - (y - 0.65) / 0.37) * 0.08;
-      const rz = 0.22 + (1 - (y - 0.65) / 0.37) * 0.04;
-      addRing(y, rx, rz, 36);
-    }
-
-    // Pelvis & Hips
-    for (let y = 0.25; y <= 0.62; y += 0.04) {
-      const rx = 0.44 + Math.sin(((y - 0.25) / 0.37) * Math.PI) * 0.08;
-      const rz = 0.26;
-      addRing(y, rx, rz, 40);
-    }
-
-    // Left & Right Arms
-    [-1, 1].forEach((side) => {
-      // Upper arm
-      for (let y = 1.0; y <= 1.65; y += 0.04) {
-        const x = side * (0.64 + (1.65 - y) * 0.08);
-        const z = 0;
-        addRing(y, 0.11, 0.11, 14, baseColor, 0.01);
-        particlePositions.push(x, y, z);
-        particleColors.push(baseColor.r, baseColor.g, baseColor.b);
-      }
-      // Forearm & Hand
-      for (let y = 0.35; y <= 0.98; y += 0.04) {
-        const x = side * (0.7 + (0.98 - y) * 0.04);
-        const z = (0.98 - y) * 0.05;
-        addRing(y, 0.08, 0.08, 12, baseColor, 0.01);
-        particlePositions.push(x, y, z);
-        particleColors.push(baseColor.r, baseColor.g, baseColor.b);
-      }
-    });
-
-    // Left & Right Legs
-    [-1, 1].forEach((side) => {
-      const cx = side * 0.24;
-      // Thighs
-      for (let y = -0.8; y <= 0.2; y += 0.045) {
-        const progress = (y - -0.8) / 1.0;
-        const r = 0.15 + progress * 0.07;
-        for (let i = 0; i < 22; i++) {
-          const theta = (i / 22) * Math.PI * 2;
-          particlePositions.push(cx + Math.cos(theta) * r, y, Math.sin(theta) * r);
-          particleColors.push(baseColor.r, baseColor.g, baseColor.b);
-        }
-      }
-      // Knees & Calves
-      for (let y = -1.9; y <= -0.85; y += 0.045) {
-        const progress = (y - -1.9) / 1.05;
-        const r = 0.11 + Math.sin(progress * Math.PI) * 0.04;
-        for (let i = 0; i < 18; i++) {
-          const theta = (i / 18) * Math.PI * 2;
-          particlePositions.push(cx + Math.cos(theta) * r, y, Math.sin(theta) * r);
-          particleColors.push(baseColor.r, baseColor.g, baseColor.b);
-        }
-      }
-      // Feet
-      for (let z = -0.05; z <= 0.28; z += 0.05) {
-        particlePositions.push(cx, -1.98, z);
-        particleColors.push(baseColor.r, baseColor.g, baseColor.b);
-      }
-    });
-
-    const bodyPointsGeo = new THREE.BufferGeometry();
-    bodyPointsGeo.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
-    bodyPointsGeo.setAttribute('color', new THREE.Float32BufferAttribute(particleColors, 3));
-
-    const bodyPointsMat = new THREE.PointsMaterial({
-      size: 0.038,
-      vertexColors: true,
+    const bodyShellMaterial = new THREE.ShaderMaterial({
+      vertexShader: XRAY_VERTEX_SHADER,
+      fragmentShader: XRAY_FRAGMENT_SHADER,
+      uniforms: bodyShellUniforms,
       transparent: true,
-      opacity: 0.85,
-      blending: THREE.AdditiveBlending,
-    });
-
-    const bodyPointsMesh = new THREE.Points(bodyPointsGeo, bodyPointsMat);
-    holoPivot.add(bodyPointsMesh);
-
-    // ─────────────────────────────────────────────────────────────
-    // 2. WIREFRAME CONTOUR CAGE (Fine Holographic Lines)
-    // ─────────────────────────────────────────────────────────────
-    const wireSegmentsGeo = new THREE.BufferGeometry();
-    const wirePositions: number[] = [];
-
-    // Longitudinal body contour lines
-    const addLongitudinal = (side: number) => {
-      const pts = [
-        [0, 2.5, 0],
-        [side * 0.28, 2.25, 0],
-        [side * 0.16, 1.85, 0],
-        [side * 0.68, 1.7, 0],
-        [side * 0.52, 1.3, 0],
-        [side * 0.42, 0.9, 0],
-        [side * 0.48, 0.5, 0],
-        [side * 0.32, -0.3, 0],
-        [side * 0.26, -0.85, 0],
-        [side * 0.22, -1.4, 0],
-        [side * 0.18, -1.95, 0],
-      ];
-      for (let i = 0; i < pts.length - 1; i++) {
-        wirePositions.push(pts[i][0], pts[i][1], pts[i][2]);
-        wirePositions.push(pts[i + 1][0], pts[i + 1][1], pts[i + 1][2]);
-      }
-    };
-    addLongitudinal(-1);
-    addLongitudinal(1);
-
-    wireSegmentsGeo.setAttribute('position', new THREE.Float32BufferAttribute(wirePositions, 3));
-    const wireMat = new THREE.LineBasicMaterial({
-      color: 0x22d3ee,
-      transparent: true,
-      opacity: 0.35,
-      blending: THREE.AdditiveBlending,
-    });
-    const wireMesh = new THREE.LineSegments(wireSegmentsGeo, wireMat);
-    holoPivot.add(wireMesh);
-
-    // ─────────────────────────────────────────────────────────────
-    // 3. 3D VOLUMETRIC INTERNAL ORGANS
-    // ─────────────────────────────────────────────────────────────
-    const organMeshes: { mesh: THREE.Mesh; node: OrganNodeDef }[] = [];
-
-    ORGAN_NODES.forEach((node) => {
-      let geo: THREE.BufferGeometry;
-      if (node.shape === 'cylinder') {
-        geo = new THREE.CylinderGeometry(node.size[0] / 2, node.size[0] / 2, node.size[1], 16);
-      } else {
-        geo = new THREE.SphereGeometry(node.size[0], 16, 16);
-      }
-
-      const colorHex = getOrganColor(node.key);
-      const isSelected = selectedOrganKey === node.key;
-
-      const mat = new THREE.MeshPhongMaterial({
-        color: colorHex,
-        emissive: colorHex,
-        emissiveIntensity: isSelected ? 0.9 : 0.45,
-        transparent: true,
-        opacity: isSelected ? 0.85 : 0.6,
-        shininess: 90,
-      });
-
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(...node.position);
-      mesh.scale.set(1, node.size[1] / node.size[0], node.size[2] / node.size[0]);
-      mesh.userData = { organKey: node.key, name: node.name };
-
-      // Halo Wireframe Outer Ring for Selected / High-Risk Organ
-      const outlineGeo = new THREE.WireframeGeometry(geo);
-      const outlineMat = new THREE.LineBasicMaterial({
-        color: colorHex,
-        transparent: true,
-        opacity: 0.7,
-      });
-      const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
-      mesh.add(outlineMesh);
-
-      holoPivot.add(mesh);
-      organMeshes.push({ mesh, node });
-    });
-
-    // ─────────────────────────────────────────────────────────────
-    // 4. VOLUMETRIC LASER SCAN PLANE
-    // ─────────────────────────────────────────────────────────────
-    const scanGeo = new THREE.PlaneGeometry(2.4, 0.12);
-    const scanMat = new THREE.MeshBasicMaterial({
-      color: 0x22d3ee,
-      transparent: true,
-      opacity: 0.65,
+      depthWrite: false,
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
     });
-    const scanPlane = new THREE.Mesh(scanGeo, scanMat);
+
+    // Track loaded interactive organ meshes
+    const organEntries: {
+      mesh: THREE.Mesh;
+      material: THREE.MeshPhysicalMaterial;
+      meta: AnatomicalMeshMeta;
+    }[] = [];
+
+    // Load the decimated NIH Visible Human Male GLB (body_shell + 7 internal organs)
+    let isDisposed = false;
+    const loader = new GLTFLoader();
+    loader.load(
+      '/models/nih-human-anatomy.glb',
+      (gltf) => {
+        if (isDisposed) return;
+
+        const meshesToProcess: THREE.Mesh[] = [];
+        gltf.scene.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            meshesToProcess.push(child as THREE.Mesh);
+          }
+        });
+
+        meshesToProcess.forEach((rawMesh) => {
+          const name = rawMesh.name;
+          const geometry = rawMesh.geometry.clone();
+          geometry.computeVertexNormals();
+
+          if (name === 'body_shell') {
+            const shellMesh = new THREE.Mesh(geometry, bodyShellMaterial);
+            shellMesh.renderOrder = 2;
+            holoPivot.add(shellMesh);
+            return;
+          }
+
+          const meta = ANATOMICAL_ORGAN_MAP[name];
+          if (!meta) return;
+
+          // Center geometry at its own 3D anatomical centroid so cardiac/respiratory scaling
+          // expands from the organ's own center while keeping exact NIH world placement
+          geometry.computeBoundingBox();
+          const center = new THREE.Vector3();
+          geometry.boundingBox?.getCenter(center);
+          geometry.translate(-center.x, -center.y, -center.z);
+
+          const mat = new THREE.MeshPhysicalMaterial({
+            color: meta.anatomicalColor,
+            emissive: meta.emissiveColor,
+            emissiveIntensity: 0.28,
+            roughness: 0.32,
+            metalness: 0.08,
+            clearcoat: 0.65,
+            clearcoatRoughness: 0.2,
+            transparent: true,
+            opacity: meta.baseOpacity,
+          });
+
+          const organMesh = new THREE.Mesh(geometry, mat);
+          organMesh.position.copy(center);
+          organMesh.renderOrder = 1;
+          organMesh.userData = {
+            organKey: meta.organKey,
+            name: meta.displayName,
+            meshName: name,
+          };
+
+          holoPivot.add(organMesh);
+          organEntries.push({ mesh: organMesh, material: mat, meta });
+        });
+
+        setModelLoaded(true);
+      },
+      undefined,
+      () => {
+        // Graceful fallback if asset fails to fetch in isolated environments
+        if (!isDisposed) setModelLoaded(true);
+      }
+    );
+
+    // ─────────────────────────────────────────────────────────────
+    // VOLUMETRIC LASER SCAN DISC & HOLOGRAPHIC PEDESTAL
+    // ─────────────────────────────────────────────────────────────
+    const scanRingGeo = new THREE.RingGeometry(0.02, 0.56, 64);
+    const scanRingMat = new THREE.MeshBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.28,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const scanPlane = new THREE.Mesh(scanRingGeo, scanRingMat);
     scanPlane.rotation.x = Math.PI / 2;
-    scanPlane.position.y = 2.0;
+    scanPlane.position.y = 0.85;
     holoPivot.add(scanPlane);
 
-    // ─────────────────────────────────────────────────────────────
-    // 5. ROTATING HOLOGRAPHIC GROUND BASE
-    // ─────────────────────────────────────────────────────────────
-    const floorRingsGroup = new THREE.Group();
-    floorRingsGroup.position.y = -2.1;
-    scene.add(floorRingsGroup);
+    // Outer laser ring border
+    const scanEdgeGeo = new THREE.RingGeometry(0.55, 0.57, 64);
+    const scanEdgeMat = new THREE.MeshBasicMaterial({
+      color: 0x67e8f9,
+      transparent: true,
+      opacity: 0.75,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const scanEdge = new THREE.Mesh(scanEdgeGeo, scanEdgeMat);
+    scanPlane.add(scanEdge);
 
-    const makeRing = (radius: number, color: number, opacity: number) => {
-      const ringGeo = new THREE.RingGeometry(radius - 0.02, radius + 0.02, 48);
+    // Holographic Ground Emitter Base right below the feet (Y = -0.93m)
+    const floorRingsGroup = new THREE.Group();
+    floorRingsGroup.position.y = -0.93;
+    holoPivot.add(floorRingsGroup);
+
+    const makeRing = (radius: number, thickness: number, color: number, opacity: number) => {
+      const ringGeo = new THREE.RingGeometry(radius - thickness, radius + thickness, 64);
       const ringMat = new THREE.MeshBasicMaterial({
         color,
         side: THREE.DoubleSide,
         transparent: true,
         opacity,
         blending: THREE.AdditiveBlending,
+        depthWrite: false,
       });
       const rMesh = new THREE.Mesh(ringGeo, ringMat);
       rMesh.rotation.x = Math.PI / 2;
       return rMesh;
     };
 
-    const ring1 = makeRing(1.6, 0x22d3ee, 0.5);
-    const ring2 = makeRing(1.2, 0x2dd4bf, 0.4);
-    const ring3 = makeRing(0.8, 0x818cf8, 0.3);
+    const ring1 = makeRing(0.58, 0.008, 0x22d3ee, 0.55);
+    const ring2 = makeRing(0.42, 0.006, 0x2dd4bf, 0.4);
+    const ring3 = makeRing(0.26, 0.005, 0x818cf8, 0.35);
     floorRingsGroup.add(ring1, ring2, ring3);
 
     // ─────────────────────────────────────────────────────────────
-    // 6. INTERACTIVE RAYCASTER & POINTER EVENTS
+    // INTERACTIVE RAYCASTER & POINTER EVENTS
     // ─────────────────────────────────────────────────────────────
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -410,13 +471,16 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(organMeshes.map((o) => o.mesh), false);
+      const intersects = raycaster.intersectObjects(
+        organEntries.map((o) => o.mesh),
+        false
+      );
 
       if (intersects.length > 0) {
         const hit = intersects[0].object as THREE.Mesh;
         const organKey = hit.userData.organKey as OrganSystemKey;
         const organName = hit.userData.name as string;
-        const organData = overview.organSystems[organKey];
+        const organData = propsRef.current.overview.organSystems[organKey];
 
         setHoveredOrgan(organName);
         setTooltipPos({
@@ -438,12 +502,15 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(organMeshes.map((o) => o.mesh), false);
+      const intersects = raycaster.intersectObjects(
+        organEntries.map((o) => o.mesh),
+        false
+      );
 
       if (intersects.length > 0) {
         const hit = intersects[0].object as THREE.Mesh;
         const organKey = hit.userData.organKey as OrganSystemKey;
-        onSelectOrgan(organKey);
+        propsRef.current.onSelectOrgan(organKey);
       }
     };
 
@@ -451,7 +518,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
     canvas.addEventListener('click', handleClick);
 
     // ─────────────────────────────────────────────────────────────
-    // 7. DRAG-TO-ROTATE 3D ORBIT TRACKING (Inertia Dampening)
+    // DRAG-TO-ROTATE 3D ORBIT TRACKING
     // ─────────────────────────────────────────────────────────────
     const handleMouseDown = (e: MouseEvent) => {
       stateRef.current.isDragging = true;
@@ -465,11 +532,14 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       const dx = e.clientX - stateRef.current.prevMouseX;
       const dy = e.clientY - stateRef.current.prevMouseY;
 
-      stateRef.current.velY = dx * 0.007;
+      stateRef.current.velY = dx * 0.008;
       stateRef.current.velX = dy * 0.004;
 
       stateRef.current.rotY += stateRef.current.velY;
-      stateRef.current.rotX = Math.max(-0.45, Math.min(0.45, stateRef.current.rotX + stateRef.current.velX));
+      stateRef.current.rotX = Math.max(
+        -0.4,
+        Math.min(0.4, stateRef.current.rotX + stateRef.current.velX)
+      );
 
       stateRef.current.prevMouseX = e.clientX;
       stateRef.current.prevMouseY = e.clientY;
@@ -481,7 +551,10 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      stateRef.current.targetZoom = Math.max(3.8, Math.min(7.5, stateRef.current.targetZoom + e.deltaY * 0.004));
+      stateRef.current.targetZoom = Math.max(
+        0.85,
+        Math.min(3.5, stateRef.current.targetZoom + e.deltaY * 0.002)
+      );
     };
 
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -489,7 +562,6 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
     window.addEventListener('mouseup', handleWindowMouseUp);
     canvas.addEventListener('wheel', handleWheel, { passive: false });
 
-    // Touch controls for mobile/tablet
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
         stateRef.current.isDragging = true;
@@ -505,7 +577,10 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
         const dy = e.touches[0].clientY - stateRef.current.prevMouseY;
 
         stateRef.current.rotY += dx * 0.009;
-        stateRef.current.rotX = Math.max(-0.45, Math.min(0.45, stateRef.current.rotX + dy * 0.005));
+        stateRef.current.rotX = Math.max(
+          -0.4,
+          Math.min(0.4, stateRef.current.rotX + dy * 0.005)
+        );
 
         stateRef.current.prevMouseX = e.touches[0].clientX;
         stateRef.current.prevMouseY = e.touches[0].clientY;
@@ -521,15 +596,16 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
     canvas.addEventListener('touchend', handleTouchEnd);
 
     // ─────────────────────────────────────────────────────────────
-    // 8. ANIMATION RENDER LOOP (60 FPS)
+    // 60 FPS RENDER LOOP
     // ─────────────────────────────────────────────────────────────
     let animId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const render = () => {
       animId = requestAnimationFrame(render);
       const delta = clock.getDelta();
       const elapsed = clock.getElapsedTime();
+      const currentProps = propsRef.current;
 
       // Inertia & Auto-rotation
       if (!stateRef.current.isDragging) {
@@ -538,49 +614,97 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
         stateRef.current.rotY += stateRef.current.velY;
         stateRef.current.rotX += stateRef.current.velX;
 
-        if (isRotating && Math.abs(stateRef.current.velY) < 0.001) {
-          stateRef.current.rotY += 0.004;
+        if (currentProps.isRotating && Math.abs(stateRef.current.velY) < 0.001) {
+          stateRef.current.rotY += 0.0045;
         }
       }
 
-      // Smooth zoom lerp
+      // Smooth camera zoom and vertical target interpolation
       stateRef.current.zoom += (stateRef.current.targetZoom - stateRef.current.zoom) * 0.1;
-      camera.position.z = stateRef.current.zoom;
+      stateRef.current.camY += (stateRef.current.targetCamY - stateRef.current.camY) * 0.1;
+      camera.position.set(0, stateRef.current.camY, stateRef.current.zoom);
+      camera.lookAt(0, stateRef.current.camY, 0);
 
-      // Apply rotation to Hologram Root Pivot
       holoPivot.rotation.y = stateRef.current.rotY;
       holoPivot.rotation.x = stateRef.current.rotX;
 
-      // Floor rings spin
-      ring1.rotation.z += 0.006;
-      ring2.rotation.z -= 0.009;
-      ring3.rotation.z += 0.012;
+      ring1.rotation.z += 0.005;
+      ring2.rotation.z -= 0.008;
+      ring3.rotation.z += 0.011;
 
-      // Cardiac pulse animation
-      const heartRateBpm = telemetry?.heartRate && telemetry.heartRate > 0 ? telemetry.heartRate : 70;
+      // Physiological animations (Heart beat & Lung respiration)
+      const activeTelemetry = currentProps.telemetry;
+      const heartRateBpm =
+        activeTelemetry?.heartRate && activeTelemetry.heartRate > 0
+          ? activeTelemetry.heartRate
+          : 68;
       const heartFreq = (heartRateBpm / 60) * Math.PI * 2;
-      const pulseScale = 1 + Math.sin(elapsed * heartFreq) * 0.09;
+      const cardiacPulse = 1 + Math.pow(Math.max(0, Math.sin(elapsed * heartFreq)), 3) * 0.075;
+      const breathScale = 1 + Math.sin(elapsed * 1.6) * 0.032;
 
-      organMeshes.forEach(({ mesh, node }) => {
-        if (node.key === 'cardiovascular') {
-          mesh.scale.set(pulseScale, pulseScale * (node.size[1] / node.size[0]), pulseScale);
+      const selectedKey = currentProps.selectedOrganKey;
+
+      organEntries.forEach(({ mesh, material, meta }) => {
+        if (meta.meshName === 'heart') {
+          mesh.scale.set(cardiacPulse, cardiacPulse, cardiacPulse);
+        } else if (meta.meshName === 'lungs') {
+          mesh.scale.set(breathScale, 1 + (breathScale - 1) * 0.6, breathScale);
         }
+
+        const scoreObj = currentProps.overview.organSystems[meta.organKey];
+        const isSelected = selectedKey === meta.organKey;
+        const isDimmed = selectedKey !== null && !isSelected;
+
+        // Clinical alert override for warning / critical organs
+        if (scoreObj?.status === 'critical') {
+          material.emissive.setHex(0xf43f5e);
+          material.emissiveIntensity = 0.65 + Math.sin(elapsed * 5) * 0.3;
+        } else if (scoreObj?.status === 'warning') {
+          material.emissive.setHex(0xf59e0b);
+          material.emissiveIntensity = 0.5 + Math.sin(elapsed * 3.5) * 0.2;
+        } else {
+          material.emissive.setHex(meta.emissiveColor);
+          material.emissiveIntensity = isSelected
+            ? 0.75 + Math.sin(elapsed * 4) * 0.15
+            : 0.28;
+        }
+
+        const targetOpacity = isSelected
+          ? 0.98
+          : isDimmed
+          ? 0.28
+          : meta.baseOpacity;
+        material.opacity += (targetOpacity - material.opacity) * 0.15;
       });
 
-      // 3D Laser Scan sweep
-      if (scanActive) {
+      // Update X-ray body shell shader uniforms
+      bodyShellUniforms.uTime.value = elapsed;
+      const targetShellOpacity =
+        currentProps.xrayIntensity === 'deep-organ'
+          ? 0.42
+          : selectedKey !== null
+          ? 0.55
+          : 1.0;
+      bodyShellUniforms.uShellOpacity.value +=
+        (targetShellOpacity - bodyShellUniforms.uShellOpacity.value) * 0.12;
+
+      // Volumetric laser sweep across the 1.824m NIH Visible Human bounds (-0.91m to +0.91m)
+      if (currentProps.scanActive) {
         scanPlane.visible = true;
-        stateRef.current.scanY += stateRef.current.scanDir * delta * 1.3;
-        if (stateRef.current.scanY > 2.4) {
-          stateRef.current.scanY = 2.4;
+        bodyShellUniforms.uScanActive.value = 1.0;
+        stateRef.current.scanY += stateRef.current.scanDir * delta * 0.52;
+        if (stateRef.current.scanY > 0.91) {
+          stateRef.current.scanY = 0.91;
           stateRef.current.scanDir = -1;
-        } else if (stateRef.current.scanY < -2.0) {
-          stateRef.current.scanY = -2.0;
+        } else if (stateRef.current.scanY < -0.91) {
+          stateRef.current.scanY = -0.91;
           stateRef.current.scanDir = 1;
         }
         scanPlane.position.y = stateRef.current.scanY;
+        bodyShellUniforms.uScanY.value = stateRef.current.scanY;
       } else {
         scanPlane.visible = false;
+        bodyShellUniforms.uScanActive.value = 0.0;
       }
 
       renderer.render(scene, camera);
@@ -588,10 +712,9 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
 
     render();
 
-    // Resize Handler
     const handleResize = () => {
       if (!container) return;
-      const w = container.clientWidth || 400;
+      const w = container.clientWidth || 460;
       const h = container.clientHeight || 540;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -601,6 +724,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
     window.addEventListener('resize', handleResize);
 
     return () => {
+      isDisposed = true;
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
       canvas.removeEventListener('mousemove', handlePointerMove);
@@ -614,34 +738,152 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       canvas.removeEventListener('touchend', handleTouchEnd);
       renderer.dispose();
     };
-  }, [overview, telemetry, selectedOrganKey, onSelectOrgan, scanActive, getOrganColor, isRotating]);
+  }, []);
 
-  // Reset Camera View helper
   const handleResetCamera = () => {
-    stateRef.current.rotX = 0;
-    stateRef.current.rotY = 0;
-    stateRef.current.targetZoom = 5.4;
+    stateRef.current.rotX = 0.02;
+    stateRef.current.rotY = -0.18;
+    applyCameraPreset('full-body');
     setIsRotating(true);
   };
 
   const handleZoomIn = () => {
-    stateRef.current.targetZoom = Math.max(3.8, stateRef.current.targetZoom - 0.6);
+    stateRef.current.targetZoom = Math.max(0.85, stateRef.current.targetZoom - 0.35);
   };
 
   const handleZoomOut = () => {
-    stateRef.current.targetZoom = Math.min(7.5, stateRef.current.targetZoom + 0.6);
+    stateRef.current.targetZoom = Math.min(3.5, stateRef.current.targetZoom + 0.35);
   };
+
+  const leftPills = QUICK_ORGAN_PILLS.filter((p) => p.side === 'left');
+  const rightPills = QUICK_ORGAN_PILLS.filter((p) => p.side === 'right');
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-[540px] flex items-center justify-center select-none overflow-hidden rounded-3xl ${className}`}
+      className={`relative w-full h-[560px] flex items-center justify-center select-none overflow-hidden rounded-3xl ${className}`}
       style={{
-        background: 'radial-gradient(ellipse at 50% 45%, rgba(6, 182, 212, 0.12) 0%, rgba(2, 6, 23, 0.98) 75%)',
-        border: '1px solid rgba(34, 211, 238, 0.25)',
-        boxShadow: '0 0 60px -10px rgba(6, 182, 212, 0.15), inset 0 0 80px -20px rgba(6, 182, 212, 0.1)',
+        background:
+          'radial-gradient(ellipse at 50% 42%, rgba(6, 182, 212, 0.16) 0%, rgba(15, 23, 42, 0.92) 55%, rgba(2, 6, 23, 0.99) 85%)',
+        border: '1px solid rgba(34, 211, 238, 0.28)',
+        boxShadow:
+          '0 0 60px -10px rgba(6, 182, 212, 0.18), inset 0 0 80px -20px rgba(6, 182, 212, 0.12)',
       }}
     >
+      {/* Top-Left Camera Framing & X-Ray Depth Switcher */}
+      <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-1.5">
+        <button
+          onClick={() =>
+            applyCameraPreset(cameraPreset === 'full-body' ? 'torso-focus' : 'full-body')
+          }
+          className={`px-3 py-1.5 rounded-xl border text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 backdrop-blur-md shadow-lg ${
+            cameraPreset === 'torso-focus'
+              ? 'bg-cyan-500/25 text-cyan-200 border-cyan-400/60'
+              : 'bg-slate-900/85 text-slate-200 border-cyan-500/30 hover:border-cyan-400/60'
+          }`}
+          title="Switch between Full Standing Body and Close-Up Organ Torso View"
+        >
+          {cameraPreset === 'torso-focus' ? (
+            <>
+              <Maximize2 className="w-3.5 h-3.5 text-cyan-300" />
+              <span>Full Body View</span>
+            </>
+          ) : (
+            <>
+              <Focus className="w-3.5 h-3.5 text-cyan-300" />
+              <span>Zoom to Organs</span>
+            </>
+          )}
+        </button>
+
+        <button
+          onClick={() =>
+            setXrayIntensity((prev) => (prev === 'standard' ? 'deep-organ' : 'standard'))
+          }
+          className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-mono font-semibold transition-all cursor-pointer flex items-center gap-1.5 backdrop-blur-md shadow-lg ${
+            xrayIntensity === 'deep-organ'
+              ? 'bg-indigo-500/25 text-indigo-200 border-indigo-400/60'
+              : 'bg-slate-900/80 text-slate-300 border-white/15 hover:border-cyan-400/40'
+          }`}
+          title="Toggle X-Ray Skin Shell Transparency"
+        >
+          <Eye className="w-3.5 h-3.5 text-cyan-300" />
+          <span>{xrayIntensity === 'deep-organ' ? 'Deep Organ X-Ray' : 'X-Ray Shell'}</span>
+        </button>
+      </div>
+
+      {/* Left Spatial Organ Selector Rail */}
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20 hidden sm:flex flex-col gap-2">
+        {leftPills.map((pill) => {
+          const scoreObj = overview.organSystems[pill.key];
+          const isSelected = selectedOrganKey === pill.key;
+          return (
+            <button
+              key={pill.key}
+              onClick={() => {
+                onSelectOrgan(pill.key);
+                applyCameraPreset('torso-focus');
+              }}
+              className={`px-2.5 py-1.5 rounded-xl border text-left transition-all cursor-pointer backdrop-blur-md flex items-center gap-2 min-w-[124px] ${
+                isSelected
+                  ? 'bg-cyan-500/25 border-cyan-400 text-white shadow-[0_0_20px_rgba(34,211,238,0.3)]'
+                  : 'bg-slate-950/75 border-white/10 text-slate-300 hover:border-cyan-400/50 hover:text-white'
+              }`}
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor: pill.dotColor,
+                  boxShadow: `0 0 8px ${pill.dotColor}`,
+                }}
+              />
+              <div className="min-w-0">
+                <div className="text-[11px] font-bold truncate leading-tight">{pill.label}</div>
+                <div className="text-[9px] font-mono text-slate-400">
+                  {scoreObj ? `${scoreObj.score}% · ${scoreObj.status}` : '90% · optimal'}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Right Spatial Organ Selector Rail */}
+      <div className="absolute right-14 top-1/2 -translate-y-1/2 z-20 hidden sm:flex flex-col gap-2">
+        {rightPills.map((pill) => {
+          const scoreObj = overview.organSystems[pill.key];
+          const isSelected = selectedOrganKey === pill.key;
+          return (
+            <button
+              key={pill.key}
+              onClick={() => {
+                onSelectOrgan(pill.key);
+                applyCameraPreset('torso-focus');
+              }}
+              className={`px-2.5 py-1.5 rounded-xl border text-left transition-all cursor-pointer backdrop-blur-md flex items-center gap-2 min-w-[116px] ${
+                isSelected
+                  ? 'bg-cyan-500/25 border-cyan-400 text-white shadow-[0_0_20px_rgba(34,211,238,0.3)]'
+                  : 'bg-slate-950/75 border-white/10 text-slate-300 hover:border-cyan-400/50 hover:text-white'
+              }`}
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor: pill.dotColor,
+                  boxShadow: `0 0 8px ${pill.dotColor}`,
+                }}
+              />
+              <div className="min-w-0">
+                <div className="text-[11px] font-bold truncate leading-tight">{pill.label}</div>
+                <div className="text-[9px] font-mono text-slate-400">
+                  {scoreObj ? `${scoreObj.score}% · ${scoreObj.status}` : '90% · optimal'}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Three.js Canvas Element */}
       {webGLSupported ? (
         <canvas
@@ -652,6 +894,16 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       ) : (
         <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400">
           <p className="text-sm font-semibold">WebGL acceleration active in fallback view.</p>
+        </div>
+      )}
+
+      {/* Loading Indicator while NIH Visible Human GLB streams */}
+      {webGLSupported && !modelLoaded && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+          <div className="w-10 h-10 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin mb-2" />
+          <span className="text-xs font-mono text-cyan-300">
+            Loading NIH Visible Human 3D Anatomy...
+          </span>
         </div>
       )}
 
@@ -695,19 +947,26 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
         </button>
       </div>
 
-      {/* Orbit Helper Badge */}
-      <div className="absolute bottom-4 left-4 z-20 pointer-events-none flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-cyan-500/30 text-[10px] font-mono text-cyan-300 backdrop-blur-md">
-        <Sparkles className="w-3 h-3 text-cyan-400 animate-pulse" />
-        <span>Drag to rotate 360° · Scroll to zoom · Click organ to inspect</span>
+      {/* Orbit Helper & NIH Attribution Badge */}
+      <div className="absolute bottom-3 inset-x-4 z-20 pointer-events-none flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/85 border border-cyan-500/30 text-[10px] font-mono text-cyan-300 backdrop-blur-md">
+          <Sparkles className="w-3 h-3 text-cyan-400 animate-pulse shrink-0" />
+          <span className="truncate">
+            Drag to rotate 360° · Scroll to zoom · Click organ to inspect
+          </span>
+        </div>
+        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/75 border border-white/10 text-[9px] font-mono text-slate-400 backdrop-blur-md">
+          <span>NIH Visible Human 3D Atlas</span>
+        </div>
       </div>
 
       {/* Floating 3D Hover Tooltip */}
-      {tooltipPos && (
+      {tooltipPos && hoveredOrgan && (
         <div
           className="absolute z-30 pointer-events-none transition-transform duration-75 px-3 py-2 rounded-xl bg-slate-950/90 border border-cyan-400/50 text-white shadow-2xl backdrop-blur-md text-xs font-mono"
           style={{
-            left: `${tooltipPos.x + 12}px`,
-            top: `${tooltipPos.y - 36}px`,
+            left: `${Math.min(tooltipPos.x + 14, 280)}px`,
+            top: `${Math.max(tooltipPos.y - 38, 12)}px`,
           }}
         >
           <div className="font-bold text-cyan-300 flex items-center gap-1.5">
@@ -723,7 +982,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
             <span>{tooltipPos.name}</span>
           </div>
           <div className="text-[10px] text-slate-300 mt-0.5">
-            System Score: <span className="font-bold text-white">{tooltipPos.score} / 100</span>
+            Clinical Score: <span className="font-bold text-white">{tooltipPos.score} / 100</span>
           </div>
         </div>
       )}

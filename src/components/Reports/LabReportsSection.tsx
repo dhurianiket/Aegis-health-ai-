@@ -321,6 +321,7 @@ function ReportCard({ report, showCheckbox, isSelected, onToggleSelection }: { r
 import ReportHistory from "./ReportHistory";
 import ReportComparison from "../Dashboard/ReportComparison";
 import ClinicalHandover from "./ClinicalHandover";
+import { DEMO_DOCUMENTS } from "../../data/sandboxDemoData";
 
 export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { onOpenChat?: () => void; onNavigateToUpload?: () => void; }) {
   const { user } = useAuth();
@@ -351,7 +352,11 @@ export default function LabReportsSection({ onOpenChat, onNavigateToUpload }: { 
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setReports(DEMO_DOCUMENTS as unknown as LabReport[]);
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     let q = query(collection(db, "users", user.uid, "documents"));
     if (activeProfile?.id) {

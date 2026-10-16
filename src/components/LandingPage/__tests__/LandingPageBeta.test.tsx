@@ -34,7 +34,7 @@ describe('LandingPage Early Access Beta Showcase', () => {
     global.IntersectionObserver = originalIntersectionObserver;
   });
 
-  it('renders the 100% Free Early Access Beta Showcase in #pricing', () => {
+  it('renders the 100% Free Open Platform Showcase in #pricing', () => {
     const { container } = render(
       <MemoryRouter>
         <LandingPage />
@@ -45,9 +45,9 @@ describe('LandingPage Early Access Beta Showcase', () => {
     expect(pricingSection).not.toBeNull();
     const pricing = within(pricingSection as HTMLElement);
 
-    // Verify Early Access Beta banner & header
-    expect(pricing.getByText(/Early Access Beta Program • 100% Free Access/i)).not.toBeNull();
-    expect(pricing.getByText(/100% Free in Beta/i)).not.toBeNull();
+    // Verify Production v2.0 Open Access banner & header
+    expect(pricing.getByText(/Production v2\.0 • 100% Free Open Access/i)).not.toBeNull();
+    expect(pricing.getByText(/100% Free Open Access\./i)).not.toBeNull();
 
     // Verify Clinical Intelligence, Multi-Profile Vault, and Specialist Lounge cards
     expect(pricing.getByText(/Multimodal Lab AI/i)).not.toBeNull();
@@ -59,10 +59,10 @@ describe('LandingPage Early Access Beta Showcase', () => {
     expect(pricing.getByText(/Automated SBAR Doctor Handover Reports/i)).not.toBeNull();
     expect(pricing.getByText(/Apple Health & Google Health Auto-Sync/i)).not.toBeNull();
     expect(pricing.getByText(/Drug-Lab Contraindication Matrix/i)).not.toBeNull();
-    expect(pricing.getByText(/Early Access Guarantee:/i)).not.toBeNull();
+    expect(pricing.getByText(/Open Platform Guarantee:/i)).not.toBeNull();
 
-    // Verify navigation and footer anchor links to #pricing
-    const pricingLinks = container.querySelectorAll('a[href="#pricing"]');
-    expect(pricingLinks.length).toBeGreaterThanOrEqual(2);
+    // Verify direct links to /dashboard for unauthenticated product inspection
+    const dashboardLinks = container.querySelectorAll('a[href="/dashboard"]');
+    expect(dashboardLinks.length).toBeGreaterThanOrEqual(4);
   });
 });
