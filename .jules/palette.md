@@ -29,3 +29,6 @@
 ## 2025-05-18 - Improve Mobile Menu Toggle Accessibility
 **Learning:** Icon-only buttons handling important responsive UI interactions (like the mobile menu toggle) should use accessible attributes (e.g. `aria-expanded`, `aria-controls`) to inform screen readers of the state of the component they control.
 **Action:** When implementing expandable menus, explicitly link the trigger button with `aria-expanded` corresponding to the menu open state.
+## 2025-05-18 - Improve Accordion Toggle Accessibility
+**Learning:** Collapsible components (accordions) should use `aria-controls` on the button trigger pointing to the `id` of the content panel so screen readers understand what content is being toggled.
+**Action:** When implementing expandable content elements, always link the trigger button with `aria-controls` to the matching `id` of the panel it opens.

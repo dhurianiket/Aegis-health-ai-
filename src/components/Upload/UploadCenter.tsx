@@ -1548,6 +1548,7 @@ export default function UploadCenter({
                         tabIndex={0}
                         role="button"
                         aria-expanded={isExpanded}
+                        aria-controls={`doc-content-${docItem.id}`}
                         className="flex items-start justify-between gap-4 cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                       >
                         <div className="flex items-start gap-3 min-w-0">
@@ -1627,6 +1628,7 @@ export default function UploadCenter({
                       <AnimatePresence>
                         {isExpanded && (
                           <motion.div
+                            id={`doc-content-${docItem.id}`}
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
