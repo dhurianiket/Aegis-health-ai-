@@ -23,6 +23,7 @@ import { saveCoachChat, getCoachChat, saveActiveReferral } from "../../lib/fireb
 import { parseReferralSuggestions, stripReferralTags } from "../../services/ai/specialists/referrals";
 import ReferralSuggestionChips, { type ReferralSuggestionItem } from "../Specialists/ReferralSuggestionChips";
 import { resolvePrimaryProfileId, scopeMedicationsForProfile } from "../../hooks/clinicalContextScope";
+import { AuraCompanion } from "../Avatars/ProceduralAvatar";
 
 const COACH_REFERRAL_SOURCE = "Aura AI Health Coach";
 
@@ -131,6 +132,7 @@ export default function ChatCoach({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamedText, setStreamedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [hasTriageAlert, setHasTriageAlert] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [referralSuggestions, setReferralSuggestions] = useState<ReferralSuggestionItem[]>([]);
@@ -354,9 +356,11 @@ ${remindersContext}`;
         .trim();
 
       const EMERGENCY_TRIGGERS = [
-        'emergency', 'urgent', 'immediate medical', 'call 911', 'go to the hospital', 'critical'
+        'emergency', 'urgent', 'immediate medical', 'call 911', 'call 112', 'go to the hospital', 'critical'
       ];
-      if (EMERGENCY_TRIGGERS.some(t => cleaned.toLowerCase().includes(t))) {
+      const isEmergencyDetected = EMERGENCY_TRIGGERS.some(t => cleaned.toLowerCase().includes(t) || text.toLowerCase().includes(t));
+      setHasTriageAlert(isEmergencyDetected);
+      if (isEmergencyDetected) {
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
           navigator.vibrate([200, 100, 200]); // Vibrate, pause, vibrate
         }
@@ -470,22 +474,33 @@ ${remindersContext}`;
             >
               {/* Header */}
               <div className="px-6 py-4 border-b border-[var(--color-border)] flex items-center justify-between shrink-0">
-                <div>
-                  <h3 id="chat-title" className="section-title">
-                    Aura AI
-                  </h3>
-                  <div className="flex flex-col mt-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-1.5 h-1.5 rounded-full ${isAlAvailable ? 'bg-[var(--color-primary)] animate-pulse' : 'bg-red-500'}`} />
-                      <span className="label-caps !text-xs">
-                        {isAlAvailable ? 'Clinical Engine Active' : 'Neural Link Offline'}
-                      </span>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-900/80 border border-teal-500/30 shadow-md flex items-center justify-center overflow-hidden shrink-0">
+                    <AuraCompanion
+                      isListening={isListening}
+                      isGenerating={isTyping && !streamedText}
+                      isSpeaking={isTyping && streamedText.length > 0}
+                      hasTriageAlert={hasTriageAlert}
+                      size={44}
+                    />
+                  </div>
+                  <div>
+                    <h3 id="chat-title" className="section-title">
+                      Aura AI
+                    </h3>
+                    <div className="flex flex-col mt-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${isAlAvailable ? 'bg-[var(--color-primary)] animate-pulse' : 'bg-red-500'}`} />
+                        <span className="label-caps !text-xs">
+                          {isAlAvailable ? 'Clinical Engine Active' : 'Neural Link Offline'}
+                        </span>
+                      </div>
+                      {isAlAvailable && contextStats.reports > 0 && (
+                        <span className="text-xs text-muted mt-1">
+                          Aware of {contextStats.meds} meds, {contextStats.reports} recent data points
+                        </span>
+                      )}
                     </div>
-                    {isAlAvailable && contextStats.reports > 0 && (
-                      <span className="text-xs text-muted mt-1">
-                        Aware of {contextStats.meds} meds, {contextStats.reports} recent data points
-                      </span>
-                    )}
                   </div>
                 </div>
                 <button
@@ -506,10 +521,15 @@ ${remindersContext}`;
                 {messages.length === 0 && (
                   <div className="flex flex-col h-full justify-center space-y-8">
                     <div className="text-center space-y-2">
-                      <Sparkles
-                        className="w-12 h-12 text-[var(--color-primary)] mx-auto mb-4 opacity-80"
-                        strokeWidth={1}
-                      />
+                      <div className="w-20 h-20 mx-auto mb-3 rounded-3xl bg-slate-900/90 border border-teal-500/30 shadow-lg flex items-center justify-center p-1">
+                        <AuraCompanion
+                          isListening={isListening}
+                          isGenerating={isTyping && !streamedText}
+                          isSpeaking={isTyping && streamedText.length > 0}
+                          hasTriageAlert={hasTriageAlert}
+                          size={72}
+                        />
+                      </div>
                       <p className="text-[1.125rem] font-bold text-slate-900 dark:text-slate-100">
                         Ask me anything about your health
                       </p>
@@ -674,10 +694,16 @@ ${remindersContext}`;
       {showTrigger && !isOpen && (
         <button
           onClick={handleToggle}
-          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 bg-[var(--color-primary)] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-[9900]"
+          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 bg-slate-900 border-2 border-[var(--color-primary)] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-[9900] overflow-hidden p-0.5"
           aria-label="Open AI Assistant"
         >
-          <Sparkles size={24} />
+          <AuraCompanion
+            isListening={isListening}
+            isGenerating={isTyping && !streamedText}
+            isSpeaking={isTyping && streamedText.length > 0}
+            hasTriageAlert={hasTriageAlert}
+            size={48}
+          />
         </button>
       )}
     </>

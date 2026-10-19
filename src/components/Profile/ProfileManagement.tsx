@@ -28,6 +28,12 @@ import {
   createPaediatricConsent,
   request72HourErasure,
 } from "../../services/dpdpPaediatricService";
+import PaediatricAvatarPicker from "./PaediatricAvatarPicker";
+import { ProceduralAvatar } from "../Avatars/ProceduralAvatar";
+import {
+  PaediatricAvatarConfig,
+  resolveProfileAvatar,
+} from "../../data/avatars/avatarPresets";
 
 export default function ProfileManagement() {
   const {
@@ -72,6 +78,7 @@ export default function ProfileManagement() {
     'Parent' | 'Lawful Guardian' | 'Legal Representative'
   >('Parent');
   const [editGuardianConsentGiven, setEditGuardianConsentGiven] = useState(false);
+  const [editAvatarConfig, setEditAvatarConfig] = useState<PaediatricAvatarConfig | undefined>(undefined);
   const [erasureFeedback, setErasureFeedback] = useState<string | null>(null);
 
   // BMI Calculation Helper
@@ -123,6 +130,7 @@ export default function ProfileManagement() {
     setEditGuardianName(p.paediatricConsent?.guardianName || "");
     setEditGuardianRelationship(p.paediatricConsent?.guardianRelationship || 'Parent');
     setEditGuardianConsentGiven(p.paediatricConsent?.guardianConsentGiven || false);
+    setEditAvatarConfig(p.avatarConfig);
     setErasureFeedback(null);
     setEditError("");
   };
@@ -160,6 +168,7 @@ export default function ProfileManagement() {
         googleFormId: editGoogleFormId,
         doctorNotes: editDoctorNotes.split("\n").filter(Boolean),
         paediatricConsent,
+        ...(editAvatarConfig ? { avatarConfig: editAvatarConfig } : {}),
       };
       await updateProfile(id, updates);
       setIsSaving(false);
@@ -185,7 +194,7 @@ export default function ProfileManagement() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto px-4 sm:px-0">
+    <div className="space-y-6 max-w-6xl mx-auto px-4 sm:px-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text)] flex items-center gap-2">
@@ -281,12 +290,14 @@ export default function ProfileManagement() {
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
         {profiles.map((p) => (
           <motion.div
             key={p.id}
             layout
-            className={`relative bg-[var(--color-surface)] border backdrop-blur-sm p-6 rounded-2xl transition-all ${
+            className={`relative bg-[var(--color-surface)] border backdrop-blur-sm p-5 sm:p-6 rounded-2xl transition-all ${
+              editingId === p.id ? "md:col-span-2 lg:col-span-3" : ""
+            } ${
               activeProfile?.id === p.id
                 ? "border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                 : "border-[var(--color-border)] hover:border-[var(--color-border)]"
@@ -300,222 +311,256 @@ export default function ProfileManagement() {
 
             <div className={`mt-4 ${editingId === p.id ? "mb-2" : "mb-6"}`}>
               {editingId === p.id ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs text-[var(--color-text-muted)] mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      value={editFullName}
-                      onChange={(e) => setEditFullName(e.target.value)}
-                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">DOB</label>
-                      <input
-                        type="date"
-                        value={editDob}
-                        onChange={(e) => setEditDob(e.target.value)}
-                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Gender</label>
-                      <select
-                        value={editGender}
-                        onChange={(e) => setEditGender(e.target.value as Gender)}
-                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                      >
-                        <option value="">Select</option>
-                        {Object.values(Gender).map((g) => (
-                          <option key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* DPDP Act 2023 Section 9 Paediatric Privacy Section */}
-                  {isMinor(editDob) && (
-                    <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
-                        <div>
-                          <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                            DPDP Act 2023 Section 9 — Paediatric Privacy Guardrail
-                          </h4>
-                          <p className="text-[11px] text-slate-300">
-                            Age {calculateAge(editDob)} is legally classified as a child. Indian law mandates verifiable parental/guardian consent before processing diagnostic health data.
-                          </p>
-                        </div>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    {/* Left Column: Demographics, Vitals & DPDP Guardian Verification */}
+                    <div className="lg:col-span-5 space-y-4">
+                      <div>
+                        <label className="block text-xs text-[var(--color-text-muted)] mb-1">Full Name</label>
+                        <input
+                          type="text"
+                          value={editFullName}
+                          onChange={(e) => setEditFullName(e.target.value)}
+                          className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3.5 py-2 text-[var(--color-text)] text-sm"
+                        />
                       </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-                            Parent / Lawful Guardian Full Name *
-                          </label>
+                          <label className="block text-xs text-[var(--color-text-muted)] mb-1">DOB</label>
                           <input
-                            type="text"
-                            value={editGuardianName}
-                            onChange={(e) => setEditGuardianName(e.target.value)}
-                            placeholder="e.g. Ramesh Sharma"
-                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-xs"
+                            type="date"
+                            value={editDob}
+                            onChange={(e) => setEditDob(e.target.value)}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3.5 py-2 text-[var(--color-text)] text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-                            Relationship *
-                          </label>
+                          <label className="block text-xs text-[var(--color-text-muted)] mb-1">Gender</label>
                           <select
-                            value={editGuardianRelationship}
-                            onChange={(e) => setEditGuardianRelationship(e.target.value as any)}
-                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-xs"
+                            value={editGender}
+                            onChange={(e) => setEditGender(e.target.value as Gender)}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3.5 py-2 text-[var(--color-text)] text-sm"
                           >
-                            <option value="Parent">Parent</option>
-                            <option value="Lawful Guardian">Lawful Guardian</option>
-                            <option value="Legal Representative">Legal Representative</option>
+                            <option value="">Select</option>
+                            {Object.values(Gender).map((g) => (
+                              <option key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>
+                            ))}
                           </select>
                         </div>
                       </div>
 
-                      <label className="flex items-start gap-2.5 pt-1 text-xs text-slate-200 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={editGuardianConsentGiven}
-                          onChange={(e) => setEditGuardianConsentGiven(e.target.checked)}
-                          className="mt-0.5 rounded border-amber-400/40 text-amber-500 focus:ring-amber-400"
-                        />
-                        <span className="text-[11px] leading-relaxed">
-                          I verify as the parent/lawful guardian that I consent to secure health data management under <strong>Section 9 of the DPDP Act 2023</strong>. I acknowledge this profile is strictly barred from AI model training, commercial profiling, and targeted tracking.
-                        </span>
-                      </label>
-
-                      {/* Statutory Protections Guarantee Banner */}
-                      <div className="p-2.5 bg-black/40 rounded-lg border border-white/5 space-y-1 text-[10px] text-slate-300">
-                        <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                          <Check className="w-3.5 h-3.5" /> Zero AI Training: Never ingested for machine learning.
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs text-[var(--color-text-muted)] mb-1">Blood Type</label>
+                          <select
+                            value={editBloodType}
+                            onChange={(e) => setEditBloodType(e.target.value)}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2 text-[var(--color-text)] text-sm"
+                          >
+                            <option value="">Select</option>
+                            {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bt => <option key={bt} value={bt}>{bt}</option>)}
+                          </select>
                         </div>
-                        <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                          <Check className="w-3.5 h-3.5" /> Zero Behavioral Tracking: Marketing and profiling disabled.
+                        <div>
+                          <label className="block text-xs text-[var(--color-text-muted)] mb-1">Height (cm)</label>
+                          <input
+                            type="number"
+                            value={editHeight}
+                            onChange={(e) => setEditHeight(e.target.value ? Number(e.target.value) : "")}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2 text-[var(--color-text)] text-sm"
+                            placeholder="cm"
+                          />
                         </div>
-                        <div className="flex items-center gap-1.5 text-indigo-300 font-semibold">
-                          <Clock className="w-3.5 h-3.5" /> 72-Hour Hard-Erasure Right: 1-click statutory data purge.
+                        <div>
+                          <label className="block text-xs text-[var(--color-text-muted)] mb-1">Weight (kg)</label>
+                          <input
+                            type="number"
+                            value={editWeight}
+                            onChange={(e) => setEditWeight(e.target.value ? Number(e.target.value) : "")}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2 text-[var(--color-text)] text-sm"
+                            placeholder="kg"
+                          />
                         </div>
                       </div>
 
-                      {/* 72-Hour Erasure Action */}
-                      {p.paediatricConsent?.guardianConsentGiven && (
-                        <div className="pt-2 flex items-center justify-between border-t border-amber-500/20 text-xs">
-                          <span className="text-[11px] text-slate-400">
-                            Consent ID: <span className="font-mono text-amber-300">{p.paediatricConsent.guardianConsentId}</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (!auth.currentUser?.uid) return;
-                              const res = await request72HourErasure(auth.currentUser.uid, p.id);
-                              setErasureFeedback(`Statutory 72-hour erasure scheduled (Ref: ${res.receiptId}). Data will be fully purged by ${new Date(res.scheduledEraseAt).toLocaleString()}.`);
-                            }}
-                            className="px-2.5 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-md transition-colors"
-                          >
-                            Request 72h Data Purge
-                          </button>
+                      <div>
+                        <label className="block text-xs text-[var(--color-text-muted)] mb-1">Google Forms Intake ID (Optional)</label>
+                        <input
+                          type="text"
+                          value={editGoogleFormId}
+                          onChange={(e) => setEditGoogleFormId(e.target.value)}
+                          className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3.5 py-2 text-[var(--color-text)] text-sm"
+                          placeholder="e.g. 1FAIpQLScX..."
+                        />
+                        <p className="text-xs text-[var(--color-text-muted)] mt-1">If provided, AI will fetch your form responses as clinical context.</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-[var(--color-text-muted)] mb-1">Clinical Notes</label>
+                        <AutoSizeTextarea
+                          value={editDoctorNotes}
+                          onChange={(e: any) => setEditDoctorNotes(e.target.value)}
+                          className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-3.5 py-2 text-[var(--color-text)] text-sm"
+                          placeholder="Medical history, allergies, or notes..."
+                          minLines={3}
+                        />
+                      </div>
+
+                      {/* DPDP Act 2023 Section 9 Paediatric Privacy Section */}
+                      {isMinor(editDob) && (
+                        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                          <div className="flex items-start gap-2.5">
+                            <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                            <div>
+                              <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                                DPDP Act 2023 Section 9 — Paediatric Privacy Guardrail
+                              </h4>
+                              <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                                Age {calculateAge(editDob)} is legally classified as a child. Indian law mandates verifiable parental/guardian consent before processing diagnostic health data.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                                Parent / Lawful Guardian Full Name *
+                              </label>
+                              <input
+                                type="text"
+                                value={editGuardianName}
+                                onChange={(e) => setEditGuardianName(e.target.value)}
+                                placeholder="e.g. Ramesh Sharma"
+                                className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-3 py-1.5 text-[var(--color-text)] text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                                Relationship *
+                              </label>
+                              <select
+                                value={editGuardianRelationship}
+                                onChange={(e) => setEditGuardianRelationship(e.target.value as any)}
+                                className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-3 py-1.5 text-[var(--color-text)] text-xs"
+                              >
+                                <option value="Parent">Parent</option>
+                                <option value="Lawful Guardian">Lawful Guardian</option>
+                                <option value="Legal Representative">Legal Representative</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <label className="flex items-start gap-2.5 pt-1 text-xs text-slate-200 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={editGuardianConsentGiven}
+                              onChange={(e) => setEditGuardianConsentGiven(e.target.checked)}
+                              className="mt-0.5 rounded border-amber-400/40 text-amber-500 focus:ring-amber-400"
+                            />
+                            <span className="text-[11px] leading-relaxed">
+                              I verify as the parent/lawful guardian that I consent to secure health data management under <strong>Section 9 of the DPDP Act 2023</strong>. I acknowledge this profile is strictly barred from AI model training, commercial profiling, and targeted tracking.
+                            </span>
+                          </label>
+
+                          {/* Statutory Protections Guarantee Banner */}
+                          <div className="p-3 bg-black/40 rounded-xl border border-white/5 space-y-1.5 text-[11px] text-slate-300">
+                            <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                              <Check className="w-3.5 h-3.5 shrink-0" /> Zero AI Training: Never ingested for machine learning.
+                            </div>
+                            <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                              <Check className="w-3.5 h-3.5 shrink-0" /> Zero Behavioral Tracking: Marketing and profiling disabled.
+                            </div>
+                            <div className="flex items-center gap-1.5 text-indigo-300 font-semibold">
+                              <Clock className="w-3.5 h-3.5 shrink-0" /> 72-Hour Hard-Erasure Right: 1-click statutory data purge.
+                            </div>
+                          </div>
+
+                          {/* 72-Hour Erasure Action */}
+                          {p.paediatricConsent?.guardianConsentGiven && (
+                            <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-amber-500/20 text-xs">
+                              <span className="text-[11px] text-slate-400">
+                                Consent ID: <span className="font-mono text-amber-300">{p.paediatricConsent.guardianConsentId}</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const uid = auth.currentUser?.uid || "sandbox-demo-user";
+                                  const res = await request72HourErasure(uid, p.id);
+                                  setErasureFeedback(`Statutory 72-hour erasure scheduled (Ref: ${res.receiptId}). Data will be fully purged by ${new Date(res.scheduledEraseAt).toLocaleString()}.`);
+                                }}
+                                className="px-2.5 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-md transition-colors"
+                              >
+                                Request 72h Data Purge
+                              </button>
+                            </div>
+                          )}
+
+                          {erasureFeedback && (
+                            <div className="p-2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">
+                              {erasureFeedback}
+                            </div>
+                          )}
                         </div>
                       )}
+                    </div>
 
-                      {erasureFeedback && (
-                        <div className="p-2 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">
-                          {erasureFeedback}
-                        </div>
+                    {/* Right Column: Spacious Procedural SVG Avatar Studio */}
+                    <div className="lg:col-span-7 space-y-4">
+                      <PaediatricAvatarPicker
+                        value={editAvatarConfig}
+                        onChange={setEditAvatarConfig}
+                        isMinorProfile={isMinor(editDob)}
+                      />
+
+                      {editError && (
+                        <p className="text-red-400 text-xs font-medium">{editError}</p>
                       )}
-                    </div>
-                  )}
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Blood Type</label>
-                      <select
-                        value={editBloodType}
-                        onChange={(e) => setEditBloodType(e.target.value)}
-                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                      >
-                        <option value="">Select</option>
-                        {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bt => <option key={bt} value={bt}>{bt}</option>)}
-                      </select>
+                      <div className="flex items-center justify-end gap-3 pt-2">
+                        <button
+                          onClick={() => setEditingId(null)}
+                          disabled={isSaving}
+                          className="text-xs font-semibold px-4 py-2 rounded-xl border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-white/5 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleUpdate(p.id)}
+                          disabled={isSaving || isSaved}
+                          className={`flex items-center gap-1.5 text-xs font-semibold px-5 py-2 rounded-xl transition-colors shadow-md ${
+                            isSaved ? "bg-green-600 text-white" : "bg-indigo-600 text-white hover:bg-indigo-500"
+                          }`}
+                        >
+                          {isSaving ? "Saving..." : isSaved ? "Saved ✓" : <><Save className="w-3.5 h-3.5" /> Save</>}
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Height (cm)</label>
-                      <input
-                        type="number"
-                        value={editHeight}
-                        onChange={(e) => setEditHeight(e.target.value ? Number(e.target.value) : "")}
-                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                        placeholder="cm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-[var(--color-text-muted)] mb-1">Weight (kg)</label>
-                      <input
-                        type="number"
-                        value={editWeight}
-                        onChange={(e) => setEditWeight(e.target.value ? Number(e.target.value) : "")}
-                        className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                        placeholder="kg"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-[var(--color-text-muted)] mb-1">Google Forms Intake ID (Optional)</label>
-                    <input
-                      type="text"
-                      value={editGoogleFormId}
-                      onChange={(e) => setEditGoogleFormId(e.target.value)}
-                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                      placeholder="e.g. 1FAIpQLScX..."
-                    />
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">If provided, AI will fetch your form responses as clinical context.</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-[var(--color-text-muted)] mb-1">Clinical Notes</label>
-                    <AutoSizeTextarea
-                      value={editDoctorNotes}
-                      onChange={(e: any) => setEditDoctorNotes(e.target.value)}
-                      className="w-full bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-[var(--color-text)] text-sm"
-                      placeholder="Medical history, allergies, or notes..."
-                      minLines={3}
-                    />
-                  </div>
-                  {editError && (
-                    <p className="text-red-400 text-xs">{editError}</p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2">
-                    <button
-                      onClick={() => handleUpdate(p.id)}
-                      disabled={isSaving || isSaved}
-                      className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded transition-colors ${
-                        isSaved ? "bg-green-600 text-white" : "bg-indigo-600 text-white hover:bg-indigo-500"
-                      }`}
-                    >
-                      {isSaving ? "Saving..." : isSaved ? "Saved ✓" : <><Save className="w-3 h-3" /> Save</>}
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      disabled={isSaving}
-                      className="text-xs px-3 py-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-                    >
-                      Cancel
-                    </button>
                   </div>
                 </div>
               ) : (
                 <div>
-                  <h3
-                    className="text-xl font-semibold text-[var(--color-text)] truncate pr-6 mb-1"
-                    title={p.fullName || p.name}
-                  >
-                    {p.fullName || p.name}
-                  </h3>
+                  <div className="flex items-start gap-3 mb-2.5">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-900/80 border border-indigo-500/30 flex items-center justify-center p-0.5 shrink-0 shadow-sm overflow-hidden">
+                      <ProceduralAvatar
+                        definition={resolveProfileAvatar(p.avatarConfig, isMinor(p.dob))}
+                        expression={p.avatarConfig?.expression}
+                        size={42}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3
+                        className="text-base sm:text-lg font-semibold text-[var(--color-text)] leading-snug break-words"
+                        title={p.fullName || p.name}
+                      >
+                        {p.fullName || p.name}
+                      </h3>
+                      {(isMinor(p.dob) || p.avatarConfig) && (
+                        <div className="text-[11px] font-medium text-indigo-400 mt-0.5">
+                          {resolveProfileAvatar(p.avatarConfig, isMinor(p.dob)).name}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   {isMinor(p.dob) && (
                     <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">

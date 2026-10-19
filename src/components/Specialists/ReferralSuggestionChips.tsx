@@ -2,6 +2,7 @@ import React from "react";
 import { CheckCircle2 } from "lucide-react";
 import { SPECIALISTS } from "../../services/ai/specialists/specialistFactory";
 import type { ReferralSuggestion } from "../../services/ai/specialists/referrals";
+import { ProceduralAvatar } from "../Avatars/ProceduralAvatar";
 
 export type ReferralSuggestionStatus = "idle" | "saving" | "saved" | "error";
 
@@ -35,8 +36,11 @@ export default function ReferralSuggestionChips({
           <div
             key={`${sug.toSpecialist}-${i}`}
             data-testid="referral-suggestion-chip"
-            className="flex flex-wrap items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-[13px] text-slate-800 dark:text-slate-100"
+            className="flex flex-wrap items-center gap-3 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-[13px] text-slate-800 dark:text-slate-100"
           >
+            <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 bg-slate-900/40 flex items-center justify-center">
+              <ProceduralAvatar specialistId={sug.toSpecialist} size={34} />
+            </div>
             <span className="flex-1 min-w-0">
               <strong>Suggested: talk to the {target.displayName}</strong>
               <span className="block text-[12px] text-slate-600 dark:text-slate-300">{sug.reason}</span>

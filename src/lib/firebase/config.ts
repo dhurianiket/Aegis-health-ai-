@@ -20,7 +20,9 @@ const getDynamicAuthDomain = () => {
 };
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || (import.meta.env.MODE === 'test' ? 'mock-test-key' : ''),
+  apiKey:
+    import.meta.env.VITE_FIREBASE_API_KEY ||
+    (import.meta.env.MODE === 'test' || import.meta.env.DEV ? 'mock-test-key' : ''),
   authDomain: getDynamicAuthDomain(),
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'aegis-health-app-90697',
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'aegis-health-app-90697.appspot.com',

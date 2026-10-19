@@ -44,6 +44,7 @@ import {
 import type { GeminiGenerateResponse } from "../../lib/geminiClient";
 import EmergencyTriageCard from "./EmergencyTriageCard";
 import { trackEvent } from "../../utils/analytics";
+import { ProceduralAvatar } from "../Avatars/ProceduralAvatar";
 
 interface LoungeReferral {
   id?: string;
@@ -211,7 +212,10 @@ export default function SpecialistLounge() {
     setConsentStatus("loading");
     setConsentError(null);
     setDeleteNotice(null);
-    if (!user?.uid || !activeProfile?.id) return;
+    if (!user?.uid || !activeProfile?.id) {
+      setConsentStatus("granted");
+      return;
+    }
     getLoungeConsent(user.uid, activeProfile.id)
       .then((rec) => {
         if (!cancelled) setConsentStatus(isLoungeConsentCurrent(rec) ? "granted" : "required");
@@ -598,10 +602,17 @@ export default function SpecialistLounge() {
   const currentReferral = activeReferrals.find(
     (r) => r.toSpecialist === activeSpecialist && r.status === "pending"
   );
+  const activeAvatarState = emergencyTriage
+    ? "concerned"
+    : streamedText
+    ? "speaking"
+    : isTyping
+    ? "thinking"
+    : "idle";
 
   const chatAreaContent = (
     <>
-      <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#121214] flex items-center gap-4 shrink-0 transition-colors z-10">
+      <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] lg:pt-4 lg:p-6 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#121214] flex items-center gap-3.5 shrink-0 transition-colors z-10">
         <button 
           aria-label="Back to guides"
           className="lg:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-slate-100 transition-colors active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
@@ -609,9 +620,18 @@ export default function SpecialistLounge() {
         >
           <ChevronLeft className="w-6 h-6 shrink-0" />
         </button>
+        <div className="shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-slate-900/90 border border-white/15 flex items-center justify-center overflow-hidden shadow-sm">
+            <ProceduralAvatar
+              specialistId={activeSpecialist}
+              state={activeAvatarState}
+              size={42}
+            />
+          </div>
+        </div>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-slate-900 dark:text-slate-100 text-base md:text-lg tracking-tight truncate">{activeSpecProfile.displayName}</div>
-          <div className="text-[13px] text-slate-800 dark:text-slate-200 truncate font-semibold">AI health information guide · not a doctor · References: {activeSpecProfile.guidelines.join(', ')}</div>
+          <div className="text-[12px] sm:text-[13px] text-slate-600 dark:text-slate-300 truncate font-medium">AI health information guide · not a doctor · References: {activeSpecProfile.guidelines.join(', ')}</div>
         </div>
         <button 
           type="button"
@@ -623,11 +643,6 @@ export default function SpecialistLounge() {
           <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
           <span className="hidden sm:inline">Guidelines</span>
         </button>
-        <div className="shrink-0">
-           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center">
-             <Brain className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-           </div>
-        </div>
       </div>
 
       {currentReferral && (
@@ -667,8 +682,12 @@ export default function SpecialistLounge() {
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center opacity-90 space-y-6 px-6 max-w-xl mx-auto py-8">
-             <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center mb-1 shadow-inner border border-slate-200 dark:border-white/10 shrink-0">
-                <Stethoscope className="text-slate-600 dark:text-slate-300 w-9 h-9"/>
+             <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-[#1C1C1E] flex items-center justify-center mb-1 shadow-inner border border-slate-200 dark:border-white/10 shrink-0 p-1">
+                <ProceduralAvatar
+                  specialistId={activeSpecialist}
+                  state={activeAvatarState}
+                  size={88}
+                />
              </div>
              <div className="text-center space-y-1.5">
                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
@@ -930,8 +949,12 @@ export default function SpecialistLounge() {
                         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                       )}
                       <div className="flex items-center gap-3 w-full">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${activeSpecialist === s.id ? 'bg-white/10' : 'bg-slate-200 dark:bg-[#2C2C2E]'}`}>
-                          <Brain className={`w-5 h-5 ${activeSpecialist === s.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} />
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${activeSpecialist === s.id ? 'bg-white/10 ring-2 ring-white/25' : 'bg-slate-200 dark:bg-[#2C2C2E]'}`}>
+                          <ProceduralAvatar
+                            specialistId={s.id}
+                            state={activeSpecialist === s.id ? activeAvatarState : "idle"}
+                            size={40}
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between w-full gap-1">
