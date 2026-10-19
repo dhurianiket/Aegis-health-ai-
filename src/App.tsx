@@ -533,32 +533,43 @@ function MainApp() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                    className="max-w-[1200px] mx-auto w-full h-full p-3 sm:p-6 md:p-10 pb-32"
+                    className="max-w-[1280px] mx-auto w-full h-full p-3 sm:p-6 md:px-10 md:py-7 pb-32"
                   >
                     {activeTab === "home" && (
                       <SectionErrorBoundary sectionName="Dashboard">
-                        <div className="space-y-6">
-                          <div className="flex items-center justify-end gap-3 mb-6">
-                            <button
-                              onClick={async () => {
-                                if (activeProfile) {
-                                  setIsSBAROpen(true);
-                                  setSbarError(null);
-                                }
-                              }}
-                              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-surface hover:bg-surface/80 rounded-[14px] text-xs font-semibold transition-all border border-surface active:scale-95 cursor-pointer shadow-xs"
-                            >
-                              <FileText className="w-4 h-4 text-muted" /> Handover
-                              Report
-                            </button>
-                            <button
-                              onClick={() => setIsChatOpen(true)}
-                              aria-label="Consult AI"
-                              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-[var(--color-primary)]/15 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/25 rounded-[14px] text-xs font-semibold transition-all border border-[var(--color-primary)]/20 active:scale-95 cursor-pointer shadow-xs"
-                            >
-                              <Sparkles className="w-4 h-4" /> 
-                              <span className="hidden sm:inline">Consult AI</span>
-                            </button>
+                        <div className="space-y-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-surface text-xs font-medium text-muted">
+                              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse shrink-0" />
+                              <span className="truncate">
+                                Active Subject:{" "}
+                                <strong className="text-theme font-semibold">
+                                  {activeProfile?.name || "Aarav Sharma"}
+                                </strong>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2.5 ml-auto">
+                              <button
+                                onClick={async () => {
+                                  if (activeProfile) {
+                                    setIsSBAROpen(true);
+                                    setSbarError(null);
+                                  }
+                                }}
+                                className="flex items-center gap-2 px-3.5 py-2 min-h-[40px] bg-surface hover:bg-surface/80 rounded-xl text-xs font-semibold transition-all border border-surface active:scale-95 cursor-pointer shadow-xs"
+                              >
+                                <FileText className="w-4 h-4 text-muted" /> Handover
+                                Report
+                              </button>
+                              <button
+                                onClick={() => setIsChatOpen(true)}
+                                aria-label="Consult AI"
+                                className="flex items-center gap-2 px-3.5 py-2 min-h-[40px] bg-[var(--color-primary)]/15 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/25 rounded-xl text-xs font-semibold transition-all border border-[var(--color-primary)]/20 active:scale-95 cursor-pointer shadow-xs"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                <span className="hidden sm:inline">Consult AI</span>
+                              </button>
+                            </div>
                           </div>
                           <motion.div
                             initial={{ opacity: 0, y: 12 }}
