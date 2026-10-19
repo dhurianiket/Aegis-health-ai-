@@ -428,7 +428,7 @@ export default function AbdmConnectModal({ isOpen, onClose, onSuccess }: AbdmCon
               )}
               <span>{feedback.message}</span>
             </div>
-            <button onClick={() => setFeedback(null)} className="opacity-70 hover:opacity-100">
+            <button aria-label="Dismiss feedback" onClick={() => setFeedback(null)} className="opacity-70 hover:opacity-100">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
