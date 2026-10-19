@@ -109,7 +109,30 @@ function MainApp() {
   const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
   const isFirstAuthResolution = useRef(true);
 
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      const validTabs = [
+        "home",
+        "upload",
+        "reports",
+        "trends",
+        "sbar",
+        "specialist",
+        "medications",
+        "settings",
+        "profile",
+        "admin",
+        "family",
+        "caremap",
+        "calendar",
+      ];
+      const hash = window.location.hash.replace("#", "");
+      if (validTabs.includes(hash)) return hash;
+      const tabParam = new URLSearchParams(window.location.search).get("tab");
+      if (tabParam && validTabs.includes(tabParam)) return tabParam;
+    }
+    return "home";
+  });
   const { user, loading: authLoading, isSigningIn, signIn, logOut } = useAuth();
   const { profiles, activeProfile, setActiveProfile, createProfile, isLoading: profileLoading } =
     useProfile();
@@ -213,6 +236,9 @@ function MainApp() {
         "settings",
         "profile",
         "admin",
+        "family",
+        "caremap",
+        "calendar",
       ];
       if (validTabs.includes(hash)) {
         setActiveTab(hash);
@@ -405,16 +431,16 @@ function MainApp() {
               />
             </div>
             <button
-              className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center text-muted hover:text-theme bg-surface/50 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
+              className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center text-muted hover:text-theme bg-surface border border-surface hover:border-[var(--color-primary)]/40 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer shadow-xs"
               onClick={toggleTheme}
               aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />}
+              {theme === 'dark' ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-700" />}
             </button>
             <div className="relative shrink-0">
               <button
-                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-muted hover:text-theme bg-surface/50 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
+                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-muted hover:text-theme bg-surface border border-surface rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer shadow-xs"
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 aria-label={`View notifications. ${activeAlertsCount} unread.`}
                 title="Notifications"
@@ -442,10 +468,10 @@ function MainApp() {
 
             {/* Production v2.0 Badge — hidden on compact screens so Sign In button never clips */}
             <div
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-300 shadow-sm select-none whitespace-nowrap"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-800 dark:text-teal-300 shadow-sm select-none whitespace-nowrap"
               title="Aegis Health AI — Production v2.0 Open Access"
             >
-              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-teal-600 dark:bg-teal-400 animate-pulse" />
               <span>Production v2.0</span>
             </div>
 
@@ -463,7 +489,7 @@ function MainApp() {
                     <div className="px-4 py-3 text-xs text-muted border-b border-surface">
                       {user.email}
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-teal-400 border-b border-surface">
+                    <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-teal-700 dark:text-teal-400 border-b border-surface">
                       <Sparkles className="w-3.5 h-3.5" /> Early Access Beta
                     </div>
                     <button
@@ -492,15 +518,15 @@ function MainApp() {
         <div className="flex-1 overflow-y-auto w-full">
           {!user && (
             <div className="bg-emerald-500/10 border-b border-emerald-500/25 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2 text-emerald-300 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping shrink-0" />
                 <span>
-                  <strong className="text-white">Open Evaluation &amp; AI Agent Inspection Mode:</strong> Viewing pre-loaded clinical telemetry for <em>Aarav Sharma (38M)</em>. All 10 AI specialists, 3D Organ Digital Twin, Lab Reports, Trends, and SBAR Handover are unlocked without login.
+                  <strong className="text-slate-900 dark:text-white">Open Evaluation &amp; AI Agent Inspection Mode:</strong> Viewing pre-loaded clinical telemetry for <em>Aarav Sharma (38M)</em>. All 10 AI specialists, 3D Organ Digital Twin, Lab Reports, Trends, and SBAR Handover are unlocked without login.
                 </span>
               </div>
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className="px-3.5 py-1 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs transition-all cursor-pointer shrink-0"
+                className="px-3.5 py-1 rounded-full bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-400 dark:hover:bg-emerald-300 text-white dark:text-slate-950 font-black text-xs transition-all cursor-pointer shrink-0"
               >
                 Sign In ({DEMO_REVIEWER_EMAIL}) →
               </button>
@@ -508,15 +534,15 @@ function MainApp() {
           )}
           {user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in" && (
             <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2 text-emerald-300 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping shrink-0" />
                 <span>
-                  <strong className="text-white">Reviewer Evaluation Session (`reviewer@aegishealthai.co.in`):</strong> Viewing live Firestore clinical data for <em>Aarav Sharma (38M)</em>. All AI specialists, PDF ingestion, and FHIR exports are unlocked.
+                  <strong className="text-slate-900 dark:text-white">Reviewer Evaluation Session (`reviewer@aegishealthai.co.in`):</strong> Viewing live Firestore clinical data for <em>Aarav Sharma (38M)</em>. All AI specialists, PDF ingestion, and FHIR exports are unlocked.
                 </span>
               </div>
               <button
                 onClick={logOut}
-                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all cursor-pointer shrink-0"
+                className="px-3 py-1 rounded-full bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white font-bold text-xs transition-all cursor-pointer shrink-0"
               >
                 Sign Out / Switch Account
               </button>

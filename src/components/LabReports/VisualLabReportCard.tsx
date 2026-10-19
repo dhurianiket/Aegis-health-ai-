@@ -420,12 +420,12 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
   return (
     <div
       className={`w-full glass-card-ultra-3d p-5 sm:p-7 space-y-6 relative overflow-hidden transition-all duration-200 ${
-        isSelected ? 'ring-2 ring-cyan-400 border-cyan-400/80 shadow-2xl' : 'border-white/15'
+        isSelected ? 'ring-2 ring-cyan-500 border-cyan-500/80 shadow-2xl' : 'border-slate-200 dark:border-white/15'
       } ${className}`}
       data-testid="visual-lab-report-card"
     >
       {/* Card Header & Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-white/10 pb-5">
         <div className="flex items-start gap-4">
           {showCheckbox && (
             <div className="pt-2">
@@ -433,12 +433,12 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                 type="checkbox"
                 checked={!!isSelected}
                 onChange={() => onToggleSelection && onToggleSelection(report.id)}
-                className="w-5 h-5 cursor-pointer accent-cyan-400 rounded-md"
+                className="w-5 h-5 cursor-pointer accent-cyan-600 dark:accent-cyan-400 rounded-md"
                 aria-label={`Select report ${report.fileName || report.id}`}
               />
             </div>
           )}
-          <div className="p-3.5 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 glow-cyan-3d shrink-0">
+          <div className="p-3.5 rounded-2xl bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 border border-cyan-500/40 glow-cyan-3d shrink-0">
             {docType.toLowerCase().includes('consult') ? (
               <Stethoscope className="w-6 h-6" />
             ) : (
@@ -447,16 +447,16 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 border border-cyan-500/30">
                 {docType}
               </span>
-              <span className="text-xs text-slate-300 font-mono">{dateText}</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-mono">{dateText}</span>
             </div>
-            <h3 className="font-bold text-lg sm:text-xl text-white tracking-wide">{labName}</h3>
+            <h3 className="font-bold text-lg sm:text-xl text-slate-900 dark:text-white tracking-wide">{labName}</h3>
             {doctor && (
-              <p className="text-xs font-semibold text-slate-300 mt-0.5">
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
                 Ordering Physician:{' '}
-                <span className="text-cyan-300">
+                <span className="text-cyan-800 dark:text-cyan-300">
                   {doctor.toLowerCase().startsWith('dr.') || doctor.toLowerCase().startsWith('dr ')
                     ? doctor
                     : `Dr. ${doctor}`}
@@ -471,9 +471,9 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
           <button
             onClick={handleExportFhir}
             title="Export as HL7 FHIR R4 JSON Bundle"
-            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/40 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-800 dark:text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/40 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
-            <Activity size={14} className="text-indigo-400" />
+            <Activity size={14} className="text-indigo-700 dark:text-indigo-400" />
             <span>FHIR R4</span>
           </button>
 
@@ -483,9 +483,9 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
               else setShowSbarModal(true);
             }}
             title="View Structured SBAR Clinical Summary"
-            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 text-xs font-bold rounded-xl border border-teal-500/40 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-teal-500/15 hover:bg-teal-500/25 text-teal-800 dark:text-teal-300 text-xs font-bold rounded-xl border border-teal-500/40 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
-            <FileCheck size={14} className="text-teal-400" />
+            <FileCheck size={14} className="text-teal-700 dark:text-teal-400" />
             <span>SBAR View</span>
           </button>
 
@@ -494,14 +494,14 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
               href={report.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-900 dark:text-white text-xs font-bold rounded-xl border border-slate-300 dark:border-white/10 transition-all min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
             >
               <Download size={14} /> PDF
             </a>
           ) : (
             <button
               onClick={downloadSummary}
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-900 dark:text-white text-xs font-bold rounded-xl border border-slate-300 dark:border-white/10 transition-all min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
             >
               <Download size={14} /> JSON
             </button>
@@ -510,7 +510,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
           {observationCount > 0 && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-xl transition-all border border-cyan-500/30 min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-cyan-800 dark:text-cyan-300 bg-cyan-500/15 hover:bg-cyan-500/25 rounded-xl transition-all border border-cyan-500/30 min-h-[44px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
               aria-label={expanded ? 'Hide Visual Range Cards' : 'View Visual Range Cards'}
               aria-expanded={expanded}
               aria-controls={`range-cards-${report.id}`}
@@ -554,19 +554,19 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                 return (
                   <div
                     key={idx}
-                    className="bg-slate-950/85 border border-white/10 hover:border-cyan-500/40 rounded-2xl p-5 space-y-4 shadow-lg transition-all duration-200 flex flex-col justify-between"
+                    className="bg-slate-50/90 dark:bg-slate-950/85 border border-slate-200 dark:border-white/10 hover:border-cyan-500/40 rounded-2xl p-5 space-y-4 shadow-xs dark:shadow-lg transition-all duration-200 flex flex-col justify-between"
                   >
                     {/* Header: Marker Name & Urgency Badge */}
-                    <div className="flex items-start justify-between gap-3 border-b border-white/5 pb-3">
+                    <div className="flex items-start justify-between gap-3 border-b border-slate-200/70 dark:border-white/5 pb-3">
                       <div>
-                        <h4 className="font-bold text-white text-base tracking-wide flex items-center gap-2">
+                        <h4 className="font-bold text-slate-900 dark:text-white text-base tracking-wide flex items-center gap-2">
                           <span>{markerName}</span>
                         </h4>
                         <div className="flex items-baseline gap-1.5 mt-1">
-                          <span className="text-2xl font-black font-mono text-cyan-300">
+                          <span className="text-2xl font-black font-mono text-cyan-800 dark:text-cyan-300">
                             {numVal}
                           </span>
-                          <span className="text-xs font-mono text-slate-300">{unit}</span>
+                          <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{unit}</span>
                         </div>
                       </div>
 
@@ -574,7 +574,7 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                         <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${urgency.badgeClass}`}>
                           {flag}
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400">
                           {urgency.level} Urgency
                         </span>
                       </div>
@@ -590,19 +590,19 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                     />
 
                     {/* Plain-English Patient-Friendly Explanation */}
-                    <div className="bg-slate-900/90 border border-white/5 rounded-xl p-3 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
-                        <Info className="w-3.5 h-3.5 text-cyan-400" />
+                    <div className="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/5 rounded-xl p-3 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-800 dark:text-cyan-300">
+                        <Info className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400" />
                         <span>Plain Language Clinical Context</span>
                       </div>
-                      <p className="text-xs text-slate-300 leading-relaxed font-light">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                         {plainExplanation}
                       </p>
                     </div>
 
                     {/* Comparison Sparkline with Historical Values */}
-                    <div className="bg-slate-900/60 rounded-xl p-3 border border-white/5 flex items-center justify-between">
-                      <div className="text-[11px] text-slate-300 font-bold">Historical Trend:</div>
+                    <div className="bg-white/80 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200/80 dark:border-white/5 flex items-center justify-between">
+                      <div className="text-[11px] text-slate-700 dark:text-slate-300 font-bold">Historical Trend:</div>
                       <BiomarkerSparkline
                         currentValue={numVal}
                         historyValues={history}
@@ -611,23 +611,23 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
                     </div>
 
                     {/* Source Grounding & Next Step Recommendations */}
-                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400 flex-wrap gap-2">
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400 flex-wrap gap-2">
                       <div>
                         {source ? (
                           <a
                             href={source.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-cyan-400 hover:underline inline-flex items-center gap-1 font-semibold"
+                            className="text-cyan-700 dark:text-cyan-400 hover:underline inline-flex items-center gap-1 font-semibold"
                           >
-                            <Sparkles className="w-3 h-3 text-cyan-400" />
+                            <Sparkles className="w-3 h-3 text-cyan-700 dark:text-cyan-400" />
                             <span>{source.name}</span>
                           </a>
                         ) : (
                           <span className="italic">Clinical consensus guideline</span>
                         )}
                       </div>
-                      <div className="text-slate-300 font-light truncate max-w-[220px]">
+                      <div className="text-slate-700 dark:text-slate-300 truncate max-w-[220px]">
                         {urgency.nextStep}
                       </div>
                     </div>
@@ -638,8 +638,8 @@ export const VisualLabReportCard: React.FC<VisualLabReportCardProps> = ({
 
             {/* AI Summary Banner */}
             {(report.aiSummary || report.extractedData?.summary) && (
-              <div className="mt-4 p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 text-xs sm:text-sm leading-relaxed text-slate-200">
-                <strong className="text-cyan-300 font-bold">Diagnostic Synthesis:</strong>{' '}
+              <div className="mt-4 p-4 rounded-2xl bg-cyan-500/10 dark:bg-cyan-950/40 border border-cyan-500/30 text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+                <strong className="text-cyan-800 dark:text-cyan-300 font-bold">Diagnostic Synthesis:</strong>{' '}
                 {report.aiSummary || report.extractedData?.summary}
               </div>
             )}

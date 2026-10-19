@@ -37,7 +37,13 @@ const RECAPTCHA_SITE_KEY =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_RECAPTCHA_SITE_KEY) ||
   "6Lfln_EsAAAAABlOtBKP5ngFr3f8lXzX59Oujq6A";
 
-if (typeof window !== "undefined" && RECAPTCHA_SITE_KEY && import.meta.env.MODE !== "test") {
+if (
+  typeof window !== "undefined" &&
+  RECAPTCHA_SITE_KEY &&
+  import.meta.env.MODE !== "test" &&
+  firebaseConfig.apiKey &&
+  firebaseConfig.apiKey !== "mock-test-key"
+) {
   try {
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),

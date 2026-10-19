@@ -569,20 +569,20 @@ export default function ProfileManagement() {
                     </div>
                   )}
                   {p.paediatricConsent?.guardianName && (
-                    <div className="text-[11px] text-slate-400 mb-1">
-                      Guardian: <span className="text-white font-medium">{p.paediatricConsent.guardianName}</span> ({p.paediatricConsent.guardianRelationship})
+                    <div className="text-[11px] text-[var(--color-text-muted)] mb-1">
+                      Guardian: <span className="text-[var(--color-text)] font-medium">{p.paediatricConsent.guardianName}</span> ({p.paediatricConsent.guardianRelationship})
                     </div>
                   )}
                   
                   <div className="flex flex-col gap-2 mt-3">
                      <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
                         {p.dob && <div><span className="text-[var(--color-text-muted)]">DOB:</span> {p.dob}</div>}
-                        {p.bloodType && <div><span className="text-[var(--color-text-muted)]">Type:</span> <span className="font-bold text-red-400">{p.bloodType}</span></div>}
+                        {p.bloodType && <div><span className="text-[var(--color-text-muted)]">Type:</span> <span className="font-bold text-red-600 dark:text-red-400">{p.bloodType}</span></div>}
                      </div>
                      
                      {p.googleFormId && (
-                       <div className="mt-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-2 flex items-center gap-2 text-xs text-indigo-300">
-                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                       <div className="mt-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-2 flex items-center gap-2 text-xs text-indigo-700 dark:text-indigo-300">
+                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse" />
                          Google Forms Intake Linked
                        </div>
                      )}
@@ -593,7 +593,7 @@ export default function ProfileManagement() {
                            {p.weight && p.height ? (
                               <div className="flex items-center gap-2">
                                  <span className="text-sm font-bold text-[var(--color-text)]">{calculateBMI(p.weight, p.height)}</span>
-                                 <span className="text-xs uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">{getBMICategory(Number(calculateBMI(p.weight, p.height)))}</span>
+                                 <span className="text-xs uppercase tracking-wider text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">{getBMICategory(Number(calculateBMI(p.weight, p.height)))}</span>
                               </div>
                            ) : (
                               <div className="text-xs text-[var(--color-text-muted)]">Add height and weight to calculate BMI</div>
@@ -613,7 +613,7 @@ export default function ProfileManagement() {
                 disabled={activeProfile?.id === p.id}
                 className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   activeProfile?.id === p.id
-                    ? "bg-indigo-500/10 text-indigo-400 cursor-default"
+                    ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 cursor-default"
                     : "border border-[var(--color-border)] text-[var(--color-text)] bg-[var(--color-surface)]"
                 }`}
               >
@@ -623,7 +623,7 @@ export default function ProfileManagement() {
               <button
                 onClick={() => handleEdit(p)}
                 aria-label="Edit Profile"
-                className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-400 bg-[var(--color-surface)] hover:bg-indigo-500/10 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 bg-[var(--color-surface)] hover:bg-indigo-500/10 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
                 title="Edit Profile"
               >
                 <Edit2 className="w-4 h-4" />
@@ -633,7 +633,7 @@ export default function ProfileManagement() {
                 onClick={() => setDeletingId(p.id)}
                 disabled={profiles.length <= 1}
                 aria-label="Delete Profile"
-                className="p-1.5 text-[var(--color-text-muted)] hover:text-red-400 bg-[var(--color-surface)] hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-[var(--color-text-muted)] disabled:hover:bg-[var(--color-surface)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                className="p-1.5 text-[var(--color-text-muted)] hover:text-red-600 dark:hover:text-red-400 bg-[var(--color-surface)] hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-[var(--color-text-muted)] disabled:hover:bg-[var(--color-surface)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                 title={
                   profiles.length <= 1
                     ? "Cannot delete last profile"
@@ -668,15 +668,15 @@ export default function ProfileManagement() {
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              className="bg-[#0F172A] border border-red-500/20 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative overflow-hidden"
+              className="bg-[var(--color-surface)] dark:bg-[#0F172A] border border-red-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative overflow-hidden"
             >
               <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="w-6 h-6 text-red-500" />
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className="text-xl font-bold text-[var(--color-text)] dark:text-white mb-2">
                 Delete Profile?
               </h3>
-              <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+              <p className="text-[var(--color-text-muted)] dark:text-slate-300 text-sm mb-6 leading-relaxed">
                 Are you sure you want to delete this profile? This action will
                 permanently delete all associated medical records, timeline
                 events, and insights. This action cannot be undone.
@@ -684,7 +684,7 @@ export default function ProfileManagement() {
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setDeletingId(null)}
-                  className="px-4 py-2 text-sm font-medium text-slate-300 hover:bg-white/5 rounded-xl transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] dark:text-slate-300 hover:bg-slate-500/10 dark:hover:bg-white/5 rounded-xl transition-colors"
                 >
                   Cancel
                 </button>

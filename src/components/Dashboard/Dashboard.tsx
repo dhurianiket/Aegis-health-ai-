@@ -151,6 +151,7 @@ const aggregateLabs = (docs: MedicalDocument[]): any[] => {
       else if (diff < 0) trend = "down";
     }
     aggregatedLabs.push({
+      id: `${latest.docId || "doc"}-${normalizedMarker}`,
       markerName:
         latest.marker ||
         latest.name ||

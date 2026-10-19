@@ -341,13 +341,13 @@ export function AuraCursorGuide({
           <div
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold backdrop-blur-md border shadow-lg transition-all ${
               hoveredGuide
-                ? 'bg-teal-950/90 border-teal-400/70 text-teal-200 scale-105 shadow-teal-500/20'
-                : 'bg-slate-900/75 border-indigo-400/35 text-slate-300 opacity-80'
+                ? 'bg-teal-50/95 dark:bg-teal-950/90 border-teal-500/70 dark:border-teal-400/70 text-teal-900 dark:text-teal-200 scale-105 shadow-teal-500/20'
+                : 'bg-white/90 dark:bg-slate-900/75 border-indigo-500/40 dark:border-indigo-400/35 text-slate-800 dark:text-slate-300 opacity-90'
             }`}
           >
             <span
               className={`w-2 h-2 rounded-full ${
-                hoveredGuide ? 'bg-teal-400 animate-ping' : 'bg-indigo-400'
+                hoveredGuide ? 'bg-teal-600 dark:bg-teal-400 animate-ping' : 'bg-indigo-600 dark:bg-indigo-400'
               }`}
             />
             <span className="whitespace-nowrap">{currentExplanation.cursorBadge}</span>
@@ -366,17 +366,17 @@ export function AuraCursorGuide({
               type="button"
               onClick={() => setIsGuideEnabled(true)}
               aria-label="Enable Interactive Avatar Guide"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-900/95 hover:bg-slate-800 border border-teal-500/40 text-teal-300 text-xs font-bold shadow-lg cursor-pointer transition-all"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-slate-100 dark:hover:bg-slate-800 border border-teal-500/40 text-teal-800 dark:text-teal-300 text-xs font-bold shadow-lg cursor-pointer transition-all"
             >
-              <HelpCircle className="w-4 h-4 text-teal-400" />
+              <HelpCircle className="w-4 h-4 text-teal-700 dark:text-teal-400" />
               <span>Interactive Guide</span>
             </button>
           </div>
         ) : (
-          <div className="rounded-2xl bg-slate-950/95 backdrop-blur-xl border border-teal-500/35 p-3 sm:p-3.5 shadow-2xl shadow-teal-950/50 text-left transition-all">
+          <div className="rounded-2xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border border-teal-500/40 dark:border-teal-500/35 p-3 sm:p-3.5 shadow-2xl shadow-slate-900/15 dark:shadow-teal-950/50 text-left transition-all">
             <div className="flex items-start gap-3">
               {/* 2.5D Gaze-Tracking Aura Guide Avatar with Pointing/Explaining Gesture */}
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-900 border border-teal-400/40 flex items-center justify-center p-0.5 shrink-0 shadow-md">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-teal-500/40 dark:border-teal-400/40 flex items-center justify-center p-0.5 shrink-0 shadow-md">
                 <AuraCompanion
                   isListening={Boolean(hoveredGuide) && !isSpeakingPulse}
                   isSpeaking={isSpeakingPulse}
@@ -387,8 +387,8 @@ export function AuraCursorGuide({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1.5 mb-0.5">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-teal-300 truncate">
-                    <Sparkles className="w-3 h-3 text-teal-400 shrink-0" />
+                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-teal-800 dark:text-teal-300 truncate">
+                    <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
                     {hoveredGuide ? 'Interactive Cursor Guide' : 'Aura Screen Guide'}
                   </span>
                   <button
@@ -396,7 +396,7 @@ export function AuraCursorGuide({
                     onClick={() => setIsGuideEnabled(false)}
                     aria-label="Minimize Interactive Guide"
                     title="Minimize Guide"
-                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+                    className="p-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
                   >
                     <EyeOff className="w-3.5 h-3.5" />
                   </button>
@@ -404,33 +404,33 @@ export function AuraCursorGuide({
 
                 <h4
                   data-testid="aura-guide-title"
-                  className="text-xs sm:text-sm font-bold text-white leading-snug break-words"
+                  className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-snug break-words"
                 >
                   {currentExplanation.title}
                 </h4>
 
-                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 mt-0.5 leading-relaxed">
                   {currentExplanation.whatItDoes}
                 </p>
 
                 <div
                   data-testid="aura-guide-action"
-                  className="mt-2 px-2.5 py-1.5 rounded-xl bg-teal-500/15 border border-teal-400/30 text-[11px] text-teal-200 leading-snug"
+                  className="mt-2 px-2.5 py-1.5 rounded-xl bg-teal-500/15 border border-teal-500/35 dark:border-teal-400/30 text-[11px] text-teal-950 dark:text-teal-200 leading-snug"
                 >
-                  <strong className="text-teal-300 font-bold">What to do: </strong>
+                  <strong className="text-teal-900 dark:text-teal-300 font-bold">What to do: </strong>
                   {currentExplanation.whatToDo}
                 </div>
 
                 {/* Interactive Guided Walkthrough Controls */}
-                <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between gap-2">
-                  <span className="text-[10px] text-slate-400 font-medium truncate">
+                <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate">
                     Move cursor over any item to inspect
                   </span>
                   <button
                     type="button"
                     onClick={handleNextTourStep}
                     data-testid="aura-guide-next-tour"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-white text-[11px] font-bold transition-colors shrink-0 cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-700 hover:bg-indigo-600 dark:bg-indigo-600/80 dark:hover:bg-indigo-500 text-white text-[11px] font-bold transition-colors shrink-0 cursor-pointer"
                   >
                     <Compass className="w-3 h-3" />
                     <span>Tour {TOUR_STEPS[tourIndex].label}</span>
