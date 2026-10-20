@@ -205,11 +205,11 @@ function resolveElementExplanation(target: HTMLElement | null): GuideExplanation
       cursorBadge: '🩺 Switch Specialist',
     };
   }
-  if (combined.includes('email / reviewer sign in') || combined.includes('sign in')) {
+  if (combined.includes('sign in')) {
     return {
-      title: 'Reviewer & Patient Authentication',
+      title: 'Patient & Clinical Authentication',
       whatItDoes: 'Signs into live Firestore cloud sync or switches between sandbox evaluation and personal records.',
-      whatToDo: 'Click to sign in with Email, Google, or the pre-configured Reviewer account.',
+      whatToDo: 'Click to authenticate with your Email ID or Google account.',
       cursorBadge: '🔐 Sign In',
     };
   }

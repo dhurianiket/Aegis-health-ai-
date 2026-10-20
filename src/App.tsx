@@ -508,7 +508,7 @@ function MainApp() {
                 className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2.5 bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 text-white rounded-[12px] text-[11px] sm:text-xs md:text-sm font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap shrink-0"
               >
                 <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                <span>Email / Reviewer Sign In</span>
+                <span>Sign In</span>
               </button>
             )}
           </div>
@@ -521,14 +521,14 @@ function MainApp() {
               <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping shrink-0" />
                 <span>
-                  <strong className="text-slate-900 dark:text-white">Open Evaluation &amp; AI Agent Inspection Mode:</strong> Viewing pre-loaded clinical telemetry for <em>Aarav Sharma (38M)</em>. All 10 AI specialists, 3D Organ Digital Twin, Lab Reports, Trends, and SBAR Handover are unlocked without login.
+                  <strong className="text-slate-900 dark:text-white">Interactive Demonstration Mode:</strong> Viewing pre-loaded clinical telemetry for <em>Aarav Sharma (38M)</em>. All 10 AI specialists, 3D Organ Digital Twin, Lab Reports, Trends, and SBAR Handover are unlocked.
                 </span>
               </div>
               <button
                 onClick={() => setIsLoginModalOpen(true)}
                 className="px-3.5 py-1 rounded-full bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-400 dark:hover:bg-emerald-300 text-white dark:text-slate-950 font-black text-xs transition-all cursor-pointer shrink-0"
               >
-                Sign In ({DEMO_REVIEWER_EMAIL}) →
+                Sign In to Save Data →
               </button>
             </div>
           )}

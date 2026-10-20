@@ -15,48 +15,32 @@ describe('SpotlightCard Component', () => {
     expect(screen.getByText('Medical Telemetry')).toBeDefined();
   });
 
-  it('updates opacity on mouseEnter and mouseLeave', () => {
-    const { container } = render(
+  it('applies default classes and container query classes when enabled', () => {
+    const { container, rerender } = render(
       <SpotlightCard className="test-card">
         <p>Card Content</p>
       </SpotlightCard>
     );
 
     const card = container.firstChild as HTMLElement;
-    const overlay = screen.getByTestId('spotlight-overlay');
+    expect(card.classList.contains('aegis-spotlight-card')).toBe(true);
+    expect(card.classList.contains('test-card')).toBe(true);
 
-    // Initially opacity is 0
-    expect(overlay.style.opacity).toBe('0');
-
-    // On mouse enter, opacity transitions to 0.6
-    fireEvent.mouseEnter(card);
-    expect(overlay.style.opacity).toBe('0.6');
-
-    // On mouse leave, opacity returns to 0
-    fireEvent.mouseLeave(card);
-    expect(overlay.style.opacity).toBe('0');
-  });
-
-  it('updates opacity on focus and blur', () => {
-    const { container } = render(
-      <SpotlightCard tabIndex={0} role="button">
-        <p>Accessible Card</p>
+    rerender(
+      <SpotlightCard enableContainerQuery>
+        <p>Card Content</p>
       </SpotlightCard>
     );
-
-    const card = container.firstChild as HTMLElement;
-    const overlay = screen.getByTestId('spotlight-overlay');
-
-    fireEvent.focus(card);
-    expect(overlay.style.opacity).toBe('0.6');
-
-    fireEvent.blur(card);
-    expect(overlay.style.opacity).toBe('0');
+    expect((container.firstChild as HTMLElement).classList.contains('bento-card-container')).toBe(true);
   });
 
-  it('handles mouse movements to compute position', () => {
+  it('updates CSS variables on pointer move', () => {
+    const onPointerMoveMock = vi.fn();
     const { container } = render(
-      <SpotlightCard spotlightColor="rgba(16, 185, 129, 0.25)">
+      <SpotlightCard
+        spotlightColor="rgba(16, 185, 129, 0.25)"
+        onPointerMove={onPointerMoveMock}
+      >
         <p>Hover test</p>
       </SpotlightCard>
     );
@@ -74,9 +58,35 @@ describe('SpotlightCard Component', () => {
       toJSON: () => {},
     });
 
-    fireEvent.mouseMove(card, { clientX: 50, clientY: 60 });
-    const overlay = screen.getByTestId('spotlight-overlay');
-    expect(overlay.style.background).toContain('circle at 40px 50px');
-    expect(overlay.style.background).toContain('rgba(16, 185, 129, 0.25)');
+    fireEvent.pointerMove(card, { clientX: 50, clientY: 60 });
+
+    expect(card.style.getPropertyValue('--mouse-x')).toBe('40px');
+    expect(card.style.getPropertyValue('--mouse-y')).toBe('50px');
+    expect(card.style.getPropertyValue('--spotlight-color')).toBe('rgba(16, 185, 129, 0.25)');
+    expect(onPointerMoveMock).toHaveBeenCalled();
+  });
+
+  it('uses accentColor for default spotlight color if none specified', () => {
+    const { container } = render(
+      <SpotlightCard accentColor="rose">
+        <p>Rose card</p>
+      </SpotlightCard>
+    );
+
+    const card = container.firstChild as HTMLElement;
+    vi.spyOn(card, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 100,
+      bottom: 100,
+      width: 100,
+      height: 100,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    });
+
+    fireEvent.pointerMove(card, { clientX: 20, clientY: 30 });
+    expect(card.style.getPropertyValue('--spotlight-color')).toBe('rgba(251, 113, 133, 0.16)');
   });
 });
