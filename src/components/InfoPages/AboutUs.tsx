@@ -71,7 +71,7 @@ function AboutUsContent() {
               onClick={openLoginModal}
               className="px-7 py-3.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(52,211,153,0.35)] transition-all flex items-center gap-2 cursor-pointer"
             >
-              <Mail className="w-4 h-4" /> Email / Reviewer Demo Login
+              <Mail className="w-4 h-4" /> Account Sign In
             </button>
             <Link
               to="/dashboard"
@@ -166,7 +166,7 @@ function AboutUsContent() {
                 <p><strong className="text-white">Legal Entity:</strong> AEGIS HEALTH AI</p>
                 <p><strong className="text-white">Govt. of India MSME Udyam:</strong> <span className="font-mono text-emerald-300 font-bold">UDYAM-MH-33-0782403</span></p>
                 <p><strong className="text-white">NIC Classification:</strong> 62011 (Health Informatics &amp; AI Systems Engineering)</p>
-                <p><strong className="text-white">Registered Office:</strong> Flat 301, Padu Niwas, Ganesh Nagar, Dombivli West, Thane, Maharashtra 421202</p>
+                <p><strong className="text-white">Registered Office:</strong> Dombivli West, Thane, Maharashtra 421202, India</p>
               </div>
             </SpotlightCard>
           </div>
@@ -307,7 +307,7 @@ function AboutUsContent() {
           <Sparkles className="w-8 h-8 text-emerald-400 mb-6" />
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-4">Explore the Live Product Workspace</h2>
           <p className="text-slate-200 text-sm md:text-base max-w-xl mb-8 leading-relaxed font-light">
-            Sign in with our 1-click Reviewer credentials (<code className="text-emerald-300 font-mono">reviewer@aegishealthai.co.in</code>) or launch the live clinical workspace directly.
+            Explore the live demonstration workspace directly, or sign in to synchronize personal clinical records.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button
@@ -315,7 +315,7 @@ function AboutUsContent() {
               className="px-8 py-3.5 bg-emerald-400 hover:bg-emerald-300 text-[#0A192F] font-black uppercase text-xs tracking-widest rounded-full transition-all shadow-[0_0_25px_rgba(52,211,153,0.3)] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-              <span>Email / Reviewer Sign-In</span>
+              <span>Account Sign-In</span>
             </button>
             <Link 
               to="/dashboard"

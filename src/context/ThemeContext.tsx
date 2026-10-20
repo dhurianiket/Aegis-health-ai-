@@ -28,9 +28,23 @@ const applyTheme = (targetTheme: Theme) => {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlTheme = params.get('theme');
+        if (urlTheme === 'light' || urlTheme === 'dark') {
+          applyTheme(urlTheme);
+          return urlTheme;
+        }
+      } catch {
+        // Ignore URL parsing errors
+      }
       const saved = localStorage.getItem('theme') as Theme;
-      if (saved === 'light' || saved === 'dark') return saved;
+      if (saved === 'light' || saved === 'dark') {
+        applyTheme(saved);
+        return saved;
+      }
       // Default to dark for Aegis Health AI brand theme
+      applyTheme('dark');
       return 'dark';
     }
     return 'dark';

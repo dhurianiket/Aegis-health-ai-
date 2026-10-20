@@ -30,41 +30,41 @@ export const SecurityAuditViewer: React.FC = () => {
   const getActionBadge = (action: string) => {
     if (action.includes('UNLOCKED') || action.includes('SUCCESS')) {
       return (
-        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
+        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
           {action}
         </span>
       );
     }
     if (action.includes('ENCRYPT') || action.includes('DECRYPT')) {
       return (
-        <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-bold">
+        <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-800 dark:text-cyan-300 border border-cyan-500/40 text-[10px] font-bold">
           {action}
         </span>
       );
     }
     return (
-      <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[10px] font-bold">
+      <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-800 dark:text-indigo-300 border border-indigo-500/40 text-[10px] font-bold">
         {action}
       </span>
     );
   };
 
   return (
-    <div className="bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-indigo-500/30 shadow-[0_16px_40px_-8px_rgba(99,102,241,0.2)] rounded-[32px] p-6 md:p-8 space-y-6">
+    <div className="bg-[var(--color-surface)] dark:bg-slate-900/95 backdrop-blur-2xl border border-indigo-500/30 shadow-sm dark:shadow-[0_16px_40px_-8px_rgba(99,102,241,0.2)] rounded-[32px] p-6 md:p-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-border)] dark:border-white/10 pb-5">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+          <div className="p-3 rounded-2xl bg-indigo-500/15 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-white tracking-wide">Immutable Security Audit Trail</h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-mono text-[10px] font-semibold">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xl font-bold text-[var(--color-text)] tracking-wide">Immutable Security Audit Trail</h3>
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-800 dark:text-indigo-300 font-mono text-[10px] font-bold">
                 SHA-256 Tamper-Proof
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-light mt-0.5">
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
               Cryptographic audit logger tracking security events and DPDP compliance
             </p>
           </div>
@@ -73,7 +73,7 @@ export const SecurityAuditViewer: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={reloadLogs}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="p-2 rounded-xl bg-[var(--color-bg)] dark:bg-white/5 hover:opacity-80 border border-[var(--color-border)] dark:border-white/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             title="Refresh logs"
             aria-label="Refresh logs"
           >
@@ -81,7 +81,7 @@ export const SecurityAuditViewer: React.FC = () => {
           </button>
           <button
             onClick={handleClear}
-            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-700 dark:text-rose-400 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
             title="Clear logs"
             aria-label="Clear logs"
           >
@@ -92,40 +92,40 @@ export const SecurityAuditViewer: React.FC = () => {
 
       {/* Audit Log Table */}
       {logs.length === 0 ? (
-        <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-6 text-center text-xs text-slate-400">
+        <div className="bg-[var(--color-bg)] dark:bg-slate-950/80 border border-[var(--color-border)] dark:border-white/10 rounded-2xl p-6 text-center text-xs text-[var(--color-text-muted)]">
           No security audit records logged.
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/10 text-[11px] font-mono text-slate-400 uppercase">
+              <tr className="border-b border-[var(--color-border)] dark:border-white/10 text-[11px] font-mono text-[var(--color-text-muted)] uppercase">
                 <th className="py-2.5 px-3">Timestamp</th>
                 <th className="py-2.5 px-3">Action</th>
-                <th className="py-2.5 px-3">Details & Actor</th>
+                <th className="py-2.5 px-3">Details &amp; Actor</th>
                 <th className="py-2.5 px-3 text-right">SHA-256 Checksum</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-xs">
+            <tbody className="divide-y divide-[var(--color-border)] dark:divide-white/5 text-xs">
               {logs.map((log) => (
-                <tr key={log.id} className="hover:bg-white/5 transition-colors">
-                  <td className="py-3 px-3 font-mono text-slate-300 text-[11px] whitespace-nowrap">
+                <tr key={log.id} className="hover:bg-[var(--color-bg)]/50 dark:hover:bg-white/5 transition-colors">
+                  <td className="py-3 px-3 font-mono text-[var(--color-text-muted)] text-[11px] whitespace-nowrap">
                     {new Date(log.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </td>
                   <td className="py-3 px-3 whitespace-nowrap">{getActionBadge(log.action)}</td>
                   <td className="py-3 px-3">
-                    <div className="font-semibold text-white">{log.details}</div>
-                    <div className="text-[10px] text-slate-400 font-light mt-0.5">{log.actor}</div>
+                    <div className="font-semibold text-[var(--color-text)]">{log.details}</div>
+                    <div className="text-[10px] text-[var(--color-text-muted)] mt-0.5">{log.actor}</div>
                   </td>
                   <td className="py-3 px-3 text-right whitespace-nowrap">
                     <button
                       onClick={() => copyHash(log.sha256Checksum, log.id)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 hover:border-indigo-400 font-mono text-[10px] text-indigo-300 cursor-pointer transition-colors inline-flex items-center gap-1.5"
+                      className="px-2.5 py-1 rounded-lg bg-[var(--color-bg)] dark:bg-slate-950 border border-[var(--color-border)] dark:border-white/10 hover:border-indigo-400 font-mono text-[10px] text-indigo-700 dark:text-indigo-300 cursor-pointer transition-colors inline-flex items-center gap-1.5"
                       aria-label={`Copy SHA-256 checksum ${log.sha256Checksum.slice(0, 12)}`}
                     >
                       <span>{log.sha256Checksum.slice(0, 12)}...</span>
                       {copiedId === log.id ? (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       ) : (
                         <FileCode className="w-3 h-3 text-slate-500" />
                       )}

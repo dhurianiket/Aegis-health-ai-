@@ -55,6 +55,7 @@ const IntegrationsPanel = lazy(
 );
 const SharedProfile = lazy(() => import("./components/Export/SharedProfile"));
 const PricingModal = lazy(() => import("./components/Billing/PricingModal"));
+import AuraCursorGuide from "./components/Avatars/AuraCursorGuide";
 import { getUserSubscription, UserSubscription } from "./services/usageService";
 
 import { validateProfileName } from "./lib/validation";
@@ -108,7 +109,30 @@ function MainApp() {
   const [showPostLoginAnimation, setShowPostLoginAnimation] = useState(false);
   const isFirstAuthResolution = useRef(true);
 
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      const validTabs = [
+        "home",
+        "upload",
+        "reports",
+        "trends",
+        "sbar",
+        "specialist",
+        "medications",
+        "settings",
+        "profile",
+        "admin",
+        "family",
+        "caremap",
+        "calendar",
+      ];
+      const hash = window.location.hash.replace("#", "");
+      if (validTabs.includes(hash)) return hash;
+      const tabParam = new URLSearchParams(window.location.search).get("tab");
+      if (tabParam && validTabs.includes(tabParam)) return tabParam;
+    }
+    return "home";
+  });
   const { user, loading: authLoading, isSigningIn, signIn, logOut } = useAuth();
   const { profiles, activeProfile, setActiveProfile, createProfile, isLoading: profileLoading } =
     useProfile();
@@ -212,6 +236,9 @@ function MainApp() {
         "settings",
         "profile",
         "admin",
+        "family",
+        "caremap",
+        "calendar",
       ];
       if (validTabs.includes(hash)) {
         setActiveTab(hash);
@@ -353,9 +380,9 @@ function MainApp() {
         className="flex-1 flex flex-col min-w-0 h-full relative pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 pointer-events-auto touch-auto"
       >
         {/* Top Header */}
-        <header className="sticky top-0 z-50 apple-blur-nav pt-safe px-4 sm:px-6 md:px-10 py-3.5 sm:py-4 flex items-center justify-between shrink-0 transition-colors">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl md:text-2xl font-semibold tracking-tight capitalize text-theme">
+        <header className="sticky top-0 z-50 apple-blur-nav pt-safe px-3 sm:px-6 md:px-10 py-3 sm:py-4 flex items-center justify-between gap-2 shrink-0 transition-colors">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <h1 className="text-base sm:text-xl md:text-2xl font-semibold tracking-tight capitalize text-theme truncate">
               {activeTab === "profile"
                 ? "Profile"
                 : activeTab === "specialist"
@@ -381,9 +408,9 @@ function MainApp() {
                                 : activeTab}
             </h1>
             {user && activeProfile && (
-              <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-full border border-surface min-w-0">
+              <div className="flex items-center gap-2 bg-surface px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-surface min-w-0">
                 <span className="w-2 h-2 rounded-full bg-[var(--color-success)] shadow-[0_0_8px_var(--color-success)] shrink-0" />
-                <span className="text-xs font-semibold text-theme tracking-wide truncate max-w-[80px] sm:max-w-none">
+                <span className="text-xs font-semibold text-theme tracking-wide truncate max-w-[70px] sm:max-w-none">
                   {activeProfile.name?.split(' ')[0] || 'User'}
                 </span>
                 <span className="hidden sm:inline text-xs text-muted ml-0.5 uppercase tracking-widest">
@@ -393,8 +420,8 @@ function MainApp() {
             )}
           </div>
 
-          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
-            <div className="hidden md:flex relative group">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <div className="hidden xl:flex relative group">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 type="text"
@@ -404,21 +431,21 @@ function MainApp() {
               />
             </div>
             <button
-              className="w-10 h-10 flex items-center justify-center text-muted hover:text-theme bg-surface/50 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
+              className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center text-muted hover:text-theme bg-surface border border-surface hover:border-[var(--color-primary)]/40 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer shadow-xs"
               onClick={toggleTheme}
               aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
-              {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-400" />}
+              {theme === 'dark' ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-700" />}
             </button>
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
-                className="w-10 h-10 flex items-center justify-center text-muted hover:text-theme bg-surface/50 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
+                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-muted hover:text-theme bg-surface border border-surface rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer shadow-xs"
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 aria-label={`View notifications. ${activeAlertsCount} unread.`}
                 title="Notifications"
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
                 {activeAlertsCount > 0 && (
                   <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[var(--color-critical)] rounded-full border-2 border-theme"></span>
                 )}
@@ -439,19 +466,19 @@ function MainApp() {
               </AnimatePresence>
             </div>
 
-            {/* Production v2.0 Badge */}
+            {/* Production v2.0 Badge — hidden on compact screens so Sign In button never clips */}
             <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-300 shadow-sm select-none"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-800 dark:text-teal-300 shadow-sm select-none whitespace-nowrap"
               title="Aegis Health AI — Production v2.0 Open Access"
             >
-              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-teal-600 dark:bg-teal-400 animate-pulse" />
               <span>Production v2.0</span>
             </div>
 
             {user ? (
               <div className="relative">
                 <div
-                  className="w-10 h-10 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 text-[var(--color-primary)] flex items-center justify-center font-extrabold cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-100"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 text-[var(--color-primary)] flex items-center justify-center font-extrabold cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-100"
                   onClick={() => setShowLogout(!showLogout)}
                   title="Profile Action"
                 >
@@ -462,7 +489,7 @@ function MainApp() {
                     <div className="px-4 py-3 text-xs text-muted border-b border-surface">
                       {user.email}
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-teal-400 border-b border-surface">
+                    <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-teal-700 dark:text-teal-400 border-b border-surface">
                       <Sparkles className="w-3.5 h-3.5" /> Early Access Beta
                     </div>
                     <button
@@ -478,10 +505,10 @@ function MainApp() {
               <button
                 onClick={() => setIsLoginModalOpen(true)}
                 disabled={isSigningIn}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 text-white rounded-[12px] text-xs sm:text-sm font-semibold transition-all shadow-sm ml-1 cursor-pointer"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2.5 bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50 text-white rounded-[12px] text-[11px] sm:text-xs md:text-sm font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap shrink-0"
               >
-                <LogIn className="w-4 h-4" />
-                <span>Email / Reviewer Sign In</span>
+                <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span>Sign In</span>
               </button>
             )}
           </div>
@@ -491,31 +518,31 @@ function MainApp() {
         <div className="flex-1 overflow-y-auto w-full">
           {!user && (
             <div className="bg-emerald-500/10 border-b border-emerald-500/25 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2 text-emerald-300 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping shrink-0" />
                 <span>
-                  <strong className="text-white">Open Evaluation &amp; AI Agent Inspection Mode:</strong> Viewing pre-loaded clinical telemetry for <em>Aarav Sharma (38M)</em>. All 10 AI specialists, 3D Organ Digital Twin, Lab Reports, Trends, and SBAR Handover are unlocked without login.
+                  <strong className="text-slate-900 dark:text-white">Interactive Demonstration Mode:</strong> Viewing pre-loaded clinical telemetry for <em>Aarav Sharma (38M)</em>. All 10 AI specialists, 3D Organ Digital Twin, Lab Reports, Trends, and SBAR Handover are unlocked.
                 </span>
               </div>
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className="px-3.5 py-1 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs transition-all cursor-pointer shrink-0"
+                className="px-3.5 py-1 rounded-full bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-400 dark:hover:bg-emerald-300 text-white dark:text-slate-950 font-black text-xs transition-all cursor-pointer shrink-0"
               >
-                Sign In ({DEMO_REVIEWER_EMAIL}) →
+                Sign In to Save Data →
               </button>
             </div>
           )}
           {user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in" && (
             <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2 text-emerald-300 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping shrink-0" />
                 <span>
-                  <strong className="text-white">Reviewer Evaluation Session (`reviewer@aegishealthai.co.in`):</strong> Viewing live Firestore clinical data for <em>Aarav Sharma (38M)</em>. All AI specialists, PDF ingestion, and FHIR exports are unlocked.
+                  <strong className="text-slate-900 dark:text-white">Reviewer Evaluation Session (`reviewer@aegishealthai.co.in`):</strong> Viewing live Firestore clinical data for <em>Aarav Sharma (38M)</em>. All AI specialists, PDF ingestion, and FHIR exports are unlocked.
                 </span>
               </div>
               <button
                 onClick={logOut}
-                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all cursor-pointer shrink-0"
+                className="px-3 py-1 rounded-full bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white font-bold text-xs transition-all cursor-pointer shrink-0"
               >
                 Sign Out / Switch Account
               </button>
@@ -532,32 +559,43 @@ function MainApp() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                    className="max-w-[1200px] mx-auto w-full h-full p-3 sm:p-6 md:p-10 pb-32"
+                    className="max-w-[1280px] mx-auto w-full h-full p-3 sm:p-6 md:px-10 md:py-7 pb-32"
                   >
                     {activeTab === "home" && (
                       <SectionErrorBoundary sectionName="Dashboard">
-                        <div className="space-y-6">
-                          <div className="flex items-center justify-end gap-3 mb-6">
-                            <button
-                              onClick={async () => {
-                                if (activeProfile) {
-                                  setIsSBAROpen(true);
-                                  setSbarError(null);
-                                }
-                              }}
-                              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-surface hover:bg-surface/80 rounded-[14px] text-xs font-semibold transition-all border border-surface active:scale-95 cursor-pointer shadow-xs"
-                            >
-                              <FileText className="w-4 h-4 text-muted" /> Handover
-                              Report
-                            </button>
-                            <button
-                              onClick={() => setIsChatOpen(true)}
-                              aria-label="Consult AI"
-                              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-[var(--color-primary)]/15 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/25 rounded-[14px] text-xs font-semibold transition-all border border-[var(--color-primary)]/20 active:scale-95 cursor-pointer shadow-xs"
-                            >
-                              <Sparkles className="w-4 h-4" /> 
-                              <span className="hidden sm:inline">Consult AI</span>
-                            </button>
+                        <div className="space-y-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-surface text-xs font-medium text-muted">
+                              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse shrink-0" />
+                              <span className="truncate">
+                                Active Subject:{" "}
+                                <strong className="text-theme font-semibold">
+                                  {activeProfile?.name || "Aarav Sharma"}
+                                </strong>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2.5 ml-auto">
+                              <button
+                                onClick={async () => {
+                                  if (activeProfile) {
+                                    setIsSBAROpen(true);
+                                    setSbarError(null);
+                                  }
+                                }}
+                                className="flex items-center gap-2 px-3.5 py-2 min-h-[40px] bg-surface hover:bg-surface/80 rounded-xl text-xs font-semibold transition-all border border-surface active:scale-95 cursor-pointer shadow-xs"
+                              >
+                                <FileText className="w-4 h-4 text-muted" /> Handover
+                                Report
+                              </button>
+                              <button
+                                onClick={() => setIsChatOpen(true)}
+                                aria-label="Consult AI"
+                                className="flex items-center gap-2 px-3.5 py-2 min-h-[40px] bg-[var(--color-primary)]/15 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/25 rounded-xl text-xs font-semibold transition-all border border-[var(--color-primary)]/20 active:scale-95 cursor-pointer shadow-xs"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                <span className="hidden sm:inline">Consult AI</span>
+                              </button>
+                            </div>
                           </div>
                           <motion.div
                             initial={{ opacity: 0, y: 12 }}
@@ -822,6 +860,17 @@ function MainApp() {
             />
           </AIErrorBoundary>
         </Suspense>
+
+        {!isChatOpen && (
+          <AuraCursorGuide
+            activeTab={activeTab}
+            onNavigateTab={(tab) => {
+              setActiveTab(tab);
+              window.location.hash = tab;
+            }}
+            onOpenChat={() => setIsChatOpen(true)}
+          />
+        )}
         
         <Suspense fallback={null}>
           <FeedbackWidget />
@@ -856,9 +905,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const WORKSPACE_HASHES = new Set([
+  "#home",
+  "#upload",
+  "#reports",
+  "#trends",
+  "#sbar",
+  "#specialist",
+  "#medications",
+  "#settings",
+  "#profile",
+  "#admin",
+]);
+
 const PublicLandingPageRoute = () => {
   const { user, loading: authLoading } = useAuth();
-  if (import.meta.env.DEV) console.log("[PublicLandingPageRoute] Render state:", { authLoading, hasUser: !!user });
+  const location = useLocation();
+  if (import.meta.env.DEV) console.log("[PublicLandingPageRoute] Render state:", { authLoading, hasUser: !!user, hash: location.hash });
+
+  if (location.hash && WORKSPACE_HASHES.has(location.hash.toLowerCase())) {
+    return <Navigate to={`/dashboard${location.hash}`} replace />;
+  }
 
   if (!authLoading && user) {
     if (import.meta.env.DEV) console.log("[PublicLandingPageRoute] User found! Redirecting to /dashboard via <Navigate />");

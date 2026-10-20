@@ -102,8 +102,8 @@ match /users/{userId}/reports/{reportId} {
 
   const faqs = [
     {
-      q: "How can reviewers or new users test the platform immediately?",
-      a: "Click 'Email / Reviewer Login' in the top navigation bar or hero section to open the authentication modal. You can use the 1-Click Auto-Fill Reviewer button (reviewer@aegishealthai.co.in) to inspect a pre-seeded clinical workspace with 3 longitudinal lab reports, or sign in with your own Email ID or Google account.",
+      q: "How can new users or clinicians test the platform immediately?",
+      a: "Click 'Launch Live Workspace' or navigate to /dashboard to inspect our pre-loaded clinical demonstration with 3 longitudinal lab reports, 10-specialist insights, and SBAR briefs with zero login required. You can also sign in with your own account to upload personal reports.",
     },
     {
       q: "Is my medical data kept private and isolated?",
@@ -164,7 +164,7 @@ match /users/{userId}/reports/{reportId} {
               onClick={openLoginModal}
               className="px-7 py-3.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(52,211,153,0.35)] transition-all flex items-center gap-2 cursor-pointer"
             >
-              <Mail className="w-4 h-4" /> Email / Reviewer Demo Login
+              <Mail className="w-4 h-4" /> Account Sign In
             </button>
             <Link
               to="/dashboard"
@@ -398,7 +398,7 @@ match /users/{userId}/reports/{reportId} {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16 max-w-xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-4">Frequently Asked Questions</h2>
-            <p className="text-slate-300 text-base font-medium">Answers on reviewer access, clinical accuracy, data privacy, and SBAR reports</p>
+            <p className="text-slate-300 text-base font-medium">Answers on platform access, clinical accuracy, data privacy, and SBAR reports</p>
           </div>
 
           <div className="space-y-4">
@@ -449,7 +449,7 @@ match /users/{userId}/reports/{reportId} {
           <Sparkles className="w-10 h-10 text-emerald-400 mb-6 animate-pulse" />
           <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-4">Ready to Experience Aegis Health AI?</h2>
           <p className="text-slate-200 text-base max-w-xl mb-8 leading-relaxed font-light">
-            Sign in with our 1-click Reviewer account to inspect longitudinal lab reports, or upload your own diagnostic PDF in seconds.
+            Explore our interactive clinical demonstration to inspect longitudinal lab reports, or sign in to upload your own diagnostic PDFs in seconds.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button
@@ -457,7 +457,7 @@ match /users/{userId}/reports/{reportId} {
               className="px-8 py-4 bg-emerald-400 hover:bg-emerald-300 active:scale-95 text-[#0A192F] font-black uppercase text-xs tracking-widest rounded-full transition-all shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-              <span>Email / Reviewer Sign-In</span>
+              <span>Sign In</span>
             </button>
             <Link 
               to="/dashboard"

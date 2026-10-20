@@ -9,7 +9,7 @@ dotenv.config();
 // Resolve CodeQL alert: Implement rate limiting to protect file system access
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per 15 mins
+  max: process.env.NODE_ENV === "production" ? 100 : 5000, // Allow Vite ESM module graph in dev
   standardHeaders: true, 
   legacyHeaders: false,
   message: "Too many requests from this IP, please try again after 15 minutes",

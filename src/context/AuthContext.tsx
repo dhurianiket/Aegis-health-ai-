@@ -98,33 +98,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       // Step 2: Extract redirect credential if available, but do not block on it
-      try {
-        if (import.meta.env.DEV) console.log("[Auth] Checking redirect result on load...");
-        // Add a timeout race so it doesn't hang indefinitely if AppCheck keeps failing
-        const redirectPromise = getRedirectResult(auth);
-        const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject(new Error("redirect-timeout")), 5000));
-        const result = await Promise.race([redirectPromise, timeoutPromise]);
-        
-        if (result?.user) {
-          if (import.meta.env.DEV) console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          if (credential?.accessToken) {
-            cachedAccessToken = credential.accessToken;
-            try {
-              sessionStorage.setItem("google_access_token", credential.accessToken);
-            } catch (e) {
-              console.warn("[Auth] Failed to persist google_access_token to sessionStorage:", e);
+      const isMockDevKey =
+        import.meta.env.MODE !== "test" &&
+        (auth as any)?.app?.options?.apiKey === "mock-test-key";
+      if (!isMockDevKey) {
+        try {
+          if (import.meta.env.DEV) console.log("[Auth] Checking redirect result on load...");
+          // Add a timeout race so it doesn't hang indefinitely if AppCheck keeps failing
+          const redirectPromise = getRedirectResult(auth);
+          const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject(new Error("redirect-timeout")), 5000));
+          const result = await Promise.race([redirectPromise, timeoutPromise]);
+          
+          if (result?.user) {
+            if (import.meta.env.DEV) console.log("[Auth] Redirect sign-in success for user:", result.user.uid);
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (credential?.accessToken) {
+              cachedAccessToken = credential.accessToken;
+              try {
+                sessionStorage.setItem("google_access_token", credential.accessToken);
+              } catch (e) {
+                console.warn("[Auth] Failed to persist google_access_token to sessionStorage:", e);
+              }
+            }
+            if (isMounted) {
+               resolveAuth(result.user);
             }
           }
-          if (isMounted) {
-             resolveAuth(result.user);
+        } catch (error: any) {
+          if (error.message !== "redirect-timeout") {
+              console.warn("[Auth] Redirect sign-in check skipped or failed:", error?.code, error?.message);
+          } else {
+              console.warn("[Auth] getRedirectResult timed out, continuing with normal auth state.");
           }
-        }
-      } catch (error: any) {
-        if (error.message !== "redirect-timeout") {
-            console.error("[Auth] Redirect sign-in error:", error?.code, error?.message);
-        } else {
-            console.warn("[Auth] getRedirectResult timed out, continuing with normal auth state.");
         }
       }
     };

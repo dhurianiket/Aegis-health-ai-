@@ -194,38 +194,38 @@ export default function IntegrationsPanel({
         {/* Apple Health (HealthKit) 3D Glass Card */}
         <motion.div
           whileHover={{ y: -4 }}
-          className="relative overflow-hidden bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-700/60 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.15)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-slate-600/80 hover:shadow-[0_20px_48px_-10px_rgba(45,212,191,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.25)] flex flex-col justify-between group"
+          className="relative overflow-hidden bg-[var(--color-surface)] dark:bg-slate-900/95 backdrop-blur-2xl border border-[var(--color-border)] dark:border-slate-700/60 shadow-sm dark:shadow-[0_16px_40px_-8px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.15)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-teal-500/40 dark:hover:border-slate-600/80 flex flex-col justify-between group"
         >
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-slate-400/20 via-rose-500/10 to-transparent blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-slate-400/15 via-rose-500/10 to-transparent blur-3xl pointer-events-none" />
 
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
-              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-700/80 text-white shadow-[0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] shrink-0">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-700/80 text-white shadow-md shrink-0">
                 <Apple className="w-7 h-7 text-white" />
               </div>
               <span
                 className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${
                   syncState.appleHealth.connected
-                    ? "text-emerald-300 bg-emerald-500/20 border-emerald-400/40"
-                    : "text-slate-400 bg-slate-800/60 border-slate-700/60"
+                    ? "text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/40"
+                    : "text-slate-600 dark:text-slate-300 bg-slate-500/10 dark:bg-slate-800/60 border-slate-400/40 dark:border-slate-700/60"
                 }`}
               >
                 {appleStatus}
               </span>
             </div>
 
-            <h3 className="text-xl font-extrabold text-slate-50 tracking-tight mb-2">
+            <h3 className="text-xl font-extrabold text-[var(--color-text)] tracking-tight mb-2">
               Apple Health (HealthKit)
             </h3>
-            <p className="text-slate-200 text-xs md:text-sm leading-relaxed mb-4">
+            <p className="text-[var(--color-text-muted)] text-xs md:text-sm leading-relaxed mb-4">
               Continuous bidirectional telemetry bridge for heart rate variability (HRV), resting heart rate, SpO2, daily active energy, and sleep architecture directly from Apple Watch and HealthKit.
             </p>
 
             {syncState.appleHealth.connected && (
-              <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl mb-4 space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="p-3 bg-[var(--color-bg)] dark:bg-slate-950/70 border border-[var(--color-border)] dark:border-slate-800/80 rounded-2xl mb-4 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
                   <span>Last Synced:</span>
-                  <span className="font-bold text-slate-50">
+                  <span className="font-bold text-[var(--color-text)]">
                     {syncState.appleHealth.lastSynced
                       ? new Date(syncState.appleHealth.lastSynced).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -234,9 +234,9 @@ export default function IntegrationsPanel({
                       : "Just now"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-300">
+                <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
                   <span>Records Synced:</span>
-                  <span className="font-bold text-emerald-300">
+                  <span className="font-bold text-emerald-700 dark:text-emerald-300">
                     {syncState.appleHealth.recordsCount} biometrics
                   </span>
                 </div>
@@ -244,12 +244,12 @@ export default function IntegrationsPanel({
             )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-800/80 space-y-3 relative z-10">
+          <div className="mt-6 pt-4 border-t border-[var(--color-border)] dark:border-slate-800/80 space-y-3 relative z-10">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setModalProvider("apple")}
                 disabled={syncingProvider === "apple"}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-slate-800/90 to-slate-950/90 border border-slate-700/70 hover:border-slate-500/80 text-slate-50 font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-gradient-to-b dark:from-slate-800/90 dark:to-slate-950/90 border border-slate-700/70 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
               >
                 <RefreshCw
                   className={`w-4 h-4 ${syncingProvider === "apple" ? "animate-spin" : ""}`}
@@ -261,8 +261,8 @@ export default function IntegrationsPanel({
                   : "Connect & Sync"}
               </button>
 
-              <label className="flex items-center gap-2 py-3 px-4 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/60 text-slate-100 font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
-                <Upload className="w-4 h-4 text-cyan-400" />
+              <label className="flex items-center gap-2 py-3 px-4 bg-[var(--color-bg)] dark:bg-slate-800/60 hover:opacity-90 border border-[var(--color-border)] dark:border-slate-700/60 text-[var(--color-text)] font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
+                <Upload className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
                 <span>Import File</span>
                 <input
                   type="file"
@@ -278,38 +278,38 @@ export default function IntegrationsPanel({
         {/* Google Health Connect 3D Glass Card */}
         <motion.div
           whileHover={{ y: -4 }}
-          className="relative overflow-hidden bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-[0_16px_40px_-8px_rgba(37,99,235,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.2)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-blue-400/50 hover:shadow-[0_20px_48px_-10px_rgba(59,130,246,0.35),inset_0_1px_1px_0_rgba(255,255,255,0.3)] flex flex-col justify-between group"
+          className="relative overflow-hidden bg-[var(--color-surface)] dark:bg-slate-900/95 backdrop-blur-2xl border border-blue-500/30 shadow-sm dark:shadow-[0_16px_40px_-8px_rgba(37,99,235,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.2)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-blue-500/50 flex flex-col justify-between group"
         >
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-blue-500/25 via-teal-400/15 to-transparent blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-blue-500/15 via-teal-400/10 to-transparent blur-3xl pointer-events-none" />
 
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
-              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-blue-600 to-indigo-900 border border-blue-400/60 text-white shadow-[0_8px_20px_rgba(37,99,235,0.4),inset_0_1px_0_rgba(255,255,255,0.3)] shrink-0">
-                <Chrome className="w-7 h-7 text-cyan-300" />
+              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-blue-600 to-indigo-900 border border-blue-400/60 text-white shadow-md shrink-0">
+                <Chrome className="w-7 h-7 text-cyan-200" />
               </div>
               <span
                 className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${
                   syncState.googleHealth.connected
-                    ? "text-teal-300 bg-teal-500/20 border-teal-400/40"
-                    : "text-slate-400 bg-slate-800/60 border-slate-700/60"
+                    ? "text-teal-800 dark:text-teal-300 bg-teal-500/15 border-teal-500/40"
+                    : "text-slate-600 dark:text-slate-300 bg-slate-500/10 dark:bg-slate-800/60 border-slate-400/40 dark:border-slate-700/60"
                 }`}
               >
                 {googleStatus}
               </span>
             </div>
 
-            <h3 className="text-xl font-extrabold text-slate-50 tracking-tight mb-2">
+            <h3 className="text-xl font-extrabold text-[var(--color-text)] tracking-tight mb-2">
               Google Health Connect
             </h3>
-            <p className="text-slate-200 text-xs md:text-sm leading-relaxed mb-4">
+            <p className="text-[var(--color-text-muted)] text-xs md:text-sm leading-relaxed mb-4">
               Real-time encrypted Android telemetry bridge for Google Fit, Samsung Health, Garmin, and Fitbit biometrics and activity metrics.
             </p>
 
             {syncState.googleHealth.connected && (
-              <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl mb-4 space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="p-3 bg-[var(--color-bg)] dark:bg-slate-950/70 border border-[var(--color-border)] dark:border-slate-800/80 rounded-2xl mb-4 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
                   <span>Last Synced:</span>
-                  <span className="font-bold text-slate-50">
+                  <span className="font-bold text-[var(--color-text)]">
                     {syncState.googleHealth.lastSynced
                       ? new Date(syncState.googleHealth.lastSynced).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -318,9 +318,9 @@ export default function IntegrationsPanel({
                       : "Just now"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-300">
+                <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
                   <span>Records Synced:</span>
-                  <span className="font-bold text-teal-300">
+                  <span className="font-bold text-teal-800 dark:text-teal-300">
                     {syncState.googleHealth.recordsCount} biometrics
                   </span>
                 </div>
@@ -328,12 +328,12 @@ export default function IntegrationsPanel({
             )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-800/80 space-y-3 relative z-10">
+          <div className="mt-6 pt-4 border-t border-[var(--color-border)] dark:border-slate-800/80 space-y-3 relative z-10">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setModalProvider("google")}
                 disabled={syncingProvider === "google"}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-blue-600/90 to-indigo-900/90 border border-blue-400/50 hover:border-blue-300/70 text-white font-extrabold text-xs uppercase tracking-wider backdrop-blur-md rounded-2xl transition-all shadow-[0_4px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.3)] active:scale-95 disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-b from-blue-600 to-indigo-800 border border-blue-400/50 hover:border-blue-300/70 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
               >
                 <RefreshCw
                   className={`w-4 h-4 ${syncingProvider === "google" ? "animate-spin" : ""}`}
@@ -345,8 +345,8 @@ export default function IntegrationsPanel({
                   : "Connect & Sync"}
               </button>
 
-              <label className="flex items-center gap-2 py-3 px-4 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/60 text-slate-100 font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
-                <Upload className="w-4 h-4 text-cyan-300" />
+              <label className="flex items-center gap-2 py-3 px-4 bg-[var(--color-bg)] dark:bg-slate-800/60 hover:opacity-90 border border-[var(--color-border)] dark:border-slate-700/60 text-[var(--color-text)] font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
+                <Upload className="w-4 h-4 text-cyan-700 dark:text-cyan-300" />
                 <span>Import File</span>
                 <input
                   type="file"
@@ -362,9 +362,9 @@ export default function IntegrationsPanel({
         {/* ABDM (Ayushman Bharat Digital Mission) 3D Glass Card */}
         <motion.div
           whileHover={{ y: -4 }}
-          className="relative overflow-hidden bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-orange-500/30 shadow-[0_16px_40px_-8px_rgba(234,88,12,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.2)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-orange-400/50 hover:shadow-[0_20px_48px_-10px_rgba(249,115,22,0.35),inset_0_1px_1px_0_rgba(255,255,255,0.3)] flex flex-col justify-between group col-span-1 md:col-span-2"
+          className="relative overflow-hidden bg-[var(--color-surface)] dark:bg-slate-900/95 backdrop-blur-2xl border border-orange-500/30 shadow-sm dark:shadow-[0_16px_40px_-8px_rgba(234,88,12,0.25),inset_0_1px_1px_0_rgba(255,255,255,0.2)] rounded-[32px] p-6 md:p-8 transition-all duration-300 hover:border-orange-400/50 flex flex-col justify-between group col-span-1 md:col-span-2"
         >
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-orange-500/25 via-amber-400/15 to-transparent blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-radial from-orange-500/15 via-amber-400/10 to-transparent blur-3xl pointer-events-none" />
 
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
@@ -373,43 +373,43 @@ export default function IntegrationsPanel({
               </div>
               <span className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${
                 abhaProfile
-                  ? "text-emerald-300 bg-emerald-500/20 border-emerald-400/40"
-                  : "text-orange-300 bg-orange-500/20 border-orange-400/40"
+                  ? "text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/40"
+                  : "text-orange-800 dark:text-orange-300 bg-orange-500/15 border-orange-500/40"
               }`}>
                 {abhaProfile ? "ABHA Verified • Connected" : "NHA ABDM Gateway • Ready"}
               </span>
             </div>
 
-            <h3 className="text-xl font-extrabold text-slate-50 tracking-tight mb-2">
+            <h3 className="text-xl font-extrabold text-[var(--color-text)] tracking-tight mb-2">
               Ayushman Bharat Digital Health ID (ABHA Card)
             </h3>
-            <p className="text-slate-200 text-xs md:text-sm leading-relaxed mb-4">
+            <p className="text-[var(--color-text-muted)] text-xs md:text-sm leading-relaxed mb-4">
               Link your 14-digit ABHA ID to continuously aggregate longitudinal medical records, lab reports, and doctor prescriptions across hospitals, clinics, and diagnostic centers in India.
             </p>
 
             {abhaProfile && (
-              <div className="mb-4 p-3 bg-black/40 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div className="text-slate-300">
-                  ABHA: <strong className="font-mono text-indigo-300">{abhaProfile.abhaAddress}</strong> ({abhaProfile.abhaNumber})
+              <div className="mb-4 p-3 bg-[var(--color-bg)] dark:bg-black/40 rounded-2xl border border-[var(--color-border)] dark:border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="text-[var(--color-text-muted)]">
+                  ABHA: <strong className="font-mono text-indigo-700 dark:text-indigo-300">{abhaProfile.abhaAddress}</strong> ({abhaProfile.abhaNumber})
                 </div>
-                <div className="text-emerald-400 font-bold">
+                <div className="text-emerald-700 dark:text-emerald-400 font-bold">
                   {abhaProfile.linkedCareContextsCount} Care Contexts Linked
                 </div>
               </div>
             )}
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 relative z-10 flex flex-wrap items-center justify-end gap-3">
+          <div className="pt-4 border-t border-[var(--color-border)] dark:border-slate-800/80 relative z-10 flex flex-wrap items-center justify-end gap-3">
             <button
               onClick={() => setIsScanShareOpen(true)}
-              className="py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 text-orange-300 border border-orange-500/30 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+              className="py-3 px-5 rounded-2xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-800 dark:text-orange-300 border border-orange-500/30 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
             >
-              <QrCode className="w-4 h-4 text-orange-400" />
-              Scan & Share OPD Check-In
+              <QrCode className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              Scan &amp; Share OPD Check-In
             </button>
             <button
               onClick={() => setIsAbdmModalOpen(true)}
-              className="py-3 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+              className="py-3 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
             >
               {abhaProfile ? "Manage ABHA & Consent Hub" : "Connect & Verify ABHA ID"}
             </button>

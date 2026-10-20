@@ -72,7 +72,13 @@ function ComparativeAnalysis({
 
       <div className="space-y-5">
         {latestLabs.map((lab, idx) => {
-          const labId = lab?.id || (lab as any)?.docId || lab?.markerName || `lab_${idx}`;
+          const labId =
+            lab?.id ||
+            (lab?.markerName
+              ? `${(lab as any)?.docId || "lab"}_${lab.markerName}_${idx}`
+              : (lab as any)?.docId
+              ? `${(lab as any).docId}_${idx}`
+              : `lab_${idx}`);
           // Synthetic percentile calculation based on normal ranges if provided
           // Or just deterministic hash for the MVP visualization
           let percentile = (simpleHash(labId) % 60) + 20; // 20-80

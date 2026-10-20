@@ -193,25 +193,6 @@ export default function LandingPage() {
     }
   };
 
-  const demoAccountEmail = ['reviewer', 'aegishealthai.co.in'].join('@');
-  const demoAccountPass = ['Aegis', 'Review', '2026!'].join('');
-
-  const handleReviewerLogin = async () => {
-    setLoginEmail(demoAccountEmail);
-    setLoginPassword(demoAccountPass);
-    setLoginError(null);
-    setIsEmailSigningIn(true);
-    try {
-      if (signInWithEmail) {
-        await signInWithEmail(demoAccountEmail, demoAccountPass);
-      }
-      navigate('/dashboard', { replace: true });
-    } catch (error: any) {
-      setLoginError(error?.message || "Reviewer login failed.");
-    } finally {
-      setIsEmailSigningIn(false);
-    }
-  };
 
   return (
     <ErrorBoundary>
@@ -235,7 +216,7 @@ export default function LandingPage() {
                 className="px-3 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[11px] font-bold tracking-widest text-emerald-300 hover:text-emerald-200 transition-all uppercase flex items-center gap-1.5 cursor-pointer"
               >
                 <Sparkles className="w-3 h-3 text-emerald-400" />
-                Email / Reviewer Login
+                Sign In
               </button>
               <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
               <Link to="/about.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">About Us</Link>
@@ -402,31 +383,23 @@ export default function LandingPage() {
                   className="px-8 py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] rounded-full font-black tracking-wider transition-all shadow-[0_0_30px_rgba(45,212,191,0.4)] hover:shadow-[0_0_45px_rgba(45,212,191,0.6)] flex flex-col items-center justify-center active:scale-95 cursor-pointer"
                 >
                   <div className="flex items-center gap-2 text-base">
-                    <Mail className="w-4 h-4" /> SIGN IN (EMAIL / GOOGLE)
+                    <Mail className="w-4 h-4" /> SIGN IN
                   </div>
                   <span className="text-[10px] font-extrabold mt-0.5 tracking-widest opacity-90 uppercase">EMAIL ID LOGIN &amp; GOOGLE AUTH</span>
                 </button>
                 <button
-                  onClick={handleReviewerLogin}
+                  onClick={() => navigate('/dashboard')}
                   disabled={isSigningIn || isEmailSigningIn}
                   className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-emerald-500/40 tracking-wide transition-all flex items-center justify-center gap-2 relative shadow-lg cursor-pointer"
                 >
-                  {isEmailSigningIn ? <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> : <>1-CLICK REVIEWER DEMO <ArrowRight className="w-4 h-4 text-emerald-400" /></>}
+                  {isEmailSigningIn ? <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> : <>EXPLORE LIVE DEMO <ArrowRight className="w-4 h-4 text-emerald-400" /></>}
                 </button>
               </motion.div>
 
-              {/* Reviewer Email Credentials Callout */}
-              <div className="mt-4 inline-flex flex-wrap items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-slate-200">
-                <span className="font-bold text-emerald-400 uppercase tracking-wider">Reviewer Login:</span>
-                <span className="font-mono bg-slate-900/80 px-2 py-0.5 rounded border border-white/10 text-emerald-200 select-all">{demoAccountEmail}</span>
-                <span className="text-slate-400">Access Code:</span>
-                <span className="font-mono bg-slate-900/80 px-2 py-0.5 rounded border border-white/10 text-emerald-200 select-all">{demoAccountPass}</span>
-                <button
-                  onClick={handleSignIn}
-                  className="ml-1 text-emerald-400 hover:text-emerald-300 underline font-bold cursor-pointer"
-                >
-                  Open Login Box →
-                </button>
+              {/* Instant Live Demonstration Guarantee */}
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-slate-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span>Instant live demonstration of SBAR clinical handovers, 3D organ twin &amp; lab trajectories without signup.</span>
               </div>
 
               {/* Founder Milestone / Social Proof */}
@@ -1221,7 +1194,7 @@ export default function LandingPage() {
             {/* Bottom Open Access Guarantee Banner */}
             <div className="mt-12 max-w-4xl mx-auto rounded-2xl p-4 bg-emerald-500/10 border border-emerald-500/20 text-center">
               <p className="text-xs md:text-sm text-emerald-300 font-medium">
-                🛡️ <strong className="text-white">Open Platform Guarantee:</strong> No credit card required. Sign in via Email ID (`reviewer@aegishealthai.co.in`) or Google to inspect the full live clinical workspace with zero paywalls.
+                🛡️ <strong className="text-white">Open Platform Guarantee:</strong> No credit card required. Launch the live interactive demo or sign in with your Email ID or Google account to access your sovereign health vault.
               </p>
             </div>
           </div>
