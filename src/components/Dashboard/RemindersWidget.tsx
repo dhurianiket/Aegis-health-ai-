@@ -52,7 +52,10 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
 
   if (reminders.length === 0) {
     return (
-      <div className="p-4 rounded-2xl bg-surface border border-border text-center text-sm text-muted">No upcoming lab reminders. Upload a new lab report to generate follow-ups.</div>
+      <div className="p-8 rounded-2xl bg-surface border border-border text-center text-sm text-muted flex flex-col items-center justify-center gap-3">
+        <CalendarClock className="w-8 h-8 opacity-20" />
+        <p>No upcoming lab reminders. Upload a new lab report to generate follow-ups.</p>
+      </div>
     );
   }
 
@@ -104,7 +107,7 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
                 <div className="flex gap-2 shrink-0">
                   <button 
                     onClick={() => handleSnooze(reminder.id)}
-                    className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                    className="p-1.5 text-[var(--color-text-muted)] hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                     title="Snooze for 14 days"
                     aria-label="Snooze for 14 days"
                   >
@@ -112,7 +115,7 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
                   </button>
                   <button 
                     onClick={() => handleComplete(reminder.id)}
-                    className="p-1.5 text-[var(--color-text-muted)] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                    className="p-1.5 text-[var(--color-text-muted)] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     title="Mark as completed"
                     aria-label="Mark as completed"
                   >
