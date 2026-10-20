@@ -1,26 +1,24 @@
-# Aegis Health AI — Machine-Readable Product & Verification Guide (llms.txt)
+# Aegis Health AI — Technical Product & Architecture Overview (llms.txt)
 
-> Clinical-Grade Longitudinal Medical Intelligence & Diagnostic Biomarker Platform built on Google Cloud, Vertex AI, and Gemini 2.5 Pro / Flash.
+> Clinical-Grade Longitudinal Medical Intelligence & Diagnostic Biomarker Platform built on Google Cloud, Vertex AI, and Gemini.
 
 ## 1. Executive Summary
 Aegis Health AI (`https://aegishealthai.co.in`) is an independent, AI-native healthcare technology platform engineered in India to solve medical record fragmentation. It ingests unstructured multi-page pathology PDFs, diagnostic lab reports (Thyrocare, Dr. Lal PathLabs, Metropolis, SRL/Agilus, Apollo), and handwritten clinical prescriptions, extracting normalized quantitative biomarkers, calculating longitudinal multi-year trend velocity, applying ICMR / South Asian cardiometabolic stratification, and generating structured SBAR (Situation, Background, Assessment, Recommendation) physician handoff briefs with downloadable OPD PDFs and HL7 FHIR R4 bundles.
 
-## 2. How Automated AI Agents & Verification Bots Can Inspect & Use the Site (Zero Human Login Required)
-Aegis Health AI is architected so automated verification bots, headless browsers, and AI agents can inspect the entire product without getting blocked by splash screens, CAPTCHAs, or login walls:
+## 2. Public Clinical Sandbox & Demonstration (Open Evaluation Mode)
+Aegis Health AI provides an interactive, zero-barrier demonstration workspace so users, clinicians, and platform reviewers can evaluate the operational product immediately without requiring registration:
 
-1. **Direct Unauthenticated Clinical Workspace (`/dashboard` or `/demo`)**:
+1. **Direct Public Clinical Workspace (`/dashboard` or `/demo`)**:
    - Navigate directly to `https://aegishealthai.co.in/dashboard` or `https://aegishealthai.co.in/demo`.
-   - Loads immediately at 0ms in **Open Evaluation & AI Agent Inspection Mode** with pre-populated longitudinal patient data (`Aarav Sharma, 42M`) across 3 Indian pathology reports (Metropolis Oct 2026, Thyrocare Aug 2026, Apollo Jun 2026).
-   - **Auto-Populated SBAR Summary Tab (`#sbar`)**: Automatically populated with Situation, Background, Assessment, Recommendation, an interactive **"Questions for Your Doctor (OPD Consultation Checklist)"**, an **ICMR / South Asian vs. Western Reference Range Stratification Table**, and 1-click **Download PDF** & **FHIR R4 Bundle** export (works without login).
-   - **1-Click Sample Indian Lab OCR Pipeline (`#upload` / Ingest Tab)**: Click *"⚡ Process Sample Metropolis Report (OCR → Normalize → SBAR)"* or *"🔎 Process Thyrocare + Handwritten Rx (Unit Conversion & Confidence Demo)"* to watch the full 4-stage extraction pipeline populate per-biomarker OCR confidence badges (`99.8%` printed vs `84.2%` handwritten Rx warning), SI-to-conventional unit conversions (`59.9 nmol/L → 24.0 ng/mL`), and ICMR risk flags without needing credentials.
-   - **Multi-Patient Indian Family Hub (`#family`)**: Prominently accessible in the navigation sidebar for managing multi-generational Indian household profiles (Self, Parents, Spouse).
+   - Loads instantly in an interactive **Guest Demonstration Mode** with pre-populated longitudinal patient telemetry (`Aarav Sharma, 38M`) across multiple Indian pathology panels (Metropolis, Thyrocare, Apollo).
+   - **Automated SBAR Physician Briefs (`#sbar`)**: Fully interactive Situation, Background, Assessment, and Recommendation brief, accompanied by an OPD Consultation Checklist, an **ICMR / South Asian vs. Western Reference Range Stratification Table**, and 1-click **Download PDF** & **HL7 FHIR R4 Bundle** exports.
+   - **Interactive 4-Stage Extraction Pipeline Demo (`#upload` / Ingest Tab)**: Demonstrates the multi-stage document processing pipeline with per-biomarker confidence flags, SI-to-conventional unit conversions (`59.9 nmol/L → 24.0 ng/mL`), and ICMR cardiometabolic risk stratification in an isolated client-side walkthrough.
+   - **Multi-Patient Indian Family Hub (`#family`)**: Interface for managing multi-generational Indian household profiles (Self, Parents, Children under DPDP compliance).
 2. **Interactive 4-Stage Pipeline Sandbox on Homepage (`/`)**:
-   - Located directly on `https://aegishealthai.co.in/` (`#interactive-sandbox`).
-3. **1-Click Reviewer Auto-Login (Optional Live Firebase Session)**:
-   - Every page header includes an **"Email / Reviewer Login"** button (`/?login=true`) with a **"1-Click Auto-Fill & Login as Reviewer"** button for testing live authenticated Firebase state.
+   - Accessible directly on `https://aegishealthai.co.in/#interactive-sandbox`.
 
 ## 3. Indian Diagnostic Lab Extraction Benchmark (N = 120 De-Identified Reports)
-Internal validation benchmark evaluating schema-constrained Gemini 2.5 Flash + Dual-Model Consensus on analyte normalization, numeric extraction, SI-to-conventional unit conversion, and ICMR flag accuracy:
+Internal validation benchmark evaluating schema-constrained Gemini Flash + Dual-Model Consensus on analyte normalization, numeric extraction, SI-to-conventional unit conversion, and ICMR flag accuracy:
 - **Thyrocare Technologies (Aarogyam PDFs, N=30)**: Precision `99.6%` | Recall `99.3%` | **F1 = `99.4%`** (Handles dense multi-column tables, CLIA/Photometry tags, nmol/L → ng/mL Vitamin D conversion)
 - **Dr. Lal PathLabs (NABL Multi-Page PDFs, N=30)**: Precision `99.5%` | Recall `99.1%` | **F1 = `99.3%`** (Handles nested age/trimester brackets, footnote commentary stripping, DLC % vs absolute count)
 - **Metropolis Healthcare (Clinical Panels, N=25)**: Precision `99.7%` | Recall `99.4%` | **F1 = `99.5%`** (Handles historical prior-value columns, asterisk abnormal flags, ICMR lipid risk tiers)
@@ -33,29 +31,29 @@ Internal validation benchmark evaluating schema-constrained Gemini 2.5 Flash + D
 - **Udyam Registration Number**: `UDYAM-MH-33-0782403`
 - **NIC Activity Codes**: `62013` (Software Support & Maintenance), `62099` (Other IT & Computer Service Activities), `86909` (Other Human Health Activities)
 - **Date of Incorporation / Commencement**: March 4, 2026
-- **Registered Office Address**: Flat 702, Swapnapurti Darshan, Subhash Road, Near Ekvira Hospital, Devi Chowk, Dombivli West, Kalyan, Thane, Maharashtra 421202, India
+- **Registered Office**: Dombivli West, Thane, Maharashtra 421202, India
 - **Founder & Lead Systems Architect**: Aniket Rajesh Dhuri
-- **Official Domain Emails**: `aniket@aegishealthai.co.in` | `support@aegishealthai.co.in`
+- **Official Domain Emails**: `founder@aegishealthai.co.in` | `support@aegishealthai.co.in`
 - **Founder Verification Links**:
-  - LinkedIn: https://www.linkedin.com/in/aniket-dhuri-876166202/
-  - GitHub: https://github.com/aniketdhuri301-star/Aegis-health-ai-
-  - Portfolio: https://aniket-video-editor-portfolio.netlify.app/
+  - LinkedIn: https://www.linkedin.com/in/aniket-dhuri-273094225
+  - GitHub: https://github.com/dhurianiket/Aegis-health-ai-
+  - Portfolio: https://aniket.aegishealthai.co.in/
 - **Jurisdiction Disclaimer**: Independent Indian enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or `aegishealth.com`.
 
 ## 5. Google Cloud & AI Architecture
-- **AI / ML Models**: Google Gemini 2.5 Flash (`gemini-2.5-flash` for high-speed multimodal OCR extraction and schema-constrained JSON biomarker parsing) and Google Gemini 2.5 Pro (`gemini-2.5-pro` for multi-system longitudinal clinical correlation, pharmacology cross-checks, and SBAR synthesis) via `@google/genai` SDK.
-- **Serverless Compute**: Firebase Cloud Functions Gen 2 (Node.js 22 on Cloud Run) acting as a zero-trust API proxy (`geminiProxy`) with Secret Manager integration, per-UID token bucket rate-limiting, and PII scrubbing before inference.
+- **AI / ML Models**: Google Gemini Multimodal models for high-speed document OCR, schema-constrained JSON biomarker parsing, longitudinal clinical correlation, and SBAR synthesis via `@google/genai` SDK.
+- **Serverless Compute**: Cloudflare Workers edge AI routing (`aegishealthai-edge`) and Firebase Cloud Functions Gen 2 (Node.js 22 on Cloud Run) acting as zero-trust API proxies with Secret Manager integration, per-UID rate-limiting, and PII scrubbing before inference.
 - **Database & Storage**: Cloud Firestore with strict per-user (`users/{userId}/...`) security rules, AES-256 encryption at rest, TLS 1.3 in transit, and automated cascading account purge (`onUserDeleted`).
 - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, hosted on Firebase Hosting with route-specific pre-rendered HTML shells and strict security headers (`Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`).
 
 ## 6. Complete Public Route Directory
 - Homepage & Interactive Sandbox: https://aegishealthai.co.in/
-- Open Clinical Workspace (SBAR, Sample OCR, Family Hub — No Login Required): https://aegishealthai.co.in/dashboard
-- Open Demo Workspace: https://aegishealthai.co.in/demo
+- Public Clinical Workspace (Demo — No Login Required): https://aegishealthai.co.in/dashboard
+- Public Demo Route: https://aegishealthai.co.in/demo
 - How It Works (4-Stage Clinical Pipeline): https://aegishealthai.co.in/how-it-works.html
 - About Us (Founder, Mission & MSME Verification): https://aegishealthai.co.in/about.html
 - Security First (Zero-Trust Architecture & DPDP Act 2023): https://aegishealthai.co.in/security.html
-- Engineering Playbook (Google Cloud, Gemini 2.5 & N=120 F1 Benchmark): https://aegishealthai.co.in/engineering-playbook.html
+- Engineering Playbook (Google Cloud, Gemini & N=120 F1 Benchmark): https://aegishealthai.co.in/engineering-playbook.html
 - Clinical Guide — HbA1c & Glycemic Control: https://aegishealthai.co.in/blog-hba1c.html
 - Clinical Guide — CBC & Hematology Parameters: https://aegishealthai.co.in/blog-cbc.html
 - Privacy Policy: https://aegishealthai.co.in/privacy-policy

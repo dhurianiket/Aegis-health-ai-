@@ -1194,7 +1194,7 @@ export default function UploadCenter({
                     className="px-5 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-emerald-400 text-xs rounded-full font-bold transition-all inline-flex items-center gap-2 cursor-pointer shadow-xs"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    ⚡ Process Sample Metropolis Report (OCR → Normalize → SBAR)
+                    ⚡ Run Sample Walkthrough (Metropolis OCR Simulation)
                   </button>
                   <button
                     type="button"
@@ -1202,7 +1202,7 @@ export default function UploadCenter({
                     className="px-5 py-2.5 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/35 text-indigo-300 text-xs rounded-full font-bold transition-all inline-flex items-center gap-2 cursor-pointer shadow-xs"
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    🔎 Process Thyrocare + Handwritten Rx (Unit Conversion &amp; Confidence Demo)
+                    🔎 Run Sample Walkthrough (Thyrocare + Rx Simulation)
                   </button>
                 </div>
                 <p className="text-xs text-slate-300 mt-4 text-center">

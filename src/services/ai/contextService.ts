@@ -283,13 +283,23 @@ export const formatContextForPrompt = (context: any, options: FormatContextOptio
   prompt += `\n`;
 
   let lastReportDate = "None";
+  // ⚡ Bolt: Performance optimization
+  // Replaced multiple O(N) array mapping and filtering calls with a single O(N) forward loop.
+  // This eliminates intermediate array allocations and prevents potential Maximum Call Stack Size
+  // errors from passing large arrays to Math.max(...).
   if (labHistory.length > 0) {
-    const dates = labHistory.map((l: any) => {
-       const d = parseSafeTimestamp(l.date);
-       return d ? d.getTime() : NaN;
-    }).filter((n: any) => !isNaN(n));
-    if (dates.length > 0) {
-      lastReportDate = new Date(Math.max(...dates)).toISOString().split("T")[0];
+    let maxTime = -Infinity;
+    for (let i = 0; i < labHistory.length; i++) {
+      const d = parseSafeTimestamp(labHistory[i].date);
+      if (d) {
+        const time = d.getTime();
+        if (!isNaN(time) && time > maxTime) {
+          maxTime = time;
+        }
+      }
+    }
+    if (maxTime > -Infinity) {
+      lastReportDate = new Date(maxTime).toISOString().split("T")[0];
     }
   }
   prompt += `LAST REPORT DATE: ${lastReportDate}\n\n`;
