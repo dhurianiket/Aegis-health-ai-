@@ -55,17 +55,17 @@ export default function NotificationDropdown({
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-      className="absolute right-0 mt-3 w-80 md:w-96 bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden z-50 flex flex-col"
+      className="absolute right-0 mt-3 w-80 md:w-96 bg-[var(--color-surface)] dark:bg-slate-900 border border-[var(--color-border)] dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden z-50 flex flex-col"
     >
       {/* Header */}
-      <div className="p-5 border-b border-white/10 bg-black/20">
+      <div className="p-5 border-b border-[var(--color-border)] dark:border-white/10 bg-[var(--color-bg)] dark:bg-black/20">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-white tracking-tight text-lg">
+            <h3 className="font-bold text-[var(--color-text)] dark:text-white tracking-tight text-lg">
               Notifications
             </h3>
             {unreadCount > 0 && (
-              <span className="bg-indigo-500 text-white text-xs font-black px-2 py-0.5 rounded-full uppercase">
+              <span className="bg-indigo-600 text-white text-xs font-black px-2 py-0.5 rounded-full uppercase">
                 {unreadCount} New
               </span>
             )}
@@ -73,14 +73,14 @@ export default function NotificationDropdown({
           <div className="flex items-center gap-2">
             <button
               onClick={markAllAsRead}
-              className="text-xs font-bold text-slate-400 hover:text-indigo-400 uppercase tracking-widest transition-colors"
+              className="text-xs font-bold text-[var(--color-text-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors"
             >
               Mark all read
             </button>
             <button
               onClick={onClose}
               aria-label="Close notifications"
-              className="p-1 text-slate-300 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-sm"
+              className="p-1 text-[var(--color-text-muted)] dark:text-slate-300 hover:text-[var(--color-text)] dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-sm"
             >
               <X className="w-5 h-5" />
             </button>
@@ -102,8 +102,8 @@ export default function NotificationDropdown({
               onClick={() => setActiveCategory(cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 duration-100 ease-out border cursor-pointer ${
                 activeCategory === cat
-                  ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
-                  : "bg-white/5 text-slate-300 border-transparent hover:border-white/10 hover:text-slate-300"
+                  ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
+                  : "bg-[var(--color-surface)] dark:bg-white/5 text-[var(--color-text-muted)] dark:text-slate-300 border-[var(--color-border)] dark:border-transparent hover:border-indigo-500/30 dark:hover:border-white/10"
               } capitalize flex items-center gap-2`}
             >
               {getCategoryIcon(cat)}
@@ -122,11 +122,11 @@ export default function NotificationDropdown({
               animate={{ opacity: 1 }}
               className="py-12 px-6 flex flex-col items-center text-center"
             >
-              <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                <Bell className="w-8 h-8 text-slate-700" />
+              <div className="w-16 h-16 bg-slate-500/10 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
+                <Bell className="w-8 h-8 text-[var(--color-text-muted)] dark:text-slate-500" />
               </div>
-              <p className="text-slate-400 font-bold">All clear!</p>
-              <p className="text-slate-300 text-xs mt-1">
+              <p className="text-[var(--color-text)] dark:text-slate-300 font-bold">All clear!</p>
+              <p className="text-[var(--color-text-muted)] dark:text-slate-300 text-xs mt-1">
                 No notifications in this category.
               </p>
             </motion.div>
@@ -138,7 +138,7 @@ export default function NotificationDropdown({
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className={`group p-4 rounded-2xl mb-1 flex gap-4 transition-all hover:bg-white/5 relative ${!alert.read ? "bg-indigo-500/5" : ""}`}
+                className={`group p-4 rounded-2xl mb-1 flex gap-4 transition-all hover:bg-slate-500/5 dark:hover:bg-white/5 relative ${!alert.read ? "bg-indigo-500/5" : ""}`}
               >
                 {!alert.read && (
                   <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
@@ -147,10 +147,10 @@ export default function NotificationDropdown({
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
                     alert.severity === "critical"
-                      ? "bg-red-500/20 text-red-400"
+                      ? "bg-red-500/20 text-red-600 dark:text-red-400"
                       : alert.severity === "high"
-                        ? "bg-amber-500/20 text-amber-400"
-                        : "bg-indigo-500/20 text-indigo-400"
+                        ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                        : "bg-indigo-500/20 text-indigo-700 dark:text-indigo-400"
                   }`}
                 >
                   {alert.type === "medication" ? (
@@ -165,18 +165,18 @@ export default function NotificationDropdown({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <p
-                      className={`text-sm font-bold truncate ${!alert.read ? "text-white" : "text-slate-400"}`}
+                      className={`text-sm font-bold truncate ${!alert.read ? "text-[var(--color-text)] dark:text-white" : "text-[var(--color-text-muted)] dark:text-slate-400"}`}
                     >
                       {alert.title}
                     </p>
-                    <span className="text-xs font-medium text-slate-300 whitespace-nowrap pt-0.5">
+                    <span className="text-xs font-medium text-[var(--color-text-muted)] dark:text-slate-300 whitespace-nowrap pt-0.5">
                       {new Date(alert.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-[var(--color-text-muted)] dark:text-slate-300 line-clamp-2 leading-relaxed">
                     {alert.description}
                   </p>
 
@@ -186,13 +186,13 @@ export default function NotificationDropdown({
                         alert.actionUrl &&
                         window.open(alert.actionUrl, "_blank")
                       }
-                      className="text-xs font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1"
+                      className="text-xs font-black text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1"
                     >
                       View Details <ChevronRight className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => dismissAlert(alert.id)}
-                      className="text-xs font-black text-slate-600 hover:text-red-400 uppercase tracking-widest"
+                      className="text-xs font-black text-[var(--color-text-muted)] hover:text-red-600 dark:hover:text-red-400 uppercase tracking-widest"
                     >
                       Dismiss
                     </button>
@@ -205,10 +205,10 @@ export default function NotificationDropdown({
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-white/10 bg-black/10">
+      <div className="p-4 border-t border-[var(--color-border)] dark:border-white/10 bg-[var(--color-bg)] dark:bg-black/10">
         <button
           onClick={onClose}
-          className="w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-xl transition-all border border-indigo-500/20"
+          className="w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-xl transition-all border border-indigo-500/20"
         >
           View All Activity
         </button>

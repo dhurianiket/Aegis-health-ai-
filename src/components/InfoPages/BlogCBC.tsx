@@ -259,7 +259,7 @@ function BlogCBCContent() {
           <Sparkles className="w-8 h-8 text-emerald-400 mb-6 animate-pulse" />
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-4">Decode Your CBC &amp; Hematology Report Instantly</h2>
           <p className="text-slate-200 text-sm md:text-base max-w-xl mb-8 leading-relaxed font-light">
-            Sign in with our 1-click Reviewer credentials or upload your CBC PDF into our isolated Google Cloud workspace.
+            Explore our interactive demo or upload your CBC PDF into our isolated Google Cloud workspace.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button
@@ -267,7 +267,7 @@ function BlogCBCContent() {
               className="px-8 py-3.5 bg-emerald-400 hover:bg-emerald-300 text-[#0A192F] font-black uppercase text-xs tracking-widest rounded-full transition-all shadow-[0_0_25px_rgba(52,211,153,0.3)] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-              <span>Email / Reviewer Sign-In</span>
+              <span>Sign In</span>
             </button>
             <Link 
               to="/dashboard"

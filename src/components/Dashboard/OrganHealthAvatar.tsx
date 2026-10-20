@@ -81,29 +81,29 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-5 relative z-10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-5 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 glow-emerald-3d shrink-0">
+          <div className="p-3.5 rounded-2xl bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 glow-emerald-3d shrink-0">
             <Activity className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">3D Organ System Health Avatar</h3>
-              <span className="px-3 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] font-bold">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-wide">3D Organ System Health Avatar</h3>
+              <span className="px-3 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-mono text-[11px] font-bold">
                 6 Organ Systems
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-light mt-1">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
               Anatomical physiological risk mapping driven by active lab panels
             </p>
           </div>
         </div>
 
         {/* Overall Score Badge */}
-        <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3 bg-slate-950/90 px-4 py-2.5 rounded-2xl border border-white/10">
+        <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3 bg-slate-50 dark:bg-slate-950/90 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-white/10">
           <div className="text-left sm:text-right">
-            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Overall Physiology</div>
-            <div className="text-xs text-emerald-400 font-bold">
+            <div className="text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold">Overall Physiology</div>
+            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold">
               {overview.optimalCount} Optimal · {overview.warningCount} Warning · {overview.criticalCount} Critical
             </div>
           </div>
@@ -127,7 +127,7 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
             <div
               key={organ.key}
               onClick={() => setSelectedOrgan(organ)}
-              className="bg-slate-950/85 hover:bg-slate-950 border border-white/10 hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-4 shadow-md hover:-translate-y-1 min-h-[160px]"
+              className="bg-slate-50/90 dark:bg-slate-950/85 hover:bg-white dark:hover:bg-slate-950 border border-slate-200 dark:border-white/10 hover:border-emerald-500/50 rounded-2xl p-4 sm:p-5 transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-4 shadow-xs dark:shadow-md hover:-translate-y-1 min-h-[160px]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white tracking-wide group-hover:text-emerald-300 transition-colors leading-tight">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors leading-tight">
                       {organ.displayName}
                     </h4>
                     <div className="mt-1">{getStatusBadge(organ.status)}</div>
@@ -149,12 +149,12 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
                 </div>
               </div>
 
-              <p className="text-xs text-slate-300 font-light leading-relaxed line-clamp-2">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
                 {organ.summary}
               </p>
 
-              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-emerald-400 font-semibold group-hover:translate-x-1 transition-transform min-h-[36px]">
-                <span>View Biomarkers & Guidance</span>
+              <div className="pt-2 border-t border-slate-200/70 dark:border-white/5 flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-semibold group-hover:translate-x-1 transition-transform min-h-[36px]">
+                <span>View Biomarkers &amp; Guidance</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
@@ -165,20 +165,21 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
       {/* Modal Dialog for Selected Organ */}
       {selectedOrgan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-gradient-to-b from-[#0F2647] via-[#0A192F] to-[#071325] border border-emerald-500/30 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 relative overflow-hidden max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="bg-[var(--color-surface)] dark:bg-slate-900 border border-emerald-500/30 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 relative overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
               <div className="flex items-center gap-3">
                 <div className={`p-3 rounded-2xl border ${getScoreColor(selectedOrgan.score)}`}>
                   {React.createElement(getOrganIcon(selectedOrgan.key), { className: 'w-6 h-6' })}
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">{selectedOrgan.displayName}</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedOrgan.displayName}</h3>
                   <div className="mt-1">{getStatusBadge(selectedOrgan.status)}</div>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedOrgan(null)}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Close organ details"
+                className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -186,14 +187,14 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
 
             {/* Biomarker List */}
             <div className="space-y-3">
-              <h4 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+              <h4 className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                 Primary Organ Biomarkers
               </h4>
               <div className="space-y-2">
                 {selectedOrgan.primaryBiomarkers.map((bm, i) => (
-                  <div key={i} className="bg-slate-950/90 border border-white/10 rounded-xl p-3 flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-200">{bm.name}</span>
-                    <span className="font-mono font-bold text-emerald-400">{bm.value}</span>
+                  <div key={i} className="bg-slate-50 dark:bg-slate-950/90 border border-slate-200 dark:border-white/10 rounded-xl p-3 flex items-center justify-between text-xs">
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{bm.name}</span>
+                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{bm.value}</span>
                   </div>
                 ))}
               </div>
@@ -201,11 +202,11 @@ export const OrganHealthAvatar: React.FC<OrganHealthAvatarProps> = ({ labObserva
 
             {/* Recommended Specialist */}
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-300">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Recommended Specialist Consultation</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed font-light">
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                 {selectedOrgan.recommendedSpecialist}
               </p>
             </div>

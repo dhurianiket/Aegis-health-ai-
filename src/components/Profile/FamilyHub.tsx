@@ -152,9 +152,9 @@ export default function FamilyHub() {
             {/* Left Column: Invite & Stats */}
             <div className="space-y-6">
               <div className="bg-indigo-600 rounded-[32px] p-8 text-white shadow-2xl shadow-indigo-500/20">
-                <Shield className="w-10 h-10 mb-4 opacity-50" />
-                <h3 className="text-2xl font-bold mb-2">Invite Caretaker</h3>
-                <p className="text-indigo-100 text-sm mb-6 leading-relaxed opacity-80">
+                <Shield className="w-10 h-10 mb-4 opacity-80 text-white" />
+                <h3 className="text-2xl font-bold mb-2 text-white">Invite Caretaker</h3>
+                <p className="text-white/90 text-sm mb-6 leading-relaxed">
                   Securely share access to your health profile with a trusted
                   family member or physician.
                 </p>
@@ -165,13 +165,14 @@ export default function FamilyHub() {
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="Email Address"
-                      className="w-full bg-white/10 border border-white/20 rounded-xl py-3 px-4 text-sm text-white placeholder:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                      aria-label="Caretaker Email Address"
+                      className="w-full bg-white text-slate-900 placeholder:text-slate-500 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-indigo-200 border border-white/30 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-white"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isInviting || !inviteEmail}
-                    className="w-full bg-white text-indigo-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                    className="w-full bg-slate-950 text-white dark:bg-white dark:text-indigo-900 py-3 rounded-xl font-bold text-sm hover:opacity-95 transition-all flex items-center justify-center gap-2 group disabled:opacity-60 cursor-pointer"
                   >
                     Send Secure Invite
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -179,8 +180,8 @@ export default function FamilyHub() {
                 </form>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-[32px] p-8">
-                <h4 className="text-xs font-black text-slate-300 uppercase tracking-widest mb-6">
+              <div className="bg-[var(--color-surface)] dark:bg-white/5 border border-[var(--color-border)] dark:border-white/10 rounded-[32px] p-8">
+                <h4 className="text-xs font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-6">
                   Security Invariants
                 </h4>
                 <div className="space-y-4">
@@ -190,10 +191,10 @@ export default function FamilyHub() {
                     { icon: AlertCircle, text: "Granular PII Masking" },
                   ].map((inv, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                        <inv.icon className="w-4 h-4 text-slate-400" />
+                      <div className="w-8 h-8 rounded-lg bg-[var(--color-bg)] dark:bg-white/5 border border-[var(--color-border)] dark:border-transparent flex items-center justify-center">
+                        <inv.icon className="w-4 h-4 text-[var(--color-text-muted)]" />
                       </div>
-                      <span className="text-xs text-slate-300 font-medium">
+                      <span className="text-xs text-[var(--color-text)] font-medium">
                         {inv.text}
                       </span>
                     </div>
@@ -205,15 +206,15 @@ export default function FamilyHub() {
             {/* Right Column: Connection List */}
             <div className="lg:col-span-2 space-y-6">
               {/* Family Profiles & Paediatric Dependents */}
-              <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 space-y-4">
-                <div className="flex items-center justify-between">
+              <div className="bg-[var(--color-surface)] dark:bg-white/5 border border-[var(--color-border)] dark:border-white/10 rounded-[32px] p-6 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-indigo-400" />
-                    <h4 className="text-xs font-black text-slate-200 uppercase tracking-widest">
-                      Family Profiles & Dependents ({profiles.length})
+                    <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <h4 className="text-xs font-black text-[var(--color-text)] uppercase tracking-widest">
+                      Family Profiles &amp; Dependents ({profiles.length})
                     </h4>
                   </div>
-                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold">
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-800 dark:text-indigo-300 font-bold border border-indigo-500/30">
                     DPDP ACT 2023 AUDITED
                   </span>
                 </div>
@@ -227,20 +228,20 @@ export default function FamilyHub() {
                         key={p.id}
                         className={`p-4 rounded-2xl border transition-all ${
                           minor
-                            ? "bg-amber-950/10 border-amber-500/30"
-                            : "bg-black/20 border-white/5"
+                            ? "bg-amber-500/10 dark:bg-amber-950/10 border-amber-500/30"
+                            : "bg-[var(--color-bg)] dark:bg-black/20 border-[var(--color-border)] dark:border-white/5"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className="text-sm font-bold text-white truncate">{p.fullName || p.name}</div>
-                            <div className="text-xs text-slate-400 mt-0.5">
+                            <div className="text-sm font-bold text-[var(--color-text)] truncate">{p.fullName || p.name}</div>
+                            <div className="text-xs text-[var(--color-text-muted)] mt-0.5">
                               {p.dob ? `DOB: ${p.dob}${age !== null ? ` (${age} yrs)` : ''}` : 'DOB not specified'}
                             </div>
                           </div>
                           {minor && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0 flex items-center gap-1">
-                              <ShieldCheck className="w-3 h-3 text-amber-400" />
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 shrink-0 flex items-center gap-1">
+                              <ShieldCheck className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                               Child Profile
                             </span>
                           )}
@@ -249,17 +250,17 @@ export default function FamilyHub() {
                         {minor && (
                           <div className="mt-3 pt-2.5 border-t border-amber-500/20 space-y-1 text-[11px]">
                             {p.paediatricConsent?.guardianConsentGiven ? (
-                              <div className="text-emerald-400 flex items-center gap-1">
+                              <div className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                                 <Check className="w-3.5 h-3.5" />
                                 <span>Guardian Verified: <strong>{p.paediatricConsent.guardianName}</strong> ({p.paediatricConsent.guardianRelationship})</span>
                               </div>
                             ) : (
-                              <div className="text-amber-400 flex items-center gap-1">
+                              <div className="text-amber-700 dark:text-amber-400 flex items-center gap-1">
                                 <AlertCircle className="w-3.5 h-3.5" />
                                 <span>Pending DPDP Sec 9 Guardian Verification</span>
                               </div>
                             )}
-                            <div className="text-[10px] text-slate-400">
+                            <div className="text-[10px] text-[var(--color-text-muted)]">
                               Zero AI Training • Zero Tracking • 72h Erasure SLA
                             </div>
                           </div>
@@ -271,10 +272,10 @@ export default function FamilyHub() {
               </div>
 
               <div className="flex items-center justify-between px-4">
-                <h4 className="text-xs font-black text-slate-300 uppercase tracking-widest">
+                <h4 className="text-xs font-black text-[var(--color-text-muted)] uppercase tracking-widest">
                   Active Connections
                 </h4>
-                <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-slate-400 font-bold uppercase tracking-widest">
+                <div className="px-3 py-1 bg-[var(--color-surface)] dark:bg-white/5 border border-[var(--color-border)] dark:border-white/10 rounded-full text-xs text-[var(--color-text-muted)] font-bold uppercase tracking-widest">
                   {relations.length} Active Links
                 </div>
               </div>
@@ -284,7 +285,7 @@ export default function FamilyHub() {
                   <motion.div
                     layout
                     key={rel.id}
-                    className="bg-white/5 border border-white/5 hover:border-white/10 p-6 rounded-3xl transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+                    className="bg-[var(--color-surface)] dark:bg-white/5 border border-[var(--color-border)] dark:border-white/5 hover:border-indigo-500/30 dark:hover:border-white/10 p-6 rounded-3xl transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 group"
                   >
                     <div className="flex items-center gap-4">
                       <div

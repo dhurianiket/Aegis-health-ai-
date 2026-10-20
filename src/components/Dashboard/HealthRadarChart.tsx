@@ -11,21 +11,28 @@ function HealthRadarChart({ radarData }: { radarData: any[] }) {
   return (
     <div className="w-full h-[300px] min-h-[300px]">
       <ResponsiveContainer width="100%" height={300} minWidth={0}>
-      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-        <PolarGrid stroke="rgba(255,255,255,0.1)" />
-        <PolarAngleAxis
-          dataKey="subject"
-          tick={{ fill: "#cbd5e1", fontSize: 11, fontWeight: 700 }}
-        />
-        <Radar
-          name="Health"
-          dataKey="A"
-          stroke="#6366F1"
-          fill="#6366F1"
-          fillOpacity={0.4}
-        />
-      </RadarChart>
-    </ResponsiveContainer>
+        <RadarChart
+          cx="50%"
+          cy="50%"
+          outerRadius="62%"
+          margin={{ top: 12, right: 28, bottom: 12, left: 28 }}
+          data={radarData}
+        >
+          <PolarGrid stroke="rgba(148, 163, 184, 0.22)" />
+          <PolarAngleAxis
+            dataKey="subject"
+            tick={{ fill: "#cbd5e1", fontSize: 11, fontWeight: 700 }}
+          />
+          <Radar
+            name="Health"
+            dataKey="A"
+            stroke="#6366F1"
+            strokeWidth={2}
+            fill="#6366F1"
+            fillOpacity={0.38}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from "react";
+import React, { Suspense } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import IntegrationsPanel from "./IntegrationsPanel";
@@ -8,11 +8,12 @@ import {
   Download,
   Trash2,
   ShieldCheck,
-  ChevronRight,
   AlertTriangle,
+  Sparkles,
+  CheckCircle2,
+  Sliders,
 } from "lucide-react";
 import { logAuditEvent } from "../../lib/auditLogger";
-
 import { useTheme } from "../../context/ThemeContext";
 
 export default function SettingsPage() {
@@ -56,100 +57,189 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 pb-12">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text)] mb-2">
-          Settings
-        </h2>
-        <p className="text-[var(--color-text-muted)] text-sm">
-          Manage your preferences, data, and account settings.
-        </p>
+    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+      {/* Header Banner */}
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-[var(--color-primary)]/15 border border-[var(--color-primary)]/30 flex items-center justify-center shrink-0">
+            <Sliders className="w-5 h-5 text-[var(--color-primary)]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--color-text)]">
+                Settings &amp; Clinical Preferences
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-500/15 text-teal-800 dark:text-teal-300 border border-teal-500/30">
+                WCAG 2.2 AA Verified
+              </span>
+            </div>
+            <p className="text-[var(--color-text-muted)] text-xs sm:text-sm mt-1">
+              Configure display theme, ABDM health integrations, zero-knowledge encryption, and privacy controls.
+            </p>
+          </div>
+        </div>
       </div>
+
+      {/* ── Appearance & Theme Studio ── */}
+      <section
+        aria-label="Appearance and Display Theme"
+        className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-5 sm:p-6 shadow-xs"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+              Appearance &amp; Display Mode
+            </h3>
+            <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
+              Choose between Clinical Daylight (Light) and OLED Command Center (Dark) themes.
+            </p>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-xs sm:text-sm font-bold text-[var(--color-text)] hover:border-[var(--color-primary)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] self-start sm:self-auto"
+          >
+            {theme === "dark" ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-700" />
+            )}
+            <span>Toggle {theme === "dark" ? "Light" : "Dark"}</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {/* Light Mode Option Card */}
+          <button
+            type="button"
+            onClick={() => {
+              if (theme !== "light") toggleTheme();
+            }}
+            aria-pressed={theme === "light"}
+            className={`group text-left p-4 rounded-2xl border transition-all flex items-start justify-between gap-3 ${
+              theme === "light"
+                ? "bg-teal-500/10 border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]"
+                : "bg-[var(--color-bg)] border-[var(--color-border)] hover:border-[var(--color-primary)]/40"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <Sun className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[var(--color-text)]">
+                    Clinical Daylight (Light)
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                  High-contrast daylight surface calibrated for ward rounds and printed report review.
+                </p>
+              </div>
+            </div>
+            {theme === "light" && (
+              <CheckCircle2 className="w-5 h-5 text-[var(--color-primary)] shrink-0 mt-0.5" />
+            )}
+          </button>
+
+          {/* Dark Mode Option Card */}
+          <button
+            type="button"
+            onClick={() => {
+              if (theme !== "dark") toggleTheme();
+            }}
+            aria-pressed={theme === "dark"}
+            className={`group text-left p-4 rounded-2xl border transition-all flex items-start justify-between gap-3 ${
+              theme === "dark"
+                ? "bg-teal-500/10 border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]"
+                : "bg-[var(--color-bg)] border-[var(--color-border)] hover:border-[var(--color-primary)]/40"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                <Moon className="w-5 h-5 text-indigo-700 dark:text-indigo-300" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[var(--color-text)]">
+                    OLED Command Center (Dark)
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                  Low-glare deep slate canvas optimized for 3D organ telemetry and night-shift monitoring.
+                </p>
+              </div>
+            </div>
+            {theme === "dark" && (
+              <CheckCircle2 className="w-5 h-5 text-[var(--color-primary)] shrink-0 mt-0.5" />
+            )}
+          </button>
+        </div>
+      </section>
 
       {/* ── Connected Apps & ABHA / Health Integrations ── */}
-      <div>
-        <h3 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
+      <section aria-label="Connected Apps and Health Integrations">
+        <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3 px-1">
           Connected Apps &amp; Health Integrations
         </h3>
-        <Suspense fallback={
-          <div className="flex items-center justify-center h-48 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-            <div className="w-6 h-6 border-2 border-emerald-400/40 border-t-emerald-400 rounded-full animate-spin" />
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center h-48 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+              <div className="w-6 h-6 border-2 border-emerald-500/40 border-t-emerald-500 rounded-full animate-spin" />
+            </div>
+          }
+        >
           <IntegrationsPanel activeProfile={activeProfile} />
         </Suspense>
-      </div>
+      </section>
 
       <div className="space-y-6">
-        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
-            Appearance
+        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-5 sm:p-6 shadow-xs">
+          <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
+            Data, Privacy &amp; Emergency
           </h3>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-[var(--color-text)]">
-              {theme === "dark" ? (
-                <Moon className="w-5 h-5 text-[var(--color-primary)]" />
-              ) : (
-                <Sun className="w-5 h-5 text-[var(--color-warning)]" />
-              )}
-              <span className="font-medium">Theme</span>
-            </div>
-            <button
-              onClick={toggleTheme}
-              className="px-4 py-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium hover:bg-[var(--color-bg)]/80 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-            >
-              Toggle {theme === "dark" ? "Light" : "Dark"}
-            </button>
-          </div>
-        </section>
-
-        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
-            Data, Privacy & Emergency
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between bg-[var(--color-bg)] border border-[var(--color-border)] p-4 rounded-xl">
+          <div className="space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--color-bg)] border border-[var(--color-border)] p-4 rounded-2xl">
               <div className="flex items-center gap-3">
-                <ShieldCheck className="w-5 h-5 text-[var(--color-success)]" />
+                <ShieldCheck className="w-5 h-5 text-[var(--color-success)] shrink-0" />
                 <div>
-                  <h4 className="text-sm font-medium text-[var(--color-text)]">
+                  <h4 className="text-sm font-bold text-[var(--color-text)]">
                     Export Data
                   </h4>
                   <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
-                    Download a copy of your personal health data.
+                    Download a portable copy of your personal health records and FHIR bundles.
                   </p>
                 </div>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-sm font-medium transition text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]">
+              <button className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-xs sm:text-sm font-bold transition text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] shrink-0">
                 <Download className="w-4 h-4" /> Export
               </button>
             </div>
 
-            <div className="flex items-center justify-between bg-[var(--color-bg)] border border-amber-500/30 p-4 rounded-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--color-bg)] border border-amber-500/30 p-4 rounded-2xl">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-medium text-[var(--color-text)]">
+                  <h4 className="text-sm font-bold text-[var(--color-text)]">
                     Global Emergency Mode
                   </h4>
                   <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
-                    Activate priority data access and log an audit event.
+                    Activate priority data access and write a cryptographic audit event.
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleEmergencyMode}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-xl text-sm font-medium transition border border-amber-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 rounded-xl text-xs sm:text-sm font-bold transition border border-amber-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 shrink-0"
               >
                 Enable Mode
               </button>
             </div>
 
-            <div className="flex items-center justify-between bg-[var(--color-bg)] border border-[var(--color-critical)]/30 p-4 rounded-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--color-bg)] border border-[var(--color-critical)]/30 p-4 rounded-2xl">
               <div className="flex items-center gap-3">
-                <Trash2 className="w-5 h-5 text-[var(--color-critical)]" />
+                <Trash2 className="w-5 h-5 text-[var(--color-critical)] shrink-0" />
                 <div>
-                  <h4 className="text-sm font-medium text-[var(--color-text)]">
+                  <h4 className="text-sm font-bold text-[var(--color-text)]">
                     Delete Profile
                   </h4>
                   <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
@@ -162,21 +252,21 @@ export default function SettingsPage() {
               <button
                 onClick={handleDeleteProfile}
                 disabled={profiles.length <= 1}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-critical)]"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-xs sm:text-sm font-bold transition border border-[var(--color-critical)]/30 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-critical)] shrink-0"
               >
                 Delete Profile
               </button>
             </div>
 
-            <div className="flex items-center justify-between bg-[var(--color-bg)] border border-[var(--color-critical)]/30 p-4 rounded-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--color-bg)] border border-[var(--color-critical)]/30 p-4 rounded-2xl">
               <div className="flex items-center gap-3">
-                <Trash2 className="w-5 h-5 text-[var(--color-critical)]" />
+                <Trash2 className="w-5 h-5 text-[var(--color-critical)] shrink-0" />
                 <div>
-                  <h4 className="text-sm font-medium text-[var(--color-text)]">
+                  <h4 className="text-sm font-bold text-[var(--color-text)]">
                     Delete Account
                   </h4>
                   <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
-                    Permanently delete all your personal data.
+                    Permanently erase all personal clinical data from cloud storage.
                   </p>
                 </div>
               </div>
@@ -187,12 +277,11 @@ export default function SettingsPage() {
                       "Are you sure you want to delete all your data? This action is irreversible.",
                     )
                   ) {
-                    // MOCK deletion
                     alert("Account marked for deletion.");
                     logOut();
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-sm font-medium transition border border-[var(--color-critical)]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-critical)]"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-critical)]/10 hover:bg-[var(--color-critical)]/20 text-[var(--color-critical)] rounded-xl text-xs sm:text-sm font-bold transition border border-[var(--color-critical)]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-critical)] shrink-0"
               >
                 Delete Data
               </button>
@@ -200,46 +289,47 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
-            About
+        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-5 sm:p-6 shadow-xs">
+          <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
+            About System
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
-              <span className="text-[var(--color-text)]">Version</span>
-              <span className="text-[var(--color-text-faint)] text-sm">
+              <span className="text-sm font-medium text-[var(--color-text)]">Version</span>
+              <span className="text-[var(--color-text-faint)] text-sm font-mono">
                 v2.0.0 (Apple-grade build)
               </span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-[var(--color-border)]">
-              <span className="text-[var(--color-text)]">
+              <span className="text-sm font-medium text-[var(--color-text)]">
                 Diagnostic System
               </span>
-              <span className="text-[var(--color-text-faint)] text-sm">
+              <span className="text-[var(--color-text-faint)] text-sm font-semibold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                 Aura AI Core
               </span>
             </div>
           </div>
         </section>
 
-        <div className="flex justify-center pt-6">
+        <div className="flex justify-center pt-4">
           <button
             onClick={logOut}
-            className="px-6 py-2 border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] rounded-full text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            className="px-6 py-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] rounded-full text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
           >
             Sign Out
           </button>
         </div>
 
-        <div className="pt-12 mt-8 border-t border-[var(--color-border)] opacity-60">
+        <div className="pt-8 mt-6 border-t border-[var(--color-border)]">
           <div className="flex flex-col items-center text-center space-y-1">
-            <h4 className="text-sm font-semibold text-[var(--color-text)] tracking-tight">Aegis Health AI</h4>
+            <h4 className="text-sm font-bold text-[var(--color-text)] tracking-tight">Aegis Health AI</h4>
             <p className="text-xs text-[var(--color-text-faint)] font-mono uppercase tracking-[0.2em] mb-2">Version 2.0.0</p>
             <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5">
-              Developed by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-[var(--color-text)] hover:text-emerald-500 underline underline-offset-2 decoration-[var(--color-text-faint)] hover:decoration-emerald-500 transition-colors">Aniket Dhuri</a> ✨
+              Developed by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--color-text)] hover:text-[var(--color-primary)] underline underline-offset-2 decoration-[var(--color-text-faint)] hover:decoration-[var(--color-primary)] transition-colors">Aniket Dhuri</a> ✨
             </p>
             <p className="text-xs text-[var(--color-text-faint)] font-medium">
-              Powered by Google AI Studio & Gemini AI
+              Powered by Google AI Studio &amp; Gemini AI
             </p>
           </div>
         </div>

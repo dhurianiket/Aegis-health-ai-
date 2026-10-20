@@ -190,22 +190,22 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
       />
 
       {/* Header Toolbar */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-5 relative z-10">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-5 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-indigo-500/25 text-cyan-300 border border-cyan-500/40 glow-cyan-3d shrink-0">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40 glow-cyan-3d shrink-0">
             <Layers className="w-6 h-6 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
                 Interactive 3D Holographic Anatomical Body Scanner
               </h3>
-              <span className="px-3 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 font-mono text-[11px] font-bold uppercase tracking-wider glow-cyan-3d">
+              <span className="px-3 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/40 text-cyan-800 dark:text-cyan-300 font-mono text-[11px] font-bold uppercase tracking-wider glow-cyan-3d">
                 Live Spatial HUD
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-light mt-1">
-              Depth-calibrated 3D anatomical organ scanning & continuous physiological telemetry
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+              Depth-calibrated 3D anatomical organ scanning &amp; continuous physiological telemetry
             </p>
           </div>
         </div>
@@ -216,12 +216,12 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
             onClick={() => setViewMode(viewMode === '3d-webgl' ? 'coronal-slice' : '3d-webgl')}
             className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all min-h-[44px] flex items-center gap-2 cursor-pointer ${
               viewMode === '3d-webgl'
-                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 glow-cyan-3d'
-                : 'bg-white/5 border-white/15 text-slate-200 hover:text-white'
+                ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-800 dark:text-cyan-300 glow-cyan-3d'
+                : 'bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white'
             }`}
             aria-label="Toggle 3D WebGL / Coronal Slice View"
           >
-            <Layers className="w-4 h-4 text-cyan-400" />
+            <Layers className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
             <span>{viewMode === '3d-webgl' ? '3D WebGL Hologram' : '2D Coronal View'}</span>
           </button>
 
@@ -229,8 +229,8 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
             onClick={() => setScanActive(!scanActive)}
             className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all min-h-[44px] flex items-center gap-2 cursor-pointer ${
               scanActive
-                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 glow-cyan-3d'
-                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-800 dark:text-cyan-300 glow-cyan-3d'
+                : 'bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
             aria-label={scanActive ? 'Pause Laser Scan' : 'Resume Laser Scan'}
           >
@@ -858,20 +858,20 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
 
         {/* Right: Live Biometrics Cyber HUD (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center justify-between">
+          <div className="text-xs font-mono font-bold text-cyan-800 dark:text-cyan-300 uppercase tracking-wider flex items-center justify-between">
             <span>Continuous Physiological Telemetry</span>
             {isExplicitlyDisconnected ? (
-              <span className="flex items-center gap-1.5 text-slate-400 font-normal">
+              <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-normal">
                 <span className="w-2 h-2 rounded-full bg-slate-500" />
                 Standby · No Watch Connected
               </span>
             ) : isLiveConnected ? (
-              <span className="flex items-center gap-1.5 text-emerald-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                 LIVE
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-slate-400 font-normal">
+              <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-normal">
                 <span className="w-2 h-2 rounded-full bg-slate-500" />
                 Standby
               </span>
@@ -883,19 +883,19 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Heart
-                  className={`w-4 h-4 ${isExplicitlyDisconnected ? 'text-slate-500' : 'text-rose-400'}`}
+                  className={`w-4 h-4 ${isExplicitlyDisconnected ? 'text-slate-500' : 'text-rose-600 dark:text-rose-400'}`}
                   style={{ animation: isExplicitlyDisconnected ? 'none' : `cardiacPulse ${cardiacDuration}s ease-in-out infinite` }}
                 />
-                <span className="text-xs font-bold text-white">Cardio ECG Waveform</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Cardio ECG Waveform</span>
               </div>
-              <span className="font-mono text-base font-black text-rose-300">
+              <span className="font-mono text-base font-black text-rose-700 dark:text-rose-300">
                 {heartRate !== null ? `${heartRate} bpm` : '-- bpm'}
               </span>
             </div>
 
             {/* SVG Animated Dynamic ECG Wave */}
-            <div className="w-full h-14 bg-slate-900/80 rounded-xl overflow-hidden relative flex items-center px-2 border border-rose-500/20">
-              <svg className="w-full h-12 stroke-rose-400 fill-none stroke-[2]" viewBox="0 0 300 40">
+            <div className="w-full h-14 bg-slate-100 dark:bg-slate-900/80 rounded-xl overflow-hidden relative flex items-center px-2 border border-rose-500/20">
+              <svg className="w-full h-12 stroke-rose-600 dark:stroke-rose-400 fill-none stroke-[2]" viewBox="0 0 300 40">
                 {isExplicitlyDisconnected ? (
                   <path
                     d="M0 20 L300 20"
@@ -911,7 +911,7 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
                   />
                 )}
               </svg>
-              <div className="absolute right-2 bottom-1 text-[9px] font-mono text-slate-400">
+              <div className="absolute right-2 bottom-1 text-[9px] font-mono text-slate-600 dark:text-slate-400">
                 {isExplicitlyDisconnected ? 'Standby · No Watch Connected' : 'Normal Sinus Rhythm'}
               </div>
             </div>
@@ -921,13 +921,13 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
           <div className="grid grid-cols-2 gap-3">
             {/* SpO2 Circular Gauge */}
             <div className="cyber-hud-card flex flex-col items-center justify-center">
-              <div className="w-full flex items-center justify-between text-[11px] font-bold text-slate-300 mb-2">
+              <div className="w-full flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">
                 <span>SpO2 Oxygen</span>
-                <Gauge className="w-4 h-4 text-cyan-400" />
+                <Gauge className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
               </div>
               <div className="relative w-20 h-20">
                 <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-                  <circle cx="40" cy="40" r={spo2Radius} fill="none" stroke="rgba(51, 65, 85, 0.5)" strokeWidth="5" />
+                  <circle cx="40" cy="40" r={spo2Radius} fill="none" stroke="rgba(148, 163, 184, 0.3)" strokeWidth="5" />
                   {spo2 !== null && (
                     <circle
                       cx="40"
@@ -944,16 +944,16 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
                   )}
                   <defs>
                     <linearGradient id="spo2GaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#22D3EE" />
-                      <stop offset="100%" stopColor="#10B981" />
+                      <stop offset="0%" stopColor="#0891B2" />
+                      <stop offset="100%" stopColor="#059669" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg font-black font-mono text-cyan-300">
+                  <span className="text-lg font-black font-mono text-cyan-800 dark:text-cyan-300">
                     {spo2 !== null ? `${spo2}%` : '--%'}
                   </span>
-                  <span className={`text-[8px] font-bold ${spo2 !== null && spo2 >= 95 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  <span className={`text-[8px] font-bold ${spo2 !== null && spo2 >= 95 ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
                     {spo2 === null ? 'STANDBY' : spo2 >= 95 ? 'OPTIMAL' : 'WARNING'}
                   </span>
                 </div>
@@ -962,26 +962,26 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
 
             {/* Blood Pressure Concentric Rings */}
             <div className="cyber-hud-card flex flex-col items-center justify-center">
-              <div className="w-full flex items-center justify-between text-[11px] font-bold text-slate-300 mb-2">
+              <div className="w-full flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">
                 <span>Blood Pressure</span>
-                <Activity className="w-4 h-4 text-indigo-400" />
+                <Activity className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
               </div>
               <div className="relative w-20 h-20">
                 <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-                  <circle cx="40" cy="40" r={bpRadius} fill="none" stroke="rgba(51, 65, 85, 0.4)" strokeWidth="4" />
+                  <circle cx="40" cy="40" r={bpRadius} fill="none" stroke="rgba(148, 163, 184, 0.3)" strokeWidth="4" />
                   {sbp !== null && (
-                    <circle cx="40" cy="40" r={bpRadius} fill="none" stroke="#818CF8" strokeWidth="4" strokeLinecap="round" strokeDasharray={bpCircumference} strokeDashoffset={sbpOffset} className="transition-all duration-1000" />
+                    <circle cx="40" cy="40" r={bpRadius} fill="none" stroke="#6366F1" strokeWidth="4" strokeLinecap="round" strokeDasharray={bpCircumference} strokeDashoffset={sbpOffset} className="transition-all duration-1000" />
                   )}
-                  <circle cx="40" cy="40" r={bpRadius - 8} fill="none" stroke="rgba(51, 65, 85, 0.3)" strokeWidth="3" />
+                  <circle cx="40" cy="40" r={bpRadius - 8} fill="none" stroke="rgba(148, 163, 184, 0.25)" strokeWidth="3" />
                   {dbp !== null && (
-                    <circle cx="40" cy="40" r={bpRadius - 8} fill="none" stroke="#6366F1" strokeWidth="3" strokeLinecap="round" strokeDasharray={2 * Math.PI * (bpRadius - 8)} strokeDashoffset={2 * Math.PI * (bpRadius - 8) - (2 * Math.PI * (bpRadius - 8) * dbpNormalized) / 100} className="transition-all duration-1000" />
+                    <circle cx="40" cy="40" r={bpRadius - 8} fill="none" stroke="#4F46E5" strokeWidth="3" strokeLinecap="round" strokeDasharray={2 * Math.PI * (bpRadius - 8)} strokeDashoffset={2 * Math.PI * (bpRadius - 8) - (2 * Math.PI * (bpRadius - 8) * dbpNormalized) / 100} className="transition-all duration-1000" />
                   )}
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-sm font-black font-mono text-indigo-300">
+                  <span className="text-sm font-black font-mono text-indigo-800 dark:text-indigo-300">
                     {sbp !== null && dbp !== null ? `${sbp}/${dbp}` : '--/--'}
                   </span>
-                  <span className="text-[8px] text-emerald-400 font-bold">
+                  <span className="text-[8px] text-emerald-700 dark:text-emerald-400 font-bold">
                     {mapValue !== null ? `MAP ${mapValue}` : 'STANDBY'}
                   </span>
                 </div>
@@ -993,52 +993,52 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
           <div className="grid grid-cols-2 gap-3">
             {/* Body Temperature */}
             <div className="cyber-hud-card">
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-300">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
                 <span>Body Temp</span>
-                <Thermometer className="w-4 h-4 text-amber-400" />
+                <Thermometer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="my-2 flex items-baseline gap-1">
-                <span className="text-xl font-black font-mono text-amber-300">
+                <span className="text-xl font-black font-mono text-amber-700 dark:text-amber-300">
                   {bodyTempF !== null ? `${bodyTempF}°F` : '--°F'}
                 </span>
                 {bodyTempC !== null && (
-                  <span className="text-[10px] text-slate-400 font-mono">({bodyTempC}°C)</span>
+                  <span className="text-[10px] text-slate-600 dark:text-slate-400 font-mono">({bodyTempC}°C)</span>
                 )}
               </div>
-              <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-gradient-to-r from-emerald-500 via-amber-400 to-rose-500 h-full rounded-full" style={{ width: bodyTempF !== null ? '36%' : '0%' }} />
               </div>
-              <div className="text-[10px] text-slate-400 mt-1">
+              <div className="text-[10px] text-slate-600 dark:text-slate-400 mt-1">
                 {bodyTempF !== null ? 'Afebrile · Homeostatic' : 'Sensor Standby'}
               </div>
             </div>
 
             {/* Breathing Rate */}
             <div className="cyber-hud-card">
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-300">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
                 <span>Breathing Rate</span>
-                <Wind className="w-4 h-4 text-teal-400" style={{ animation: isExplicitlyDisconnected ? 'none' : `pulmonaryBreathing ${breathDuration}s ease-in-out infinite` }} />
+                <Wind className="w-4 h-4 text-teal-600 dark:text-teal-400" style={{ animation: isExplicitlyDisconnected ? 'none' : `pulmonaryBreathing ${breathDuration}s ease-in-out infinite` }} />
               </div>
               <div className="my-2 flex items-baseline gap-1">
-                <span className="text-xl font-black font-mono text-teal-300">
+                <span className="text-xl font-black font-mono text-teal-800 dark:text-teal-300">
                   {breathingRate !== null ? breathingRate : '--'}
                 </span>
-                <span className="text-[10px] text-slate-400">/min</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400">/min</span>
               </div>
               <svg className="w-full h-4" viewBox="0 0 100 16">
                 {isExplicitlyDisconnected ? (
-                  <line x1="0" y1="8" x2="100" y2="8" stroke="#2DD4BF" strokeWidth="1" strokeDasharray="2 3" opacity="0.4" />
+                  <line x1="0" y1="8" x2="100" y2="8" stroke="#0D9488" strokeWidth="1" strokeDasharray="2 3" opacity="0.4" />
                 ) : (
                   <path
                     d="M0 8 Q12 2 25 8 Q38 14 50 8 Q62 2 75 8 Q88 14 100 8"
-                    stroke="#2DD4BF"
+                    stroke="#0D9488"
                     strokeWidth="1.5"
                     fill="none"
-                    opacity="0.6"
+                    opacity="0.7"
                   />
                 )}
               </svg>
-              <div className="text-[10px] text-teal-400 mt-0.5">
+              <div className="text-[10px] text-teal-700 dark:text-teal-400 mt-0.5">
                 {breathingRate !== null ? 'Eupnea · Regular' : 'Sensor Standby'}
               </div>
             </div>
@@ -1046,16 +1046,16 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
 
           {/* Quick Connect CTA when disconnected */}
           {isExplicitlyDisconnected && (
-            <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-3 flex items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2 text-slate-300">
-                <Watch className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div className="bg-slate-50 dark:bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-3 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <Watch className="w-4 h-4 text-cyan-700 dark:text-cyan-400 shrink-0" />
                 <span>Pair smartwatch or Apple/Google Health for live telemetry</span>
               </div>
               <button
                 onClick={() => {
                   window.location.hash = 'settings';
                 }}
-                className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-xs font-bold shrink-0 cursor-pointer transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-800 dark:text-cyan-200 text-xs font-bold shrink-0 cursor-pointer transition-colors"
               >
                 Connect Watch
               </button>
@@ -1085,8 +1085,8 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
               }}
               className={`p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-2 hover:-translate-y-1 min-h-[96px] ${
                 selectedOrgan?.key === hotspot.key
-                  ? 'bg-slate-900 border-cyan-400 glow-cyan-3d shadow-xl'
-                  : 'bg-slate-950/90 border-white/10 hover:border-cyan-500/40'
+                  ? 'bg-cyan-500/10 dark:bg-slate-900 border-cyan-500 dark:border-cyan-400 glow-cyan-3d shadow-xl'
+                  : 'bg-slate-50/90 dark:bg-slate-950/90 border-slate-200 dark:border-white/10 hover:border-cyan-500/40'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -1096,8 +1096,8 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
                 </span>
               </div>
               <div>
-                <div className="text-xs font-bold text-white truncate">{hotspot.label}</div>
-                <div className="text-[10px] text-slate-400 capitalize">{organScore?.status}</div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{hotspot.label}</div>
+                <div className="text-[10px] text-slate-600 dark:text-slate-400 capitalize">{organScore?.status}</div>
               </div>
             </button>
           );

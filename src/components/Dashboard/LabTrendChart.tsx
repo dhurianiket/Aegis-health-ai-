@@ -47,10 +47,6 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
 
   useEffect(() => {
     async function fetchLabs() {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
       setIsLoading(true);
       try {
         let extractedValues: any[] = [];
@@ -80,7 +76,7 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                  });
               });
            });
-        } else {
+        } else if (user) {
            // Fetch from documents
            const docs = await getDocuments(user.uid, activeProfile?.id);
            (docs || []).forEach((doc: any) => {
@@ -96,6 +92,9 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                  });
               });
            });
+        } else {
+           setIsLoading(false);
+           return;
         }
         
         if (extractedValues.length > 0) {
@@ -299,14 +298,21 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
   };
 
   return (
-    <div className="bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[32px] shadow-md dark:shadow-2xl flex flex-col gap-6">
+    <div className="aegis-spotlight-card bg-[var(--color-surface)] backdrop-blur-xl border border-[var(--color-border)] p-6 rounded-[28px] shadow-md dark:shadow-2xl flex flex-col justify-between gap-5 h-full">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h3 className="section-title mb-1">Trends</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="section-title">Biomarker Trends</h3>
+            {latestDataPoint && (
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/25 tabular-nums">
+                {latestDataPoint.value} {latestDataPoint.unit}
+              </span>
+            )}
+          </div>
           {latestDataPoint && chartData.length > 1 ? (
-            <div className="text-sm text-muted flex items-center gap-2">
-              {summarySentence}
-              <span className={`font-semibold ${latestDataPoint.flagCol === 'red' ? "text-red-500" : latestDataPoint.flagCol === 'orange' ? "text-orange-500" : "text-emerald-500"}`}>
+            <div className="text-xs sm:text-sm text-muted flex flex-wrap items-center gap-1.5">
+              <span>{summarySentence}</span>
+              <span className={`font-bold uppercase tracking-wider text-xs px-2 py-0.5 rounded-md ${latestDataPoint.flagCol === 'red' ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" : latestDataPoint.flagCol === 'orange' ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"}`}>
                 {latestDataPoint.status || "NORMAL"}
               </span>
             </div>
@@ -316,13 +322,13 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
         </div>
 
         {uniqueMarkers.length > 0 && (
-           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
              <div className="relative">
                <select
                  value={selectedMarker}
                  aria-label="Select Lab Result to filter chart"
                  onChange={(e) => setSelectedMarker(e.target.value)}
-                 className="appearance-none bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-medium tracking-widest rounded-xl px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-sm transition-colors"
+                 className="appearance-none bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-text)] text-xs font-semibold tracking-wide rounded-xl px-3.5 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer shadow-xs transition-colors"
                >
                  {uniqueMarkers.map((m) => (
                    <option key={m} value={m} className="text-slate-900 bg-white dark:text-slate-100 dark:bg-slate-900">
@@ -330,17 +336,17 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                    </option>
                  ))}
                </select>
-               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[var(--color-text-muted)]">
+               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[var(--color-text-muted)]">
                  <ChevronDown className="w-4 h-4" />
                </div>
              </div>
 
-             <div className="flex bg-surface rounded-xl p-0.5 border border-border">
+             <div className="flex bg-[var(--color-bg)] rounded-xl p-0.5 border border-[var(--color-border)]">
                {["3M", "6M", "1Y", "ALL"].map((tr) => (
                  <button
                    key={tr}
                    onClick={() => setTimeRange(tr as any)}
-                   className={`px-3 py-1.5 text-xs font-medium rounded-[10px] transition-colors ${timeRange === tr ? "bg-[var(--color-primary)] text-white shadow-sm" : "text-muted hover:text-theme"}`}
+                   className={`px-2.5 py-1.5 text-xs font-bold rounded-[10px] transition-colors ${timeRange === tr ? "bg-[var(--color-primary)] text-white shadow-xs" : "text-muted hover:text-theme"}`}
                  >
                    {tr}
                  </button>
@@ -357,9 +363,15 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
              onReset={() => setChartKey((k) => k + 1)}
              fallbackMessage="Chart rendering failed."
            >
-            <div className="w-full h-[300px] min-h-[300px] relative mt-4">
+            <div className="w-full h-[300px] min-h-[300px] relative">
               <ResponsiveContainer width="100%" height={300} minWidth={0}>
-                <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+                <ComposedChart data={chartData} margin={{ top: 16, right: 16, left: -18, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="aegisTrendFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-primary, #2dd4bf)" stopOpacity={0.28} />
+                      <stop offset="100%" stopColor="var(--color-primary, #2dd4bf)" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
                   
                   <XAxis 
@@ -378,8 +390,16 @@ function LabTrendChart({ labs, reports }: LabTrendChartProps) {
                   />
                   
                   <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
+                    contentStyle={{ borderRadius: '14px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
                     itemStyle={{ fontWeight: 'bold' }}
+                  />
+
+                  <Area
+                    type="monotone"
+                    dataKey="numericValue"
+                    stroke="none"
+                    fill="url(#aegisTrendFill)"
+                    isAnimationActive={true}
                   />
 
                   <Line 

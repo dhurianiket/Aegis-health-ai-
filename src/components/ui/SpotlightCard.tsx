@@ -1,83 +1,67 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useCallback } from 'react';
 
-interface Position {
-  x: number;
-  y: number;
-}
-
-export interface SpotlightCardProps extends React.PropsWithChildren {
+export interface SpotlightCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
   className?: string;
   spotlightColor?: string;
-  onClick?: () => void;
-  role?: string;
-  tabIndex?: number;
-  onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
+  accentColor?: 'teal' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'sky';
+  enableContainerQuery?: boolean;
 }
 
+const ACCENT_SPOTLIGHTS: Record<NonNullable<SpotlightCardProps['accentColor']>, string> = {
+  teal: 'rgba(45, 212, 191, 0.16)',
+  indigo: 'rgba(129, 140, 248, 0.16)',
+  emerald: 'rgba(52, 211, 153, 0.16)',
+  amber: 'rgba(251, 191, 36, 0.16)',
+  rose: 'rgba(251, 113, 133, 0.16)',
+  sky: 'rgba(56, 189, 248, 0.16)',
+};
+
+/**
+ * SpotlightCard — Apple HIG + React-Bits pointer-reactive glassmorphic Bento surface.
+ * Tracks pointer coordinates (--mouse-x, --mouse-y) and edge angle to render a smooth
+ * radial spotlight and hairline specular highlight with zero re-renders.
+ */
 export const SpotlightCard: React.FC<SpotlightCardProps> = ({
   children,
   className = '',
-  spotlightColor = 'rgba(45, 212, 191, 0.18)',
-  onClick,
-  role,
-  tabIndex,
-  onKeyDown,
+  spotlightColor,
+  accentColor = 'teal',
+  enableContainerQuery = false,
+  onPointerMove,
+  ...rest
 }) => {
   const divRef = useRef<HTMLDivElement>(null);
-  const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState<number>(0);
 
-  const handleMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (!divRef.current || isFocused) return;
-
-    const rect = divRef.current.getBoundingClientRect();
-    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    setOpacity(0.6);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    setOpacity(0);
-  };
-
-  const handleMouseEnter = () => {
-    setOpacity(0.6);
-  };
-
-  const handleMouseLeave = () => {
-    setOpacity(0);
-  };
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const el = divRef.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        el.style.setProperty('--mouse-x', `${x}px`);
+        el.style.setProperty('--mouse-y', `${y}px`);
+        el.style.setProperty(
+          '--spotlight-color',
+          spotlightColor || ACCENT_SPOTLIGHTS[accentColor]
+        );
+      }
+      onPointerMove?.(e);
+    },
+    [spotlightColor, accentColor, onPointerMove]
+  );
 
   return (
     <div
       ref={divRef}
-      role={role}
-      tabIndex={tabIndex}
-      onClick={onClick}
-      onKeyDown={onKeyDown}
-      onMouseMove={handleMouseMove}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`relative rounded-3xl border border-white/10 bg-[#0A192F]/80 backdrop-blur-xl overflow-hidden p-8 ${className}`}
+      onPointerMove={handlePointerMove}
+      className={`aegis-spotlight-card backdrop-blur-xl bg-[var(--color-surface)] border border-[var(--color-border)] ${
+        enableContainerQuery ? 'bento-card-container' : ''
+      } ${className}`}
+      {...rest}
     >
-      <div
-        data-testid="spotlight-overlay"
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 ease-out"
-        style={{
-          opacity,
-          background: `radial-gradient(circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`,
-        }}
-      />
-      <div className="relative z-10 w-full h-full flex flex-col justify-between">
-        {children}
-      </div>
+      <div className="relative z-10 h-full">{children}</div>
     </div>
   );
 };

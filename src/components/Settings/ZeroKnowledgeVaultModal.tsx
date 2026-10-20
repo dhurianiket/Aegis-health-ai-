@@ -82,22 +82,22 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
   };
 
   return (
-    <div className="bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_16px_40px_-8px_rgba(6,182,212,0.2)] rounded-[32px] p-6 md:p-8 space-y-6">
+    <div className="bg-[var(--color-surface)] dark:bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/30 shadow-sm dark:shadow-[0_16px_40px_-8px_rgba(6,182,212,0.2)] rounded-[32px] p-6 md:p-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-border)] dark:border-white/10 pb-5">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+          <div className="p-3 rounded-2xl bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-white tracking-wide">Zero-Knowledge WebCrypto Vault</h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-semibold">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xl font-bold text-[var(--color-text)] tracking-wide">Zero-Knowledge WebCrypto Vault</h3>
+              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 font-mono text-[10px] font-bold">
                 AES-256-GCM Hardware Security
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-light mt-0.5">
-              Client-side PBKDF2 key derivation (100k iterations) & DPDP Act 2023 Compliance
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+              Client-side PBKDF2 key derivation (100k iterations) &amp; DPDP Act 2023 Compliance
             </p>
           </div>
         </div>
@@ -107,12 +107,12 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
           {isUnlocked ? (
             <button
               onClick={handleLock}
-              className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              className="px-4 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
             >
-              <Lock className="w-4 h-4 text-rose-400" /> Lock Vault Now
+              <Lock className="w-4 h-4 text-rose-600 dark:text-rose-400" /> Lock Vault Now
             </button>
           ) : (
-            <span className="px-3 py-1.5 rounded-xl bg-slate-950 border border-white/10 text-slate-400 text-xs font-semibold flex items-center gap-2">
+            <span className="px-3 py-1.5 rounded-xl bg-[var(--color-bg)] dark:bg-slate-950 border border-[var(--color-border)] dark:border-white/10 text-[var(--color-text-muted)] text-xs font-semibold flex items-center gap-2">
               <Lock className="w-3.5 h-3.5" /> Vault Locked
             </span>
           )}
@@ -124,8 +124,8 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
         <div
           className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 border ${
             statusMessage.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+              : 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-300'
           }`}
         >
           {statusMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
@@ -135,28 +135,29 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
 
       {/* Passphrase Input Section */}
       {!isUnlocked ? (
-        <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-5 space-y-4">
+        <div className="bg-[var(--color-bg)] dark:bg-slate-950/80 border border-[var(--color-border)] dark:border-white/10 rounded-2xl p-5 space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-slate-200 flex items-center gap-2">
-              <Key className="w-4 h-4 text-cyan-400" /> Enter Master Zero-Knowledge Passphrase
+            <label htmlFor="zk-vault-passphrase" className="text-xs font-bold text-[var(--color-text)] flex items-center gap-2">
+              <Key className="w-4 h-4 text-cyan-700 dark:text-cyan-400" /> Enter Master Zero-Knowledge Passphrase
             </label>
-            <p className="text-[11px] text-slate-400 font-light">
+            <p className="text-[11px] text-[var(--color-text-muted)]">
               Your master passphrase encrypts clinical records locally using AES-256-GCM before syncing.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <input
+              id="zk-vault-passphrase"
               type="password"
               placeholder="Enter master vault passphrase..."
               value={passphrase}
               onChange={(e) => setPassphrase(e.target.value)}
-              className="flex-1 bg-slate-900 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+              className="flex-1 bg-[var(--color-surface)] dark:bg-slate-900 border border-[var(--color-border)] dark:border-white/20 rounded-xl px-4 py-2.5 text-xs text-[var(--color-text)] placeholder-slate-500 focus:outline-none focus:border-cyan-500"
             />
             <button
               onClick={handleUnlock}
               disabled={isProcessing || !passphrase}
-              className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
             >
               <Unlock className="w-4 h-4" /> Unlock Vault
             </button>
@@ -165,21 +166,22 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
       ) : (
         /* Vault Active Dashboard */
         <div className="space-y-4">
-          <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between text-xs border-b border-white/5 pb-3">
-              <span className="text-slate-300 font-bold flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-cyan-400" /> WebCrypto Encryption Tester
+          <div className="bg-[var(--color-bg)] dark:bg-slate-950/80 border border-[var(--color-border)] dark:border-white/10 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between text-xs border-b border-[var(--color-border)] dark:border-white/5 pb-3">
+              <span className="text-[var(--color-text)] font-bold flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-cyan-700 dark:text-cyan-400" /> WebCrypto Encryption Tester
               </span>
-              <span className="text-emerald-400 font-mono font-bold">● Active Key (PBKDF2 100k Iterations)</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-mono font-bold">● Active Key (PBKDF2 100k Iterations)</span>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[11px] font-mono text-slate-400 uppercase">Test Plaintext Payload</label>
+              <label htmlFor="zk-vault-sample-payload" className="text-[11px] font-mono text-[var(--color-text-muted)] uppercase">Test Plaintext Payload</label>
               <input
+                id="zk-vault-sample-payload"
                 type="text"
                 value={sampleText}
                 onChange={(e) => setSampleText(e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                className="w-full bg-[var(--color-surface)] dark:bg-slate-900 border border-[var(--color-border)] dark:border-white/10 rounded-xl px-3.5 py-2 text-xs text-[var(--color-text)] focus:outline-none focus:border-cyan-500"
               />
             </div>
 
@@ -187,7 +189,7 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
               <button
                 onClick={handleTestEncrypt}
                 disabled={isProcessing}
-                className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                className="px-4 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-800 dark:text-cyan-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
               >
                 <Lock className="w-3.5 h-3.5" /> Encrypt (AES-256-GCM)
               </button>
@@ -195,7 +197,7 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
               <button
                 onClick={handleTestDecrypt}
                 disabled={isProcessing || !encryptedPayload}
-                className="px-4 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                className="px-4 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/40 text-indigo-800 dark:text-indigo-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <Unlock className="w-3.5 h-3.5" /> Decrypt Payload
               </button>
@@ -203,12 +205,12 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
 
             {/* Ciphertext Display */}
             {encryptedPayload && (
-              <div className="bg-slate-900 border border-white/10 rounded-xl p-3 space-y-1.5 text-xs font-mono">
-                <div className="text-[10px] text-cyan-400 font-bold">AES-256-GCM Encrypted Output:</div>
-                <div className="text-[11px] text-slate-300 break-all bg-slate-950 p-2 rounded-lg">
+              <div className="bg-[var(--color-surface)] dark:bg-slate-900 border border-[var(--color-border)] dark:border-white/10 rounded-xl p-3 space-y-1.5 text-xs font-mono">
+                <div className="text-[10px] text-cyan-700 dark:text-cyan-400 font-bold">AES-256-GCM Encrypted Output:</div>
+                <div className="text-[11px] text-[var(--color-text)] break-all bg-[var(--color-bg)] dark:bg-slate-950 p-2 rounded-lg">
                   {encryptedPayload.ciphertext.slice(0, 80)}...
                 </div>
-                <div className="text-[10px] text-slate-500">
+                <div className="text-[10px] text-[var(--color-text-muted)]">
                   IV: {encryptedPayload.iv} | Salt: {encryptedPayload.salt.slice(0, 12)}...
                 </div>
               </div>
@@ -217,23 +219,23 @@ export const ZeroKnowledgeVaultModal: React.FC = () => {
             {/* Decrypted Display */}
             {decryptedText && (
               <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 space-y-1 text-xs">
-                <div className="text-[10px] text-emerald-400 font-bold">Verified Decrypted Plaintext:</div>
-                <div className="text-slate-100 font-semibold">{decryptedText}</div>
+                <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Verified Decrypted Plaintext:</div>
+                <div className="text-[var(--color-text)] font-semibold">{decryptedText}</div>
               </div>
             )}
           </div>
 
           {/* DPDP Act Compliance Strip */}
-          <div className="bg-slate-950/80 border border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="bg-[var(--color-bg)] dark:bg-slate-950/80 border border-[var(--color-border)] dark:border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-cyan-400" />
-              <span className="text-slate-300 font-semibold">DPDP Act 2023 Compliance Control</span>
+              <Shield className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
+              <span className="text-[var(--color-text)] font-semibold">DPDP Act 2023 Compliance Control</span>
             </div>
             <button
               onClick={handleDpdpErasure}
-              className="px-3.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold flex items-center gap-1.5 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+              className="px-3.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-800 dark:text-rose-300 font-bold flex items-center gap-1.5 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
             >
-              <Trash2 className="w-3.5 h-3.5 text-rose-400" /> Right to Erasure (Wipe Vault)
+              <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" /> Right to Erasure (Wipe Vault)
             </button>
           </div>
         </div>

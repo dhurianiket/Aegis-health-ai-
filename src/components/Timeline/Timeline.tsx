@@ -192,10 +192,10 @@ export default function Timeline() {
     <div className="max-w-4xl mx-auto space-y-12 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text)] mb-2">
             Clinical Narrative
           </h2>
-          <p className="text-slate-400 text-xs md:text-sm font-light">
+          <p className="text-[var(--color-text-muted)] text-xs md:text-sm">
             A longitudinal reconstruction of every clinical interaction for{" "}
             {activeProfile?.name || "this profile"}.
           </p>
@@ -226,7 +226,7 @@ export default function Timeline() {
       >
         {Object.keys(trends).length > 0 && (
           <div className="mb-12">
-            <h3 className="text-xl font-bold tracking-tight text-white mb-4 uppercase text-sm tracking-widest text-slate-400">
+            <h3 className="font-bold mb-4 uppercase text-sm tracking-widest text-[var(--color-text-muted)]">
               Clinical Trends
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -240,20 +240,20 @@ export default function Timeline() {
                   const isLow = trend.latestFlag === "LOW";
 
                   const bgClass = isCritical
-                    ? "bg-red-500/10 border-red-500/20"
+                    ? "bg-red-500/10 border-red-500/25"
                     : isHigh
-                      ? "bg-amber-500/10 border-amber-500/20"
+                      ? "bg-amber-500/10 border-amber-500/25"
                       : isLow
-                        ? "bg-blue-500/10 border-blue-500/20"
-                        : "bg-emerald-500/10 border-emerald-500/20";
+                        ? "bg-blue-500/10 border-blue-500/25"
+                        : "bg-emerald-500/10 border-emerald-500/25";
 
                   const textClass = isCritical
-                    ? "text-red-400"
+                    ? "text-red-700 dark:text-red-400"
                     : isHigh
-                      ? "text-amber-400"
+                      ? "text-amber-700 dark:text-amber-400"
                       : isLow
-                        ? "text-blue-400"
-                        : "text-emerald-400";
+                        ? "text-blue-700 dark:text-blue-400"
+                        : "text-emerald-700 dark:text-emerald-400";
 
                   return (
                     <div
@@ -268,9 +268,9 @@ export default function Timeline() {
                           {arrow}
                         </span>
                       </div>
-                      <div className="mt-2 text-xs text-slate-300">
+                      <div className="mt-2 text-xs text-[var(--color-text)] font-medium">
                         {trend.lastValue} {trend.unitCanonical || trend.unit}
-                        <span className="opacity-60 ml-2">
+                        <span className="text-[var(--color-text-muted)] ml-2">
                           ({trend.delta > 0 ? "+" : ""}
                           {trend.percentChange.toFixed(1)}%)
                         </span>
@@ -284,7 +284,7 @@ export default function Timeline() {
       </AIErrorBoundary>
 
       <div className="relative">
-        <div className="absolute left-[23px] md:left-[31px] top-4 bottom-4 w-px bg-gradient-to-b from-indigo-500/50 via-white/10 to-transparent"></div>
+        <div className="absolute left-[23px] md:left-[31px] top-4 bottom-4 w-px bg-gradient-to-b from-indigo-500/50 via-slate-300 dark:via-white/10 to-transparent"></div>
 
         <div className="space-y-8 md:space-y-12">
           <AnimatePresence mode="popLayout">
@@ -303,30 +303,30 @@ export default function Timeline() {
                     transition={{ duration: 0.3 }}
                     className="relative pl-16 md:pl-24 group"
                   >
-                    <div className="absolute left-0 top-0 w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-3xl bg-[#0F172A] border border-white/10 flex items-center justify-center shadow-2xl z-10 transition-transform group-hover:scale-110">
+                    <div className="absolute left-0 top-0 w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-3xl bg-[var(--color-surface)] dark:bg-[#0F172A] border border-[var(--color-border)] dark:border-white/10 flex items-center justify-center shadow-lg z-10 transition-transform group-hover:scale-110">
                       <config.icon
-                        className={`w-5 h-5 md:w-7 md:h-7 text-${config.color}-400`}
+                        className={`w-5 h-5 md:w-7 md:h-7 text-${config.color}-600 dark:text-${config.color}-400`}
                       />
                     </div>
 
                     <div
                       onClick={() => setSelectedDoc(doc)}
-                      className="bg-white/5 backdrop-blur-xl p-6 md:p-8 rounded-3xl md:rounded-[40px] border border-white/10 shadow-3xl hover:bg-white/10 transition-all cursor-pointer group/card flex-1 ml-4 md:ml-8"
+                      className="bg-[var(--color-surface)] dark:bg-white/5 backdrop-blur-xl p-6 md:p-8 rounded-3xl md:rounded-[40px] border border-[var(--color-border)] dark:border-white/10 shadow-sm dark:shadow-3xl hover:border-indigo-500/40 dark:hover:bg-white/10 transition-all cursor-pointer group/card flex-1 ml-4 md:ml-8"
                     >
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6">
                         <div className="space-y-2 md:space-y-3 flex-1">
-                          <p className="text-xs md:text-xs font-bold text-slate-300 uppercase tracking-[0.2em] mb-1">
+                          <p className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-[0.2em] mb-1">
                             {new Date(doc.date).toLocaleDateString("en-US", {
                               month: "short",
                               day: "2-digit",
                               year: "numeric",
                             })}
                           </p>
-                          <h4 className="text-lg md:text-xl font-bold text-white group-hover/card:text-indigo-400 transition-colors uppercase tracking-tight">
+                          <h4 className="text-lg md:text-xl font-bold text-[var(--color-text)] group-hover/card:text-indigo-600 dark:group-hover/card:text-indigo-400 transition-colors uppercase tracking-tight">
                             {doc.type.replace("_", " ")}
                           </h4>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs md:text-xs font-semibold text-indigo-400 italic opacity-80">
+                            <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 italic">
                               {doc.hospitalName || "Independent Provider"}
                             </span>
                           </div>
@@ -339,13 +339,13 @@ export default function Timeline() {
                         </div>
                       </div>
 
-                      <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-[var(--color-border)] dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex gap-2">
-                          <span className="px-3 py-1 bg-white/5 text-xs md:text-xs font-bold text-slate-300 uppercase tracking-widest border border-white/5 rounded-full whitespace-nowrap">
+                          <span className="px-3 py-1 bg-[var(--color-bg)] dark:bg-white/5 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest border border-[var(--color-border)] dark:border-white/5 rounded-full whitespace-nowrap">
                             {doc.type}
                           </span>
                         </div>
-                        <div className="md:ml-auto flex items-center gap-2 text-indigo-400 font-bold text-xs md:text-xs uppercase tracking-widest group-hover/card:underline">
+                        <div className="md:ml-auto flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-bold text-xs uppercase tracking-widest group-hover/card:underline">
                           Digitized Record{" "}
                           <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4" />
                         </div>
@@ -359,13 +359,13 @@ export default function Timeline() {
                 layout
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10 flex flex-col items-center justify-center p-6"
+                className="text-center py-20 bg-[var(--color-surface)] dark:bg-white/5 rounded-[40px] border border-dashed border-[var(--color-border)] dark:border-white/10 flex flex-col items-center justify-center p-6"
               >
                 <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4">
-                  <FileText className="w-8 h-8 text-slate-300" />
+                  <FileText className="w-8 h-8 text-[var(--color-text-muted)]" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Your health vault is empty.</h3>
-                <p className="text-slate-300 text-sm max-w-sm mx-auto">
+                <h3 className="text-xl font-bold text-[var(--color-text)] mb-2 tracking-tight">Your health vault is empty.</h3>
+                <p className="text-[var(--color-text-muted)] text-sm max-w-sm mx-auto">
                   Upload your first lab report to generate insights and track your trends.
                 </p>
               </motion.div>

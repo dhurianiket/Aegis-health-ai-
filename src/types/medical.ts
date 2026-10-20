@@ -63,6 +63,8 @@ export interface PaediatricConsent {
   erasureRequestedAt?: string;
 }
 
+import type { PaediatricAvatarConfig } from '../data/avatars/avatarPresets';
+
 export interface UserProfile {
   id: string;
   userId: string;
@@ -83,6 +85,7 @@ export interface UserProfile {
   doctorNotes?: string[];
   reproductiveProfile?: ReproductiveProfile;
   paediatricConsent?: PaediatricConsent;
+  avatarConfig?: PaediatricAvatarConfig;
   createdAt: string;
 }
 

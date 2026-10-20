@@ -254,7 +254,7 @@ function SecurityFirstContent() {
           <Sparkles className="w-8 h-8 text-emerald-400 mb-6" />
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-4">Decode Your Lab Reports with Complete Peace of Mind</h2>
           <p className="text-slate-200 text-sm md:text-base max-w-xl mb-8 leading-relaxed font-light">
-            Experience zero-knowledge clinical intelligence. Sign in with our Reviewer Demo account or your own Email ID.
+            Experience sovereign clinical intelligence. Explore our interactive demonstration or sign in with your account.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button
@@ -262,7 +262,7 @@ function SecurityFirstContent() {
               className="px-8 py-3.5 bg-emerald-400 hover:bg-emerald-300 text-[#0A192F] font-black uppercase text-xs tracking-widest rounded-full transition-all shadow-[0_0_25px_rgba(52,211,153,0.3)] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-              <span>Email / Reviewer Sign-In</span>
+              <span>Sign In</span>
             </button>
             <Link 
               to="/dashboard"
