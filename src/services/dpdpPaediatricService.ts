@@ -18,14 +18,30 @@ import { UserProfile, PaediatricConsent } from '../types/medical';
  */
 export function calculateAge(dob?: string): number | null {
   if (!dob) return null;
-  const birthDate = new Date(dob);
-  if (isNaN(birthDate.getTime())) return null;
 
+  // Parse YYYY-MM-DD directly to prevent UTC-vs-local timezone shifts
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(dob.trim());
   const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
+  let birthYear: number;
+  let birthMonth: number;
+  let birthDay: number;
 
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  if (match) {
+    birthYear = parseInt(match[1], 10);
+    birthMonth = parseInt(match[2], 10) - 1;
+    birthDay = parseInt(match[3], 10);
+  } else {
+    const birthDate = new Date(dob);
+    if (isNaN(birthDate.getTime())) return null;
+    birthYear = birthDate.getFullYear();
+    birthMonth = birthDate.getMonth();
+    birthDay = birthDate.getDate();
+  }
+
+  let age = today.getFullYear() - birthYear;
+  const monthDiff = today.getMonth() - birthMonth;
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDay)) {
     age--;
   }
 

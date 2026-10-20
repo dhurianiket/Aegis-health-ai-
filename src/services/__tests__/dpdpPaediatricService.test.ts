@@ -43,16 +43,19 @@ describe('DPDP Act 2023 Section 9 Paediatric Privacy Service', () => {
     });
 
     it('should accurately handle boundary 18th birthday', () => {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const toDateString = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
       // Exactly 17 years and 364 days (minor)
       const almost18 = new Date();
       almost18.setFullYear(almost18.getFullYear() - 18);
       almost18.setDate(almost18.getDate() + 1); // 1 day before 18th birthday
-      expect(isMinor(almost18.toISOString().split('T')[0])).toBe(true);
+      expect(isMinor(toDateString(almost18))).toBe(true);
 
       // Exactly 18 years ago today (adult)
       const exactly18 = new Date();
       exactly18.setFullYear(exactly18.getFullYear() - 18);
-      expect(isMinor(exactly18.toISOString().split('T')[0])).toBe(false);
+      expect(isMinor(toDateString(exactly18))).toBe(false);
     });
   });
 
