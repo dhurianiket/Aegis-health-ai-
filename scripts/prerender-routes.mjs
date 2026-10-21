@@ -96,7 +96,7 @@ const ROUTES = [
           <h1>About Aegis Health AI — Mission, Founder &amp; Corporate Verification</h1>
           <p><strong>Aegis Health AI</strong> is an independent Indian healthcare technology micro-enterprise registered with the Ministry of MSME, Government of India (<strong>UDYAM-MH-33-0782403</strong>; NIC Codes: 62013, 62099, 86909).</p>
           <h2>Founder &amp; Lead Systems Architect</h2>
-          <p><strong>Aniket Rajesh Dhuri</strong> — Founder &amp; Lead Architect. Contact: <a href="mailto:aniket@aegishealthai.co.in">aniket@aegishealthai.co.in</a> | <a href="mailto:founder@aegishealthai.co.in">founder@aegishealthai.co.in</a> | <a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a>.</p>
+          <p><strong>Aniket Rajesh Dhuri</strong> — Founder &amp; Lead Architect (<a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noopener noreferrer">Verified LinkedIn Profile</a> | <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noopener noreferrer">Official GitHub Repository</a>). Contact: <a href="mailto:aniket@aegishealthai.co.in">aniket@aegishealthai.co.in</a> | <a href="mailto:founder@aegishealthai.co.in">founder@aegishealthai.co.in</a> | <a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a>.</p>
           <h2>2026–2027 Product &amp; AI Architecture Roadmap</h2>
           <ul>
             <li><strong>Phase 1 (Live Production MVP — Q3–Q4 2026):</strong> Dual-tier Gemini 3.8 Flash + Gemini 4 Argon multimodal OCR across Indian diagnostic labs (Thyrocare, Dr. Lal PathLabs, Metropolis, SRL), 50+ normalized biomarkers, 10-specialist synthesis, and 1-page SBAR physician handover briefs.</li>
