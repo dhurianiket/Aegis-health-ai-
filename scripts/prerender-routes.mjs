@@ -184,6 +184,34 @@ const ROUTES = [
         </article>
       </main>`,
   },
+  {
+    files: ["privacy-policy/index.html", "privacy-policy.html"],
+    canonical: "https://aegishealthai.co.in/privacy-policy",
+    title: "Privacy Policy & DPDP Act 2023 Data Governance — Aegis Health AI",
+    description:
+      "Privacy Policy for Aegis Health AI (MSME UDYAM-MH-33-0782403): India DPDP Act 2023 compliance, AES-256 Cloud Firestore isolation, PII scrubbing, and 1-click right to erasure.",
+    bodyHtml: `
+      <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
+        <article style="max-width: 920px; margin: 0 auto;">
+          <h1>Privacy Policy — Aegis Health AI (DPDP Act 2023 Aligned)</h1>
+          <p>Operated by Aegis Health AI (Govt. of India MSME Udyam: UDYAM-MH-33-0782403, Dombivli West, Thane, Maharashtra 421202, India). Contact: support@aegishealthai.co.in | founder@aegishealthai.co.in.</p>
+        </article>
+      </main>`,
+  },
+  {
+    files: ["terms-of-service/index.html", "terms-of-service.html"],
+    canonical: "https://aegishealthai.co.in/terms-of-service",
+    title: "Terms of Service & Clinical Disclaimer — Aegis Health AI",
+    description:
+      "Terms of Service and clinical decision-support disclaimer for Aegis Health AI (MSME UDYAM-MH-33-0782403, Thane, Maharashtra, India).",
+    bodyHtml: `
+      <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
+        <article style="max-width: 920px; margin: 0 auto;">
+          <h1>Terms of Service — Aegis Health AI</h1>
+          <p>Operated by Aegis Health AI (Govt. of India MSME Udyam: UDYAM-MH-33-0782403, Dombivli West, Thane, Maharashtra 421202, India). Informational clinical intelligence platform; not a substitute for a licensed physician.</p>
+        </article>
+      </main>`,
+  },
 ];
 
 for (const route of ROUTES) {
