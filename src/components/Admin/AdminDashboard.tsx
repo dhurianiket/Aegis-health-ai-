@@ -602,7 +602,7 @@ export default function AdminDashboard() {
           <div>
             <div className="text-xs font-medium text-muted uppercase">Total API Spend</div>
             <div className="text-xl font-bold text-theme mt-1">${estimatedCost.toFixed(2)}</div>
-            <div className="text-[11px] text-muted">Gemini 2.5 Flash API</div>
+            <div className="text-[11px] text-muted">Gemini 3.8 Flash API</div>
           </div>
           <div>
             <div className="text-xs font-medium text-muted uppercase">Avg Cost / User</div>

@@ -274,7 +274,7 @@ export default function PricingModal({
                     </li>
                     <li className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                      Priority Gemini 3.6 Flash Processing
+                      Priority Gemini 3.8 Flash Processing
                     </li>
                     <li className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-emerald-400 shrink-0" />

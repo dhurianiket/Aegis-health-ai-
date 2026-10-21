@@ -454,7 +454,7 @@ export default function UploadCenter({
   const runSampleReportSimulation = useCallback((preset: "metropolis" | "thyrocare") => {
     setIsProcessing(true);
     setProcessingStep(1);
-    setProcessingMessage("Stage 1/4: Gemini 2.5 Flash Multimodal OCR Tokenization...");
+    setProcessingMessage("Stage 1/4: Gemini 3.8 Flash Multimodal OCR Tokenization...");
     setTimeout(() => {
       setProcessingStep(2);
       setProcessingMessage("Stage 2/4: LOINC Harmonization & SI → Conventional Unit Conversion...");

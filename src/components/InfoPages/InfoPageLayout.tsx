@@ -335,7 +335,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                   </span>
                 </div>
                 <p className="text-sm text-slate-300 font-light leading-relaxed max-w-xs mx-auto md:mx-0">
-                  Clinical-grade multi-agent health intelligence for Indian families. Powered by Google Cloud, Vertex AI, and Gemini 2.5 Flash.
+                  Clinical-grade multi-agent health intelligence for Indian families. Powered by Google Cloud, Vertex AI, and Gemini 3.8 Flash.
                 </p>
                 <div className="flex items-center justify-center md:justify-start gap-3 pt-1">
                   <a

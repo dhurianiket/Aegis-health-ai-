@@ -69,7 +69,7 @@ const ROUTES = [
     canonical: "https://aegishealthai.co.in/how-it-works.html",
     title: "How It Works: 4-Stage Multimodal Clinical AI Pipeline — Aegis Health AI",
     description:
-      "Explore how Aegis Health AI transforms Indian pathology PDFs and prescriptions into LOINC-normalized longitudinal biomarker trends and physician-ready SBAR summaries using Google Gemini 2.5 Flash & Pro.",
+      "Explore how Aegis Health AI transforms Indian pathology PDFs and prescriptions into LOINC-normalized longitudinal biomarker trends and physician-ready SBAR summaries using Google Gemini 3.8 Flash.",
     bodyHtml: `
       <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
         <article style="max-width: 920px; margin: 0 auto;">
@@ -77,7 +77,7 @@ const ROUTES = [
           <p>Aegis Health AI converts fragmented Indian diagnostic reports (Thyrocare, Dr. Lal PathLabs, Metropolis, SRL, Apollo) and handwritten prescriptions into longitudinal health trajectories and SBAR handoff summaries.</p>
           <ol>
             <li><strong>Stage 01 — Multimodal Ingestion &amp; Client Pre-Flight:</strong> Accepts multi-page PDFs, camera photos, and handwritten OPD scripts with automatic image compression and PII scrubbing.</li>
-            <li><strong>Stage 02 — Schema-Constrained Gemini 2.5 Flash OCR &amp; Unit Harmonization:</strong> Extracts analytes, reference ranges, and confidence scores while converting SI/conventional units (e.g., nmol/L to ng/mL for 25-OH Vitamin D, mmol/L to mg/dL for glucose).</li>
+            <li><strong>Stage 02 — Schema-Constrained Gemini 3.8 Flash OCR &amp; Unit Harmonization:</strong> Extracts analytes, reference ranges, and confidence scores while converting SI/conventional units (e.g., nmol/L to ng/mL for 25-OH Vitamin D, mmol/L to mg/dL for glucose).</li>
             <li><strong>Stage 03 — Longitudinal Biomarker Velocity &amp; ICMR Stratification:</strong> Maps multi-year trajectories and applies ICMR-INDIAB / RSSDI / CSI South Asian cardiometabolic thresholds alongside Western norms.</li>
             <li><strong>Stage 04 — Physician SBAR Handover, Doctor Questions &amp; FHIR R4 Export:</strong> Synthesizes Situation, Background, Assessment, and Recommendation briefs with downloadable 1-page OPD PDFs and HL7 FHIR R4 bundles.</li>
           </ol>
@@ -114,7 +114,7 @@ const ROUTES = [
         <article style="max-width: 920px; margin: 0 auto;">
           <h1>Security First — Zero-Trust Clinical Data Architecture &amp; DPDP Act 2023 Compliance</h1>
           <ul>
-            <li><strong>Zero Client-Side API Keys:</strong> All Gemini 2.5 calls route through authenticated Firebase Cloud Functions Gen 2 (<code>geminiProxy</code>) backed by Google Cloud Secret Manager.</li>
+            <li><strong>Zero Client-Side API Keys:</strong> All Gemini 3.8 Flash calls route through authenticated Firebase Cloud Functions Gen 2 (<code>geminiProxy</code>) backed by Google Cloud Secret Manager.</li>
             <li><strong>Per-User Cloud Firestore Isolation:</strong> Strict <code>request.auth.uid == userId</code> security rules with AES-256 encryption at rest and TLS 1.3 in transit.</li>
             <li><strong>PII Scrubbing Before Inference:</strong> Patient names, phone numbers, and addresses are redacted prior to LLM context assembly.</li>
             <li><strong>DPDP Act 2023 Rights:</strong> Explicit revocable consent gate, full HL7 FHIR R4 / JSON data portability, and 1-click cascading cryptographic account purge (<code>onUserDeleted</code>).</li>
@@ -127,12 +127,12 @@ const ROUTES = [
     canonical: "https://aegishealthai.co.in/engineering-playbook.html",
     title: "Engineering Playbook & Indian Lab OCR F1 Benchmark (N=120) — Aegis Health AI",
     description:
-      "Technical deep dive into Aegis Health AI's 4-layer Google Cloud & Gemini 2.5 architecture, schema-constrained OCR, ICMR stratification, and our N=120 Indian Diagnostic Lab Extraction F1 Benchmark (99.4% Thyrocare, 99.5% Metropolis, 99.3% Dr. Lal PathLabs).",
+      "Technical deep dive into Aegis Health AI's 4-layer Google Cloud & Gemini 3.8 Flash architecture, schema-constrained OCR, ICMR stratification, and our N=120 Indian Diagnostic Lab Extraction F1 Benchmark (99.4% Thyrocare, 99.5% Metropolis, 99.3% Dr. Lal PathLabs).",
     bodyHtml: `
       <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
         <article style="max-width: 920px; margin: 0 auto;">
           <h1>Aegis Health AI — Engineering Playbook &amp; Indian Lab Extraction F1 Benchmark (N = 120 Reports)</h1>
-          <p>Architected by Aniket Rajesh Dhuri on Google Cloud (Vertex AI / Gemini 2.5 Flash &amp; Pro, Firebase Cloud Functions Gen 2 on Cloud Run, Cloud Firestore, and Firebase Hosting).</p>
+          <p>Architected by Aniket Rajesh Dhuri on Google Cloud (Vertex AI / Gemini 3.8 Flash, Firebase Cloud Functions Gen 2 on Cloud Run, Cloud Firestore, and Firebase Hosting).</p>
           <h2>Indian Diagnostic Lab Extraction Accuracy Benchmark (N = 120 De-Identified Reports)</h2>
           <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%; font-size: 13px;">
             <thead>
