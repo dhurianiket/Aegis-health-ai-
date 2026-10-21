@@ -9,9 +9,6 @@ interface AuthLoginModalProps {
   onClose: () => void;
 }
 
-export const DEMO_REVIEWER_EMAIL = ['reviewer', 'aegishealthai.co.in'].join('@');
-export const DEMO_REVIEWER_PASS = ['Aegis', 'Review', '2026!'].join('');
-
 export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose }) => {
   const { signIn, signInWithEmail, isSigningIn } = useAuth();
   const [loginEmail, setLoginEmail] = useState('');

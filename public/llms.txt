@@ -25,7 +25,7 @@ Internal validation benchmark evaluating schema-constrained Gemini Flash + Dual-
 - **SRL Diagnostics / Agilus & Apollo (N=20)**: Precision `99.3%` | Recall `98.9%` | **F1 = `99.1%`** (Handles scanned hospital letterheads, SGPT/ALT & SGOT/AST synonym harmonization)
 - **Smartphone Camera Photos + Handwritten OPD Rx (N=15)**: Precision `96.2%` | Recall `93.8%` | **F1 = `95.0%`** (Tokens `<90%` OCR confidence are automatically flagged with an amber warning badge for user confirmation)
 
-## 4. Corporate & Founder Verification (Google for Startups Cloud Program)
+## 4. Corporate & Founder Verification
 - **Legal Business Name**: Aegis Health AI
 - **Registration Type**: Registered Micro-Enterprise under Ministry of MSME, Government of India
 - **Udyam Registration Number**: `UDYAM-MH-33-0782403`

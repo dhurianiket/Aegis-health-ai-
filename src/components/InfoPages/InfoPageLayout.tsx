@@ -4,7 +4,7 @@ import { ShieldCheck, Activity, Loader2, Mail, MapPin, Sparkles, ChevronDown, Me
 import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { ErrorBoundary } from "../ErrorBoundary";
-import { AuthLoginModal, DEMO_REVIEWER_EMAIL } from "../Auth/AuthLoginModal";
+import { AuthLoginModal } from "../Auth/AuthLoginModal";
 
 interface InfoPageContextValue {
   openLoginModal: () => void;

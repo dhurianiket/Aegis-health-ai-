@@ -15,21 +15,21 @@ const ROUTES = [
   {
     files: ["dashboard/index.html", "demo/index.html"],
     canonical: "https://aegishealthai.co.in/dashboard",
-    title: "Live Clinical Workspace & SBAR Handover (Open Evaluation Mode) — Aegis Health AI",
+    title: "Live Clinical Workspace & SBAR Handover (Interactive Demo) — Aegis Health AI",
     description:
-      "Interactive clinical dashboard pre-loaded with longitudinal Indian pathology reports (Metropolis, Thyrocare, Apollo), ICMR-stratified biomarker velocity, SBAR physician summary, and Questions for Your Doctor. Zero login required.",
+      "Interactive clinical dashboard pre-loaded with longitudinal Indian pathology reports (Metropolis, Thyrocare, Apollo), ICMR-stratified biomarker velocity, SBAR physician summary, and Questions for Your Doctor.",
     bodyHtml: `
       <main style="min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
         <article style="max-width: 980px; margin: 0 auto; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px; padding: 32px 28px; background: rgba(17, 24, 39, 0.92);">
           <header style="border-bottom: 1px solid rgba(75, 85, 99, 0.3); padding-bottom: 16px; margin-bottom: 20px;">
             <p style="color: #34d399; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 6px 0;">
-              Open Evaluation &amp; AI Agent Inspection Workspace • Zero Login Required
+              Interactive Clinical Demonstration Workspace • Zero Registration Required
             </p>
             <h1 style="font-size: 28px; font-weight: 800; margin: 0 0 8px 0; color: #ffffff;">
               Aegis Health AI — Live Clinical Dashboard, Longitudinal Biomarkers &amp; SBAR Summary
             </h1>
             <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin: 0;">
-              Pre-populated patient profile: <strong>Aarav Sharma (42M, Blood Group O+, BMI 25.1 kg/m²)</strong> across 3 longitudinal Indian pathology panels: Metropolis Healthcare Mumbai Central (05 Oct 2026), Thyrocare Technologies Navi Mumbai (12 Aug 2026), and Apollo Diagnostics Thane (18 Jun 2026).
+              Pre-populated patient profile: <strong>Aarav Sharma (38M, Blood Group O+, BMI 25.1 kg/m²)</strong> across 3 longitudinal Indian pathology panels: Metropolis Healthcare Mumbai Central (05 Oct 2026), Thyrocare Technologies Navi Mumbai (12 Aug 2026), and Apollo Diagnostics Thane (18 Jun 2026).
             </p>
           </header>
 
@@ -37,7 +37,7 @@ const ROUTES = [
             <h2 style="font-size: 17px; font-weight: 700; color: #818cf8; margin: 0 0 10px 0;">
               📋 Auto-Populated Physician SBAR Handover Summary (Aarav Sharma — Oct 2026)
             </h2>
-            <p style="font-size: 13px; color: #e5e7eb; margin: 0 0 8px 0;"><strong>S — Situation:</strong> 42-year-old male presenting for 90-day metabolic and lipid follow-up. Overall multi-system health index is 86/100 with favorable downward trends in HbA1c and LDL cholesterol.</p>
+            <p style="font-size: 13px; color: #e5e7eb; margin: 0 0 8px 0;"><strong>S — Situation:</strong> 38-year-old male presenting for 90-day metabolic and lipid follow-up. Overall multi-system health index is 86/100 with favorable downward trends in HbA1c and LDL cholesterol.</p>
             <p style="font-size: 13px; color: #e5e7eb; margin: 0 0 8px 0;"><strong>B — Background:</strong> History of borderline glycemic elevation (baseline HbA1c 6.4% in June 2026) and Vitamin D insufficiency (14 ng/mL). Currently managed on Metformin SR 500mg OD, Rosuvastatin 10mg HS, and Cholecalciferol 60,000 IU weekly.</p>
             <div style="font-size: 13px; color: #e5e7eb; margin: 0 0 8px 0;">
               <strong>A — Assessment (Longitudinal Velocity &amp; ICMR Stratification):</strong>
@@ -58,8 +58,8 @@ const ROUTES = [
             </div>
           </section>
 
-          <section aria-label="1-Click Sample Report OCR Pipeline" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 16px; font-size: 13px; color: #d1d5db;">
-            <strong>⚡ Interactive Sample Report OCR Pipeline (Available in Ingest Tab):</strong> Click <em>"Process Sample Metropolis Report"</em> or <em>"Process Thyrocare + Handwritten Rx"</em> in the Ingest tab to test live OCR token extraction, per-marker OCR confidence scores (99.8% printed vs. 84.2% handwritten Rx warning), SI-to-conventional unit conversion, and 1-click PDF / HL7 FHIR R4 export without logging in.
+          <section aria-label="Interactive Sample Report OCR Walkthrough" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 16px; font-size: 13px; color: #d1d5db;">
+            <strong>⚡ Interactive Sample Report OCR Walkthrough (Available in Ingest Tab):</strong> Click <em>"Run Sample Walkthrough (Metropolis OCR Simulation)"</em> or <em>"Run Sample Walkthrough (Thyrocare + Rx Simulation)"</em> in the Ingest tab to inspect multi-stage OCR token extraction, per-marker OCR confidence scores (99.8% printed vs. 84.2% handwritten Rx warning), SI-to-conventional unit conversion, and 1-click PDF / HL7 FHIR R4 export.
           </section>
         </article>
       </main>`,
@@ -96,9 +96,9 @@ const ROUTES = [
           <h1>About Aegis Health AI — Mission, Founder &amp; Corporate Verification</h1>
           <p><strong>Aegis Health AI</strong> is an independent Indian healthcare technology micro-enterprise registered with the Ministry of MSME, Government of India (<strong>UDYAM-MH-33-0782403</strong>; NIC Codes: 62013, 62099, 86909).</p>
           <h2>Founder &amp; Lead Systems Architect</h2>
-          <p><strong>Aniket Rajesh Dhuri</strong> — Founder &amp; Lead Architect. Contact: <a href="mailto:aniket@aegishealthai.co.in">aniket@aegishealthai.co.in</a> | <a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a>.</p>
-          <h2>Registered Office Address</h2>
-          <p>Flat 702, Swapnapurti Darshan, Subhash Road, Near Ekvira Hospital, Devi Chowk, Dombivli West, Kalyan, Thane, Maharashtra 421202, India.</p>
+          <p><strong>Aniket Rajesh Dhuri</strong> — Founder &amp; Lead Architect. Contact: <a href="mailto:founder@aegishealthai.co.in">founder@aegishealthai.co.in</a> | <a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a>.</p>
+          <h2>Registered Office Location</h2>
+          <p>Dombivli West, Thane, Maharashtra 421202, India.</p>
           <p><em>Jurisdiction Notice:</em> Independent Indian enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or aegishealth.com.</p>
         </article>
       </main>`,

@@ -1,7 +1,7 @@
 import React, { useState, Suspense, lazy, useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import LandingPage from "./components/LandingPage/LandingPage";
-import { AuthLoginModal, DEMO_REVIEWER_EMAIL } from "./components/Auth/AuthLoginModal";
+import { AuthLoginModal } from "./components/Auth/AuthLoginModal";
 import { ShieldCheck } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase/config";
