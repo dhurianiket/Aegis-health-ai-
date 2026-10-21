@@ -348,7 +348,7 @@ OUTPUT RULES:
       observations,
       prescriptions,
       consensusSummary: {
-        engine: "Gemini 3.8 Flash & Gemini 4 Argon + Claude 3.5 Sonnet v2 (AWS Bedrock Mumbai)",
+        engine: "Gemini 3.8 Flash & Gemini 4 Argon Dual-Tier Verification (Google Cloud Vertex AI)",
         overallConsensus,
         totalMarkers: observations.length,
         verifiedMarkers: verifiedCount,

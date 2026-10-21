@@ -96,7 +96,13 @@ const ROUTES = [
           <h1>About Aegis Health AI — Mission, Founder &amp; Corporate Verification</h1>
           <p><strong>Aegis Health AI</strong> is an independent Indian healthcare technology micro-enterprise registered with the Ministry of MSME, Government of India (<strong>UDYAM-MH-33-0782403</strong>; NIC Codes: 62013, 62099, 86909).</p>
           <h2>Founder &amp; Lead Systems Architect</h2>
-          <p><strong>Aniket Rajesh Dhuri</strong> — Founder &amp; Lead Architect. Contact: <a href="mailto:founder@aegishealthai.co.in">founder@aegishealthai.co.in</a> | <a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a>.</p>
+          <p><strong>Aniket Rajesh Dhuri</strong> — Founder &amp; Lead Architect. Contact: <a href="mailto:aniket@aegishealthai.co.in">aniket@aegishealthai.co.in</a> | <a href="mailto:founder@aegishealthai.co.in">founder@aegishealthai.co.in</a> | <a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a>.</p>
+          <h2>2026–2027 Product &amp; AI Architecture Roadmap</h2>
+          <ul>
+            <li><strong>Phase 1 (Live Production MVP — Q3–Q4 2026):</strong> Dual-tier Gemini 3.8 Flash + Gemini 4 Argon multimodal OCR across Indian diagnostic labs (Thyrocare, Dr. Lal PathLabs, Metropolis, SRL), 50+ normalized biomarkers, 10-specialist synthesis, and 1-page SBAR physician handover briefs.</li>
+            <li><strong>Phase 2 (Scale &amp; Interoperability — Q1–Q2 2027):</strong> Ayushman Bharat Digital Mission (ABDM) M1–M3 HIU certification, Vertex AI MedGemma regional language voice summaries (Hindi, Marathi, Tamil, Telugu), and automated NABL lab API ingestion.</li>
+            <li><strong>Phase 3 (Clinical Enterprise — Q3–Q4 2027):</strong> Multi-clinic Hospital OPD Co-Pilot via Google Cloud Healthcare API (FHIR R4 store) and predictive South Asian cardiometabolic risk stratification.</li>
+          </ul>
           <h2>Registered Office Location</h2>
           <p>Dombivli West, Thane, Maharashtra 421202, India.</p>
           <p><em>Jurisdiction Notice:</em> Independent Indian enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or aegishealth.com.</p>

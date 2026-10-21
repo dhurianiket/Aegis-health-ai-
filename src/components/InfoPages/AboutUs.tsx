@@ -275,6 +275,48 @@ function AboutUsContent() {
         </div>
       </section>
 
+      {/* Product & Technical Roadmap Section */}
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-14">
+          <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold block mb-2">
+            Product &amp; AI Architecture Roadmap (2026–2027)
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-4">Our Technical &amp; Clinical Roadmap</h2>
+          <p className="text-slate-300 text-sm md:text-base max-w-2xl mx-auto">
+            Scaling from a live clinical MVP to India&apos;s longitudinal diagnostic intelligence layer on Google Cloud &amp; Vertex AI
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-[#0F2A4A]/90 border border-emerald-500/30 rounded-3xl p-7">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full inline-block mb-3">
+              Phase 1 · Live in Production (Q3–Q4 2026)
+            </span>
+            <h3 className="text-white font-extrabold text-lg mb-2">Dual-Tier Gemini 3.8 Flash + Gemini 4 Argon MVP</h3>
+            <p className="text-slate-300 text-xs leading-relaxed">
+              Multimodal lab report &amp; handwritten OPD prescription OCR across Thyrocare, Dr. Lal PathLabs, Metropolis, and SRL; 50+ normalized biomarkers; 10-specialist clinical synthesis; and 1-page SBAR physician handover briefs.
+            </p>
+          </div>
+          <div className="bg-[#0F2A4A]/90 border border-cyan-500/30 rounded-3xl p-7">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-2.5 py-0.5 rounded-full inline-block mb-3">
+              Phase 2 · Scale &amp; Interoperability (Q1–Q2 2027)
+            </span>
+            <h3 className="text-white font-extrabold text-lg mb-2">ABDM M1–M3 Sandbox Certification &amp; MedGemma Fine-Tuning</h3>
+            <p className="text-slate-300 text-xs leading-relaxed">
+              Full Ayushman Bharat Digital Mission (ABDM) Health Information User (HIU) bridge, Vertex AI MedGemma regional language voice summaries (Hindi, Marathi, Tamil, Telugu), and automated NABL lab API ingestion.
+            </p>
+          </div>
+          <div className="bg-[#0F2A4A]/90 border border-indigo-500/30 rounded-3xl p-7">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 px-2.5 py-0.5 rounded-full inline-block mb-3">
+              Phase 3 · Clinical Enterprise (Q3–Q4 2027)
+            </span>
+            <h3 className="text-white font-extrabold text-lg mb-2">Hospital OPD Co-Pilot &amp; Predictive Cardiometabolic Risk</h3>
+            <p className="text-slate-300 text-xs leading-relaxed">
+              Multi-clinic EMR integration via Google Cloud Healthcare API (FHIR R4 store), continuous wearable telemetry correlation, and early-warning cardiometabolic &amp; CKD progression models for Indian cohorts.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Public Contact & Verification Callout */}
       <section className="py-24 px-6 max-w-5xl mx-auto text-center">
         <div className="bg-gradient-to-br from-[#0F2A4A] to-[#0A192F] border border-emerald-500/25 rounded-3xl p-8 md:p-12 shadow-2xl">
@@ -284,6 +326,10 @@ function AboutUsContent() {
             <strong className="text-white">Aegis Health AI</strong> is an independent Indian health technology enterprise registered with the Government of India (<span className="font-mono text-emerald-300">MSME UDYAM-MH-33-0782403</span>), headquartered in Dombivli West, Maharashtra. We are unaffiliated with Aegis Health Ai Ltd (UK) or aegishealth.com.
           </p>
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 text-sm">
+            <a href="mailto:aniket@aegishealthai.co.in" className="flex items-center justify-center gap-2 text-slate-200 hover:text-emerald-400 bg-[#0A192F] py-3 px-6 rounded-xl border border-white/10 hover:border-emerald-400/40 transition-colors">
+              <Mail className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-mono font-bold">aniket@aegishealthai.co.in</span>
+            </a>
             <a href="mailto:founder@aegishealthai.co.in" className="flex items-center justify-center gap-2 text-slate-200 hover:text-emerald-400 bg-[#0A192F] py-3 px-6 rounded-xl border border-white/10 hover:border-emerald-400/40 transition-colors">
               <Mail className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-mono font-bold">founder@aegishealthai.co.in</span>

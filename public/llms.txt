@@ -60,3 +60,9 @@ Internal validation benchmark evaluating schema-constrained Gemini 3.8 Flash + G
 - Clinical Guide — CBC & Hematology Parameters: https://aegishealthai.co.in/blog-cbc.html
 - Privacy Policy: https://aegishealthai.co.in/privacy-policy
 - Terms of Service: https://aegishealthai.co.in/terms-of-service
+
+## 2026–2027 Product & AI Architecture Roadmap
+- **Phase 1 — Live Production MVP (Q3–Q4 2026)**: Dual-tier Gemini 3.8 Flash (`gemini-3.8-flash`) + Gemini 4 Argon (`gemini-4-argon`) multimodal lab & handwritten OPD prescription OCR across Thyrocare, Dr. Lal PathLabs, Metropolis, and SRL; 50+ normalized biomarkers; 10-specialist clinical synthesis; and 1-page SBAR physician handover briefs.
+- **Phase 2 — Scale & Interoperability (Q1–Q2 2027)**: Ayushman Bharat Digital Mission (ABDM) M1–M3 Health Information User (HIU) sandbox certification, Vertex AI MedGemma regional language voice explanations (Hindi, Marathi, Tamil, Telugu), and direct NABL laboratory webhook ingestion.
+- **Phase 3 — Clinical Enterprise (Q3–Q4 2027)**: Multi-clinic Hospital OPD Co-Pilot powered by Google Cloud Healthcare API (FHIR R4 store), continuous wearable telemetry correlation, and early-warning cardiometabolic & CKD progression models for Indian cohorts.
+

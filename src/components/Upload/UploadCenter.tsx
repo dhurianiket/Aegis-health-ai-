@@ -1372,7 +1372,7 @@ export default function UploadCenter({
                              <span>
                                 {result.consensus.overallConsensus === 'DISCREPANCY_FLAGGED'
                                    ? `⚠️ Dual AI Flagged: ${result.consensus.discrepancyMarkers} marker discrepancy`
-                                   : `🛡️ Dual AI Verified: Gemini + Claude 3.5 Sonnet (Mumbai)`}
+                                   : `🛡️ Dual AI Verified: Gemini 3.8 Flash + Gemini 4 Argon`}
                              </span>
                              <span className="text-[10px] opacity-75 font-mono">({result.consensus.agreementPercentage}%)</span>
                           </div>
@@ -1495,7 +1495,7 @@ export default function UploadCenter({
                                      </div>
                                      {m.claudeValue !== undefined && m.claudeValue !== null && m.consensusStatus === 'DISCREPANCY' && (
                                        <div className="text-[10px] text-amber-500/90 font-mono">
-                                         Claude: {m.claudeValue}
+                                         Argon Audit: {m.claudeValue}
                                        </div>
                                      )}
                                   </td>
