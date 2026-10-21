@@ -79,10 +79,10 @@ ${formattedContext}
 
   try {
     let response;
-    let modelUsed = "gemini-3.1-pro-preview";
+    let modelUsed = "gemini-4-argon";
     try {
       response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-4-argon",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
@@ -90,10 +90,10 @@ ${formattedContext}
         },
       });
     } catch (proError: any) {
-      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
-      modelUsed = "gemini-3-flash-preview";
+      console.warn("Gemini 4 Argon failed, falling back to Gemini 3.8 Flash:", proError.message || proError);
+      modelUsed = "gemini-3.8-flash";
       response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.8-flash",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,

@@ -228,7 +228,7 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
   if (!ai) throw new Error("Aura AI is currently offline. Please check your configuration.");
   
   try {
-    const targetModel = isSummaryRequest ? "gemini-3-flash-preview" : "gemini-1.5-pro";
+    const targetModel = isSummaryRequest ? "gemini-3.8-flash" : "gemini-4-argon";
     // History Sanitation
     contents.forEach((c) => {
       c.parts = c.parts.filter(p => typeof p.text === 'string' && p.text.trim() !== "");
@@ -253,18 +253,10 @@ When the user asks for a health status (e.g., "How am I doing?", "Summarize my l
       });
     } catch (modelError: any) {
       console.error("[GEMINI API FATAL ERROR]:", modelError?.message || modelError, modelError?.status);
-      try {
-        stream = await ai.models.generateContentStream({
-          ...reqConfig,
-          model: "gemini-1.5-pro",
-        });
-      } catch (fallbackError: any) {
-        console.error("[GEMINI API FATAL ERROR] (1.5-pro fallback failed):", fallbackError?.message || fallbackError);
-        stream = await ai.models.generateContentStream({
-          ...reqConfig,
-          model: "gemini-3-flash-preview",
-        });
-      }
+      stream = await ai.models.generateContentStream({
+        ...reqConfig,
+        model: "gemini-3.8-flash",
+      });
     }
 
     if (!stream) {

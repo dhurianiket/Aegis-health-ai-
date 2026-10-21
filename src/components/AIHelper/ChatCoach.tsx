@@ -266,7 +266,7 @@ ${medsContext}
 ${remindersContext}`;
 
       const isComplex = text.length > 150 || /analyze|summarize|explain in detail|sbaar|diagnosis|clinical/i.test(text);
-      let targetModel = isComplex ? "gemini-3.1-pro-preview" : "gemini-3-flash-preview";
+      let targetModel = isComplex ? "gemini-4-argon" : "gemini-3.8-flash";
 
       let chat = ai.chats.create({
         model: targetModel,
@@ -281,10 +281,10 @@ ${remindersContext}`;
       try {
         stream = await chat.sendMessageStream({ message: text });
       } catch (proError: any) {
-        if (targetModel === "gemini-3.1-pro-preview") {
-          console.warn("Gemini Pro chat failed, falling back to Flash:", proError);
+        if (targetModel === "gemini-4-argon") {
+          console.warn("Gemini 4 Argon chat failed, falling back to Gemini 3.8 Flash:", proError);
           chat = ai.chats.create({
-            model: "gemini-3-flash-preview",
+            model: "gemini-3.8-flash",
             history: historyItems,
             config: {
               systemInstruction: sysInstruction,
@@ -334,7 +334,7 @@ ${remindersContext}`;
       if (needsGuardrail) {
         try {
           const filterRes = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
+            model: "gemini-3.8-flash",
             contents: [{ role: "user", parts: [{ text: `Check if this medical AI response provides a definitive medical diagnosis rather than just general information or suggestions to see a doctor. Return JSON { "isDiagnosis": boolean, "safeText": "original text or hedged version" }\n\nResponse:\n${finalText}` }] }],
             config: {
               temperature: 0.1,

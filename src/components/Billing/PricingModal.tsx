@@ -372,7 +372,7 @@ export default function PricingModal({
                     </li>
                     <li className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-indigo-400 shrink-0" />
-                      Priority Gemini 3.1 Pro Inference
+                      Priority Gemini 4 Argon Complex Reasoning
                     </li>
                     <li className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-indigo-400 shrink-0" />

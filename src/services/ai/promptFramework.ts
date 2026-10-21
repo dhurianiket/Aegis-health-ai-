@@ -309,7 +309,7 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
   const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.8-flash",
     contents: [
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
@@ -387,31 +387,21 @@ ${JSON.stringify(symptoms)}
   }
 
   let response;
-  let modelUsed = "gemini-3.1-pro-preview";
+  let modelUsed = "gemini-4-argon";
   try {
     response = await safeGeminiCall(() => ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-4-argon",
       contents: [{ role: "user", parts: [{ text: promptText }] }],
       config: { maxOutputTokens: 8192, temperature: 0.1 }
-    }), 2, "sbar"); // try Pro up to 2 times
+    }), 2, "sbar"); // try Gemini 4 Argon up to 2 times
   } catch (err: any) {
-    console.error("[GEMINI API FATAL ERROR] (3.1-pro failed):", err.message);
-    try {
-      modelUsed = "gemini-1.5-pro";
-      response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-1.5-pro",
-        contents: [{ role: "user", parts: [{ text: promptText }] }],
-        config: { maxOutputTokens: 8192, temperature: 0.1 }
-      }), 2, "sbar_fallback_1.5_pro");
-    } catch (fallbackErr: any) {
-      console.error("[GEMINI API FATAL ERROR] (1.5-pro failed):", fallbackErr.message);
-      modelUsed = "gemini-3-flash-preview";
-      response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [{ role: "user", parts: [{ text: promptText }] }],
-        config: { maxOutputTokens: 8192, temperature: 0.1 }
-      }), 2, "sbar_fallback_flash");
-    }
+    console.error("[GEMINI API FATAL ERROR] (gemini-4-argon failed):", err.message);
+    modelUsed = "gemini-3.8-flash";
+    response = await safeGeminiCall(() => ai.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: [{ role: "user", parts: [{ text: promptText }] }],
+      config: { maxOutputTokens: 8192, temperature: 0.1 }
+    }), 2, "sbar_fallback_flash");
   }
   
   const content = response.text || "Failed to generate summary.";
@@ -434,7 +424,7 @@ export async function explainInteraction(medicationContext: any) {
   const ai = getAI();
   
   const response = await safeGeminiCall(() => ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.8-flash",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
     config: { maxOutputTokens: 8192, temperature: 0.1 }
   }), 3, "med_interaction");
@@ -483,8 +473,10 @@ export async function extractLabData(
         : `${currentPrompt}\n\nYour previous response had issues analyzing the document properly: ${lastValidationErrors}. Please fix these and provide correct structured JSON.`;
 
     try {
+      // Use Gemini 4 Argon for complex multi-file reports or retry attempts after schema/OCR ambiguity
+      const activeExtractionModel = filesData.length > 1 || attempt >= 2 ? "gemini-4-argon" : "gemini-3.8-flash";
       const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: activeExtractionModel,
         config: {
           systemInstruction: CORE_SYSTEM_PROMPT,
           temperature: 0.1,

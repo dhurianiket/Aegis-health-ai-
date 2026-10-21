@@ -151,14 +151,14 @@ ${OUTPUT_FORMAT_JSON}
     try {
       response = await ai.models.generateContent({
         ...geminiConfig,
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-4-argon",
         contents: geminiConfig.contents as any
       });
     } catch (proError: any) {
-      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
+      console.warn("Gemini 4 Argon failed, falling back to Gemini 3.8 Flash:", proError.message || proError);
       response = await ai.models.generateContent({
         ...geminiConfig,
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.8-flash",
         contents: geminiConfig.contents as any
       });
     }
@@ -316,7 +316,7 @@ Generate the summary strictly following the plain text format above.
     let response;
     try {
       response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-4-argon",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
@@ -324,9 +324,9 @@ Generate the summary strictly following the plain text format above.
         },
       });
     } catch (proError: any) {
-      console.warn("Gemini Pro failed, falling back to Flash:", proError.message || proError);
+      console.warn("Gemini 4 Argon failed, falling back to Gemini 3.8 Flash:", proError.message || proError);
       response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.8-flash",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
@@ -464,82 +464,122 @@ export async function extractMedicalReports(
     try {
       if (import.meta.env.DEV) console.log("[Extraction] Starting report extraction for", filesData.length, "files");
 
-      const response = await safeGeminiCall(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: prompt },
-              ...filesData.map((f) => {
-                if (import.meta.env.DEV) console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
-                return {
-                  inlineData: { data: f.base64Data, mimeType: f.mimeType },
-                };
-              }),
-            ],
-          },
-        ],
-        config: {
-          systemInstruction: CORE_SYSTEM_PROMPT,
-          temperature: 0.1,
-          maxOutputTokens: 8192,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              document_type: { type: Type.STRING },
-              documentType: { type: Type.STRING },
-              date: { type: Type.STRING },
-              extractedDate: { type: Type.STRING },
-              hospital_name: { type: Type.STRING },
-              hospitalName: { type: Type.STRING },
-              doctor_name: { type: Type.STRING },
-              doctorName: { type: Type.STRING },
-              summary: { type: Type.STRING },
-              overallConfidence: { type: Type.NUMBER },
-              lab_values: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    date: { type: Type.STRING },
-                    marker: { type: Type.STRING },
-                    testName: { type: Type.STRING },
-                    value: { type: Type.STRING },
-                    unit: { type: Type.STRING },
-                    reference_range: { type: Type.STRING },
-                    referenceRange: { type: Type.STRING },
-                    status: { type: Type.STRING },
-                    flag: { type: Type.STRING },
-                    confidence: { type: Type.NUMBER }
-                  },
-                  required: ["value"]
-                }
-              },
-              findings: { type: Type.STRING },
-              medications: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    date: { type: Type.STRING },
-                    name: { type: Type.STRING },
-                    medicationName: { type: Type.STRING },
-                    dosage: { type: Type.STRING },
-                    frequency: { type: Type.STRING },
-                    purpose: { type: Type.STRING },
-                    instructions: { type: Type.STRING },
-                    confidence: { type: Type.NUMBER }
-                  }
-                }
-              },
-              follow_up_date: { type: Type.STRING }
+      const totalBase64Length = filesData.reduce((sum, f) => sum + (f.base64Data?.length || 0), 0);
+      const isComplexReport =
+        filesData.length > 1 ||
+        totalBase64Length > 1_200_000 ||
+        filesData.some((f) => f.mimeType === "application/pdf" && (f.base64Data?.length || 0) > 600_000);
+
+      const primaryExtractionModel = isComplexReport ? "gemini-4-argon" : "gemini-3.8-flash";
+
+      const runExtractionWithModel = (modelId: string) =>
+        safeGeminiCall(() => ai.models.generateContent({
+          model: modelId,
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: prompt },
+                ...filesData.map((f) => {
+                  if (import.meta.env.DEV) console.log("[Extraction] File details:", f.mimeType, "Base64 length:", f.base64Data.length);
+                  return {
+                    inlineData: { data: f.base64Data, mimeType: f.mimeType },
+                  };
+                }),
+              ],
             },
-            required: ["date"]
+          ],
+          config: {
+            systemInstruction: CORE_SYSTEM_PROMPT,
+            temperature: 0.1,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                document_type: { type: Type.STRING },
+                documentType: { type: Type.STRING },
+                date: { type: Type.STRING },
+                extractedDate: { type: Type.STRING },
+                hospital_name: { type: Type.STRING },
+                hospitalName: { type: Type.STRING },
+                doctor_name: { type: Type.STRING },
+                doctorName: { type: Type.STRING },
+                summary: { type: Type.STRING },
+                overallConfidence: { type: Type.NUMBER },
+                lab_values: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      date: { type: Type.STRING },
+                      marker: { type: Type.STRING },
+                      testName: { type: Type.STRING },
+                      value: { type: Type.STRING },
+                      unit: { type: Type.STRING },
+                      reference_range: { type: Type.STRING },
+                      referenceRange: { type: Type.STRING },
+                      status: { type: Type.STRING },
+                      flag: { type: Type.STRING },
+                      confidence: { type: Type.NUMBER }
+                    },
+                    required: ["value"]
+                  }
+                },
+                findings: { type: Type.STRING },
+                medications: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      date: { type: Type.STRING },
+                      name: { type: Type.STRING },
+                      medicationName: { type: Type.STRING },
+                      dosage: { type: Type.STRING },
+                      frequency: { type: Type.STRING },
+                      purpose: { type: Type.STRING },
+                      instructions: { type: Type.STRING },
+                      confidence: { type: Type.NUMBER }
+                    }
+                  }
+                },
+                follow_up_date: { type: Type.STRING }
+              },
+              required: ["date"]
+            }
+          },
+        }), 3, "pdf_extraction");
+
+      let response;
+      try {
+        response = await runExtractionWithModel(primaryExtractionModel);
+      } catch (primaryErr: any) {
+        if (primaryExtractionModel === "gemini-4-argon") {
+          console.warn("[Extraction] Gemini 4 Argon unavailable, falling back to Gemini 3.8 Flash:", primaryErr?.message || primaryErr);
+          response = await runExtractionWithModel("gemini-3.8-flash");
+        } else {
+          throw primaryErr;
+        }
+      }
+
+      // Automatic accuracy escalation: if initial Flash pass detects low OCR confidence (e.g., handwritten Rx or skewed scan), re-run with Gemini 4 Argon
+      if (primaryExtractionModel === "gemini-3.8-flash") {
+        const initialParsed = safeJsonParse<ExtractedReportResponse | null>(response.text || "{}", null);
+        const hasLowConfidence =
+          initialParsed &&
+          ((typeof initialParsed.overallConfidence === "number" && initialParsed.overallConfidence < 0.85) ||
+            (Array.isArray(initialParsed.lab_values) && initialParsed.lab_values.some((l: any) => typeof l.confidence === "number" && l.confidence < 0.80)) ||
+            (Array.isArray(initialParsed.medications) && initialParsed.medications.some((m: any) => typeof m.confidence === "number" && m.confidence < 0.80)));
+
+        if (hasLowConfidence) {
+          try {
+            if (import.meta.env.DEV) console.log("[Extraction] Low confidence detected on initial Flash pass; escalating to gemini-4-argon...");
+            response = await runExtractionWithModel("gemini-4-argon");
+          } catch (argonErr) {
+            console.warn("[Extraction] Gemini 4 Argon escalation fallback retained Flash output:", argonErr);
           }
-        },
-      }), 3, "pdf_extraction");
+        }
+      }
 
       clearTimeout(timeoutId);
 

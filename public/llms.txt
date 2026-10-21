@@ -1,6 +1,6 @@
 # Aegis Health AI — Technical Product & Architecture Overview (llms.txt)
 
-> Clinical-Grade Longitudinal Medical Intelligence & Diagnostic Biomarker Platform built on Google Cloud, Vertex AI, and Gemini 3.8 Flash.
+> Clinical-Grade Longitudinal Medical Intelligence & Diagnostic Biomarker Platform built on Google Cloud, Vertex AI, Gemini 3.8 Flash (`gemini-3.8-flash`), and Gemini 4 Argon (`gemini-4-argon`).
 
 ## 1. Executive Summary
 Aegis Health AI (`https://aegishealthai.co.in`) is an independent, AI-native healthcare technology platform engineered in India to solve medical record fragmentation. It ingests unstructured multi-page pathology PDFs, diagnostic lab reports (Thyrocare, Dr. Lal PathLabs, Metropolis, SRL/Agilus, Apollo), and handwritten clinical prescriptions, extracting normalized quantitative biomarkers, calculating longitudinal multi-year trend velocity, applying ICMR / South Asian cardiometabolic stratification, and generating structured SBAR (Situation, Background, Assessment, Recommendation) physician handoff briefs with downloadable OPD PDFs and HL7 FHIR R4 bundles.
@@ -18,7 +18,7 @@ Aegis Health AI provides an interactive, zero-barrier demonstration workspace so
    - Accessible directly on `https://aegishealthai.co.in/#interactive-sandbox`.
 
 ## 3. Indian Diagnostic Lab Extraction Benchmark (N = 120 De-Identified Reports)
-Internal validation benchmark evaluating schema-constrained Gemini 3.8 Flash + Dual-Model Consensus on analyte normalization, numeric extraction, SI-to-conventional unit conversion, and ICMR flag accuracy:
+Internal validation benchmark evaluating schema-constrained Gemini 3.8 Flash + Gemini 4 Argon escalation (for complex multi-page & handwritten reports) on analyte normalization, numeric extraction, SI-to-conventional unit conversion, and ICMR flag accuracy:
 - **Thyrocare Technologies (Aarogyam PDFs, N=30)**: Precision `99.6%` | Recall `99.3%` | **F1 = `99.4%`** (Handles dense multi-column tables, CLIA/Photometry tags, nmol/L → ng/mL Vitamin D conversion)
 - **Dr. Lal PathLabs (NABL Multi-Page PDFs, N=30)**: Precision `99.5%` | Recall `99.1%` | **F1 = `99.3%`** (Handles nested age/trimester brackets, footnote commentary stripping, DLC % vs absolute count)
 - **Metropolis Healthcare (Clinical Panels, N=25)**: Precision `99.7%` | Recall `99.4%` | **F1 = `99.5%`** (Handles historical prior-value columns, asterisk abnormal flags, ICMR lipid risk tiers)
@@ -41,7 +41,9 @@ Internal validation benchmark evaluating schema-constrained Gemini 3.8 Flash + D
 - **Jurisdiction Disclaimer**: Independent Indian enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or `aegishealth.com`.
 
 ## 5. Google Cloud & AI Architecture
-- **AI / ML Models**: Google Gemini 3.8 Flash (`gemini-3.8-flash`) for high-speed multimodal document OCR, schema-constrained JSON biomarker parsing, longitudinal clinical correlation, and SBAR synthesis via `@google/genai` SDK.
+- **AI / ML Models**: Dual-tier Google Gemini routing via `@google/genai` SDK:
+  - **Gemini 3.8 Flash (`gemini-3.8-flash`)**: High-speed multimodal document OCR, schema-constrained JSON biomarker parsing, and real-time specialist chat.
+  - **Gemini 4 Argon (`gemini-4-argon`)**: 1M-token deep reasoning model automatically invoked for complex multi-page diagnostic PDFs, low-confidence/handwritten OPD prescriptions (`<85%` initial OCR confidence), 10-specialist clinical reasoning, hereditary risk analysis, and SBAR physician handover synthesis.
 - **Serverless Compute**: Cloudflare Workers edge AI routing (`aegishealthai-edge`) and Firebase Cloud Functions Gen 2 (Node.js 22 on Cloud Run) acting as zero-trust API proxies with Secret Manager integration, per-UID rate-limiting, and PII scrubbing before inference.
 - **Database & Storage**: Cloud Firestore with strict per-user (`users/{userId}/...`) security rules, AES-256 encryption at rest, TLS 1.3 in transit, and automated cascading account purge (`onUserDeleted`).
 - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, hosted on Firebase Hosting with route-specific pre-rendered HTML shells and strict security headers (`Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`).

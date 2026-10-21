@@ -51,8 +51,8 @@ match /users/{userId}/reports/{reportId} {
       num: "02",
       icon: Cpu,
       title: "Gemini Multimodal Vision & FHIR R4 Normalization",
-      badge: "Google Vertex AI • Gemini 3.8 Flash",
-      desc: "Our Cloud Functions pipeline invokes Google Gemini 3.8 Flash with strict JSON schema constraints to extract every biomarker, unit, and lab reference interval, normalizing them into HL7 FHIR R4 Observation resources.",
+      badge: "Google Vertex AI • Gemini 3.8 Flash & 4 Argon",
+      desc: "Our pipeline invokes Google Gemini 3.8 Flash with strict JSON schema constraints for high-speed biomarker extraction, automatically escalating complex multi-page reports and handwritten prescriptions to Gemini 4 Argon before normalizing into HL7 FHIR R4 Observation resources.",
       detail: "Automatically resolves regional Indian laboratory nomenclature (e.g., SGPT/ALT, SGOT/AST,HbA1c HPLC, eGFR CKD-EPI) with LOINC coding.",
       codeSample: `{
   "resourceType": "Observation",
