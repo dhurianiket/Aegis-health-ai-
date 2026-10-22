@@ -415,6 +415,7 @@ export default function HealthConnectModal({
               </p>
 
               <label
+                htmlFor="health-modal-import"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -435,6 +436,7 @@ export default function HealthConnectModal({
                   Browse Files
                 </span>
                 <input
+                  id="health-modal-import"
                   type="file"
                   accept=".xml,.json,.txt"
                   onChange={handleFileUpload}
@@ -453,10 +455,11 @@ export default function HealthConnectModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label htmlFor="manual-hr" className="text-xs font-bold text-slate-300 block mb-1">
                     Heart Rate (BPM)
                   </label>
                   <input
+                    id="manual-hr"
                     type="number"
                     value={manualHR}
                     onChange={(e) => setManualHR(Number(e.target.value))}
@@ -464,10 +467,11 @@ export default function HealthConnectModal({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label htmlFor="manual-rhr" className="text-xs font-bold text-slate-300 block mb-1">
                     Resting HR (BPM)
                   </label>
                   <input
+                    id="manual-rhr"
                     type="number"
                     value={manualRHR}
                     onChange={(e) => setManualRHR(Number(e.target.value))}
@@ -475,10 +479,11 @@ export default function HealthConnectModal({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label htmlFor="manual-hrv" className="text-xs font-bold text-slate-300 block mb-1">
                     HRV Baseline (ms)
                   </label>
                   <input
+                    id="manual-hrv"
                     type="number"
                     value={manualHRV}
                     onChange={(e) => setManualHRV(Number(e.target.value))}
@@ -486,10 +491,11 @@ export default function HealthConnectModal({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label htmlFor="manual-spo2" className="text-xs font-bold text-slate-300 block mb-1">
                     Blood Oxygen SpO2 (%)
                   </label>
                   <input
+                    id="manual-spo2"
                     type="number"
                     value={manualSpO2}
                     onChange={(e) => setManualSpO2(Number(e.target.value))}
@@ -499,10 +505,11 @@ export default function HealthConnectModal({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label htmlFor="manual-steps" className="text-xs font-bold text-slate-300 block mb-1">
                   Daily Steps
                 </label>
                 <input
+                  id="manual-steps"
                   type="number"
                   value={manualSteps}
                   onChange={(e) => setManualSteps(Number(e.target.value))}
@@ -512,10 +519,11 @@ export default function HealthConnectModal({
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label htmlFor="manual-total-sleep" className="text-xs font-bold text-slate-300 block mb-1">
                     Total Sleep (min)
                   </label>
                   <input
+                    id="manual-total-sleep"
                     type="number"
                     value={manualTotalSleep}
                     onChange={(e) => setManualTotalSleep(Number(e.target.value))}
@@ -523,10 +531,11 @@ export default function HealthConnectModal({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label htmlFor="manual-deep-sleep" className="text-xs font-bold text-slate-300 block mb-1">
                     Deep Sleep (min)
                   </label>
                   <input
+                    id="manual-deep-sleep"
                     type="number"
                     value={manualDeepSleep}
                     onChange={(e) => setManualDeepSleep(Number(e.target.value))}
@@ -534,10 +543,11 @@ export default function HealthConnectModal({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label htmlFor="manual-rem-sleep" className="text-xs font-bold text-slate-300 block mb-1">
                     REM Sleep (min)
                   </label>
                   <input
+                    id="manual-rem-sleep"
                     type="number"
                     value={manualRemSleep}
                     onChange={(e) => setManualRemSleep(Number(e.target.value))}
