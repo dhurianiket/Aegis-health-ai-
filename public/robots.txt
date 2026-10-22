@@ -3,18 +3,23 @@
 
 User-agent: Googlebot
 Allow: /
+Disallow: /cdn-cgi/
 
 User-agent: Google-InspectionTool
 Allow: /
+Disallow: /cdn-cgi/
 
 User-agent: GoogleOther
 Allow: /
+Disallow: /cdn-cgi/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /cdn-cgi/
 
 User-agent: Google-CloudVertexBot
 Allow: /
+Disallow: /cdn-cgi/
 
 User-agent: AdsBot-Google
 Allow: /
@@ -39,6 +44,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /cdn-cgi/
 
 Sitemap: https://aegishealthai.co.in/sitemap.xml
 # AI Agent & LLM Documentation: https://aegishealthai.co.in/llms.txt

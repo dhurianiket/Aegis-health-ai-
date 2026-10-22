@@ -9,6 +9,46 @@
     ],
     "rewrites": [
       {
+        "source": "/dashboard",
+        "destination": "/dashboard.html"
+      },
+      {
+        "source": "/demo",
+        "destination": "/demo.html"
+      },
+      {
+        "source": "/how-it-works",
+        "destination": "/how-it-works.html"
+      },
+      {
+        "source": "/about",
+        "destination": "/about.html"
+      },
+      {
+        "source": "/security",
+        "destination": "/security.html"
+      },
+      {
+        "source": "/engineering-playbook",
+        "destination": "/engineering-playbook.html"
+      },
+      {
+        "source": "/blog-hba1c",
+        "destination": "/blog-hba1c.html"
+      },
+      {
+        "source": "/blog-cbc",
+        "destination": "/blog-cbc.html"
+      },
+      {
+        "source": "/privacy-policy",
+        "destination": "/privacy-policy.html"
+      },
+      {
+        "source": "/terms-of-service",
+        "destination": "/terms-of-service.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

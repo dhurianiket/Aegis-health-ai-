@@ -13,7 +13,7 @@ const baseHtml = fs.readFileSync(baseHtmlPath, "utf-8");
 
 const ROUTES = [
   {
-    files: ["dashboard/index.html", "demo/index.html"],
+    files: ["dashboard.html", "demo.html"],
     canonical: "https://aegishealthai.co.in/dashboard",
     title: "Live Clinical Workspace & SBAR Handover (Interactive Demo) — Aegis Health AI",
     description:
@@ -65,7 +65,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["how-it-works.html", "how-it-works/index.html"],
+    files: ["how-it-works.html"],
     canonical: "https://aegishealthai.co.in/how-it-works.html",
     title: "How It Works: 4-Stage Multimodal Clinical AI Pipeline — Aegis Health AI",
     description:
@@ -85,7 +85,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["about.html", "about/index.html"],
+    files: ["about.html"],
     canonical: "https://aegishealthai.co.in/about.html",
     title: "About Aegis Health AI — Founder Aniket Rajesh Dhuri & MSME UDYAM-MH-33-0782403",
     description:
@@ -110,7 +110,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["security.html", "security/index.html"],
+    files: ["security.html"],
     canonical: "https://aegishealthai.co.in/security.html",
     title: "Zero-Trust Healthcare Security & DPDP Act 2023 Compliance — Aegis Health AI",
     description:
@@ -129,7 +129,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["engineering-playbook.html", "engineering-playbook/index.html"],
+    files: ["engineering-playbook.html"],
     canonical: "https://aegishealthai.co.in/engineering-playbook.html",
     title: "Engineering Playbook & Indian Lab OCR F1 Benchmark (N=120) — Aegis Health AI",
     description:
@@ -163,7 +163,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["blog-hba1c.html", "blog-hba1c/index.html"],
+    files: ["blog-hba1c.html"],
     canonical: "https://aegishealthai.co.in/blog-hba1c.html",
     title: "HbA1c & Glycemic Velocity Guide (ICMR & RSSDI Aligned) — Aegis Health AI",
     description:
@@ -177,7 +177,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["blog-cbc.html", "blog-cbc/index.html"],
+    files: ["blog-cbc.html"],
     canonical: "https://aegishealthai.co.in/blog-cbc.html",
     title: "Complete Blood Count (CBC) & Hematology Biomarker Guide — Aegis Health AI",
     description:
@@ -191,7 +191,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["privacy-policy/index.html", "privacy-policy.html"],
+    files: ["privacy-policy.html"],
     canonical: "https://aegishealthai.co.in/privacy-policy",
     title: "Privacy Policy & DPDP Act 2023 Data Governance — Aegis Health AI",
     description:
@@ -205,7 +205,7 @@ const ROUTES = [
       </main>`,
   },
   {
-    files: ["terms-of-service/index.html", "terms-of-service.html"],
+    files: ["terms-of-service.html"],
     canonical: "https://aegishealthai.co.in/terms-of-service",
     title: "Terms of Service & Clinical Disclaimer — Aegis Health AI",
     description:
@@ -245,7 +245,7 @@ for (const route of ROUTES) {
     )
     .replace(
       /<div id="root">[\s\S]*?<\/div>\s*<noscript>/i,
-      `<div id="root">${route.bodyHtml}\n    </div>\n    <noscript>`
+      `<div id="root">\n      <!--email_off-->${route.bodyHtml}\n      <!--/email_off-->\n    </div>\n    <noscript>`
     );
 
   for (const relFile of route.files) {
