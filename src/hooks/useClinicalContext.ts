@@ -202,7 +202,7 @@ export function useClinicalContext() {
     }
     
     if (labBiomarkers.length > 0) {
-      const labList = labBiomarkers.map(b => `${b.testName}: ${b.value} ${b.unit || ''} [${b.flag || 'NORMAL'}]`).slice(0, 10).join(', ');
+      const labList = labBiomarkers.slice(0, 10).map(b => `${b.testName}: ${b.value} ${b.unit || ''} [${b.flag || 'NORMAL'}]`).join(', ');
       ctx += `Recent Lab Biomarkers: ${labList}.\n`;
     }
 
