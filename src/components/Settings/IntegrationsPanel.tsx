@@ -261,10 +261,11 @@ export default function IntegrationsPanel({
                   : "Connect & Sync"}
               </button>
 
-              <label className="flex items-center gap-2 py-3 px-4 bg-[var(--color-bg)] dark:bg-slate-800/60 hover:opacity-90 border border-[var(--color-border)] dark:border-slate-700/60 text-[var(--color-text)] font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
+              <label htmlFor="apple-health-import" className="flex items-center gap-2 py-3 px-4 bg-[var(--color-bg)] dark:bg-slate-800/60 hover:opacity-90 border border-[var(--color-border)] dark:border-slate-700/60 text-[var(--color-text)] font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
                 <Upload className="w-4 h-4 text-cyan-700 dark:text-cyan-400" />
                 <span>Import File</span>
                 <input
+                  id="apple-health-import"
                   type="file"
                   accept=".xml,.json,.txt"
                   onChange={(e) => handleFileUpload("apple", e)}
@@ -345,10 +346,11 @@ export default function IntegrationsPanel({
                   : "Connect & Sync"}
               </button>
 
-              <label className="flex items-center gap-2 py-3 px-4 bg-[var(--color-bg)] dark:bg-slate-800/60 hover:opacity-90 border border-[var(--color-border)] dark:border-slate-700/60 text-[var(--color-text)] font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
+              <label htmlFor="google-health-import" className="flex items-center gap-2 py-3 px-4 bg-[var(--color-bg)] dark:bg-slate-800/60 hover:opacity-90 border border-[var(--color-border)] dark:border-slate-700/60 text-[var(--color-text)] font-extrabold text-xs rounded-2xl transition-all cursor-pointer">
                 <Upload className="w-4 h-4 text-cyan-700 dark:text-cyan-300" />
                 <span>Import File</span>
                 <input
+                  id="google-health-import"
                   type="file"
                   accept=".xml,.json,.txt"
                   onChange={(e) => handleFileUpload("google", e)}
