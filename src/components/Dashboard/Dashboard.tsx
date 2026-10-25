@@ -65,6 +65,7 @@ const Hero3DHealthGauge = lazy(() =>
 
 import RemindersWidget from "./RemindersWidget";
 import VisitPrepWidget from "./VisitPrepWidget";
+import { FirstTimeClinicalOnboardingModal } from "../Onboarding/FirstTimeClinicalOnboardingModal";
 import { DEMO_DOCUMENTS, DEMO_HEALTH_SCORES, DEMO_INSIGHTS } from "../../data/sandboxDemoData";
 
 const ATTENTION_STATUSES = new Set(["high", "abnormal", "low", "critical"]);
@@ -189,6 +190,27 @@ export default function Dashboard({
 
   // Real-time Firestore-backed wearable telemetry (AGENTS.md Rule 3)
   const { telemetry: liveWearable, saveTelemetry } = useWearableTelemetry();
+
+  // First-time clinical onboarding trigger for incomplete profiles
+  const isProfileIncomplete = useMemo(() => {
+    if (!user || !authResolved || loading) return false;
+    // Exempt sandbox demo and reviewer evaluation mode
+    if (
+      user.uid === "sandbox-demo-user" ||
+      user.email?.toLowerCase() === "reviewer@aegishealthai.co.in" ||
+      activeProfile?.id === "sandbox-demo-profile"
+    ) {
+      return false;
+    }
+    if (!activeProfile) return false;
+    // Check missing clinical baselines (typical for first-time mobile or new accounts)
+    return (
+      !activeProfile.dob ||
+      !activeProfile.gender ||
+      !activeProfile.height ||
+      !activeProfile.weight
+    );
+  }, [user, authResolved, loading, activeProfile]);
 
   const [retryCount, setRetryCount] = useState(0);
 
@@ -1094,6 +1116,12 @@ export default function Dashboard({
             </div>
           </div>
         )}
+      {activeProfile && (
+        <FirstTimeClinicalOnboardingModal
+          isOpen={isProfileIncomplete}
+          profile={activeProfile}
+        />
+      )}
     </motion.div>
   );
 }

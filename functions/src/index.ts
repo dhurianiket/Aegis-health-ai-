@@ -1,5 +1,6 @@
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 
 initializeApp();
 
@@ -85,3 +86,61 @@ export const verifyRecaptcha = onCall(
     return { verified: true as const };
   },
 );
+
+
+/**
+ * Cloud Function to bind the founder's verified mobile phone number (+91 99693 30257)
+ * to dhurianiket@gmail.com, handling orphan UID reclamation if phone OTP was previously tested.
+ */
+export const linkFounderPhoneNumber = onCall(async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required to link phone number.");
+  }
+
+  const userEmail = request.auth.token?.email?.toLowerCase();
+  if (userEmail !== "dhurianiket@gmail.com") {
+    throw new HttpsError(
+      "permission-denied",
+      "Only the primary account holder (dhurianiket@gmail.com) can invoke founder phone synchronization."
+    );
+  }
+
+  const founderUid = request.auth.uid;
+  const founderPhone = "+919969330257";
+  const authAdmin = getAuth();
+
+  try {
+    // 1. Check if the phone number is already registered under an orphaned UID
+    let existingPhoneUser = null;
+    try {
+      existingPhoneUser = await authAdmin.getUserByPhoneNumber(founderPhone);
+    } catch (err: any) {
+      if (err.code !== "auth/user-not-found") {
+        throw err;
+      }
+    }
+
+    if (existingPhoneUser && existingPhoneUser.uid !== founderUid) {
+      console.log(
+        `[AccountLinking] Reclaiming founder phone ${founderPhone} from orphaned UID: ${existingPhoneUser.uid}`
+      );
+      await authAdmin.deleteUser(existingPhoneUser.uid);
+    }
+
+    // 2. Attach phone number directly to founder UID
+    await authAdmin.updateUser(founderUid, {
+      phoneNumber: founderPhone,
+    });
+
+    console.log(`[AccountLinking] Successfully linked ${founderPhone} to UID ${founderUid} (${userEmail})`);
+    return {
+      success: true,
+      phoneNumber: founderPhone,
+      email: userEmail,
+      message: `Phone number ${founderPhone} successfully linked to ${userEmail}.`,
+    };
+  } catch (error: any) {
+    console.error("[AccountLinking] Failed to link founder phone number:", error);
+    throw new HttpsError("internal", error.message || "Failed to link founder phone number.");
+  }
+});

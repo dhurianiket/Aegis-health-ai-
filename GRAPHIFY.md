@@ -206,6 +206,9 @@
 - **[`src\components\Onboarding\ConsentScreen.tsx`](file:///E:\Aegis-health-ai-\src\components\Onboarding\ConsentScreen.tsx)**
   - *Exports*: `ConsentScreen`, `default`
   - *Imports*: `../../lib/firebase/config`, `../../lib/auditLogger`
+- **[`src\components\Onboarding\FirstTimeClinicalOnboardingModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Onboarding\FirstTimeClinicalOnboardingModal.tsx)**
+  - *Exports*: `FirstTimeClinicalOnboardingModal`, `default`
+  - *Imports*: `../../types/medical`, `../../context/ProfileContext`, `../../services/dpdpPaediatricService`, `../../lib/firebase/config`
 - **[`src\components\Onboarding\PostLoginTransition.tsx`](file:///E:\Aegis-health-ai-\src\components\Onboarding\PostLoginTransition.tsx)**
   - *Exports*: `PostLoginTransition`, `default`
   - *Imports*: `../../context/AuthContext`
@@ -243,6 +246,9 @@
 - **[`src\components\Settings\HealthConnectModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\HealthConnectModal.tsx)**
   - *Exports*: `HealthConnectModal`, `default`
   - *Imports*: `../../services/healthSyncService`, `../../context/AuthContext`, `../../services/wearableService`
+- **[`src\components\Settings\IdentityLinkingCard.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\IdentityLinkingCard.tsx)**
+  - *Exports*: `IdentityLinkingCard`, `default`
+  - *Imports*: `../../context/AuthContext`, `../../lib/firebase/config`
 - **[`src\components\Settings\IntegrationsPanel.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\IntegrationsPanel.tsx)**
   - *Exports*: `IntegrationsPanel`, `default`
   - *Imports*: `../../services/integrationService`, `../../services/healthSyncService`, `../../context/AuthContext`, `./HealthConnectModal`, `./AbdmConnectModal...`
@@ -251,7 +257,7 @@
   - *Imports*: `../../services/auditLogService`
 - **[`src\components\Settings\SettingsPage.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\SettingsPage.tsx)**
   - *Exports*: `SettingsPage`, `default`
-  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `./IntegrationsPanel`, `../../lib/auditLogger`, `../../context/ThemeContext`
+  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `./IntegrationsPanel`, `./IdentityLinkingCard`, `../../lib/auditLogger...`
 - **[`src\components\Settings\ZeroKnowledgeVaultModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\ZeroKnowledgeVaultModal.tsx)**
   - *Exports*: `ZeroKnowledgeVaultModal`
   - *Imports*: `../../services/zeroKnowledgeCryptoService`, `../../services/auditLogService`
@@ -559,7 +565,7 @@
 - **[`src\lib\authTokenProvider.ts`](file:///E:\Aegis-health-ai-\src\lib\authTokenProvider.ts)**
   - *Exports*: `TokenProvider`, `setAuthTokenProvider`, `hasAuthTokenProvider`
 - **[`src\lib\firebase\config.ts`](file:///E:\Aegis-health-ai-\src\lib\firebase\config.ts)**
-  - *Exports*: `auth`, `db`, `storage`, `googleProvider`, `default`
+  - *Exports*: `auth`, `db`, `storage`, `functions`, `googleProvider`, `default`
   - *Imports*: `../authTokenProvider`
 - **[`src\lib\firebase\firestore.ts`](file:///E:\Aegis-health-ai-\src\lib\firebase\firestore.ts)**
   - *Exports*: `ClinicalSummaryRecord`, `subscribeToLatestTelemetry`

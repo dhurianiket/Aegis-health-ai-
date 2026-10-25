@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import IntegrationsPanel from "./IntegrationsPanel";
+import IdentityLinkingCard from "./IdentityLinkingCard";
 import {
   Moon,
   Sun,
@@ -175,6 +176,9 @@ export default function SettingsPage() {
           </button>
         </div>
       </section>
+
+      {/* ── Linked Login Identities & Multi-Factor Security ── */}
+      <IdentityLinkingCard />
 
       {/* ── Connected Apps & ABHA / Health Integrations ── */}
       <section aria-label="Connected Apps and Health Integrations">
