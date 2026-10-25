@@ -527,8 +527,14 @@ export const getAllUsersUsage = async () => {
     usageData.sort((a, b) => (b.totalTokensUsed || 0) - (a.totalTokensUsed || 0));
 
     // Update global active users stats
-    const activeToday = usageData.filter((u) => u.isActiveToday).length;
-    const activeThisMonth = usageData.filter((u) => u.isActiveThisMonth).length;
+    // ⚡ Bolt: Optimization - Single pass iteration to avoid O(2N)
+    // memory allocations and iteration overhead from filter().length
+    let activeToday = 0;
+    let activeThisMonth = 0;
+    for (const u of usageData) {
+      if (u.isActiveToday) activeToday++;
+      if (u.isActiveThisMonth) activeThisMonth++;
+    }
     await updateGlobalStats({
       activeUsersToday: activeToday,
       activeUsersThisMonth: activeThisMonth,
