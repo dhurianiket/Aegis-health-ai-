@@ -81,3 +81,6 @@
 ## 2026-10-22 - Slice Before Mapping Optimization
 **Learning:** Mapping over an entire array only to extract a small fixed number of elements afterward (e.g., `array.map(fn).slice(0, 10)`) results in unnecessary O(N) evaluation. This wastes CPU cycles and creates excess garbage collection overhead by allocating strings or objects that are immediately discarded.
 **Action:** Always slice the array to the required length *before* applying the map function (e.g., `array.slice(0, 10).map(fn)`). This is a safe, 1-to-1 transformation that limits processing strictly to the required elements (O(1) relative to total array size), significantly improving performance on large arrays without sacrificing readability.
+## 2024-10-24 - Array Traversal Optimization in Analytics
+**Learning:** The usage analytics aggregation (`getAllUsersUsage`) processes the entire user base dataset, making it sensitive to array iteration overhead. The previous implementation used chained `.filter().length` calls, creating multiple O(N) intermediate array allocations that were immediately discarded.
+**Action:** When aggregating multiple independent counts from a single large dataset, always replace multiple `.filter()` passes with a single `for...of` loop to traverse the data once (O(N) vs O(k*N)) and eliminate intermediate array memory allocation overhead.
