@@ -98,10 +98,11 @@ export const linkFounderPhoneNumber = onCall(async (request) => {
   }
 
   const userEmail = request.auth.token?.email?.toLowerCase();
-  if (userEmail !== "dhurianiket@gmail.com") {
+  const isEmailVerified = request.auth.token?.email_verified === true;
+  if (userEmail !== "dhurianiket@gmail.com" || !isEmailVerified) {
     throw new HttpsError(
       "permission-denied",
-      "Only the primary account holder (dhurianiket@gmail.com) can invoke founder phone synchronization."
+      "Only the verified primary account holder (dhurianiket@gmail.com) can invoke founder phone synchronization."
     );
   }
 

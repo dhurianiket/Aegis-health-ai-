@@ -52,6 +52,7 @@ export const FirstTimeClinicalOnboardingModal: React.FC<FirstTimeClinicalOnboard
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Dynamic age and minor determination
@@ -152,6 +153,7 @@ export const FirstTimeClinicalOnboardingModal: React.FC<FirstTimeClinicalOnboard
         }
       }
 
+      setIsDismissed(true);
       if (onCompleted) {
         onCompleted();
       }
@@ -163,7 +165,7 @@ export const FirstTimeClinicalOnboardingModal: React.FC<FirstTimeClinicalOnboard
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || isDismissed) return null;
 
   return (
     <AnimatePresence>

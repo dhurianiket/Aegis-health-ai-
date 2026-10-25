@@ -92,6 +92,11 @@ export const IdentityLinkingCard: React.FC = () => {
     setLoadingAction('google');
     try {
       await linkWithPopup(currentUser, googleProvider);
+      try {
+        if (currentUser.reload) await currentUser.reload();
+      } catch {
+        // ignore
+      }
       setSuccessMessage('Successfully linked your Google account! You can now sign in with Google or Phone.');
     } catch (err: any) {
       console.error('[IdentityLinking] Google link error:', err);
@@ -123,8 +128,13 @@ export const IdentityLinkingCard: React.FC = () => {
         setSuccessMessage(
           `Founder mobile number +91 99693 30257 successfully linked to ${currentUser.email}! Both credentials now unlock your Aegis workspace.`
         );
-        // Refresh token to reflect provider update
-        await currentUser.getIdToken(true);
+        // Refresh token & user state to reflect provider update
+        try {
+          if (currentUser.reload) await currentUser.reload();
+          await currentUser.getIdToken(true);
+        } catch {
+          // ignore background token refresh
+        }
       }
     } catch (err: any) {
       console.error('[IdentityLinking] Founder link error:', err);
@@ -211,6 +221,11 @@ export const IdentityLinkingCard: React.FC = () => {
     try {
       const phoneCredential = PhoneAuthProvider.credential(confirmationResult.verificationId, cleanCode);
       await linkWithCredential(currentUser, phoneCredential);
+      try {
+        if (currentUser.reload) await currentUser.reload();
+      } catch {
+        // ignore
+      }
 
       setSuccessMessage('Mobile phone successfully verified and linked to your account!');
       setIsPhoneFormOpen(false);
@@ -253,6 +268,11 @@ export const IdentityLinkingCard: React.FC = () => {
     setLoadingAction(`unlink-${providerId}`);
     try {
       await unlink(currentUser, providerId);
+      try {
+        if (currentUser.reload) await currentUser.reload();
+      } catch {
+        // ignore
+      }
       setSuccessMessage(`Successfully unlinked ${label}.`);
     } catch (err: any) {
       console.error('[IdentityLinking] Unlink error:', err);
