@@ -28,7 +28,7 @@
   - *Imports*: `../../types/wearables`, `../../types/medical`, `../../services/biometricDiagnosticEngine`, `../../services/wearableService`, `../../services/healthSyncService...`
 - **[`src\components\Auth\AuthLoginModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Auth\AuthLoginModal.tsx)**
   - *Exports*: `AuthLoginModal`, `default`
-  - *Imports*: `../../context/AuthContext`
+  - *Imports*: `../../lib/firebase/config`, `../../context/AuthContext`
 - **[`src\components\Avatars\AuraCursorGuide.tsx`](file:///E:\Aegis-health-ai-\src\components\Avatars\AuraCursorGuide.tsx)**
   - *Exports*: `GuideExplanation`, `AuraCursorGuide`, `default`
   - *Imports*: `./ProceduralAvatar`
