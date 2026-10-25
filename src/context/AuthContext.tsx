@@ -4,6 +4,8 @@ import {
   signInWithPopup,
   signInWithRedirect,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
   getRedirectResult,
   onAuthStateChanged,
   signOut,
@@ -32,6 +34,7 @@ interface AuthContextType {
   authResolved: boolean;
   signIn: () => Promise<void>;
   signInWithEmail?: (email: string, password: string) => Promise<void>;
+  signUpWithEmail?: (email: string, password: string) => Promise<User | null>;
   logOut: () => Promise<void>;
 }
 
@@ -247,6 +250,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const signUpWithEmail = async (email: string, password: string): Promise<User | null> => {
+    if (signInInProgress.current) return null;
+    signInInProgress.current = true;
+    setIsSigningIn(true);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      if (cred.user) {
+        try {
+          await sendEmailVerification(cred.user);
+        } catch (vErr) {
+          console.warn("[Auth] Email verification dispatch notice:", vErr);
+        }
+      }
+      return cred.user;
+    } finally {
+      setIsSigningIn(false);
+      setTimeout(() => {
+        signInInProgress.current = false;
+      }, 500);
+    }
+  };
+
   const logOut = async () => {
     try {
       await signOut(auth);
@@ -265,8 +290,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const value = useMemo(
-    () => ({ user, loading, isSigningIn, authResolved, signIn, signInWithEmail, logOut }),
-    [user, loading, isSigningIn, authResolved]
+    () => ({ user, loading, isSigningIn, authResolved, signIn, signInWithEmail, signUpWithEmail, logOut }),
+    [user, loading, isSigningIn, authResolved, signIn, signInWithEmail, signUpWithEmail, logOut]
   );
 
   return (

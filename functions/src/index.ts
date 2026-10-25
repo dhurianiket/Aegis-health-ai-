@@ -150,9 +150,9 @@ export const linkFounderPhoneNumber = onCall(async (request) => {
 
 /**
  * OWASP A07:2025 Remediation - Auth Blocking Function
- * Prevents unauthorized anonymous attackers from creating arbitrary email/password accounts
- * via the Identity Toolkit REST API (accounts:signUp), while preserving legitimate login
- * for pre-registered reviewers, admins, and verified accounts.
+ * Prevents automated bots, disposable burner domains, and RFC 2606 scanner domains (.invalid, .test)
+ * from registering spam accounts via Identity Toolkit REST APIs, while fully allowing
+ * legitimate public email registrations (Gmail, Yahoo, Outlook, custom domains, etc.).
  */
 export const beforeCreate = beforeUserCreated(async (event) => {
   const user = event.data;
@@ -163,24 +163,50 @@ export const beforeCreate = beforeUserCreated(async (event) => {
   const isEmailOnly = (!user.providerData || user.providerData.length === 0) && !!user.email && !user.phoneNumber;
 
   if (hasPasswordProvider || isEmailOnly) {
-    const email = user.email?.toLowerCase().trim() || "";
+    const rawEmail = (user.email || "").toLowerCase().trim();
+    const parts = rawEmail.split("@");
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      console.warn(`[SecurityAudit] Blocked malformed email registration attempt: ${rawEmail}`);
+      throw new AuthBlockingError("invalid-argument", "Invalid email address format.");
+    }
 
-    const allowedExactEmails = new Set([
-      "reviewer@aegishealthai.co.in",
-      "dhurianiket@gmail.com",
-      "founder@aegishealthai.co.in",
-      "admin@aegishealthai.co.in",
-      "support@aegishealthai.co.in",
+    const domain = parts[1];
+
+    // 1. Block RFC 2606 and RFC 6761 reserved test/scanner domains (e.g. pentest-probe@test.invalid)
+    const blockedTlds = [".invalid", ".test", ".example", ".localhost"];
+    if (blockedTlds.some((tld) => domain.endsWith(tld) || domain === tld.slice(1))) {
+      console.warn(`[SecurityAudit] Blocked automated scanner/test email: ${rawEmail}`);
+      throw new AuthBlockingError(
+        "invalid-argument",
+        "Registration with test or invalid domain names is prohibited."
+      );
+    }
+
+    // 2. Block known disposable/burner email domains
+    const disposableDomains = new Set([
+      "mailinator.com",
+      "tempmail.com",
+      "10minutemail.com",
+      "guerrillamail.com",
+      "guerrillamail.net",
+      "guerrillamail.org",
+      "sharklasers.com",
+      "yopmail.com",
+      "throwawaymail.com",
+      "trashmail.com",
+      "getairmail.com",
+      "dispostable.com",
+      "temp-mail.org",
+      "fakeinbox.com",
+      "crazymailing.com",
+      "generator.email",
     ]);
 
-    const isDomainAllowed = email.endsWith("@aegishealthai.co.in");
-    const isWhitelisted = allowedExactEmails.has(email) || isDomainAllowed;
-
-    if (!isWhitelisted) {
-      console.warn(`[SecurityAudit] Blocked unauthorized email registration attempt: ${email}`);
+    if (disposableDomains.has(domain)) {
+      console.warn(`[SecurityAudit] Blocked disposable email registration: ${rawEmail}`);
       throw new AuthBlockingError(
-        "permission-denied",
-        "Public email registration is restricted. Please sign in with Google or Mobile Phone (+91 OTP), or contact support@aegishealthai.co.in."
+        "invalid-argument",
+        "Disposable or temporary email addresses are not permitted. Please use a valid personal or medical email."
       );
     }
   }

@@ -9,6 +9,7 @@ import {
   Smartphone,
   KeyRound,
   RotateCcw,
+  UserPlus,
 } from 'lucide-react';
 import {
   RecaptchaVerifier,
@@ -25,7 +26,7 @@ interface AuthLoginModalProps {
 }
 
 export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose }) => {
-  const { signIn, signInWithEmail, isSigningIn } = useAuth();
+  const { signIn, signInWithEmail, signUpWithEmail, isSigningIn } = useAuth();
   const navigate = useNavigate();
 
   // Authentication method tab
@@ -42,8 +43,10 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
 
   // Email form state
+  const [emailMode, setEmailMode] = useState<'signin' | 'register'>('signin');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
 
   // General error banner
@@ -91,6 +94,8 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
       clearRecaptcha();
       setPhoneStep('input');
       setOtpCode('');
+      setConfirmPassword('');
+      setEmailMode('signin');
       setLoginError(null);
     }
   }, [isOpen]);
@@ -195,27 +200,51 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
     setLoginError(null);
   };
 
-  // Handle Email + Password Sign In
+  // Handle Email + Password Sign In & Registration
   const handleEmailFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPassword) {
       setLoginError('Please enter both Email ID and Password.');
       return;
     }
+
+    if (emailMode === 'register') {
+      if (loginPassword.length < 8) {
+        setLoginError('Password must be at least 8 characters long.');
+        return;
+      }
+      if (loginPassword !== confirmPassword) {
+        setLoginError('Passwords do not match. Please re-enter your password.');
+        return;
+      }
+    }
+
     setLoginError(null);
     setIsEmailSigningIn(true);
     try {
-      if (signInWithEmail) {
-        await signInWithEmail(loginEmail.trim(), loginPassword);
+      if (emailMode === 'register') {
+        if (signUpWithEmail) {
+          await signUpWithEmail(loginEmail.trim(), loginPassword);
+        }
+      } else {
+        if (signInWithEmail) {
+          await signInWithEmail(loginEmail.trim(), loginPassword);
+        }
       }
       onClose();
       navigate('/dashboard', { replace: true });
     } catch (error: any) {
-      setLoginError(
-        error?.code === 'auth/invalid-credential'
-          ? 'Invalid Email ID or Password. Please verify your credentials.'
-          : error?.message || 'Failed to sign in with Email ID.'
-      );
+      if (error?.code === 'auth/email-already-in-use') {
+        setLoginError('This email is already registered. Please switch to Sign In above.');
+      } else if (error?.code === 'auth/invalid-credential') {
+        setLoginError('Invalid Email ID or Password. If you are a new user, please click "Create Account".');
+      } else if (error?.code === 'auth/weak-password') {
+        setLoginError('Password is too weak. Please use at least 8 characters with letters and numbers.');
+      } else if (error?.code === 'auth/invalid-email') {
+        setLoginError('Please enter a valid email address.');
+      } else {
+        setLoginError(error?.message || 'Authentication failed. Please try again.');
+      }
     } finally {
       setIsEmailSigningIn(false);
     }
@@ -443,60 +472,124 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
               </>
             )}
 
-            {/* TAB 2: Email ID + Password Form */}
+            {/* TAB 2: Email ID Form (Sign In / Register) */}
             {authMethod === 'email' && (
-              <form onSubmit={handleEmailFormSubmit} className="space-y-3.5 mb-5">
-                <div>
-                  <label htmlFor="login-email" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                    Email ID
-                  </label>
-                  <input
-                    id="login-email"
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    required
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="login-password" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                    Password
-                  </label>
-                  <input
-                    id="login-password"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors"
-                  />
+              <div className="mb-5">
+                {/* Sub-tabs for Sign In vs Register */}
+                <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-900/60 rounded-xl border border-white/10 mb-3.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmailMode('signin');
+                      setLoginError(null);
+                    }}
+                    className={`py-1.5 px-3 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      emailMode === 'signin'
+                        ? 'bg-emerald-500 text-slate-950 shadow-sm font-black'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Lock className="w-3 h-3" /> Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmailMode('register');
+                      setLoginError(null);
+                    }}
+                    className={`py-1.5 px-3 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      emailMode === 'register'
+                        ? 'bg-emerald-500 text-slate-950 shadow-sm font-black'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <UserPlus className="w-3 h-3" /> Create Account
+                  </button>
                 </div>
 
-                {loginError && (
-                  <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs">
-                    {loginError}
+                <form onSubmit={handleEmailFormSubmit} className="space-y-3.5">
+                  <div>
+                    <label htmlFor="login-email" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      Email ID
+                    </label>
+                    <input
+                      id="login-email"
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      required
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors"
+                    />
                   </div>
-                )}
+                  <div>
+                    <label htmlFor="login-password" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      Password {emailMode === 'register' && <span className="text-slate-400 font-normal lowercase">(min 8 characters)</span>}
+                    </label>
+                    <input
+                      id="login-password"
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      minLength={emailMode === 'register' ? 8 : 6}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={isEmailSigningIn || isSigningIn}
-                  className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {isEmailSigningIn ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Signing In...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4" /> Sign In with Email
-                    </>
+                  {emailMode === 'register' && (
+                    <div>
+                      <label htmlFor="confirm-password" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Confirm Password
+                      </label>
+                      <input
+                        id="confirm-password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        minLength={8}
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors"
+                      />
+                      <p className="text-[11px] text-slate-400 mt-1.5 leading-snug">
+                        A verification link will be sent to your email to verify ownership.
+                      </p>
+                    </div>
                   )}
-                </button>
-              </form>
+
+                  {loginError && (
+                    <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs">
+                      {loginError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isEmailSigningIn || isSigningIn}
+                    className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {isEmailSigningIn ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> {emailMode === 'register' ? 'Creating Account...' : 'Signing In...'}
+                      </>
+                    ) : (
+                      <>
+                        {emailMode === 'register' ? (
+                          <>
+                            <UserPlus className="w-4 h-4" /> Create Account
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="w-4 h-4" /> Sign In with Email
+                          </>
+                        )}
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
             )}
 
             <div className="relative flex py-1.5 items-center mb-4">
