@@ -1,4 +1,5 @@
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
+import { beforeUserCreated, HttpsError as AuthBlockingError } from "firebase-functions/v2/identity";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
@@ -144,4 +145,45 @@ export const linkFounderPhoneNumber = onCall(async (request) => {
     console.error("[AccountLinking] Failed to link founder phone number:", error);
     throw new HttpsError("internal", error.message || "Failed to link founder phone number.");
   }
+});
+
+
+/**
+ * OWASP A07:2025 Remediation - Auth Blocking Function
+ * Prevents unauthorized anonymous attackers from creating arbitrary email/password accounts
+ * via the Identity Toolkit REST API (accounts:signUp), while preserving legitimate login
+ * for pre-registered reviewers, admins, and verified accounts.
+ */
+export const beforeCreate = beforeUserCreated(async (event) => {
+  const user = event.data;
+  if (!user) return {};
+
+  // Check if sign-up uses email/password provider
+  const hasPasswordProvider = user.providerData?.some((p) => p.providerId === "password");
+  const isEmailOnly = (!user.providerData || user.providerData.length === 0) && !!user.email && !user.phoneNumber;
+
+  if (hasPasswordProvider || isEmailOnly) {
+    const email = user.email?.toLowerCase().trim() || "";
+
+    const allowedExactEmails = new Set([
+      "reviewer@aegishealthai.co.in",
+      "dhurianiket@gmail.com",
+      "founder@aegishealthai.co.in",
+      "admin@aegishealthai.co.in",
+      "support@aegishealthai.co.in",
+    ]);
+
+    const isDomainAllowed = email.endsWith("@aegishealthai.co.in");
+    const isWhitelisted = allowedExactEmails.has(email) || isDomainAllowed;
+
+    if (!isWhitelisted) {
+      console.warn(`[SecurityAudit] Blocked unauthorized email registration attempt: ${email}`);
+      throw new AuthBlockingError(
+        "permission-denied",
+        "Public email registration is restricted. Please sign in with Google or Mobile Phone (+91 OTP), or contact support@aegishealthai.co.in."
+      );
+    }
+  }
+
+  return {};
 });

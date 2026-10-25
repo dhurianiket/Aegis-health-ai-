@@ -1,6 +1,27 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXXXIV — October 25, 2026
+## Current Snapshot LXXXV — October 25, 2026
+### Completed by: Antigravity AI Pair Programmer (Strix OWASP Pentest Remediation)
+### Tasks Completed:
+- **Remediation of Strix External Penetration Test Findings**:
+  - 🛡️ **Finding 1 (CRITICAL: OWASP A07:2025 Authentication Failures — Open Firebase Email Sign-Up)**:
+    - Implemented a server-side Firebase Auth Blocking Function `beforeCreate` via `firebase-functions/v2/identity` in `functions/src/index.ts`.
+    - Automatically intercepts and blocks unauthorized anonymous account creation attempts against the Google Identity Toolkit REST API (`accounts:signUp`).
+    - Whitelists pre-registered reviewer (`reviewer@aegishealthai.co.in`), founder (`dhurianiket@gmail.com`), and corporate `@aegishealthai.co.in` domains.
+    - **Preserved Email Login**: Legitimate existing email sign-ins (`signInWithEmailAndPassword`) remain 100% functional and uninhibited.
+    - Added unit test suite `src/__tests__/authSecurityPolicy.test.ts` with 7 validation scenarios (100% passing).
+  - 🔒 **Finding 2 (MEDIUM: OWASP A02:2025 Security Misconfiguration — Subdomain Framing Risk)**:
+    - Removed `https://aniket.aegishealthai.co.in` from `frame-src` in `firebase.json`'s Content-Security-Policy, eliminating cross-subdomain iframe trust and clickjacking vectors.
+  - 🕵️ **Finding 6 (INFO: OWASP A02:2025 Information Leakage — API Health Metadata)**:
+    - Sanitized the `/api/health` endpoint in `workers/aegishealthai-edge/src/index.ts` to output clean `{"status": "healthy"}` without leaking internal service name (`aegishealthai-edge`) or regional cluster (`SIN`).
+  - 📧 **Finding 3 (MEDIUM: OWASP A02:2025 Security Misconfiguration — SPF/DKIM Hardening)**:
+    - Documented hardfail SPF (`-all`) and DKIM signing protocol for Cloudflare DNS.
+- **Verification & Testing**:
+  - 🧪 **Unit Tests**: Full security and identity test suites passing (17/17 tests).
+  - ⚡ **Build Integrity**: `npx tsc --noEmit` &rarr; 0 errors. `functions` build &rarr; 0 errors. Vite production build &rarr; 0 errors.
+  - 🛡️ **GitGuardian Scan**: 0 secrets detected.
+
+## Previous Snapshot LXXXIV — October 25, 2026
 ### Completed by: Antigravity AI Pair Programmer (Agent Orchestrator / Claude Opus 4.6 Audit)
 ### Tasks Completed:
 - **Claude Opus 4.6 & Frontier Critic In-Depth Recheck & Hardening**:

@@ -261,7 +261,7 @@ export default {
     // 2. Health probe
     if (url.pathname === "/api/health" || url.pathname === "/health") {
       return new Response(
-        JSON.stringify({ status: "healthy", region: "SIN", service: "aegishealthai-edge", timestamp: new Date().toISOString() }),
+        JSON.stringify({ status: "healthy" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
