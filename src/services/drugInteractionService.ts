@@ -798,8 +798,12 @@ export async function getEnrichedDrugInteractions(
   }));
 
   const labContraindications = evaluateDrugLabContraindications(medObjects, biomarkers);
-  const totalCritical = criticalCount + labContraindications.filter((c) => c.severity === 'critical').length;
-  const totalModerate = warningCount + labContraindications.filter((c) => c.severity === 'moderate').length;
+  let totalCritical = criticalCount;
+  let totalModerate = warningCount;
+  for (let i = 0; i < labContraindications.length; i++) {
+    if (labContraindications[i].severity === "critical") totalCritical++;
+    else if (labContraindications[i].severity === "moderate") totalModerate++;
+  }
 
   const overallRiskLevel: 'critical' | 'moderate' | 'safe' =
     totalCritical > 0 ? 'critical' : totalModerate > 0 ? 'moderate' : 'safe';
