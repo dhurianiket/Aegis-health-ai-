@@ -296,11 +296,16 @@ export function buildBioRegimenSafetySummary(
 ): BioRegimenSafetySummary {
   const drugLabContraindications = evaluateDrugLabContraindications(medications, biomarkers);
   
-  const criticalCount = drugLabContraindications.filter((c) => c.severity === "critical").length +
-    rxnormInteractions.filter((i) => i.severity === "severe").length;
-
-  const warningCount = drugLabContraindications.filter((c) => c.severity === "moderate").length +
-    rxnormInteractions.filter((i) => i.severity === "moderate").length;
+  let criticalCount = 0;
+  let warningCount = 0;
+  for (let i = 0; i < drugLabContraindications.length; i++) {
+    if (drugLabContraindications[i].severity === "critical") criticalCount++;
+    else if (drugLabContraindications[i].severity === "moderate") warningCount++;
+  }
+  for (let i = 0; i < rxnormInteractions.length; i++) {
+    if (rxnormInteractions[i].severity === "severe") criticalCount++;
+    else if (rxnormInteractions[i].severity === "moderate") warningCount++;
+  }
 
   const totalPairs = (medications.length * (medications.length - 1)) / 2;
   const compatibleCount = Math.max(0, totalPairs - rxnormInteractions.length);

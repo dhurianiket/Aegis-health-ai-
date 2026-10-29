@@ -81,3 +81,7 @@
 ## 2026-10-22 - Slice Before Mapping Optimization
 **Learning:** Mapping over an entire array only to extract a small fixed number of elements afterward (e.g., `array.map(fn).slice(0, 10)`) results in unnecessary O(N) evaluation. This wastes CPU cycles and creates excess garbage collection overhead by allocating strings or objects that are immediately discarded.
 **Action:** Always slice the array to the required length *before* applying the map function (e.g., `array.slice(0, 10).map(fn)`). This is a safe, 1-to-1 transformation that limits processing strictly to the required elements (O(1) relative to total array size), significantly improving performance on large arrays without sacrificing readability.
+
+## 2024-10-29 - O(K*N) Filter Length Anti-Pattern Optimization
+**Learning:** Codebase frequently uses multiple `.filter(condition).length` calls to compute aggregates (like safety critical and moderate counts) over the same source arrays (`drugLabContraindications` and `rxnormInteractions`). This creates redundant array allocations and iterates the array multiple times (O(K*N)).
+**Action:** Replace multiple chained `.filter().length` statements over the same arrays with a single O(N) forward `for` loop that computes all desired counts in one pass.
