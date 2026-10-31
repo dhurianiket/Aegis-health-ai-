@@ -81,3 +81,7 @@
 ## 2026-10-22 - Slice Before Mapping Optimization
 **Learning:** Mapping over an entire array only to extract a small fixed number of elements afterward (e.g., `array.map(fn).slice(0, 10)`) results in unnecessary O(N) evaluation. This wastes CPU cycles and creates excess garbage collection overhead by allocating strings or objects that are immediately discarded.
 **Action:** Always slice the array to the required length *before* applying the map function (e.g., `array.slice(0, 10).map(fn)`). This is a safe, 1-to-1 transformation that limits processing strictly to the required elements (O(1) relative to total array size), significantly improving performance on large arrays without sacrificing readability.
+
+## 2026-10-31 - Short-Circuit Array Filtering
+**Learning:** Eagerly evaluating all string matching conditions (e.g. using multiple `.toLowerCase().includes(...)` assignments) before applying a boolean `||` operator inside a `.filter()` iteration bypasses short-circuiting and causes severe O(N*M) performance bottlenecks during React renders.
+**Action:** Replace eager boolean variable assignments with explicit sequential early return statements (e.g., `if (cheapCondition) return true;`) so the function exits immediately upon the first match, avoiding unnecessary expensive string evaluations on large data sets. Also hoist loop-invariant string operations (like `searchQuery.toLowerCase()`) outside the `.filter` loop to prevent redundant allocations on every iteration.
