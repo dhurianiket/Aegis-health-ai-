@@ -326,6 +326,8 @@ export default function ReportHistory() {
                   onClick={() => toggleReportExpanded(report.docId)}
                   className="w-full p-5 flex items-center justify-between text-left hover:bg-[var(--color-bg)]/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface)]"
                   id={`btn-expand-${report.docId}`}
+                  aria-expanded={isExpanded}
+                  aria-controls={`report-details-${report.docId}`}
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
@@ -362,6 +364,7 @@ export default function ReportHistory() {
                 <AnimatePresence initial={false}>
                   {isExpanded && (
                     <motion.div
+                      id={`report-details-${report.docId}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
