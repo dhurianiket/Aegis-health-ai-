@@ -780,7 +780,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
             cameraPreset === 'torso-focus'
               ? 'bg-cyan-100/95 dark:bg-cyan-500/25 text-cyan-950 dark:text-cyan-200 border-cyan-500/60'
               : 'bg-white/95 dark:bg-slate-900/85 text-slate-900 dark:text-slate-200 border-slate-300 dark:border-cyan-500/30 hover:border-cyan-500/60'
-          }`}
+          } focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500`}
           title="Switch between Full Standing Body and Close-Up Organ Torso View"
         >
           {cameraPreset === 'torso-focus' ? (
@@ -804,7 +804,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
             xrayIntensity === 'deep-organ'
               ? 'bg-indigo-100/95 dark:bg-indigo-500/25 text-indigo-950 dark:text-indigo-200 border-indigo-500/60'
               : 'bg-white/95 dark:bg-slate-900/80 text-slate-800 dark:text-slate-300 border-slate-300 dark:border-white/15 hover:border-cyan-500/40'
-          }`}
+          } focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500`}
           title="Toggle X-Ray Skin Shell Transparency"
         >
           <Eye className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-300" />
@@ -828,7 +828,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
                 isSelected
                   ? 'bg-cyan-100/95 dark:bg-cyan-500/25 border-cyan-500 dark:border-cyan-400 text-slate-950 dark:text-white shadow-[0_0_20px_rgba(34,211,238,0.3)]'
                   : 'bg-white/95 dark:bg-slate-950/75 border-slate-300/90 dark:border-white/10 text-slate-900 dark:text-slate-300 hover:border-cyan-500/60 dark:hover:text-white'
-              }`}
+              } focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500`}
             >
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -864,7 +864,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
                 isSelected
                   ? 'bg-cyan-100/95 dark:bg-cyan-500/25 border-cyan-500 dark:border-cyan-400 text-slate-950 dark:text-white shadow-[0_0_20px_rgba(34,211,238,0.3)]'
                   : 'bg-white/95 dark:bg-slate-950/75 border-slate-300/90 dark:border-white/10 text-slate-900 dark:text-slate-300 hover:border-cyan-500/60 dark:hover:text-white'
-              }`}
+              } focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500`}
             >
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -911,7 +911,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
       <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
         <button
           onClick={handleResetCamera}
-          className="p-2.5 rounded-xl bg-white/95 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-cyan-800 dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/30 hover:border-cyan-500 backdrop-blur-md shadow-lg transition-all cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+          className="p-2.5 rounded-xl bg-white/95 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-cyan-800 dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/30 hover:border-cyan-500 backdrop-blur-md shadow-lg transition-all cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
           title="Reset Anatomical Orientation"
           aria-label="Reset View"
         >
@@ -919,7 +919,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
         </button>
         <button
           onClick={handleZoomIn}
-          className="p-2.5 rounded-xl bg-white/95 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-cyan-800 dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/30 hover:border-cyan-500 backdrop-blur-md shadow-lg transition-all cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+          className="p-2.5 rounded-xl bg-white/95 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-cyan-800 dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/30 hover:border-cyan-500 backdrop-blur-md shadow-lg transition-all cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
           title="Zoom In"
           aria-label="Zoom In"
         >
@@ -927,7 +927,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
         </button>
         <button
           onClick={handleZoomOut}
-          className="p-2.5 rounded-xl bg-white/95 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-cyan-800 dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/30 hover:border-cyan-500 backdrop-blur-md shadow-lg transition-all cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+          className="p-2.5 rounded-xl bg-white/95 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-cyan-800 dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/30 hover:border-cyan-500 backdrop-blur-md shadow-lg transition-all cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
           title="Zoom Out"
           aria-label="Zoom Out"
         >
@@ -939,7 +939,7 @@ export const ThreeBodyScanner3D: React.FC<ThreeBodyScanner3DProps> = ({
             isRotating
               ? 'bg-cyan-100/95 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-500/50'
               : 'bg-white/95 dark:bg-slate-900/80 text-slate-700 dark:text-slate-400 border-slate-300 dark:border-slate-700 hover:text-slate-950 dark:hover:text-white'
-          }`}
+          } focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500`}
           title={isRotating ? 'Pause 3D Orbit' : 'Resume 3D Orbit'}
           aria-label="Toggle Auto-Orbit"
         >
