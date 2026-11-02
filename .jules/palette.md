@@ -37,3 +37,6 @@
 **Learning:** Found that the "more" trigger button in the mobile app navigation bar was conditionally rendering a `BottomSheet` menu, but lacked `aria-expanded` and `aria-controls` explicitly linked to the content `div` ID.
 **Action:** When implementing interactive, collapsible elements (like mobile menus or dropdowns), ensure the trigger button explicitly uses `aria-expanded` reflecting the state and `aria-controls` mapped to the specific `id` of the collapsible container for proper screen reader accessibility.
 
+## 2023-10-26 - Keyboard Focus Visibility
+**Learning:** Found multiple critical path buttons in `App.tsx` (like Sign Out and Modal triggers) missing focus rings, making keyboard navigation difficult for screen reader and keyboard-only users.
+**Action:** When adding new buttons or fixing old ones, ensure `focus:outline-none focus-visible:ring-2 focus-visible:ring-*` are consistently applied, and use `focus-visible` over plain `focus` to prevent annoying rings on mouse clicks.

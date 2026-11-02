@@ -85,3 +85,12 @@
 ## 2026-10-31 - Short-Circuit Array Filtering
 **Learning:** Eagerly evaluating all string matching conditions (e.g. using multiple `.toLowerCase().includes(...)` assignments) before applying a boolean `||` operator inside a `.filter()` iteration bypasses short-circuiting and causes severe O(N*M) performance bottlenecks during React renders.
 **Action:** Replace eager boolean variable assignments with explicit sequential early return statements (e.g., `if (cheapCondition) return true;`) so the function exits immediately upon the first match, avoiding unnecessary expensive string evaluations on large data sets. Also hoist loop-invariant string operations (like `searchQuery.toLowerCase()`) outside the `.filter` loop to prevent redundant allocations on every iteration.
+
+## 2024-10-24 - Array Traversal Optimization in Analytics
+**Learning:** The usage analytics aggregation (`getAllUsersUsage`) processes the entire user base dataset, making it sensitive to array iteration overhead. The previous implementation used chained `.filter().length` calls, creating multiple O(N) intermediate array allocations that were immediately discarded.
+**Action:** When aggregating multiple independent counts from a single large dataset, always replace multiple `.filter()` passes with a single `for...of` loop to traverse the data once (O(N) vs O(k*N)) and eliminate intermediate array memory allocation overhead.
+
+## 2024-10-29 - O(K*N) Filter Length Anti-Pattern Optimization
+**Learning:** Codebase frequently uses multiple `.filter(condition).length` calls to compute aggregates (like safety critical and moderate counts) over the same source arrays (`drugLabContraindications` and `rxnormInteractions`). This creates redundant array allocations and iterates the array multiple times (O(K*N)).
+**Action:** Replace multiple chained `.filter().length` statements over the same arrays with a single O(N) forward `for...of` loop that computes all desired counts in one pass.
+
