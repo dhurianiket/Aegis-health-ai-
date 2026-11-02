@@ -494,7 +494,7 @@ function MainApp() {
                     </div>
                     <button
                       onClick={logOut}
-                      className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-500 hover:bg-surface transition-colors"
+                      className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-500 hover:bg-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-xl"
                     >
                       <LogOut className="w-4 h-4" /> Sign Out
                     </button>
@@ -526,7 +526,7 @@ function MainApp() {
               </div>
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className="px-3.5 py-1 rounded-full bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-400 dark:hover:bg-emerald-300 text-white dark:text-slate-950 font-black text-xs transition-all cursor-pointer shrink-0"
+                className="px-3.5 py-1 rounded-full bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-400 dark:hover:bg-emerald-300 text-white dark:text-slate-950 font-black text-xs transition-all cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-1"
               >
                 Sign In to Save Data →
               </button>
@@ -542,7 +542,7 @@ function MainApp() {
               </div>
               <button
                 onClick={logOut}
-                className="px-3 py-1 rounded-full bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white font-bold text-xs transition-all cursor-pointer shrink-0"
+                className="px-3 py-1 rounded-full bg-slate-900/10 hover:bg-slate-900/20 dark:bg-white/10 dark:hover:bg-white/20 text-slate-900 dark:text-white font-bold text-xs transition-all cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
                 Sign Out / Switch Account
               </button>
@@ -582,7 +582,7 @@ function MainApp() {
                                     setSbarError(null);
                                   }
                                 }}
-                                className="flex items-center gap-2 px-3.5 py-2 min-h-[40px] bg-surface hover:bg-surface/80 rounded-xl text-xs font-semibold transition-all border border-surface active:scale-95 cursor-pointer shadow-xs"
+                                className="flex items-center gap-2 px-3.5 py-2 min-h-[40px] bg-surface hover:bg-surface/80 rounded-xl text-xs font-semibold transition-all border border-surface active:scale-95 cursor-pointer shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                               >
                                 <FileText className="w-4 h-4 text-muted" /> Handover
                                 Report
@@ -754,13 +754,13 @@ function MainApp() {
                     <button
                       type="button"
                       onClick={() => setIsNewProfileModaOpen(false)}
-                      className="px-5 py-2.5 rounded-full text-sm font-medium hover:bg-surface transition-colors"
+                      className="px-5 py-2.5 rounded-full text-sm font-medium hover:bg-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-full text-sm font-semibold transition-transform active:scale-95 shadow-sm"
+                      className="px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-full text-sm font-semibold transition-transform active:scale-95 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
                     >
                       Create
                     </button>
