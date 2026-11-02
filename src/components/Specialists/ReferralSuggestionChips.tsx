@@ -55,14 +55,14 @@ export default function ReferralSuggestionChips({
                   type="button"
                   onClick={() => onSave(i)}
                   disabled={sug.status === "saving"}
-                  className="rounded-full bg-indigo-600 px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                  className="rounded-full bg-indigo-600 px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                 >
                   {sug.status === "error" ? "Retry save" : "Save suggestion"}
                 </button>
                 <button
                   type="button"
                   onClick={() => onDismiss(i)}
-                  className="rounded-full px-3 py-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300 hover:underline"
+                  className="rounded-full px-3 py-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                 >
                   Dismiss
                 </button>
