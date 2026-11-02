@@ -54,7 +54,8 @@
   "overrides": {
     "protobufjs": "^7.6.5",
     "ws": "^8.20.1",
-    "qs": "^6.16.0",
+    "qs": "^6.17.1",
+    "re2js": "^2.9.1",
     "browserslist": "^4.28.9",
     "fflate": "^0.8.3",
     "baseline-browser-mapping": "^2.11.23",
