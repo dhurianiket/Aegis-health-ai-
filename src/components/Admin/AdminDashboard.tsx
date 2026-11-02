@@ -269,19 +269,20 @@ export default function AdminDashboard() {
   };
 
   const filteredUsers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    const hasQuery = q.length > 0;
+
     return users.filter((u) => {
-      const matchesSearch =
-        !searchQuery ||
-        u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.userId?.toLowerCase().includes(searchQuery.toLowerCase());
+      if (roleFilter === "admin" && u.role !== "admin") return false;
+      if (roleFilter === "user" && u.role === "admin") return false;
 
-      const matchesRole =
-        roleFilter === "all" ||
-        (roleFilter === "admin" && u.role === "admin") ||
-        (roleFilter === "user" && u.role !== "admin");
+      if (!hasQuery) return true;
 
-      return matchesSearch && matchesRole;
+      if (u.email?.toLowerCase().includes(q)) return true;
+      if (u.displayName?.toLowerCase().includes(q)) return true;
+      if (u.userId?.toLowerCase().includes(q)) return true;
+
+      return false;
     });
   }, [users, searchQuery, roleFilter]);
 
