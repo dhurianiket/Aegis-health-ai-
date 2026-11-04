@@ -73,7 +73,7 @@ export default function NotificationDropdown({
           <div className="flex items-center gap-2">
             <button
               onClick={markAllAsRead}
-              className="text-xs font-bold text-[var(--color-text-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors"
+              className="text-xs font-bold text-[var(--color-text-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
             >
               Mark all read
             </button>
@@ -186,13 +186,13 @@ export default function NotificationDropdown({
                         alert.actionUrl &&
                         window.open(alert.actionUrl, "_blank")
                       }
-                      className="text-xs font-black text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1"
+                      className="text-xs font-black text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
                     >
                       View Details <ChevronRight className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => dismissAlert(alert.id)}
-                      className="text-xs font-black text-[var(--color-text-muted)] hover:text-red-600 dark:hover:text-red-400 uppercase tracking-widest"
+                      className="text-xs font-black text-[var(--color-text-muted)] hover:text-red-600 dark:hover:text-red-400 uppercase tracking-widest focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
                     >
                       Dismiss
                     </button>
