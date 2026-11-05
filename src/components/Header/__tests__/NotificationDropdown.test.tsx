@@ -29,7 +29,7 @@ describe("NotificationDropdown Accessibility & Focus Rings", () => {
       id: "alert-2",
       title: "Lab Value Update",
       description: "HbA1c results uploaded",
-      severity: "medium",
+      severity: "moderate",
       type: "lab_value",
       read: true,
       createdAt: new Date().toISOString(),

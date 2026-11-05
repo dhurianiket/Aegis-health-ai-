@@ -1266,7 +1266,12 @@ export default function UploadCenter({
             </>
           )}
 
-          {isProcessing && (
+          {isProcessing && (() => {
+            let processedCount = 0;
+            for (const f of fileQueue) {
+              if (f.status === 'done' || f.status === 'error') processedCount++;
+            }
+            return (
             <div className="glass-card flex flex-col items-center justify-center py-24 px-6 text-center border-teal-500/30">
               <div className="w-full max-w-md bg-surface h-1 rounded-full mb-12 overflow-hidden">
                  <motion.div 
@@ -1283,9 +1288,9 @@ export default function UploadCenter({
               <h3 className="text-xl font-bold mb-2">Analyzing Health Intelligence</h3>
               <p className="text-sm text-muted">
                  Usually takes 15-30 seconds per file.
-                 {fileQueue.length > 1 && fileQueue.filter(f => f.status === 'done' || f.status === 'error').length < fileQueue.length && (
+                 {fileQueue.length > 1 && processedCount < fileQueue.length && (
                    <span className="block mt-1 text-[var(--color-primary)] font-semibold">
-                     Processing {fileQueue.filter(f => f.status === 'done' || f.status === 'error').length + 1} of {fileQueue.length}...
+                     Processing {processedCount + 1} of {fileQueue.length}...
                    </span>
                  )}
               </p>
@@ -1302,7 +1307,8 @@ export default function UploadCenter({
                 </motion.p>
               </AnimatePresence>
             </div>
-          )}
+            );
+          })()}
 
           {results && results.length > 0 && !isProcessing && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
