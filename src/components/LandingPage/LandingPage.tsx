@@ -207,6 +207,10 @@ export default function LandingPage() {
               <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400">
                 AEGIS
               </span>
+              <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#76B900]/10 border border-[#76B900]/30 text-[10px] font-bold text-[#8ce405] tracking-widest uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] shadow-[0_0_6px_#76B900] animate-pulse" />
+                NVIDIA Inception Member
+              </div>
             </div>
 
             {/* Desktop Center Navigation Links */}
@@ -1502,11 +1506,17 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="text-center md:text-right">
+              <div className="text-center md:text-right space-y-2">
                 <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
                   Powered by <span className="text-slate-200">Google Gemini & Firebase</span>
                   <Sparkles className="w-3 h-3 text-emerald-400" />
                 </p>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-[#76B900]/30 shadow-xs">
+                  <div className="w-2 h-2 rounded-full bg-[#76B900] shadow-[0_0_8px_#76B900]" />
+                  <span className="text-xs font-semibold text-slate-300">
+                    Member of <strong className="text-[#8ce405] font-bold">NVIDIA Inception</strong>
+                  </span>
+                </div>
               </div>
             </div>
 

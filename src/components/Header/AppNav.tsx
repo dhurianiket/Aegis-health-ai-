@@ -83,13 +83,21 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
     <>
       <aside className="hidden md:flex flex-col w-64 bg-[var(--color-surface)] border-r border-[var(--color-border)] shrink-0 h-full">
         <div className="p-6 pb-2 shrink-0">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-[var(--color-primary)] rounded-[12px] flex items-center justify-center shadow-sm shrink-0">
-              <Activity size={24} className="text-white" strokeWidth={2} />
+          <div className="flex flex-col gap-1 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[var(--color-primary)] rounded-[12px] flex items-center justify-center shadow-sm shrink-0">
+                <Activity size={24} className="text-white" strokeWidth={2} />
+              </div>
+              <div>
+                <span className="font-semibold text-lg tracking-tight text-[var(--color-text)] block">
+                  Aegis <span className="font-normal opacity-70">Health</span>
+                </span>
+                <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-[#76B900] tracking-wider uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] animate-pulse" />
+                  NVIDIA Inception
+                </span>
+              </div>
             </div>
-            <span className="font-semibold text-lg tracking-tight text-[var(--color-text)]">
-              Aegis <span className="font-normal opacity-70">Health</span>
-            </span>
           </div>
         </div>
 
