@@ -38,6 +38,7 @@ Internal validation benchmark evaluating schema-constrained Gemini 3.8 Flash + G
   - LinkedIn: https://www.linkedin.com/in/aniket-dhuri-273094225
   - GitHub: https://github.com/dhurianiket/Aegis-health-ai-
   - Portfolio: https://aniket.aegishealthai.co.in/
+- **Startup Ecosystem Recognition**: Member of the NVIDIA Inception program (startup acceleration for healthcare AI inference and GPU computing). Also approved for startup support from Google Cloud AI Builder, AWS Activate, and Microsoft Azure Founders Hub.
 - **Jurisdiction Disclaimer**: Independent Indian enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or `aegishealth.com`.
 
 ## 5. Google Cloud & AI Architecture

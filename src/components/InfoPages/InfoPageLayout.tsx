@@ -72,13 +72,25 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
           <nav className="sticky top-[33px] w-full z-50 bg-[#0A192F]/85 backdrop-blur-2xl border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
               
-              {/* Brand Logo */}
-              <Link to="/" className="flex items-center gap-2 md:gap-3 group hover:opacity-90 transition-opacity">
-                <ShieldCheck className="w-5 h-5 md:w-8 md:h-8 text-emerald-400 group-hover:scale-105 transition-transform" strokeWidth={2} />
-                <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400 font-sans">
-                  AEGIS
-                </span>
-              </Link>
+              {/* Brand Logo & Inception Badge */}
+              <div className="flex items-center gap-2 md:gap-3">
+                <Link to="/" className="flex items-center gap-2 md:gap-3 group hover:opacity-90 transition-opacity">
+                  <ShieldCheck className="w-5 h-5 md:w-8 md:h-8 text-emerald-400 group-hover:scale-105 transition-transform" strokeWidth={2} />
+                  <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400 font-sans">
+                    AEGIS
+                  </span>
+                </Link>
+                <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 shadow-xs">
+                  <img 
+                    src="/nvidia-inception-badge.svg" 
+                    alt="Member of the NVIDIA Inception program" 
+                    className="h-5 md:h-6 w-auto object-contain rounded-xs" 
+                  />
+                  <span className="hidden xl:inline text-[9.5px] font-bold text-[#8ce405] tracking-wider uppercase">
+                    Member
+                  </span>
+                </div>
+              </div>
 
               {/* Desktop Navigation Links */}
               <div className="hidden lg:flex items-center gap-6">
@@ -475,12 +487,30 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                 </p>
               </div>
 
-              <div className="text-center md:text-right flex flex-col gap-2">
+              <div className="text-center md:text-right flex flex-col gap-2 items-center md:items-end">
                 <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
                   Powered by <span className="text-slate-200">Google Cloud, Vertex AI &amp; Firebase</span>
                   <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
                 </p>
+                <div className="flex flex-col items-center md:items-end gap-1.5 mt-2">
+                  <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-200 inline-block">
+                    <img 
+                      src="/nvidia-inception-badge.svg" 
+                      alt="Member of the NVIDIA Inception program" 
+                      className="h-7 md:h-8 w-auto object-contain" 
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-slate-300">
+                    Aegis Health AI is a member of the NVIDIA Inception program.
+                  </span>
+                </div>
               </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pt-4 text-center">
+              <p className="text-[11px] text-slate-400 leading-relaxed max-w-4xl mx-auto">
+                © 2026 NVIDIA, the NVIDIA logo, and NVIDIA Inception are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries.
+              </p>
             </div>
           </footer>
 

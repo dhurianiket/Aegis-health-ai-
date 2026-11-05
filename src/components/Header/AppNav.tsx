@@ -140,6 +140,19 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
             );
           })}
         </nav>
+
+        <div className="p-3 mx-4 mb-4 rounded-xl bg-black/10 border border-[var(--color-border)] flex flex-col gap-1.5 items-center text-center">
+          <div className="bg-white p-1 rounded-md shadow-xs">
+            <img 
+              src="/nvidia-inception-badge.svg" 
+              alt="Member of the NVIDIA Inception program" 
+              className="h-6 w-auto object-contain" 
+            />
+          </div>
+          <span className="text-[10px] text-[var(--color-text-muted)] font-medium leading-tight">
+            Member of the NVIDIA Inception program
+          </span>
+        </div>
       </aside>
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 apple-blur-dock z-50 pb-safe pointer-events-auto">

@@ -188,25 +188,36 @@ function AboutUsContent() {
               "Information is preventative medicine. When families understand their longitudinal biomarkers clearly, they have calmer, higher-trust consultations with their doctors."
             </blockquote>
 
-            {/* Cloud Ecosystem Recognition */}
+            {/* Cloud & AI Ecosystem Recognition */}
             <div className="bg-[#0F2A4A]/70 border border-emerald-500/25 rounded-2xl p-6 mt-6">
               <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm uppercase tracking-wider mb-3">
                 <Cloud className="w-5 h-5 text-emerald-400" />
-                Cloud Startup Ecosystem &amp; Infrastructure Backing
+                Startup Ecosystem &amp; AI Infrastructure Backing
               </div>
               <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                Backed by leading global cloud startup programs to deliver low-latency multimodal vision parsing and enterprise-grade encryption at zero cost to patients:
+                Aegis Health AI is backed by leading global startup acceleration and cloud infrastructure programs to deliver low-latency multimodal vision parsing, GPU inference, and enterprise-grade encryption at zero cost to patients:
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="bg-[#0A192F] border border-[#76B900]/40 rounded-xl p-3.5 text-center flex flex-col items-center justify-center shadow-xs">
+                  <div className="bg-white p-1 rounded-md mb-1.5 shadow-sm">
+                    <img 
+                      src="/nvidia-inception-badge.svg" 
+                      alt="Member of the NVIDIA Inception program" 
+                      className="h-6 w-auto object-contain" 
+                    />
+                  </div>
+                  <div className="text-xs font-bold text-[#8ce405] font-mono">NVIDIA Inception</div>
+                  <div className="text-[10.5px] text-slate-300 mt-0.5">Program Member</div>
+                </div>
+                <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center flex flex-col items-center justify-center">
                   <div className="text-xs font-bold text-emerald-400 font-mono">Google Cloud</div>
                   <div className="text-[11px] text-slate-300 mt-0.5">Gemini 3.8 Flash &amp; 4 Argon</div>
                 </div>
-                <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center">
+                <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center flex flex-col items-center justify-center">
                   <div className="text-xs font-bold text-teal-300 font-mono">AWS Activate</div>
                   <div className="text-[11px] text-slate-300 mt-0.5">Approved Startup Member</div>
                 </div>
-                <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center">
+                <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center flex flex-col items-center justify-center">
                   <div className="text-xs font-bold text-cyan-300 font-mono">Microsoft Azure</div>
                   <div className="text-[11px] text-slate-300 mt-0.5">Founders Hub Member</div>
                 </div>

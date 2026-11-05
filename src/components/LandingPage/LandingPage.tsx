@@ -207,9 +207,15 @@ export default function LandingPage() {
               <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400">
                 AEGIS
               </span>
-              <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#76B900]/10 border border-[#76B900]/30 text-[10px] font-bold text-[#8ce405] tracking-widest uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] shadow-[0_0_6px_#76B900] animate-pulse" />
-                NVIDIA Inception Member
+              <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 hover:border-[#76B900]/40 transition-colors shadow-xs">
+                <img 
+                  src="/nvidia-inception-badge.svg" 
+                  alt="Member of the NVIDIA Inception program" 
+                  className="h-5 md:h-6 w-auto object-contain rounded-xs" 
+                />
+                <span className="hidden xl:inline text-[9.5px] font-bold text-[#8ce405] tracking-wider uppercase">
+                  Member
+                </span>
               </div>
             </div>
 
@@ -322,10 +328,22 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 lg:gap-12 items-center w-full relative z-10 transform-gpu">
             {/* Left Content */}
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 mb-6 shadow-[0_0_25px_rgba(45,212,191,0.2)] backdrop-blur-md">
-                <span className="h-2 w-2 rounded-full bg-teal-400 animate-ping"></span>
-                <DecryptedText text="Next-Gen Health Intelligence 2.0" animateOn="view" speed={30} />
-              </span>
+              <div className="flex flex-wrap items-center gap-3 mb-6">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 shadow-[0_0_25px_rgba(45,212,191,0.2)] backdrop-blur-md">
+                  <span className="h-2 w-2 rounded-full bg-teal-400 animate-ping"></span>
+                  <DecryptedText text="Next-Gen Health Intelligence 2.0" animateOn="view" speed={30} />
+                </span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-[#76B900]/40 shadow-[0_0_15px_rgba(118,185,0,0.15)] backdrop-blur-md">
+                  <img 
+                    src="/nvidia-inception-badge.svg" 
+                    alt="Member of the NVIDIA Inception program" 
+                    className="h-4.5 w-auto object-contain" 
+                  />
+                  <span className="text-[11px] font-bold text-[#8ce405] tracking-wide uppercase">
+                    Inception Program Member
+                  </span>
+                </div>
+              </div>
 
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
@@ -413,30 +431,45 @@ export default function LandingPage() {
                 transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
                 className="mt-12 pt-8 border-t border-white/10 w-full max-w-lg"
               >
-                <div className="bg-[#0f172a]/60 backdrop-blur-md border border-slate-700/40 rounded-xl p-4 shadow-sm relative overflow-hidden">
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+                <div className="bg-[#0f172a]/75 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                  <div className="absolute -top-4 -right-4 w-28 h-28 bg-[#76B900]/10 rounded-full blur-2xl pointer-events-none" />
                   
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 relative z-10">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shrink-0 shadow-inner">
-                      <Cloud className="w-4 h-4 text-emerald-400" />
+                  <div className="flex flex-col sm:flex-row items-start gap-4 relative z-10">
+                    <div className="flex items-center justify-center p-2 rounded-xl bg-white shadow-md border border-slate-200 shrink-0">
+                      <img 
+                        src="/nvidia-inception-badge.svg" 
+                        alt="Member of the NVIDIA Inception program" 
+                        className="h-10 md:h-12 w-auto object-contain" 
+                      />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-white text-[13px] font-bold tracking-wide mb-1">Founder Milestone</h4>
-                      <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-1">
-                        Approved for startup support from AWS Activate, Microsoft Azure, and Google Cloud AI Builder.
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded-full bg-[#76B900]/15 border border-[#76B900]/40 text-[10px] font-bold text-[#8ce405] tracking-wider uppercase">
+                          NVIDIA Inception Program Member
+                        </span>
+                      </div>
+                      <h4 className="text-white text-sm font-bold tracking-wide mb-1">
+                        Founder Milestone &amp; Startup Ecosystem Backing
+                      </h4>
+                      <p className="text-slate-300 text-xs font-medium leading-relaxed mb-2">
+                        Aegis Health AI is a member of the NVIDIA Inception program. Approved for startup acceleration and infrastructure support from NVIDIA Inception, Google Cloud AI Builder, AWS Activate, and Microsoft Azure.
                       </p>
-                      <p className="text-emerald-400/90 text-xs font-semibold tracking-wide">
-                        More runway for secure healthcare AI.
+                      <p className="text-emerald-400/90 text-xs font-semibold tracking-wide mb-3">
+                        Accelerating GPU clinical multimodal inference &amp; longitudinal health telemetry.
                       </p>
-                      <div className="flex flex-wrap gap-1.5 mt-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="px-2.5 py-1 rounded-md bg-[#76B900]/10 border border-[#76B900]/40 text-xs font-bold text-[#8ce405] tracking-wide shadow-sm flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] animate-pulse" />
+                          NVIDIA Inception
+                        </span>
+                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
+                          Google Cloud AI Builder
+                        </span>
                         <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
                           AWS Activate
                         </span>
                         <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
                           Azure Startup Support
-                        </span>
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
-                          Google Cloud AI Builder
                         </span>
                       </div>
                     </div>
@@ -1506,18 +1539,36 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="text-center md:text-right space-y-2">
+              <div className="text-center md:text-right space-y-3">
                 <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
                   Powered by <span className="text-slate-200">Google Gemini & Firebase</span>
                   <Sparkles className="w-3 h-3 text-emerald-400" />
                 </p>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-[#76B900]/30 shadow-xs">
-                  <div className="w-2 h-2 rounded-full bg-[#76B900] shadow-[0_0_8px_#76B900]" />
-                  <span className="text-xs font-semibold text-slate-300">
-                    Member of <strong className="text-[#8ce405] font-bold">NVIDIA Inception</strong>
+                <div className="flex flex-col items-center md:items-end gap-2">
+                  <a 
+                    href="https://www.nvidia.com/en-us/startups/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    title="Aegis Health AI is a member of the NVIDIA Inception program"
+                    className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-200 inline-block hover:shadow-md transition-shadow"
+                  >
+                    <img 
+                      src="/nvidia-inception-badge.svg" 
+                      alt="Member of the NVIDIA Inception program" 
+                      className="h-8 md:h-9 w-auto object-contain" 
+                    />
+                  </a>
+                  <span className="text-xs font-medium text-slate-300">
+                    Aegis Health AI is a member of the NVIDIA Inception program.
                   </span>
                 </div>
               </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pt-4 text-center">
+              <p className="text-[11px] text-slate-400 leading-relaxed max-w-4xl mx-auto">
+                © 2026 NVIDIA, the NVIDIA logo, and NVIDIA Inception are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries.
+              </p>
             </div>
 
             <p className="text-xs text-slate-300 mt-8 mb-4 text-center">
