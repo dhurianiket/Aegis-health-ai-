@@ -73,7 +73,7 @@ export default function NotificationDropdown({
           <div className="flex items-center gap-2">
             <button
               onClick={markAllAsRead}
-              className="text-xs font-bold text-[var(--color-text-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors"
+              className="text-xs font-bold text-[var(--color-text-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 uppercase tracking-widest transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
             >
               Mark all read
             </button>
@@ -100,7 +100,7 @@ export default function NotificationDropdown({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 duration-100 ease-out border cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 duration-100 ease-out border cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                 activeCategory === cat
                   ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                   : "bg-[var(--color-surface)] dark:bg-white/5 text-[var(--color-text-muted)] dark:text-slate-300 border-[var(--color-border)] dark:border-transparent hover:border-indigo-500/30 dark:hover:border-white/10"
@@ -180,19 +180,19 @@ export default function NotificationDropdown({
                     {alert.description}
                   </p>
 
-                  <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 transition-opacity">
                     <button
                       onClick={() =>
                         alert.actionUrl &&
                         window.open(alert.actionUrl, "_blank")
                       }
-                      className="text-xs font-black text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1"
+                      className="text-xs font-black text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
                     >
                       View Details <ChevronRight className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => dismissAlert(alert.id)}
-                      className="text-xs font-black text-[var(--color-text-muted)] hover:text-red-600 dark:hover:text-red-400 uppercase tracking-widest"
+                      className="text-xs font-black text-[var(--color-text-muted)] hover:text-red-600 dark:hover:text-red-400 uppercase tracking-widest focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
                     >
                       Dismiss
                     </button>
@@ -208,7 +208,7 @@ export default function NotificationDropdown({
       <div className="p-4 border-t border-[var(--color-border)] dark:border-white/10 bg-[var(--color-bg)] dark:bg-black/10">
         <button
           onClick={onClose}
-          className="w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-xl transition-all border border-indigo-500/20"
+          className="w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-xl transition-all border border-indigo-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         >
           View All Activity
         </button>
