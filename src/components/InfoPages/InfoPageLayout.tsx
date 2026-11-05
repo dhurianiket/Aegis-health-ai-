@@ -72,25 +72,13 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
           <nav className="sticky top-[33px] w-full z-50 bg-[#0A192F]/85 backdrop-blur-2xl border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
               
-              {/* Brand Logo & Inception Badge */}
-              <div className="flex items-center gap-2 md:gap-3">
-                <Link to="/" className="flex items-center gap-2 md:gap-3 group hover:opacity-90 transition-opacity">
-                  <ShieldCheck className="w-5 h-5 md:w-8 md:h-8 text-emerald-400 group-hover:scale-105 transition-transform" strokeWidth={2} />
-                  <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400 font-sans">
-                    AEGIS
-                  </span>
-                </Link>
-                <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 shadow-xs">
-                  <img 
-                    src="/nvidia-inception-badge.svg" 
-                    alt="Member of the NVIDIA Inception program" 
-                    className="h-5 md:h-6 w-auto object-contain rounded-xs" 
-                  />
-                  <span className="hidden xl:inline text-[9.5px] font-bold text-[#8ce405] tracking-wider uppercase">
-                    Member
-                  </span>
-                </div>
-              </div>
+              {/* Brand Logo */}
+              <Link to="/" className="flex items-center gap-2 md:gap-3 group hover:opacity-90 transition-opacity shrink-0">
+                <ShieldCheck className="w-5 h-5 md:w-8 md:h-8 text-emerald-400 group-hover:scale-105 transition-transform" strokeWidth={2} />
+                <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400 font-sans">
+                  AEGIS
+                </span>
+              </Link>
 
               {/* Desktop Navigation Links */}
               <div className="hidden lg:flex items-center gap-6">

@@ -202,36 +202,20 @@ export default function LandingPage() {
         <nav className="fixed w-full z-50 top-0 left-0">
           <div className="absolute inset-0 bg-[#0A192F]/75 backdrop-blur-2xl border-b border-white/10 shadow-[0_1px_0_0_rgba(255,255,255,0.08)_inset,0_8px_32px_rgba(0,0,0,0.5)]" />
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-2 md:gap-3">
-              <ShieldCheck className="w-5 h-5 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
-              <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-xs md:text-lg tracking-[0.2em] text-emerald-400">
+            {/* Brand Logo */}
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
+              <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-sm md:text-lg tracking-[0.2em] text-emerald-400 font-sans">
                 AEGIS
               </span>
-              <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 hover:border-[#76B900]/40 transition-colors shadow-xs">
-                <img 
-                  src="/nvidia-inception-badge.svg" 
-                  alt="Member of the NVIDIA Inception program" 
-                  className="h-5 md:h-6 w-auto object-contain rounded-xs" 
-                />
-                <span className="hidden xl:inline text-[9.5px] font-bold text-[#8ce405] tracking-wider uppercase">
-                  Member
-                </span>
-              </div>
             </div>
 
             {/* Desktop Center Navigation Links */}
-            <div className="hidden lg:flex items-center gap-6">
-              <button
-                onClick={handleSignIn}
-                className="px-3 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[11px] font-bold tracking-widest text-emerald-300 hover:text-emerald-200 transition-all uppercase flex items-center gap-1.5 cursor-pointer"
-              >
-                <Sparkles className="w-3 h-3 text-emerald-400" />
-                Sign In
-              </button>
+            <div className="hidden lg:flex items-center gap-7">
               <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
               <Link to="/about.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">About Us</Link>
               <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
-              <a href="#pricing" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase flex items-center gap-1">
+              <a href="#pricing" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">
                 Platform Access
               </a>
               
@@ -247,19 +231,20 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-4">
+            {/* Right Action CTAs */}
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn || isEmailSigningIn}
-                className="hidden sm:flex px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs md:text-xs font-semibold tracking-wide transition-all duration-100 active:scale-95 disabled:opacity-50 items-center justify-center gap-2 cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-all active:scale-95 cursor-pointer"
               >
-                <Mail className="w-3 md:w-4 h-3 md:h-4" />
-                <span>EMAIL / GOOGLE SIGN IN</span>
+                <Mail className="w-3.5 h-3.5" />
+                <span>Sign In</span>
               </button>
               <button
                 onClick={handleSignIn}
                 disabled={isSigningIn || isEmailSigningIn}
-                className="px-4 md:px-8 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all duration-100 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer"
+                className="px-5 md:px-7 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all duration-100 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer shrink-0"
               >
                 GET STARTED
               </button>
@@ -328,22 +313,27 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 lg:gap-12 items-center w-full relative z-10 transform-gpu">
             {/* Left Content */}
             <div className="max-w-2xl">
-              <div className="flex flex-wrap items-center gap-3 mb-6">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 shadow-[0_0_25px_rgba(45,212,191,0.2)] backdrop-blur-md">
-                  <span className="h-2 w-2 rounded-full bg-teal-400 animate-ping"></span>
-                  <DecryptedText text="Next-Gen Health Intelligence 2.0" animateOn="view" speed={30} />
-                </span>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-[#76B900]/40 shadow-[0_0_15px_rgba(118,185,0,0.15)] backdrop-blur-md">
-                  <img 
-                    src="/nvidia-inception-badge.svg" 
-                    alt="Member of the NVIDIA Inception program" 
-                    className="h-4.5 w-auto object-contain" 
-                  />
-                  <span className="text-[11px] font-bold text-[#8ce405] tracking-wide uppercase">
-                    Inception Program Member
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="inline-flex flex-wrap items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#071325]/90 border border-emerald-500/30 shadow-[0_0_25px_rgba(45,212,191,0.15)] backdrop-blur-xl mb-6 max-w-full"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-400"></span>
+                  </span>
+                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-teal-300">
+                    Next-Gen Health Intelligence 2.0
                   </span>
                 </div>
-              </div>
+                <span className="text-white/20 hidden sm:inline">•</span>
+                <div className="flex items-center gap-1.5 text-xs text-slate-300 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] animate-pulse" />
+                  <span>Member of <strong className="text-[#8ce405] font-bold">NVIDIA Inception</strong></span>
+                </div>
+              </motion.div>
 
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
