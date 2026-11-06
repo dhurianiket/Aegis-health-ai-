@@ -296,6 +296,15 @@ export default function UploadCenter({
   const [isSyncing, setIsSyncing] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
 
+  const processedFilesCount = useMemo(() => {
+    let count = 0;
+    for (let i = 0; i < fileQueue.length; i++) {
+      const s = fileQueue[i].status;
+      if (s === "done" || s === "error") count++;
+    }
+    return count;
+  }, [fileQueue]);
+
   // Voice Document Search states
   const [documents, setDocuments] = useState<any[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
@@ -1283,9 +1292,9 @@ export default function UploadCenter({
               <h3 className="text-xl font-bold mb-2">Analyzing Health Intelligence</h3>
               <p className="text-sm text-muted">
                  Usually takes 15-30 seconds per file.
-                 {fileQueue.length > 1 && fileQueue.filter(f => f.status === 'done' || f.status === 'error').length < fileQueue.length && (
+                 {fileQueue.length > 1 && processedFilesCount < fileQueue.length && (
                    <span className="block mt-1 text-[var(--color-primary)] font-semibold">
-                     Processing {fileQueue.filter(f => f.status === 'done' || f.status === 'error').length + 1} of {fileQueue.length}...
+                     Processing {processedFilesCount + 1} of {fileQueue.length}...
                    </span>
                  )}
               </p>

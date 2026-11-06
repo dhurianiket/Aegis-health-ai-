@@ -849,7 +849,13 @@ export function validateFhirBundle(bundle: FhirBundle): FhirValidationResult {
     });
   }
 
-  const isValid = issues.filter((i) => i.severity === 'error').length === 0;
+  let isValid = true;
+  for (let i = 0; i < issues.length; i++) {
+    if (issues[i].severity === 'error') {
+      isValid = false;
+      break;
+    }
+  }
 
   return {
     isValid,

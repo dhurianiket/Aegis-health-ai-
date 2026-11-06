@@ -431,7 +431,10 @@ export async function linkAbdmCareContext(
     updatedList = [...existing, { ...careContext, status: 'linked' as const }];
   }
 
-  const activeCount = updatedList.filter((c) => c.status === 'linked').length;
+  let activeCount = 0;
+  for (let i = 0; i < updatedList.length; i++) {
+    if (updatedList[i].status === 'linked') activeCount++;
+  }
   saveLinkedCareContexts(userId, updatedList);
 
   const updatedProfile: AbhaProfile = {
@@ -458,7 +461,10 @@ export async function unlinkAbdmCareContext(
     c.referenceNumber === referenceNumber ? { ...c, status: 'unlinked' as const } : c
   );
 
-  const activeCount = updatedList.filter((c) => c.status === 'linked').length;
+  let activeCount = 0;
+  for (let i = 0; i < updatedList.length; i++) {
+    if (updatedList[i].status === 'linked') activeCount++;
+  }
   saveLinkedCareContexts(userId, updatedList);
 
   const updatedProfile: AbhaProfile = {

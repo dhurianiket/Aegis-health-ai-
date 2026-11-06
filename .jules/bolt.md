@@ -94,3 +94,7 @@
 **Learning:** Codebase frequently uses multiple `.filter(condition).length` calls to compute aggregates (like safety critical and moderate counts) over the same source arrays (`drugLabContraindications` and `rxnormInteractions`). This creates redundant array allocations and iterates the array multiple times (O(K*N)).
 **Action:** Replace multiple chained `.filter().length` statements over the same arrays with a single O(N) forward `for...of` loop that computes all desired counts in one pass.
 
+## 2026-11-05 - Avoid array .filter().length allocations for counting
+**Learning:** Checking the `.length` of an intermediate `.filter()` result (e.g. `arr.filter(a => ...).length`) creates temporary arrays that stress the garbage collector and causes O(N) memory allocations, particularly when done inline inside React render functions.
+**Action:** Replace array `.filter(...).length` statements with single-pass `for` loops, `useMemo` counting, or short-circuiting `.some()` checks to eliminate intermediate array creation.
+
