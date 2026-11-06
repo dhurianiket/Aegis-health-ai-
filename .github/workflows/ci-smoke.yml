@@ -4,6 +4,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Deploy Aegis Health AI to Firebase Hosting"]
     types:
@@ -15,8 +16,8 @@ jobs:
   smoke-test:
     permissions:
       contents: read
-    if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
