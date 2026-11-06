@@ -93,7 +93,10 @@ export function AlertsProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const unreadCount = alerts.filter((a) => !dismissedIds.has(a.id)).length;
+  let unreadCount = 0;
+  for (let i = 0; i < alerts.length; i++) {
+    if (!dismissedIds.has(alerts[i].id)) unreadCount++;
+  }
 
   return (
     <AlertsContext.Provider
