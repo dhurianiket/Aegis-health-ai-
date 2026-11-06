@@ -89,7 +89,7 @@ export default function EmptyDashboard({
                   window.location.hash = "profile";
                 }}
                 aria-label="Complete Profile"
-                className="aegis-spotlight-card flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-emerald-500/40 rounded-[20px] transition-all group text-left"
+                className="aegis-spotlight-card flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-emerald-500/40 rounded-[20px] transition-all group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                   <Target className="w-5 h-5 text-emerald-500" />
@@ -107,7 +107,7 @@ export default function EmptyDashboard({
                   window.location.hash = "specialist";
                 }}
                 aria-label="Try AURA AI"
-                className="aegis-spotlight-card flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-indigo-500/40 rounded-[20px] transition-all group text-left"
+                className="aegis-spotlight-card flex flex-col items-start p-5 bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-indigo-500/40 rounded-[20px] transition-all group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                   <Sparkles className="w-5 h-5 text-indigo-400" />
