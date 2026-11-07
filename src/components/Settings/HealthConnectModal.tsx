@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   X,
   Check,
-  Apple,
-  Chrome,
   ShieldCheck,
   Activity,
   Heart,
@@ -16,6 +14,7 @@ import {
   CheckCircle2,
   FileCheck,
 } from 'lucide-react';
+import { AppleHealthLogo, GoogleHealthConnectLogo } from '../Common/HealthLogos';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   HealthProvider,
@@ -77,7 +76,6 @@ export default function HealthConnectModal({
 
   const isApple = provider === 'apple';
   const providerTitle = isApple ? 'Apple Health (HealthKit)' : 'Google Health Connect';
-  const ProviderIcon = isApple ? Apple : Chrome;
 
   const togglePermission = (key: keyof HealthPermissions) => {
     const updated = saveHealthPermissions(userId, provider, { [key]: !permissions[key] });
@@ -231,14 +229,12 @@ export default function HealthConnectModal({
 
           {/* Header */}
           <div className="flex items-center gap-4 mb-6 relative z-10">
-            <div
-              className={`p-3.5 rounded-2xl ${
-                isApple
-                  ? 'bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-700/80 text-white shadow-[0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]'
-                  : 'bg-gradient-to-b from-blue-600 to-indigo-900 border border-blue-400/60 text-white shadow-[0_8px_20px_rgba(37,99,235,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]'
-              } shrink-0`}
-            >
-              <ProviderIcon className="w-7 h-7" />
+            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-md shrink-0 flex items-center justify-center bg-white p-1">
+              {isApple ? (
+                <AppleHealthLogo className="w-full h-full" variant="app-icon" />
+              ) : (
+                <GoogleHealthConnectLogo className="w-full h-full" variant="app-icon" />
+              )}
             </div>
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/20 border border-teal-400/40 text-teal-300 text-[10px] font-extrabold uppercase tracking-widest mb-1">

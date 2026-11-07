@@ -13,9 +13,8 @@ import {
   Info,
   ChevronRight,
   RefreshCw,
-  Apple,
-  Chrome,
 } from "lucide-react";
+import { AppleHealthLogo, GoogleHealthConnectLogo } from "../Common/HealthLogos";
 import {
   ResponsiveContainer,
   BarChart,
@@ -269,7 +268,7 @@ export default function WearableCoachWidget({
                 : 'bg-gradient-to-b from-slate-800/90 to-slate-950/90 border-slate-700/70 text-slate-50 shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:border-slate-500/80'
             }`}
           >
-            <Apple className="w-3.5 h-3.5 text-white" />
+            <AppleHealthLogo className="w-3.5 h-3.5" variant="glyph" />
             <span>{isAppleConnected ? ' Apple Health (Live)' : ' Apple Health'}</span>
           </button>
 
@@ -282,7 +281,7 @@ export default function WearableCoachWidget({
                 : 'bg-gradient-to-b from-blue-600/90 to-indigo-900/90 border-blue-400/50 text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)] hover:border-blue-300/70'
             }`}
           >
-            <Chrome className="w-3.5 h-3.5 text-cyan-300" />
+            <GoogleHealthConnectLogo className="w-3.5 h-3.5" variant="color" />
             <span>{isGoogleConnected ? 'Google Health (Live)' : 'Google Health'}</span>
           </button>
 

@@ -5,8 +5,6 @@ import {
   Table,
   CheckCircle2,
   ArrowRight,
-  Apple,
-  Chrome,
   RefreshCw,
   Upload,
   AlertCircle,
@@ -14,6 +12,7 @@ import {
   Heart,
   Footprints,
 } from "lucide-react";
+import { AppleHealthLogo, GoogleHealthConnectLogo } from "../Common/HealthLogos";
 import { motion } from "motion/react";
 import { exportToCSV, exportToFHIR } from "../../services/integrationService";
 import {
@@ -200,8 +199,8 @@ export default function IntegrationsPanel({
 
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
-              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-700/80 text-white shadow-md shrink-0">
-                <Apple className="w-7 h-7 text-white" />
+              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-md shrink-0 flex items-center justify-center bg-white p-1">
+                <AppleHealthLogo className="w-full h-full" variant="app-icon" />
               </div>
               <span
                 className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${
@@ -285,8 +284,8 @@ export default function IntegrationsPanel({
 
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
-              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-blue-600 to-indigo-900 border border-blue-400/60 text-white shadow-md shrink-0">
-                <Chrome className="w-7 h-7 text-cyan-200" />
+              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-blue-200/80 dark:border-blue-500/40 shadow-md shrink-0 flex items-center justify-center bg-white p-1.5">
+                <GoogleHealthConnectLogo className="w-full h-full" variant="app-icon" />
               </div>
               <span
                 className={`text-xs font-extrabold px-3 py-1 rounded-full border uppercase tracking-widest ${

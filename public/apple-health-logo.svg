@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Official Apple Health Coral/Rose/Red Gradient -->
+    <linearGradient id="appleHealthGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF5DA2" />
+      <stop offset="35%" stop-color="#FF2D55" />
+      <stop offset="100%" stop-color="#FF3B30" />
+    </linearGradient>
+    <filter id="appleSquircleShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="rgba(0,0,0,0.12)" />
+    </filter>
+  </defs>
+  
+  <!-- Apple iOS Squircle Surface -->
+  <rect width="512" height="512" rx="115" fill="#FFFFFF" filter="url(#appleSquircleShadow)" />
+  
+  <!-- Apple Health Signature Heart (Top-Right Quadrant) -->
+  <path
+    fill="url(#appleHealthGradient)"
+    d="M 254.0 84.3 L 261.7 84.3 L 269.5 84.8 L 277.2 86.1 L 284.9 88.3 L 292.6 91.7 L 300.4 96.8 L 308.1 103.0 L 315.8 103.8 L 323.6 97.6 L 331.3 92.5 L 339.0 88.8 L 346.7 86.4 L 354.5 84.8 L 362.2 84.3 L 369.9 84.3 L 377.6 85.1 L 385.4 86.9 L 393.1 89.6 L 400.8 93.6 L 408.6 99.5 L 415.7 107.0 L 421.3 114.7 L 425.6 122.4 L 428.5 130.2 L 430.7 137.9 L 431.7 145.7 L 431.7 153.4 L 431.5 161.1 L 430.1 168.9 L 428.3 176.6 L 425.6 184.4 L 422.4 192.1 L 418.7 199.8 L 414.4 207.6 L 409.6 215.3 L 404.3 223.1 L 398.2 230.8 L 391.0 238.5 L 383.2 246.0 L 375.5 253.0 L 367.8 259.4 L 360.1 265.2 L 352.3 270.8 L 344.6 276.5 L 336.9 281.3 L 329.2 286.1 L 321.4 290.1 L 313.7 292.7 L 306.0 291.1 L 298.2 287.1 L 290.5 282.9 L 282.8 277.8 L 275.1 272.7 L 267.3 267.1 L 259.6 261.2 L 251.9 254.8 L 244.2 248.2 L 236.4 241.0 L 229.2 233.2 L 222.6 225.5 L 217.0 217.7 L 211.9 210.0 L 207.7 202.2 L 203.7 194.5 L 200.5 186.8 L 197.5 179.0 L 195.4 171.3 L 194.1 163.5 L 193.3 155.8 L 193.3 148.1 L 194.1 140.3 L 195.7 132.6 L 198.6 124.8 L 202.3 117.1 L 207.4 109.4 L 214.3 101.6 L 222.0 95.2 L 229.8 90.7 L 237.5 87.5 L 245.2 85.6 L 252.9 84.5 Z"
+  />
+</svg>
