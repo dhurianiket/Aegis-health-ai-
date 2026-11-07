@@ -25,7 +25,7 @@
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../hooks/useClinicalContext`, `../../services/ai/voiceService`, `../../lib/geminiUtils...`
 - **[`src\components\AIHelper\WearableCoachWidget.tsx`](file:///E:\Aegis-health-ai-\src\components\AIHelper\WearableCoachWidget.tsx)**
   - *Exports*: `WearableCoachWidgetProps`, `WearableCoachWidget`, `default`
-  - *Imports*: `../../types/wearables`, `../../types/medical`, `../../services/biometricDiagnosticEngine`, `../../services/wearableService`, `../../services/healthSyncService...`
+  - *Imports*: `../Common/HealthLogos`, `../../types/wearables`, `../../types/medical`, `../../services/biometricDiagnosticEngine`, `../../services/wearableService...`
 - **[`src\components\Auth\AuthLoginModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Auth\AuthLoginModal.tsx)**
   - *Exports*: `AuthLoginModal`, `default`
   - *Imports*: `../../lib/firebase/config`, `../../context/AuthContext`
@@ -52,6 +52,8 @@
 - **[`src\components\Common\CitationBadge.tsx`](file:///E:\Aegis-health-ai-\src\components\Common\CitationBadge.tsx)**
   - *Exports*: `renderCitationLink`
   - *Imports*: `../../services/sourceGroundedService`, `../../utils/security`
+- **[`src\components\Common\HealthLogos.tsx`](file:///E:\Aegis-health-ai-\src\components\Common\HealthLogos.tsx)**
+  - *Exports*: `AppleHealthLogo`, `GoogleHealthConnectLogo`
 - **[`src\components\Common\RegionalAudioPlayer.tsx`](file:///E:\Aegis-health-ai-\src\components\Common\RegionalAudioPlayer.tsx)**
   - *Exports*: `RegionalAudioPlayer`
   - *Imports*: `../../services/ai/regionalVoiceService`
@@ -245,13 +247,13 @@
   - *Imports*: `../ABDM/AbdmConnectModal`
 - **[`src\components\Settings\HealthConnectModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\HealthConnectModal.tsx)**
   - *Exports*: `HealthConnectModal`, `default`
-  - *Imports*: `../../services/healthSyncService`, `../../context/AuthContext`, `../../services/wearableService`
+  - *Imports*: `../Common/HealthLogos`, `../../services/healthSyncService`, `../../context/AuthContext`, `../../services/wearableService`
 - **[`src\components\Settings\IdentityLinkingCard.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\IdentityLinkingCard.tsx)**
   - *Exports*: `IdentityLinkingCard`, `default`
   - *Imports*: `../../context/AuthContext`, `../../lib/firebase/config`
 - **[`src\components\Settings\IntegrationsPanel.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\IntegrationsPanel.tsx)**
   - *Exports*: `IntegrationsPanel`, `default`
-  - *Imports*: `../../services/integrationService`, `../../services/healthSyncService`, `../../context/AuthContext`, `./HealthConnectModal`, `./AbdmConnectModal...`
+  - *Imports*: `../Common/HealthLogos`, `../../services/integrationService`, `../../services/healthSyncService`, `../../context/AuthContext`, `./HealthConnectModal...`
 - **[`src\components\Settings\SecurityAuditViewer.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\SecurityAuditViewer.tsx)**
   - *Exports*: `SecurityAuditViewer`
   - *Imports*: `../../services/auditLogService`
