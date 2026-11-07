@@ -54,10 +54,16 @@ export default function FamilyHub() {
       collection(db, "users", user.uid, "familyRelations"),
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setRelations(data);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setRelations(data);
+      },
+      (error) => {
+        console.warn("[FamilyHub] familyRelations onSnapshot error:", error);
+      }
+    );
 
     return () => unsubscribe();
   }, [user]);

@@ -71,7 +71,9 @@ setAuthTokenProvider(async () => {
 export const db = (() => {
   try {
     return initializeFirestore(app, {
-      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+      ignoreUndefinedProperties: true,
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+      experimentalAutoDetectLongPolling: true,
     });
   } catch {
     return getFirestore(app);

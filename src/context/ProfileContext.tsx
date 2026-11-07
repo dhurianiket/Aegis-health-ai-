@@ -6,6 +6,7 @@ import {
   where,
   onSnapshot,
   addDoc,
+  setDoc,
   serverTimestamp,
   doc,
   updateDoc,
@@ -171,23 +172,52 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProfile = async (id: string, updates: Partial<UserProfile>) => {
+    // 1. Sanitize updates to strip any undefined values that cause Firestore exceptions
+    const cleanUpdates = Object.entries(updates).reduce<Record<string, any>>(
+      (acc, [key, val]) => {
+        if (val !== undefined) {
+          acc[key] = val;
+        }
+        return acc;
+      },
+      {}
+    );
+
     if (!user) {
       setProfiles((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
+        prev.map((p) => (p.id === id ? { ...p, ...cleanUpdates } : p))
       );
       if (activeProfile?.id === id) {
-        setActiveProfile({ ...activeProfile, ...updates });
+        setActiveProfile({ ...activeProfile, ...cleanUpdates });
       }
       return;
     }
+
     try {
-      const docRef = doc(db, "users", user.uid, "profiles", id);
-      await updateDoc(docRef, updates);
-      setProfiles((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
+      // If updating a sandbox/demo placeholder or if doc doesn't exist, create real Firestore doc ID
+      const targetId = id.startsWith("sandbox-")
+        ? (profiles.find((p) => !p.id.startsWith("sandbox-"))?.id || doc(collection(db, "users", user.uid, "profiles")).id)
+        : id;
+      const docRef = doc(db, "users", user.uid, "profiles", targetId);
+
+      // Use setDoc with merge: true to avoid NOT_FOUND errors if the doc wasn't created yet
+      await setDoc(
+        docRef,
+        {
+          ...cleanUpdates,
+          userId: user.uid,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
       );
-      if (activeProfile?.id === id) {
-        setActiveProfile({ ...activeProfile, ...updates });
+
+      setProfiles((prev) =>
+        prev.map((p) =>
+          p.id === id || p.id === targetId ? { ...p, ...cleanUpdates, id: targetId } : p
+        )
+      );
+      if (activeProfile?.id === id || activeProfile?.id === targetId) {
+        setActiveProfile({ ...activeProfile, ...cleanUpdates, id: targetId });
       }
     } catch (error) {
       console.error("Failed to update profile:", error);

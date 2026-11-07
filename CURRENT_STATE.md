@@ -1,6 +1,27 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot LXXXIX — November 7, 2026
+## Current Snapshot XC — November 7, 2026
+### Completed by: Antigravity AI Pair Programmer (Profile Persistence Hardening & Firestore Listener Stability)
+### Tasks Completed:
+- **Profile Update Failure & Firestore Serialization Hardening (`ProfileManagement.tsx`, `ProfileContext.tsx`, `config.ts`)**:
+  - 🔍 **Root Cause Diagnosed**:
+    - **Undefined Field Serialization Failure**: In `ProfileManagement.tsx`, adult profiles (e.g. DOB 13-01-1997) passed `paediatricConsent: undefined`, and empty optional inputs passed `googleFormId: undefined` into `updateProfile`. In Firebase Web SDK, calling `updateDoc()` with any `undefined` field immediately throws: `FirebaseError: Function updateDoc() called with invalid data. Unsupported field value: undefined`.
+    - **`updateDoc` vs Missing Document**: Calling `updateDoc(docRef, updates)` on un-persisted demo/sandbox profiles or freshly signed-in users threw `NOT_FOUND` because `updateDoc` requires an existing document.
+    - **Firestore Settings Omission**: `initializeFirestore` omitted `ignoreUndefinedProperties: true` and `experimentalAutoDetectLongPolling: true`.
+  - 🛠️ **Architectural Solution Implemented**:
+    - **Global Firestore Configuration (`src/lib/firebase/config.ts`)**: Enabled `ignoreUndefinedProperties: true` to prevent unhandled serialization errors and `experimentalAutoDetectLongPolling: true` to stabilize WebChannel stream cycling.
+    - **Atomic Upsert Engine (`src/context/ProfileContext.tsx`)**: Upgraded `updateProfile` to:
+      1. Programmatically filter out all `undefined` keys from updates (`cleanUpdates`).
+      2. Handle temporary sandbox IDs (`sandbox-*`) cleanly by mapping to a real Firestore document ID.
+      3. Use `setDoc(docRef, { ...cleanUpdates, userId: user.uid, updatedAt: serverTimestamp() }, { merge: true })`, ensuring seamless upsert whether the document exists or not.
+    - **Sanitized UI Payloads (`src/components/Profile/ProfileManagement.tsx`)**: Replaced raw undefined keys with conditional spread (`...(paediatricConsent ? { paediatricConsent } : {})`), trimmed fields, and surfaced transparent error messages (`error?.message`) instead of a generic static failure string.
+    - **Listener Error Trapping (`src/components/Profile/FamilyHub.tsx`)**: Added missing `(error) => { ... }` error handling callback to `onSnapshot` to prevent unhandled rejection during stream cycling.
+- **Verification & Integrity**:
+  - 🧪 **Unit Tests**: Full test suite passing across App, ClinicalContext, and DPDP suites.
+  - ⚡ **Type Safety**: `npx tsc --noEmit` &rarr; 0 errors.
+  - 🛡️ **GitGuardian Scan**: 0 secrets detected.
+
+## Previous Snapshot LXXXIX — November 7, 2026
 ### Completed by: Antigravity AI Pair Programmer (Official Apple Health & Google Health Connect Brand Integration)
 ### Tasks Completed:
 - **Official Brand Iconography Integration for Apple Health & Google Health Connect**:

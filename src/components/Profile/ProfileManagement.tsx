@@ -156,8 +156,8 @@ export default function ProfileManagement() {
       }
 
       const updates: Partial<UserProfile> = {
-        fullName: editFullName,
-        name: editFullName,
+        fullName: editFullName.trim(),
+        name: editFullName.trim(),
         dob: editDob,
         gender: editGender as Gender,
         bloodType: editBloodType,
@@ -165,9 +165,9 @@ export default function ProfileManagement() {
         weight: editWeight ? Number(editWeight) : undefined,
         bmi: (editHeight && editWeight) ? Number(calculateBMI(Number(editWeight), Number(editHeight))) : undefined,
         clinicalNotes: editDoctorNotes,
-        googleFormId: editGoogleFormId,
+        googleFormId: editGoogleFormId?.trim() || undefined,
         doctorNotes: editDoctorNotes.split("\n").filter(Boolean),
-        paediatricConsent,
+        ...(paediatricConsent ? { paediatricConsent } : {}),
         ...(editAvatarConfig ? { avatarConfig: editAvatarConfig } : {}),
       };
       await updateProfile(id, updates);
@@ -180,7 +180,7 @@ export default function ProfileManagement() {
     } catch (error: any) {
       setIsSaving(false);
       logger.error("Failed to update profile", { error });
-      setEditError("Failed to update profile");
+      setEditError(error?.message || "Failed to update profile");
     }
   };
 
