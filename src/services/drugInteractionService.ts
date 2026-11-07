@@ -1,3 +1,6 @@
+import { BiochemicalClashAnalysis, analyzeBiochemicalDrugClash } from './ai/biochemicalClashService';
+export type { BiochemicalClashAnalysis };
+export { analyzeBiochemicalDrugClash };
 /**
  * drugInteractionService.ts — RxNav & OpenFDA Pharmacology Safety Intelligence
  * Implements fuzzy RxCUI resolution via NLM Approximate Match, OpenFDA FAERS adverse event aggregation,
@@ -58,6 +61,7 @@ export interface EnrichedInteractionPair {
   combinedRiskRating: 'critical' | 'moderate' | 'safe';
   clinicalRationale: string;
   recommendations: string[];
+  biochemicalClash?: BiochemicalClashAnalysis;
 }
 
 export interface EnrichedInteractionResult {

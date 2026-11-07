@@ -31,6 +31,7 @@ import {
 
 export interface Env {
   GEMINI_API_KEY: string;
+  NVIDIA_NIM_API_KEY?: string;
   TURNSTILE_SECRET?: string;
   TURNSTILE_ENFORCE?: string;
   FIREBASE_PROJECT_ID?: string;
@@ -546,6 +547,80 @@ export default {
           "X-AI-Cache-Status": aigCacheStatus,
           "X-Turnstile-Status": turnstileVerified ? "verified" : (env.TURNSTILE_SECRET ? "unverified" : "disabled"),
           "X-Aegis-Output-Guard": outputGuard,
+        },
+      });
+    }
+
+        // 4. NVIDIA NIM Proxy Route
+    if (url.pathname === "/api/ai/nim" && request.method === "POST") {
+      const authHeader = request.headers.get("Authorization") || "";
+      const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+
+      if (!bearerToken) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", message: "Missing Authorization Bearer token", request_id: requestId }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const projectId = env.FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID;
+      let authenticated = false;
+      let userUid: string | undefined;
+
+      if (bearerToken.includes(".")) {
+        const verifyResult = await verifyFirebaseIdToken(bearerToken, projectId);
+        if (verifyResult.valid) {
+          authenticated = true;
+          userUid = verifyResult.uid;
+        } else {
+          console.warn(`[Auth] JWT verification failed for NIM request ${requestId}:`, verifyResult.error);
+        }
+      }
+
+      if (!authenticated) {
+        return new Response(
+          JSON.stringify({
+            error: "Unauthorized",
+            message: "Invalid or expired credentials. Please provide a verified Firebase ID token.",
+            request_id: requestId,
+          }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const nimKey = env.NVIDIA_NIM_API_KEY;
+      if (!nimKey) {
+        return new Response(
+          JSON.stringify({
+            error: "Service Misconfiguration",
+            message: "NVIDIA NIM API key is not configured on edge server.",
+            request_id: requestId,
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
+      const bodyText = await request.text();
+      const upstreamResponse = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${nimKey}`,
+        },
+        body: bodyText,
+        signal: clientSignal,
+      });
+
+      const data = await upstreamResponse.text();
+      return new Response(data, {
+        status: upstreamResponse.status,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "X-Request-Id": requestId,
+          "X-Provider": "nvidia-nim",
         },
       });
     }

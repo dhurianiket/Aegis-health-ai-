@@ -318,6 +318,9 @@
 - **[`src\services\ai\bedrockService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\bedrockService.ts)**
   - *Exports*: `BEDROCK_MODELS`, `BedrockModelKey`, `DEFAULT_BEDROCK_REGION`, `DEFAULT_EXTRACTION_MODEL`, `DEFAULT_REASONING_MODEL`, `BedrockMessageContent`, `BedrockMessage`, `BedrockInferenceConfig`, `BedrockConverseParams`, `BedrockConverseResponse`, `BedrockError`, `__setBedrockFetchForTests`, `UnifiedAIParams`, `UnifiedAIResponse`
   - *Imports*: `../../lib/geminiClient`, `./promptFramework`
+- **[`src\services\ai\biochemicalClashService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\biochemicalClashService.ts)**
+  - *Exports*: `CytochromeP450Clash`, `PharmacodynamicSynergy`, `BiochemicalClashAnalysis`, `calculateHeuristicClash`
+  - *Imports*: `./nvidiaNimService`, `../../utils/aiUtils`
 - **[`src\services\ai\coachService.test.ts`](file:///E:\Aegis-health-ai-\src\services\ai\coachService.test.ts)**
   - *Imports*: `./coachService`, `../../components/Common/CitationBadge`, `../../types/wearables`, `../biometricDiagnosticEngine`
 - **[`src\services\ai\coachService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\coachService.ts)**
@@ -325,7 +328,7 @@
   - *Imports*: `../../lib/geminiClient`, `../../types/ai`, `./contextService`, `./safetyGuardrail`, `./promptFramework...`
 - **[`src\services\ai\consensusExtractionService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\consensusExtractionService.ts)**
   - *Exports*: `ConsensusStatus`, `ConsensusObservation`, `ConsensusPrescription`, `DualModelConsensusReport`, `normalizeMarkerName`, `valuesMatch`
-  - *Imports*: `./bedrockService`, `./promptFramework`, `../../utils/aiUtils`
+  - *Imports*: `./bedrockService`, `./nvidiaNimService`, `./promptFramework`, `../../utils/aiUtils`
 - **[`src\services\ai\contextService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\contextService.ts)**
   - *Exports*: `getPatientContext`, `FormatContextOptions`, `formatContextForPrompt`
   - *Imports*: `../../lib/firebase/firestore`, `../alertService`, `../../types/ai`, `../../types/medical`, `../../utils/dateUtils...`
@@ -338,6 +341,12 @@
 - **[`src\services\ai\geneticService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\geneticService.ts)**
   - *Exports*: `GeneticRiskAnalysis`, `analyzeSharedRisks`
   - *Imports*: `../../lib/geminiClient`, `../../types/medical`, `./promptFramework`, `../../utils/aiUtils`
+- **[`src\services\ai\indicAmbientScribeService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\indicAmbientScribeService.ts)**
+  - *Exports*: `IndicSoapNotes`, `IndicSbarSummary`, `IndicExtractedVitals`, `IndicScribeResult`, `generateHeuristicScribe`
+  - *Imports*: `./nvidiaNimService`, `../../utils/aiUtils`
+- **[`src\services\ai\nvidiaNimService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\nvidiaNimService.ts)**
+  - *Exports*: `NVIDIA_MODELS`, `NvidiaModelKey`, `DEFAULT_NIM_MODEL`, `DEFAULT_NIM_GATEWAY`, `NimChatMessage`, `NimCompletionParams`, `NimUsage`, `NimCompletionResponse`, `NimError`, `__setNimFetchForTests`
+  - *Imports*: `../../lib/authTokenProvider`, `../../lib/geminiClient`
 - **[`src\services\ai\promptFramework.ts`](file:///E:\Aegis-health-ai-\src\services\ai\promptFramework.ts)**
   - *Exports*: `CORE_SYSTEM_PROMPT`, `OUTPUT_FORMAT_JSON`, `LabExtractionSchema`, `LabExtraction`, `normalizeObservation`, `GeminiQuotaError`, `GeminiInputError`, `GeminiTimeoutError`, `UnifiedLabValueSchema`, `UnifiedPrescriptionSchema`, `UnifiedExtractionResultSchema`, `UnifiedLabValue`, `UnifiedPrescription`, `UnifiedExtractionResult`
   - *Imports*: `../../lib/geminiClient`, `../../utils/aiUtils`, `../../lib/firebase/config`, `../usageService`, `../cacheService`
@@ -395,6 +404,9 @@
   - *Imports*: `../../../types/ai`, `./specialistFactory`
 - **[`src\services\ai\specialists\safetyCore.ts`](file:///E:\Aegis-health-ai-\src\services\ai\specialists\safetyCore.ts)**
   - *Exports*: `PATIENT_DATA_TAG`, `PATIENT_DATA_OPEN`, `PATIENT_DATA_CLOSE`, `SAFETY_CORE`, `withSafetyCore`
+- **[`src\services\ai\specialists\specialistConsensus.ts`](file:///E:\Aegis-health-ai-\src\services\ai\specialists\specialistConsensus.ts)**
+  - *Exports*: `SpecialistAuditResult`
+  - *Imports*: `../nvidiaNimService`, `../../../utils/aiUtils`
 - **[`src\services\ai\specialists\specialistFactory.ts`](file:///E:\Aegis-health-ai-\src\services\ai\specialists\specialistFactory.ts)**
   - *Exports*: `SPECIALISTS`, `getSpecialist`, `getSpecialistSystemPrompt`
   - *Imports*: `../../../types/ai`, `./cardiologist`, `./endocrinologist`, `./neurologist`, `./gastroenterologist...`
@@ -426,7 +438,7 @@
   - *Imports*: `../types/medical`
 - **[`src\services\drugInteractionService.ts`](file:///E:\Aegis-health-ai-\src\services\drugInteractionService.ts)**
   - *Exports*: `RxCuiMatch`, `AdverseEventReaction`, `BlackBoxWarning`, `ClinicalCitation`, `OpenFdaAdverseEventSummary`, `EnrichedInteractionPair`, `EnrichedInteractionResult`, `CURATED_RXCUI_REGISTRY`, `CURATED_FDA_KNOWLEDGE_BASE`, `cleanDrugQuery`
-  - *Imports*: `../types/health`, `./drugLabEngine`
+  - *Imports*: `./ai/biochemicalClashService`, `../types/health`, `./drugLabEngine`
 - **[`src\services\drugLabEngine.ts`](file:///E:\Aegis-health-ai-\src\services\drugLabEngine.ts)**
   - *Exports*: `LabBiomarker`, `DrugLabContraindication`, `BioRegimenSafetySummary`, `isMedInCategory`, `parseNumericValue`, `evaluateDrugLabContraindications`, `buildBioRegimenSafetySummary`
   - *Imports*: `../types/health`

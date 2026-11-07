@@ -853,6 +853,7 @@ export default function UploadCenter({
                     consensusConfidence: obs.consensusConfidence,
                     discrepancyNote: obs.discrepancyNote,
                     claudeValue: obs.claudeValue,
+                    nimValue: obs.nimValue,
                   }));
                 }
                 if (consensus.prescriptions?.length && extraction.medications) {
@@ -1380,8 +1381,8 @@ export default function UploadCenter({
                              <ShieldCheck className="w-3.5 h-3.5" />
                              <span>
                                 {result.consensus.overallConsensus === 'DISCREPANCY_FLAGGED'
-                                   ? `⚠️ Dual AI Flagged: ${result.consensus.discrepancyMarkers} marker discrepancy`
-                                   : `🛡️ Dual AI Verified: Gemini 3.8 Flash + Gemini 4 Argon`}
+                                   ? `⚠️ AI Flagged: ${result.consensus.discrepancyMarkers} marker discrepancy`
+                                   : (result.consensus.engine ? `🛡️ ${result.consensus.engine}` : `🛡️ Tri-Model Verified: Gemini 3.8 Flash + Claude 3.7 + NVIDIA Nemotron-70B`)}
                              </span>
                              <span className="text-[10px] opacity-75 font-mono">({result.consensus.agreementPercentage}%)</span>
                           </div>
@@ -1504,7 +1505,8 @@ export default function UploadCenter({
                                      </div>
                                      {m.claudeValue !== undefined && m.claudeValue !== null && m.consensusStatus === 'DISCREPANCY' && (
                                        <div className="text-[10px] text-amber-500/90 font-mono">
-                                         Argon Audit: {m.claudeValue}
+                                         Claude: {m.claudeValue}</div>)}
+                                      {m.nimValue !== undefined && m.nimValue !== null && m.consensusStatus === 'DISCREPANCY' && (<div className="text-[10px] text-amber-500/90 font-mono">Nemotron: {m.nimValue}
                                        </div>
                                      )}
                                   </td>
