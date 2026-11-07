@@ -142,11 +142,13 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
         </nav>
 
         <div className="p-3 mx-4 mb-4 rounded-xl bg-black/10 border border-[var(--color-border)] flex flex-col gap-1.5 items-center text-center">
-          <div className="bg-white p-1 rounded-md shadow-xs">
+          <div className="bg-white p-1 rounded-md shadow-xs flex items-center justify-center min-w-[80px] min-h-[28px]">
             <img 
               src="/nvidia-inception-badge.svg" 
               alt="Member of the NVIDIA Inception program" 
-              className="h-6 w-auto object-contain" 
+              width={80}
+              height={24}
+              className="h-6 w-[80px] object-contain" 
             />
           </div>
           <span className="text-[10px] text-[var(--color-text-muted)] font-medium leading-tight">

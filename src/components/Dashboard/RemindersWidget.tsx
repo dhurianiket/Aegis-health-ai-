@@ -40,7 +40,7 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
 
   if (loading) {
     return (
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm animate-pulse">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm animate-pulse min-h-[200px] flex flex-col justify-between">
         <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Lab Reminders</h3>
         <div className="space-y-4">
           <div className="h-16 bg-[var(--color-border)] rounded-xl"></div>
@@ -52,7 +52,7 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
 
   if (reminders.length === 0) {
     return (
-      <div className="p-8 rounded-2xl bg-surface border border-border text-center text-sm text-muted flex flex-col items-center justify-center gap-3">
+      <div className="p-8 rounded-2xl bg-surface border border-border text-center text-sm text-muted flex flex-col items-center justify-center gap-3 min-h-[200px]">
         <CalendarClock className="w-8 h-8 opacity-20" />
         <p>No upcoming lab reminders. Upload a new lab report to generate follow-ups.</p>
       </div>
@@ -60,7 +60,7 @@ export default function RemindersWidget({ userId }: RemindersWidgetProps) {
   }
 
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm">
+    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm min-h-[200px]">
       <div className="flex items-center gap-2 mb-4">
         <CalendarClock className="w-5 h-5 text-[var(--color-primary)]" />
         <h3 className="text-lg font-semibold text-[var(--color-text)]">Lab Reminders</h3>

@@ -588,12 +588,12 @@ export default function Dashboard({
             {/* 2. 4-Column Apple HIG + SpotlightCard Bento KPI Strip */}
             <motion.div
               variants={tileVariants}
-              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5"
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 min-h-[148px]"
             >
               <SpotlightCard
                 accentColor="indigo"
                 enableContainerQuery
-                className="p-5 rounded-[24px] flex flex-col justify-between gap-3"
+                className="p-5 rounded-[24px] flex flex-col justify-between gap-3 min-h-[148px]"
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
@@ -627,7 +627,7 @@ export default function Dashboard({
               <SpotlightCard
                 accentColor="emerald"
                 enableContainerQuery
-                className="p-5 rounded-[24px] flex flex-col justify-between gap-3"
+                className="p-5 rounded-[24px] flex flex-col justify-between gap-3 min-h-[148px]"
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
@@ -662,7 +662,7 @@ export default function Dashboard({
               <SpotlightCard
                 accentColor="amber"
                 enableContainerQuery
-                className="p-5 rounded-[24px] flex flex-col justify-between gap-3"
+                className="p-5 rounded-[24px] flex flex-col justify-between gap-3 min-h-[148px]"
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
@@ -700,7 +700,7 @@ export default function Dashboard({
               <SpotlightCard
                 accentColor="rose"
                 enableContainerQuery
-                className="p-5 rounded-[24px] flex flex-col justify-between gap-3"
+                className="p-5 rounded-[24px] flex flex-col justify-between gap-3 min-h-[148px]"
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
@@ -1013,6 +1013,7 @@ export default function Dashboard({
                     </div>
                   }
                 >
+                <div className="w-full [content-visibility:auto] [contain-intrinsic-size:520px]">
                   <HolographicBodyScanner
                     labObservations={keyLabs.map((l) => ({
                       name: l.markerName,
@@ -1027,6 +1028,7 @@ export default function Dashboard({
                       window.location.hash = "specialist";
                     }}
                   />
+                </div>
                 </Suspense>
 
                 <Suspense

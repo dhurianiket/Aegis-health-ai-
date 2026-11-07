@@ -83,7 +83,10 @@ export function useWearableTelemetry(): UseWearableTelemetryResult {
           if (
             record.id?.startsWith('telemetry-') ||
             record.id?.startsWith('mock-') ||
-            record.id?.startsWith('demo-')
+            record.id?.startsWith('demo-') ||
+            (record as any).rawId?.startsWith('telemetry-') ||
+            (record as any).rawId?.startsWith('mock-') ||
+            (record as any).rawId?.startsWith('demo-')
           ) {
             return true;
           }
@@ -103,7 +106,7 @@ export function useWearableTelemetry(): UseWearableTelemetryResult {
           return false;
         };
 
-        if (latest && (isProviderConnected || !isSyntheticMock(latest))) {
+        if (latest && isProviderConnected && !isSyntheticMock(latest)) {
           // Real connected hardware or provider data exists — use it
           setTelemetry(latest);
           setHistory(allReadings.filter((r) => !isSyntheticMock(r)));
@@ -120,7 +123,7 @@ export function useWearableTelemetry(): UseWearableTelemetryResult {
           clearPersistedTelemetry(userId);
 
           // If an obsolete mock document exists in Firestore, quietly delete it so it won't contaminate future loads
-          if (latest && isSyntheticMock(latest)) {
+          if (latest && (isSyntheticMock(latest) || !isProviderConnected)) {
             deleteWearableTelemetry(userId, latest.id).catch(() => {});
           }
         }

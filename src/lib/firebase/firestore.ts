@@ -608,7 +608,7 @@ export function subscribeToLatestTelemetry(
     q,
     (snapshot) => {
       const readings = snapshot.docs.map(
-        (d) => ({ ...d.data() as WearableBiometrics, id: d.id })
+        (d) => ({ ...d.data() as WearableBiometrics, id: d.id, rawId: (d.data() as any)?.id })
       );
       callback(readings[0] ?? null, readings);
     },

@@ -172,16 +172,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProfile = async (id: string, updates: Partial<UserProfile>) => {
-    // 1. Sanitize updates to strip any undefined values that cause Firestore exceptions
-    const cleanUpdates = Object.entries(updates).reduce<Record<string, any>>(
-      (acc, [key, val]) => {
+    // 1. Recursively sanitize updates to strip any undefined values that cause Firestore exceptions
+    const sanitizePayload = (obj: any): any => {
+      if (obj === null || typeof obj !== "object") return obj;
+      if (Array.isArray(obj)) return obj.map(sanitizePayload);
+      return Object.entries(obj).reduce<Record<string, any>>((acc, [key, val]) => {
         if (val !== undefined) {
-          acc[key] = val;
+          acc[key] = sanitizePayload(val);
         }
         return acc;
-      },
-      {}
-    );
+      }, {});
+    };
+    const cleanUpdates = sanitizePayload(updates);
 
     if (!user) {
       setProfiles((prev) =>

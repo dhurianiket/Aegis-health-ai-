@@ -76,20 +76,49 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 250, y: 250 });
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const cachedRectRef = useRef<DOMRect | null>(null);
+  const rafIdRef = useRef<number | null>(null);
 
-  // Mouse move 3D tilt tracking & SpotlightCard dynamic cursor lighting (react-bits inspired)
+  const handleMouseEnter = () => {
+    if (containerRef.current) {
+      cachedRectRef.current = containerRef.current.getBoundingClientRect();
+    }
+  };
+
+  // RAF-throttled mousemove to eliminate forced reflows and excessive re-renders
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    const rx = -(y / (rect.height / 2)) * 8;
-    const ry = (x / (rect.width / 2)) * 12;
-    setMouseRotation({ rx, ry });
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    if (rafIdRef.current !== null) return;
+
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (!cachedRectRef.current && containerRef.current) {
+        cachedRectRef.current = containerRef.current.getBoundingClientRect();
+      }
+      const rect = cachedRectRef.current;
+      if (!rect) return;
+
+      const x = clientX - rect.left - rect.width / 2;
+      const y = clientY - rect.top - rect.height / 2;
+      const rx = -(y / (rect.height / 2)) * 8;
+      const ry = (x / (rect.width / 2)) * 12;
+
+      setMouseRotation((prev) => {
+        if (Math.abs(prev.rx - rx) < 0.25 && Math.abs(prev.ry - ry) < 0.25) return prev;
+        return { rx, ry };
+      });
+      setMousePos({ x: clientX - rect.left, y: clientY - rect.top });
+    });
   };
 
   const handleMouseLeave = () => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    cachedRectRef.current = null;
     setMouseRotation({ rx: 0, ry: 0 });
   };
 
@@ -182,6 +211,7 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
   return (
     <div
       ref={containerRef}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={`w-full glass-card-ultra-3d p-5 sm:p-7 md:p-8 space-y-6 relative overflow-hidden ${className}`}
