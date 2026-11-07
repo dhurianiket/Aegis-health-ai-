@@ -574,6 +574,21 @@ export async function saveWearableTelemetry(
 }
 
 /**
+ * Deletes a WearableBiometrics snapshot from Firestore (used for clearing mock or obsolete readings).
+ */
+export async function deleteWearableTelemetry(
+  userId: string,
+  telemetryId: string
+): Promise<void> {
+  const pathString = `users/${userId}/wearableTelemetry/${telemetryId}`;
+  try {
+    await deleteDoc(doc(db, 'users', userId, 'wearableTelemetry', telemetryId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, pathString);
+  }
+}
+
+/**
  * Opens a real-time onSnapshot listener on the user's wearableTelemetry subcollection.
  * Calls callback with the most recent WearableBiometrics reading (or null if none exist).
  * Returns an unsubscribe function — MUST be called on component unmount to prevent leaks.

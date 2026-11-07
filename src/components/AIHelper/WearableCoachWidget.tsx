@@ -63,14 +63,18 @@ export default function WearableCoachWidget({
   onSyncRequest,
 }: WearableCoachWidgetProps) {
   const { user } = useAuth();
-  const isDisconnected = initialTelemetry === null;
+  const isDisconnected = !initialTelemetry || initialTelemetry.connectionStatus === 'disconnected';
 
-  // Use state to allow mock toggles/updates if interactive
-  const [telemetry, setTelemetry] = useState<WearableBiometrics>(() => {
-    if (initialTelemetry) return initialTelemetry;
-    return generateMockTelemetry("demo_user");
+  // Use state to allow real or user-overridden telemetry
+  const [telemetry, setTelemetry] = useState<WearableBiometrics | null>(() => {
+    return initialTelemetry ?? null;
   });
-  const activeUserId = user?.uid || telemetry.userId || 'demo-user-id';
+
+  useEffect(() => {
+    setTelemetry(initialTelemetry ?? null);
+  }, [initialTelemetry]);
+
+  const activeUserId = user?.uid || telemetry?.userId || 'demo-user-id';
   const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'synced' | 'error'>('idle');
@@ -87,8 +91,18 @@ export default function WearableCoachWidget({
   // Compute correlation matrix dynamically if not explicitly passed
   const correlation = useMemo<BiometricDiagnosticCorrelation>(() => {
     if (initialCorrelation) return initialCorrelation;
+    if (!telemetry || isDisconnected) {
+      return {
+        metabolicAdaptations: [],
+        recoveryOverrides: [],
+        activityFilters: [],
+        safetyAlerts: [],
+        readinessScore: 0,
+        summaryMarkdown: '',
+      };
+    }
     return evaluateBiometricDiagnosticCorrelation(telemetry, labResults, imagingFindings);
-  }, [telemetry, labResults, imagingFindings, initialCorrelation]);
+  }, [telemetry, labResults, imagingFindings, initialCorrelation, isDisconnected]);
 
   const readinessScore = correlation.readinessScore;
 
@@ -127,9 +141,9 @@ export default function WearableCoachWidget({
   }, [readinessScore, isDisconnected]);
 
   // Data for Panel 2: Sleep Architecture Recharts
-  const hasSleepData = Boolean(!isDisconnected && telemetry.sleep && telemetry.sleep.totalMinutes > 0);
+  const hasSleepData = Boolean(!isDisconnected && telemetry?.sleep && telemetry.sleep.totalMinutes > 0);
   const sleepData = useMemo(() => {
-    if (!hasSleepData || !telemetry.sleep) return [];
+    if (!hasSleepData || !telemetry?.sleep) return [];
     return [
       {
         name: "Stage Minutes",
@@ -138,11 +152,11 @@ export default function WearableCoachWidget({
         Light: telemetry.sleep.lightMinutes,
       },
     ];
-  }, [telemetry.sleep, hasSleepData]);
+  }, [telemetry?.sleep, hasSleepData]);
 
   // Historical micro-trend data for Panel 3 sparklines
   const sparklineData = useMemo(() => {
-    if (isDisconnected) {
+    if (isDisconnected || !telemetry) {
       return [
         { day: "M", rhr: 0, hrv: 0, spo2: 0, steps: 0 },
         { day: "T", rhr: 0, hrv: 0, spo2: 0, steps: 0 },
@@ -170,7 +184,7 @@ export default function WearableCoachWidget({
     setIsSyncing(true);
     setSyncStatus('idle');
     try {
-      await onSyncRequest(overrides ?? telemetry);
+      await onSyncRequest(overrides ?? telemetry ?? {});
       setSyncStatus('synced');
       setSyncState(getHealthSyncState(activeUserId));
       setTimeout(() => setSyncStatus('idle'), 3000);
@@ -379,7 +393,7 @@ export default function WearableCoachWidget({
             </div>
             <div className="text-right">
               <p className="text-xs font-bold text-slate-300">
-                Sleep Contribution: {isDisconnected ? '--' : Math.round(((telemetry.sleep?.sleepScore ?? 80) / 100) * 35)}/35 pts
+                Sleep Contribution: {isDisconnected || !telemetry?.sleep ? '--' : Math.round(((telemetry.sleep.sleepScore ?? 80) / 100) * 35)}/35 pts
               </p>
               <p className="text-xs font-bold text-slate-300">
                 HRV Baseline: {isDisconnected ? '--' : (telemetry?.hrv ?? 0)} ms
@@ -413,7 +427,7 @@ export default function WearableCoachWidget({
               </h3>
             </div>
             <span className="text-xs font-bold text-indigo-300">
-              {isDisconnected ? 'No Sleep Synced' : `Score: ${telemetry.sleep?.sleepScore ?? 0}/100`}
+              {isDisconnected || !telemetry?.sleep ? 'No Sleep Synced' : `Score: ${telemetry.sleep.sleepScore ?? 0}/100`}
             </span>
           </div>
 

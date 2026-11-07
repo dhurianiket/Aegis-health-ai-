@@ -125,12 +125,21 @@ export const HolographicBodyScanner: React.FC<HolographicBodyScannerProps> = ({
   };
 
   // Determine whether telemetry is an active connected device vs standby
-  // Note: telemetry === undefined falls back to baseline values for stress test compatibility
+  // telemetry === null represents an explicit disconnected / unlinked state (zero fake numbers)
+  // telemetry === undefined preserves baseline values for demo / component test harnesses
   const isExplicitlyDisconnected = telemetry === null;
   const isZeroTelemetry = Boolean(telemetry && telemetry.heartRate === 0);
-  const isLiveConnected = Boolean(telemetry && typeof telemetry.heartRate === 'number' && telemetry.heartRate > 0 && telemetry.connectionStatus !== 'disconnected');
+  const isLiveConnected = Boolean(
+    telemetry &&
+    typeof telemetry.heartRate === 'number' &&
+    telemetry.heartRate > 0 &&
+    telemetry.connectionStatus !== 'disconnected'
+  );
 
-  // Vitals resolution
+  // Vitals resolution:
+  // Explicitly disconnected -> null (-- bpm / --%)
+  // Zero telemetry stress test -> 0
+  // Live connected / baseline -> telemetry value or demo baseline
   const heartRate = isExplicitlyDisconnected
     ? null
     : isZeroTelemetry

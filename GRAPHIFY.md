@@ -547,7 +547,7 @@
   - *Imports*: `../lib/turnstileTokenProvider`
 - **[`src\hooks\useWearableTelemetry.ts`](file:///E:\Aegis-health-ai-\src\hooks\useWearableTelemetry.ts)**
   - *Exports*: `UseWearableTelemetryResult`, `useWearableTelemetry`
-  - *Imports*: `../context/AuthContext`, `../lib/firebase/firestore`, `../services/wearableService`, `../types/wearables`
+  - *Imports*: `../context/AuthContext`, `../lib/firebase/firestore`, `../services/wearableService`, `../services/healthSyncService`, `../types/wearables`
 
 ### 📐 TypeScript Schemas & Types
 - **[`src\types\abdm.ts`](file:///E:\Aegis-health-ai-\src\types\abdm.ts)**
