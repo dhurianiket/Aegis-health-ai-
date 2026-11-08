@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Shield, Sparkles, AlertCircle, Check, Loader2 } from "lucide-react";
+import { ShieldCheck, Sparkles, AlertCircle, Check, Loader2 } from "lucide-react";
 import {
   collection,
   query,
@@ -24,10 +24,10 @@ const steps = [
     id: "data_storage",
     title: "Secure Storage",
     icon: (
-      <Shield
+      <ShieldCheck
         size={32}
-        className="text-[var(--color-primary)]"
-        strokeWidth={1.5}
+        className="text-emerald-400"
+        strokeWidth={1.8}
       />
     ),
     desc: "Your health records are encrypted and stored in your private vault using Firebase. We never share your data with unauthorized third parties.",

@@ -2,7 +2,6 @@ import { isStandalone } from "../../lib/pwa";
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
-  Activity,
   Upload,
   Pill,
   Calendar,
@@ -87,8 +86,8 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
         <div className="p-6 pb-2 shrink-0">
           <div className="flex flex-col gap-1 mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[var(--color-primary)] rounded-[12px] flex items-center justify-center shadow-sm shrink-0">
-                <Activity size={24} className="text-white" strokeWidth={2} />
+              <div className="w-10 h-10 bg-gradient-to-br from-[#0A192F] to-[#042f2e] border border-emerald-400/30 rounded-[12px] flex items-center justify-center shadow-sm shrink-0">
+                <ShieldCheck size={22} className="text-emerald-400" strokeWidth={2} />
               </div>
               <div>
                 <span className="font-semibold text-lg tracking-tight text-[var(--color-text)] block">

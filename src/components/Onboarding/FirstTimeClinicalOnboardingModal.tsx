@@ -187,8 +187,8 @@ export const FirstTimeClinicalOnboardingModal: React.FC<FirstTimeClinicalOnboard
 
           {/* Header */}
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-inner">
-              <Activity className="w-6 h-6 text-emerald-400" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0A192F] to-[#042f2e] border border-emerald-400/40 flex items-center justify-center shrink-0 shadow-inner">
+              <ShieldCheck className="w-6 h-6 text-emerald-400" strokeWidth={2} />
             </div>
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono uppercase tracking-widest font-bold mb-1">

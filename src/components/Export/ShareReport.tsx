@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Brain,
   Activity,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -275,7 +276,7 @@ export default function ShareReport() {
                         </div>
                       ) : (
                         <>
-                          <Activity className="w-10 h-10 text-emerald-400 group-hover:scale-110 transition-transform" />
+                          <ShieldCheck className="w-10 h-10 text-emerald-400 group-hover:scale-110 transition-transform" strokeWidth={2} />
                           <div className="text-center">
                             <h3 className="font-bold text-sm text-white">
                               Generate AI Report
@@ -312,7 +313,7 @@ export default function ShareReport() {
                       <ExportButton
                         variant="full"
                         elementId="report-container"
-                        filename={`Clinical_Summary_${activeProfile?.name || "Aura"}.pdf`}
+                        filename={`Clinical_Summary_${activeProfile?.name || "Aegis"}.pdf`}
                         orientation="portrait"
                       />
                       <button
@@ -333,7 +334,7 @@ export default function ShareReport() {
                     >
                       <div className="hidden print:block mb-8 border-b border-slate-300 pb-4">
                         <h1 className="text-3xl font-bold text-black font-sans">
-                          AURA INTELLIGENCE
+                          AEGIS HEALTH AI
                         </h1>
                         <h2 className="text-xl text-slate-600 mt-1">
                           Clinical Expert Review
@@ -354,8 +355,8 @@ export default function ShareReport() {
                         </div>
                       </div>
                       <div className="hidden print:block mt-24 border-t border-slate-300 pt-8 text-center text-xs text-slate-400">
-                        Generated securely by Aura AI Health Manager.
-                        Verification #AURA-442-99L
+                        Generated securely by Aegis Health AI.
+                        Verification #AEGIS-442-99L
                       </div>
                     </div>
                   </div>
