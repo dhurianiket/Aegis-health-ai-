@@ -1,15 +1,56 @@
 {
+  "id": "https://aegishealthai.co.in/",
   "name": "Aegis Health AI",
   "short_name": "Aegis",
+  "description": "Clinical-Grade Medical Intelligence & Longitudinal Health Platform",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f7f6f2",
-  "theme_color": "#01696f",
+  "orientation": "portrait",
+  "background_color": "#090e13",
+  "theme_color": "#0f766e",
+  "categories": ["medical", "health", "lifestyle"],
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Upload Lab Report",
+      "short_name": "Upload",
+      "url": "/?tab=upload",
+      "description": "Ingest and analyze blood work or prescriptions",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Aura AI Chat",
+      "short_name": "Aura AI",
+      "url": "/?tab=chat",
+      "description": "Consult clinical AI assistant",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Medications & Interactions",
+      "short_name": "Meds",
+      "url": "/?tab=medications",
+      "description": "Review medication schedule and interactions",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

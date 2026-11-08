@@ -1,3 +1,4 @@
+import { isStandalone } from "../../lib/pwa";
 import React, { Suspense } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
@@ -7,6 +8,7 @@ import {
   Moon,
   Sun,
   Download,
+  Smartphone,
   Trash2,
   ShieldCheck,
   AlertTriangle,

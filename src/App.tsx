@@ -31,6 +31,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AIErrorBoundary } from "./components/ui/AIErrorBoundary";
 import NotificationDropdown from "./components/Header/NotificationDropdown";
 import OfflineIndicator from "./components/OfflineIndicator";
+import PWAInstallPrompt from "./components/PWA/PWAInstallPrompt";
 import { UserProfile } from "./types/medical";
 import { AppNav } from "./components/Header/AppNav";
 
@@ -350,6 +351,7 @@ function MainApp() {
         Skip to main content
       </a>
       <OfflineIndicator />
+      <PWAInstallPrompt />
       
       {/* Global Loading Bar */}
       <AnimatePresence>

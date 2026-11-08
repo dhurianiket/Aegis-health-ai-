@@ -146,7 +146,7 @@
   - *Imports*: `../../lib/pretext`
 - **[`src\components\Header\AppNav.tsx`](file:///E:\Aegis-health-ai-\src\components\Header\AppNav.tsx)**
   - *Exports*: `AppNavProps`, `AppNav`
-  - *Imports*: `./BottomSheet`, `../../context/ProfileContext`, `../../context/AuthContext`
+  - *Imports*: `../../lib/pwa`, `./BottomSheet`, `../../context/ProfileContext`, `../../context/AuthContext`
 - **[`src\components\Header\BottomSheet.tsx`](file:///E:\Aegis-health-ai-\src\components\Header\BottomSheet.tsx)**
   - *Exports*: `BottomSheet`
 - **[`src\components\Header\NotificationDropdown.tsx`](file:///E:\Aegis-health-ai-\src\components\Header\NotificationDropdown.tsx)**
@@ -228,6 +228,9 @@
 - **[`src\components\Profile\ProfileManagement.tsx`](file:///E:\Aegis-health-ai-\src\components\Profile\ProfileManagement.tsx)**
   - *Exports*: `ProfileManagement`, `default`
   - *Imports*: `../../context/ProfileContext`, `../../types/medical`, `../../lib/validation`, `../../lib/logger`, `../../services/usageService...`
+- **[`src\components\PWA\PWAInstallPrompt.tsx`](file:///E:\Aegis-health-ai-\src\components\PWA\PWAInstallPrompt.tsx)**
+  - *Exports*: `PWAInstallPrompt`, `default`
+  - *Imports*: `../../lib/pwa`
 - **[`src\components\Reports\ClinicalHandover.tsx`](file:///E:\Aegis-health-ai-\src\components\Reports\ClinicalHandover.tsx)**
   - *Exports*: `ClinicalHandover`, `default`
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../services/sbarGenerationService`, `../../utils/dateUtils...`
@@ -259,7 +262,7 @@
   - *Imports*: `../../services/auditLogService`
 - **[`src\components\Settings\SettingsPage.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\SettingsPage.tsx)**
   - *Exports*: `SettingsPage`, `default`
-  - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `./IntegrationsPanel`, `./IdentityLinkingCard`, `../../lib/auditLogger...`
+  - *Imports*: `../../lib/pwa`, `../../context/AuthContext`, `../../context/ProfileContext`, `./IntegrationsPanel`, `./IdentityLinkingCard...`
 - **[`src\components\Settings\ZeroKnowledgeVaultModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Settings\ZeroKnowledgeVaultModal.tsx)**
   - *Exports*: `ZeroKnowledgeVaultModal`
   - *Imports*: `../../services/zeroKnowledgeCryptoService`, `../../services/auditLogService`
@@ -596,6 +599,8 @@
   - *Exports*: `InteractionRule`, `DRUG_INTERACTIONS`, `isDuplicateClass`, `MED_CATEGORIES`, `isMedInCategory`
 - **[`src\lib\pretext.ts`](file:///E:\Aegis-health-ai-\src\lib\pretext.ts)**
   - *Exports*: `PretextPrepared`, `prepareText`, `measureHeight`, `measureWidth`, `measureLines`
+- **[`src\lib\pwa.ts`](file:///E:\Aegis-health-ai-\src\lib\pwa.ts)**
+  - *Exports*: `registerServiceWorker`, `isStandalone`, `isIOS`, `isAndroid`
 - **[`src\lib\turnstileTokenProvider.ts`](file:///E:\Aegis-health-ai-\src\lib\turnstileTokenProvider.ts)**
   - *Exports*: `TurnstileTokenProvider`, `setTurnstileTokenProvider`, `setCachedTurnstileToken`, `hasTurnstileTokenProvider`
 - **[`src\lib\utils.ts`](file:///E:\Aegis-health-ai-\src\lib\utils.ts)**
@@ -638,7 +643,7 @@
   - *Exports*: `DEMO_PROFILE`, `DEMO_DOCUMENTS`, `DEMO_HEALTH_SCORES`, `DEMO_INSIGHTS`, `DEMO_SBAR`
   - *Imports*: `../types/medical`
 - **[`src\main.tsx`](file:///E:\Aegis-health-ai-\src\main.tsx)**
-  - *Imports*: `./App`, `./context/AuthContext`, `./context/ProfileContext`, `./context/AlertsContext`, `./context/RemindersContext...`
+  - *Imports*: `./lib/pwa`, `./App`, `./context/AuthContext`, `./context/ProfileContext`, `./context/AlertsContext...`
 - **[`src\vite-env.d.ts`](file:///E:\Aegis-health-ai-\src\vite-env.d.ts)**
 
 ## 🔗 Key Data Flow Relationships

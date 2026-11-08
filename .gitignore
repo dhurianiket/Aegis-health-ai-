@@ -18,6 +18,7 @@ firebase-adminsdk.json
 
 # Internal agent logs & editor configs
 .agents/
+agents/
 .antigravity/
 .vscode/
 ORIGINAL_REQUEST.md

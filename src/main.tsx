@@ -1,3 +1,4 @@
+import { registerServiceWorker } from "./lib/pwa";
 import { StrictMode, Component, ErrorInfo, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -58,3 +59,5 @@ if (rootElement) {
   );
 }
 
+
+registerServiceWorker();
