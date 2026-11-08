@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, X, Share, PlusSquare, Smartphone, Check } from "lucide-react";
+import { Download, X, Share, PlusSquare, ShieldCheck, Check } from "lucide-react";
 import { isStandalone, isIOS } from "../../lib/pwa";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -139,8 +139,8 @@ export default function PWAInstallPrompt() {
             className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-50 bg-[#0c1319]/95 dark:bg-[#0c1319]/95 backdrop-blur-xl border border-teal-500/30 rounded-2xl p-4 shadow-2xl shadow-teal-950/40"
           >
             <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#014d52] p-2 flex items-center justify-center shrink-0 shadow-md shadow-teal-900/40 border border-teal-400/20">
-                <Smartphone className="w-6 h-6 text-white" aria-hidden="true" />
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0A192F] to-[#042f2e] p-2 flex items-center justify-center shrink-0 shadow-md shadow-emerald-950/40 border border-emerald-400/30">
+                <ShieldCheck className="w-6 h-6 text-emerald-400" strokeWidth={2} aria-hidden="true" />
               </div>
 
               <div className="flex-1 min-w-0 pr-6">
@@ -208,8 +208,8 @@ export default function PWAInstallPrompt() {
               </button>
 
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#014d52] flex items-center justify-center p-2 border border-teal-400/20">
-                  <Smartphone className="w-5 h-5 text-teal-200" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0A192F] to-[#042f2e] flex items-center justify-center p-2 border border-emerald-400/30">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" strokeWidth={2} />
                 </div>
                 <div>
                   <h3 id="ios-install-title" className="text-base font-semibold">

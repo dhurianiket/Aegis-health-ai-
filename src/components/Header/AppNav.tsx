@@ -18,7 +18,7 @@ import {
   MoreHorizontal,
   ShieldAlert,
   Map,
-  Smartphone,
+  ShieldCheck,
 } from "lucide-react";
 import { BottomSheet } from "./BottomSheet";
 import { useProfile } from "../../context/ProfileContext";
@@ -312,7 +312,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
               }}
               className="p-4 bg-teal-500/10 border border-teal-500/30 rounded-2xl flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 active:scale-95 transition-all duration-150 cursor-pointer hover:bg-teal-500/20 col-span-2 sm:col-span-1"
             >
-              <Smartphone className="w-8 h-8 text-teal-400" />
+              <ShieldCheck className="w-8 h-8 text-emerald-400" strokeWidth={2} />
               <span className="font-semibold text-sm text-teal-300">
                 Install Mobile App
               </span>

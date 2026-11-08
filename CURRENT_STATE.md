@@ -26,7 +26,7 @@
 ### Tasks Completed:
 - **Zero-Cost Mobile Architecture Launch (PWA & Offline Service Worker)**:
   - 📱 **Full PWA Manifest Specification (`public/manifest.json`)**: Configured with unique app ID, standalone display mode, orientation lock (`portrait`), brand theme (`#0f766e`), background (`#090e13`), and quick-launch shortcuts (`Upload`, `Aura AI`, `Medications`).
-  - 🎨 **High-Resolution Vector Assets Generated (`public/`)**: Created pixel-precise `icon-192.png`, `icon-512.png`, `icon-maskable.png` (Android adaptive safe area), and `apple-touch-icon.png` (iOS Safari springboard).
+  - 🎨 **High-Resolution Vector Assets Generated (`public/`)**: Created pixel-precise `icon-192.png`, `icon-512.png`, `icon-maskable.png` (Android adaptive safe area), `apple-touch-icon.png` (iOS Safari springboard), and `favicon.svg` matching the website's authentic `ShieldCheck` logo in emerald-400 with dark glassmorphism.
   - 🛡️ **Offline Service Worker (`public/sw.js` & `firebase.json`)**: Implemented non-blocking caching with Stale-While-Revalidate for UI assets and Network-First for navigation shells. Hardened `firebase.json` headers with explicit `no-cache, must-revalidate` for `/sw.js` to prevent stale service-worker retention across user browsers. Strict bypass invariants for Firebase Auth, Firestore, and Edge AI `/api/*` requests.
   - ⚡ **PWA Core Registration & Detection Engine (`src/lib/pwa.ts`)**: Cross-platform utilities (`isStandalone()`, `isIOS()`, `isAndroid()`) featuring SSR and jsdom safety guards (`window.matchMedia` fallback) to protect automated test suites.
   - 📲 **Non-Intrusive PWA Installation Experience (`src/components/PWA/PWAInstallPrompt.tsx`)**:

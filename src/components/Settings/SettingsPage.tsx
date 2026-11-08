@@ -8,7 +8,6 @@ import {
   Moon,
   Sun,
   Download,
-  Smartphone,
   Trash2,
   ShieldCheck,
   AlertTriangle,
@@ -292,6 +291,46 @@ export default function SettingsPage() {
                 Delete Data
               </button>
             </div>
+          </div>
+        </section>
+
+        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-5 sm:p-6 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+              Mobile Application
+            </h3>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
+              PWA Standalone
+            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--color-bg)] border border-[var(--color-border)] p-4 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0A192F] to-[#042f2e] text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-400/30">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" strokeWidth={2} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[var(--color-text)]">
+                  {isStandalone() ? "Installed on This Device" : "Install Mobile Application"}
+                </h4>
+                <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
+                  {isStandalone()
+                    ? "Running in full-screen standalone mode with offline caching enabled."
+                    : "Install on iOS or Android for 1-tap launcher access and biometric security."}
+                </p>
+              </div>
+            </div>
+            {!isStandalone() && (
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("aegis:trigger-pwa-install"));
+                }}
+                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 shrink-0"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Install App
+              </button>
+            )}
           </div>
         </section>
 
