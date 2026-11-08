@@ -25,25 +25,10 @@ const VITE_NAME = /\bVITE_[A-Z0-9_]+\b/g;
 
 const errors = [];
 
-// --- 1a. Environment variables (CI env + local .env files Vite would load) ---
-const envNames = new Set(Object.keys(process.env).filter((k) => k.startsWith('VITE_')));
-for (const file of fs.readdirSync(ROOT)) {
-  if (!/^\.env(\..+)?$/.test(file)) continue;
-  const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
-  for (const line of text.split(/\r?\n/)) {
-    const m = line.match(/^\s*(?:export\s+)?(VITE_[A-Z0-9_]+)\s*=/);
-    if (m) envNames.add(`${m[1]} (${file})`);
-  }
-}
-for (const name of envNames) {
-  if (SECRET_NAME.test(name.split(' ')[0])) {
-    errors.push(`Secret-looking client env var: ${name} — VITE_* values are PUBLIC. Move it server-side (Worker/Functions secret).`);
-  }
-}
-
-// --- 1b. Source references to VITE_* names (src/ and app/) ---
+// --- 1a. Source references to VITE_* names (src/ and app/) ---
 const SRC_DIRS = ['src', 'app'].map((d) => path.join(ROOT, d)).filter((d) => fs.existsSync(d));
 const SRC_EXT = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
+const referencedViteNames = new Set();
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
@@ -58,9 +43,35 @@ for (const dir of SRC_DIRS) {
     if (!SRC_EXT.test(file) || /__tests__|\.test\.|\.spec\./.test(file)) continue;
     const text = fs.readFileSync(file, 'utf8');
     for (const name of new Set(text.match(VITE_NAME) || [])) {
+      referencedViteNames.add(name);
       if (SECRET_NAME.test(name)) {
         errors.push(`Client source references secret-looking ${name} in ${path.relative(ROOT, file)}`);
       }
+    }
+  }
+}
+
+// --- 1b. Environment variables (.env* files + referenced CI/host env vars) ---
+const dotenvNames = new Set();
+for (const file of fs.readdirSync(ROOT)) {
+  if (!/^\.env(\..+)?$/.test(file)) continue;
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  for (const line of text.split(/\r?\n/)) {
+    const m = line.match(/^\s*(?:export\s+)?(VITE_[A-Z0-9_]+)\s*=/);
+    if (m) dotenvNames.add(`${m[1]} (${file})`);
+  }
+}
+for (const name of dotenvNames) {
+  if (SECRET_NAME.test(name.split(' ')[0])) {
+    errors.push(`Secret-looking client env var: ${name} — VITE_* values are PUBLIC. Move it server-side (Worker/Functions secret).`);
+  }
+}
+for (const name of Object.keys(process.env).filter((k) => k.startsWith('VITE_'))) {
+  if (SECRET_NAME.test(name)) {
+    if (referencedViteNames.has(name)) {
+      errors.push(`Secret-looking client env var: ${name} — VITE_* values are PUBLIC. Move it server-side (Worker/Functions secret).`);
+    } else {
+      console.warn(`⚠ check-client-env: ignoring unreferenced ambient host env var ${name} (stripped before Vite build).`);
     }
   }
 }
