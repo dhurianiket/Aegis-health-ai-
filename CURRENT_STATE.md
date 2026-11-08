@@ -1,12 +1,33 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot XCII — November 8, 2026
+## Current Snapshot XCIII — November 8, 2026
+### Completed by: Antigravity AI Pair Programmer (Google Agents CLI Onboarding & First ADK Research Agent)
+### Tasks Completed:
+- **Google Agents CLI Setup & Skill Deployment (`google.github.io/agents-cli/setup.md`)**:
+  - 🛠️ Installed `agents-cli 1.13.0` globally via `uv tool install google-agents-cli`.
+  - 📦 Injected and linked 7 official Google Cloud Agent skills (`workflow`, `adk-code`, `scaffold`, `eval`, `deploy`, `publish`, `observability`).
+  - 🔑 Installed Google Cloud SDK 592.0.0 via `winget` and configured User PATH.
+  - 🛡️ Authenticated with Google Cloud Application Default Credentials (ADC) under `dhurianiket@gmail.com` linked to active project `aegis-health-app-90697` and GenAI App Builder trial credits.
+- **First Agent Architecture (`agents/research-agent`)**:
+  - 🤖 **Google ADK Python Prototype**: Scaffolded `research-agent` using `agents-cli scaffold create --adk`.
+  - 🔍 **Hybrid Research Tools (`app/tools.py`)**:
+    - `search_web`: Web fact retrieval with Wikipedia API grounding.
+    - `list_local_documents`: Explores project knowledge files in `knowledge/`.
+    - `read_local_document`: Traversal-safe reader for local markdown, text, and protocol docs.
+  - 🗄️ **Local Clinical Knowledge Base (`knowledge/aegis_clinical_protocols.md`)**: Seeded with biomarker reference protocols (Blood Glucose, Heart Rate, HRV RMSSD).
+  - 🎯 **Agent Definition (`app/agent.py`)**: Grounded Gemini 2.5 Flash agent with strict grounding instructions and tool integration.
+- **Verification & Evaluation**:
+  - 🧪 **Unit Tests (`tests/unit/test_tools.py`)**: 4/4 passing (100% green).
+  - 📊 **Automated LLM-as-Judge Evaluation (`agents-cli eval run`)**: 3/3 eval cases graded with a perfect **5.0000 / 5.0000** mean score.
+  - 🚀 **Interactive ADK Playground**: Running live at `http://127.0.0.1:8080/dev-ui/?app=app`.
+
+## Previous Snapshot XCII — November 8, 2026
 ### Completed by: Antigravity AI Pair Programmer (Zero-Cost PWA Mobile Launch & Standalone Shell)
 ### Tasks Completed:
 - **Zero-Cost Mobile Architecture Launch (PWA & Offline Service Worker)**:
   - 📱 **Full PWA Manifest Specification (`public/manifest.json`)**: Configured with unique app ID, standalone display mode, orientation lock (`portrait`), brand theme (`#0f766e`), background (`#090e13`), and quick-launch shortcuts (`Upload`, `Aura AI`, `Medications`).
   - 🎨 **High-Resolution Vector Assets Generated (`public/`)**: Created pixel-precise `icon-192.png`, `icon-512.png`, `icon-maskable.png` (Android adaptive safe area), and `apple-touch-icon.png` (iOS Safari springboard).
-  - 🛡️ **Offline Service Worker (`public/sw.js`)**: Implemented non-blocking caching with Stale-While-Revalidate for UI assets and Network-First for navigation shells. Hardened with strict bypass invariants for Firebase Auth, Firestore, and Edge AI `/api/*` requests.
+  - 🛡️ **Offline Service Worker (`public/sw.js` & `firebase.json`)**: Implemented non-blocking caching with Stale-While-Revalidate for UI assets and Network-First for navigation shells. Hardened `firebase.json` headers with explicit `no-cache, must-revalidate` for `/sw.js` to prevent stale service-worker retention across user browsers. Strict bypass invariants for Firebase Auth, Firestore, and Edge AI `/api/*` requests.
   - ⚡ **PWA Core Registration & Detection Engine (`src/lib/pwa.ts`)**: Cross-platform utilities (`isStandalone()`, `isIOS()`, `isAndroid()`) featuring SSR and jsdom safety guards (`window.matchMedia` fallback) to protect automated test suites.
   - 📲 **Non-Intrusive PWA Installation Experience (`src/components/PWA/PWAInstallPrompt.tsx`)**:
     - **Android/Chromium**: Captures `beforeinstallprompt`, presenting an aesthetic floating prompt with 1-tap native install and 7-day dismissal memory.
