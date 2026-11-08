@@ -196,7 +196,7 @@ export default function LandingPage() {
 
   return (
     <ErrorBoundary>
-      <div className="bg-[#0A192F] text-white min-h-screen font-sans selection:bg-emerald-500/30">
+      <div className="relative bg-[#0A192F] text-white min-h-screen font-sans selection:bg-emerald-500/30">
         
         {/* Persistent Sticky Navbar */}
         <nav className="fixed w-full z-50 top-0 left-0">
@@ -305,7 +305,7 @@ export default function LandingPage() {
         </nav>
 
         {/* 1. HERO SECTION */}
-        <main id="main-content">
+        <main id="main-content" className="relative">
         <div ref={heroRef} className="relative min-h-screen flex items-center pt-24 pb-12">
           {/* Background subtle glow */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
