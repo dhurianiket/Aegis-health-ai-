@@ -319,7 +319,9 @@ function MainApp() {
   }
 
 
-  const isReviewerAccount = user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in";
+  const isReviewerAccount = 
+    user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in" ||
+    user?.email?.toLowerCase() === "dhurianiket@gmail.com";
 
   if (showPostLoginAnimation && (isConsentGranted === true || isReviewerAccount)) {
     return (

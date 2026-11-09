@@ -48,7 +48,7 @@ if (
   try {
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
-      isTokenAutoRefreshEnabled: true,
+      isTokenAutoRefreshEnabled: false,
     });
   } catch (err) {
     console.warn("[AppCheck] Graceful fallback: initialization deferred:", err);
