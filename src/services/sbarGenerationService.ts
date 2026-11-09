@@ -7,7 +7,25 @@ import { generateSourceHash, getCachedReport, saveCachedReport } from "./cacheSe
 import { auth } from "../lib/firebase/config";
 import { parseSafeTimestamp } from "../utils/dateUtils";
 
-const PROMPT_VERSION = "v2.0";
+const PROMPT_VERSION = "v2.1";
+
+function cleanClinicalText(raw: string): string {
+  if (!raw) return "";
+  return raw
+    .replace(/\$\s*\\rightarrow\s*\$/g, " → ")
+    .replace(/\\rightarrow/g, " → ")
+    .replace(/\$\s*->\s*\$/g, " → ")
+    .replace(/\$\s*\\times\s*10\^3\/\\mu\\text\{L\}\s*\$/gi, " × 10³/µL")
+    .replace(/\\times\s*10\^3\/\\mu\\text\{L\}/gi, " × 10³/µL")
+    .replace(/\\times/g, " × ")
+    .replace(/\\mu\\text\{L\}/gi, "µL")
+    .replace(/\\text\{([^}]+)\}/g, "$1")
+    .replace(/\$([0-9.,/% -]+)\$/g, "$1")
+    .replace(/\$/g, "")
+    .replace(/Gemini\s*(4\s*Argon|3\.8\s*Flash|Pro|Flash)?/gi, "Aegis Clinical Intelligence")
+    .replace(/Google\s*Gemini/gi, "Aegis Health AI")
+    .trim();
+}
 
 export const generateSBAR = async (
   userId: string,
@@ -38,17 +56,21 @@ export const generateSBAR = async (
   });
 
   const prompt = `
-You are the advanced clinical reasoning and multi-specialist medical summarization engine for Aegis Health AI, powered by Google Gemini.
+You are the advanced clinical reasoning and multi-specialist medical summarization engine for Aegis Health AI.
 
 Your mission is to perform deep clinical synthesis across the patient's longitudinal lab reports, active medications, wearable biometrics, and multi-specialist consultation chats. Generate an exhaustive, high-fidelity summary with two dedicated parts:
 1. PART 1: SBAR CLINICAL SUMMARY (For Attending Physicians, Specialists & Hospital OPDs).
 2. PART 2: PLAIN-LANGUAGE SUMMARY (For the Patient & Family in clear, detailed, reassuring layperson terms).
 
-<formatting_guidelines>
-- Structure your output clearly using the exact partition dividers shown below.
+<strict_formatting_and_branding_rules>
+- NEVER output LaTeX or KaTeX math syntax (NO dollar signs $, NO \\rightarrow, NO \\times, NO \\mu, NO \\text{}).
+- For trajectory arrows, use simple arrows like "->" or "→".
+- For units, use standard notation (e.g. "x 10^3/uL", "mg/dL", "g/dL", "mL/min").
+- NEVER mention Google Gemini, Argon, or underlying AI model names in your output text or disclaimers. You represent exclusively the "Aegis Clinical Intelligence Engine".
+- Structure your output cleanly using the exact partition dividers shown below.
 - Keep the technical SBAR concise, evidence-grounded, and packed with exact biomarker values, reference ranges, and pharmacological context.
 - Make the patient summary warm, educational, and deeply informative—explain *why* certain numbers are flagged, how organs communicate, what medicines do in the body, and what questions to bring to the doctor.
-</formatting_guidelines>
+</strict_formatting_and_branding_rules>
 
 INTRO PARAGRAPH:
 Here is the clinical summary of your complete medical profile. It contains two sections: a technical SBAR summary for healthcare providers, and a plain-language summary tailored for you (educational information, not a diagnosis).
@@ -116,7 +138,8 @@ ${formattedContext}
       });
     }
 
-    const content = response.text || "Failed to generate summary.";
+    const rawContent = response.text || "Failed to generate summary.";
+    const content = cleanClinicalText(rawContent);
     
     if (content && content !== "Failed to generate summary.") {
       await saveCachedReport(userId, {

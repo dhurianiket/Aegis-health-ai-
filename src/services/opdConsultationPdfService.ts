@@ -22,6 +22,25 @@ function escapeHtml(unsafe: string | number | undefined | null): string {
     .replace(/'/g, "&#039;");
 }
 
+function cleanClinicalText(raw: string): string {
+  if (!raw) return "";
+  return raw
+    .replace(/\$\s*\\rightarrow\s*\$/g, " → ")
+    .replace(/\\rightarrow/g, " → ")
+    .replace(/\$\s*->\s*\$/g, " → ")
+    .replace(/\$\s*\\times\s*10\^3\/\\mu\\text\{L\}\s*\$/gi, " × 10³/µL")
+    .replace(/\\times\s*10\^3\/\\mu\\text\{L\}/gi, " × 10³/µL")
+    .replace(/\\times/g, " × ")
+    .replace(/\\mu\\text\{L\}/gi, "µL")
+    .replace(/\\text\{([^}]+)\}/g, "$1")
+    .replace(/\$([0-9.,/% -]+)\$/g, "$1")
+    .replace(/\$/g, "")
+    .replace(/Gemini\s*(4\s*Argon|3\.8\s*Flash|Pro|Flash)?/gi, "Aegis Clinical Intelligence")
+    .replace(/Google\s*Gemini/gi, "Aegis Health AI")
+    .replace(/[*_#`~]/g, "")
+    .trim();
+}
+
 export interface OpdPdfInputData {
   patientName: string;
   age?: number | string;
@@ -38,27 +57,38 @@ export interface OpdPdfInputData {
 }
 
 /**
- * Builds a hidden DOM container formatted as a clean 1-page A4 print document and converts it to a high-speed, lightweight PDF download (~250 KB).
+ * Builds an offscreen print card and converts it to a high-speed, lightweight PDF download (~250 KB).
  */
 export async function exportOpdConsultationPdf(
   data: OpdPdfInputData,
   filename: string = `Aegis_OPD_Consultation_${new Date().toISOString().split('T')[0]}.pdf`
 ): Promise<void> {
-  const container = document.createElement('div');
-  container.className = 'aegis-opd-pdf-print-container';
-  container.style.position = 'fixed';
-  container.style.left = '-10000px';
-  container.style.top = '-10000px';
-  container.style.width = '820px';
-  container.style.backgroundColor = '#FFFFFF';
-  container.style.color = '#0F172A';
-  container.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
-  container.style.padding = '28px 32px';
-  container.style.boxSizing = 'border-box';
-  container.style.border = '2px solid #0F2647';
+  // Hidden host container to keep off-screen without affecting child positioning in SVG foreignObject
+  const hiddenHost = document.createElement('div');
+  hiddenHost.className = 'aegis-opd-pdf-hidden-host';
+  hiddenHost.style.position = 'fixed';
+  hiddenHost.style.left = '-10000px';
+  hiddenHost.style.top = '-10000px';
+  hiddenHost.style.width = '820px';
+  hiddenHost.style.zIndex = '-9999';
+  hiddenHost.style.opacity = '0';
+  hiddenHost.style.pointerEvents = 'none';
+
+  // The actual document card that will be converted to JPEG (relative positioning so left/top are 0)
+  const printCard = document.createElement('div');
+  printCard.id = 'aegis-opd-card-root';
+  printCard.style.position = 'relative';
+  printCard.style.left = '0px';
+  printCard.style.top = '0px';
+  printCard.style.width = '820px';
+  printCard.style.backgroundColor = '#FFFFFF';
+  printCard.style.color = '#0F172A';
+  printCard.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+  printCard.style.padding = '28px 32px';
+  printCard.style.boxSizing = 'border-box';
+  printCard.style.border = '2px solid #0F2647';
 
   const dateStr = data.date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  const clinic = data.clinicName || 'Aegis Health Intelligence — Clinical OPD Handover';
 
   // Generate real ABDM Scan & Share QR Code payload
   const qrPayload = generateScanAndShareQrPayload({
@@ -112,9 +142,8 @@ export async function exportOpdConsultationPdf(
     `
   ).join('');
 
-  // Extract SBAR section or clean string
   const rawSbar = data.sbarSummary || 'Patient profile synthesized cleanly by Aegis AI. All vital parameters within acceptable range.';
-  const sbarClean = rawSbar.replace(/[*_#`~]/g, '').trim();
+  const sbarClean = cleanClinicalText(rawSbar);
 
   const rawHtml = `
     <!-- Top Header: Official Aegis Health AI Branding + NVIDIA Inception + QR Code -->
@@ -129,7 +158,7 @@ export async function exportOpdConsultationPdf(
         <div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 19px; color: #0F172A; font-weight: 900; letter-spacing: -0.5px;">AEGIS HEALTH AI</span>
-            <span style="font-size: 9px; font-weight: 800; background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 2px 7px; border-radius: 9999px;">NVIDIA INCEPTION MEMBER</span>
+            <span style="font-size: 9px; font-weight: 800; background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 2px 7px; border-radius: 9999px;">MEMBER OF NVIDIA INCEPTION PROGRAM</span>
           </div>
           <p style="font-size: 10px; color: #475569; margin: 3px 0 0 0; font-weight: 600;">Clinical-Grade Medical Intelligence · NHA ABDM M1/M2 Standard Handover</p>
         </div>
@@ -199,7 +228,7 @@ export async function exportOpdConsultationPdf(
 
     <!-- SBAR Summary Box -->
     <div style="margin-bottom: 14px;">
-      <h3 style="font-size: 11px; color: #0F2647; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px 0; font-weight: 800;">Clinical SBAR Handover (Synthesized via Gemini 4 Argon)</h3>
+      <h3 style="font-size: 11px; color: #0F2647; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px 0; font-weight: 800;">Clinical SBAR Handover (Aegis Health Intelligence)</h3>
       <div style="background-color: #FAFAFA; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; font-size: 10px; color: #334155; line-height: 1.45; max-height: 230px; overflow: hidden; white-space: pre-wrap;">
         ${escapeHtml(sbarClean.length > 1200 ? sbarClean.slice(0, 1200) + '... [Continued in Full Dossier]' : sbarClean)}
       </div>
@@ -218,15 +247,32 @@ export async function exportOpdConsultationPdf(
     </div>
   `;
 
-  container.innerHTML = DOMPurify.sanitize(rawHtml);
-  document.body.appendChild(container);
+  // Sanitize while preserving SVGs and paths
+  printCard.innerHTML = DOMPurify.sanitize(rawHtml, {
+    ADD_TAGS: ['svg', 'path', 'rect', 'g'],
+    ADD_ATTR: ['d', 'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'width', 'height', 'style', 'class'],
+  });
+
+  hiddenHost.appendChild(printCard);
+  document.body.appendChild(hiddenHost);
 
   try {
-    // Generate high-resolution, lightweight JPEG data URL
-    const dataUrl = await toJpeg(container, {
-      quality: 0.94,
+    // Settle layout, fonts, and inline SVG QR code
+    await new Promise((r) => setTimeout(r, 400));
+
+    // Capture the printCard directly (relative position 0,0)
+    const dataUrl = await toJpeg(printCard, {
+      quality: 0.95,
       pixelRatio: 2,
       backgroundColor: '#FFFFFF',
+      width: 820,
+      skipAutoScale: true,
+      style: {
+        position: 'relative',
+        left: '0px',
+        top: '0px',
+        transform: 'none',
+      },
     });
 
     const pdf = new jsPDF({
@@ -238,13 +284,18 @@ export async function exportOpdConsultationPdf(
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
+    const cardRect = printCard.getBoundingClientRect();
+    const pxToMm = pdfWidth / 820;
+    const finalImgHeight = Math.min(cardRect.height * pxToMm, pdfHeight);
 
-    pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+    pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, finalImgHeight, undefined, 'FAST');
     pdf.save(filename);
   } catch (err) {
     console.error('Failed to generate OPD PDF:', err);
     throw err;
   } finally {
-    document.body.removeChild(container);
+    if (document.body.contains(hiddenHost)) {
+      document.body.removeChild(hiddenHost);
+    }
   }
 }

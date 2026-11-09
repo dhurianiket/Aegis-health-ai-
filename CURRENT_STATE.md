@@ -1,6 +1,37 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot E — November 9, 2026
+## Current Snapshot F — November 9, 2026
+### Completed by: Antigravity AI Pair Programmer (Blank OPD PDF Fix, KaTeX Artifact Cleanup, High-DPI Card Layouts, Continuous Loading Percentage, and Gemini 4 Argon Branding Scrub)
+### Tasks Completed:
+- **Blank OPD PDF Resolution (`src/services/opdConsultationPdfService.ts`)**:
+  - 🛠️ **Isolated Off-Screen Host Container**:
+    - Discovered root cause of blank PDF: the root container element previously had `position: fixed; left: -10000px; top: -10000px;` applied directly to it. When `html-to-image` cloned the node into an SVG `<foreignObject>`, the CSS offset was preserved inside the SVG canvas viewport, shifting all rendered content 10,000 pixels offscreen and capturing a pure blank white page.
+    - Decoupled the host into a `hiddenHost` (holding the offscreen coordinates) and an inner `printCard` (`position: relative; left: 0; top: 0; width: 820px;`) passed directly to `toJpeg`.
+    - Added layout settle timeout (`await new Promise((r) => setTimeout(r, 400))`) to ensure QR SVG code and system fonts mount cleanly before snapshot capture.
+- **KaTeX & LaTeX Leaks Eliminated (`src/services/sbarGenerationService.ts`, `SBARPreview.tsx`, `ShareReport.tsx`)**:
+  - 🧹 **Robust Clinical Sanitization Pipeline (`cleanClinicalText`)**:
+    - AI prompts had inadvertently output raw LaTeX math syntax (`$\rightarrow$`, `$\times 10^3/\mu\text{L}$`, etc.) which rendered unformatted in PDFs.
+    - Added strict prompt guidelines instructing the model never to output LaTeX math or dollar signs, and built a universal sanitization engine converting all occurrences into clean Unicode (`→`, `× 10³/µL`).
+- **High-DPI Styled Clinical Cards Overhaul (`SBARPreview.tsx`, `ShareReport.tsx`)**:
+  - 🎨 **Parsed HTML Cards Replacing Raw Text Dumps**:
+    - Replaced raw markdown dumps in `#sbar-export-container` and `#report-container` with structured, beautifully styled card components via `renderFormattedContent`.
+    - Distinct colored left borders and badge pills for Situation (Amber), Background (Blue), Assessment (Purple), and Recommendations (Emerald).
+    - Formatted patient sections (Health Overview, Lab Results, Medications, Doctor Questions, Lifestyle) with custom typography, eliminating raw `**` asterisks and `###` hashes.
+- **Engaging Non-Snapping Loading Animation & Percentage Counter (`SBARPreview.tsx`, `ShareReport.tsx`)**:
+  - ⚡ **Continuous Real-Time Progress Engine**:
+    - Identified why user felt disconnected: previous timer used modulo math (`(prev + 1) % 4`), causing the progress bar to fill to 100% and then abruptly snap back to 25% repeatedly.
+    - Replaced with a smooth, continuous progress counter that climbs from `12%` to `95%` dynamically and smoothly jumps to `100%` on resolution without ever resetting or snapping backwards.
+    - Added live numerical percentage display (`Math.round(progress)}%`), elapsed timer (`Elapsed: Xs`), and 4 milestone checklist badges (`✓ Biomarkers`, `✓ Rx Safety`, `✓ Specialists`, `✓ Handover SBAR`) that illuminate sequentially.
+- **Removed "Gemini 4 Argon" Branding (`SBARPreview.tsx`, `ShareReport.tsx`, `opdConsultationPdfService.ts`, `sbarGenerationService.ts`)**:
+  - 🛡️ Scrubbed all user-facing mentions of Gemini 4 Argon from modal header badges, loading body descriptions, status pills, and exported PDF footers.
+  - Re-branded completely under **Aegis Clinical Intelligence Engine** and **Aegis Health AI** with the official NVIDIA Inception Program credential.
+- **Verification & Testing**:
+  - 🧪 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🧪 **Vitest Suite**: 111 test files passed, 1,084 tests passed (100% green).
+  - 🛡️ **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 📦 **Vite Production Build**: 3,803 modules transformed, 9 route shells prerendered.
+
+## Previous Snapshot E — November 9, 2026
 ### Completed by: Antigravity AI Pair Programmer (Aegis Health AI Branding, OPD QR Counter Fix, Animated Clinical Pipeline, and 99% PDF Compression)
 ### Tasks Completed:
 - **OPD Check-In QR Button Wiring (`src/components/Dashboard/Dashboard.tsx`)**:

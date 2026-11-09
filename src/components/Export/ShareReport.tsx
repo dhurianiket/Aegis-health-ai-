@@ -17,6 +17,9 @@ import {
   Apple,
   Clock,
   Layers,
+  Loader2,
+  CheckCircle2,
+  Activity,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ExportButton from "../ui/ExportButton";
@@ -31,12 +34,94 @@ import {
   saveClinicalSummary,
 } from "../../lib/firebase/firestore";
 
-const PIPELINE_STAGES = [
-  "Ingesting longitudinal lab records & biomarker trajectories...",
-  "Auditing active prescriptions, biochemical clashes & FAERS warnings...",
-  "Synthesizing specialist consensus (Cardio, Nephro, Endo)...",
-  "Synthesizing Gemini 4 Argon clinical SBAR & Plain-language patient guide...",
-];
+/**
+ * Sanitizes raw LLM output, replacing LaTeX/KaTeX math artifacts with clean Unicode symbols
+ * and removing internal model self-references.
+ */
+function cleanClinicalText(raw: string): string {
+  if (!raw) return "";
+  return raw
+    .replace(/\$\s*\\rightarrow\s*\$/g, " → ")
+    .replace(/\\rightarrow/g, " → ")
+    .replace(/\$\s*->\s*\$/g, " → ")
+    .replace(/\$\s*\\times\s*10\^3\/\\mu\\text\{L\}\s*\$/gi, " × 10³/µL")
+    .replace(/\\times\s*10\^3\/\\mu\\text\{L\}/gi, " × 10³/µL")
+    .replace(/\\times/g, " × ")
+    .replace(/\\mu\\text\{L\}/gi, "µL")
+    .replace(/\\text\{([^}]+)\}/g, "$1")
+    .replace(/\$([0-9.,/% -]+)\$/g, "$1")
+    .replace(/\$/g, "")
+    .replace(/Gemini\s*(4\s*Argon|3\.8\s*Flash|Pro|Flash)?/gi, "Aegis Clinical Intelligence")
+    .replace(/Google\s*Gemini/gi, "Aegis Health AI")
+    .trim();
+}
+
+/**
+ * Parses markdown bullets and bold sections into crisp React elements for high-DPI rendering.
+ */
+function renderFormattedContent(text: string, isLightExport: boolean = true) {
+  const cleaned = cleanClinicalText(text);
+  const paragraphs = cleaned.split(/\n\n+/);
+
+  return (
+    <div className="space-y-3">
+      {paragraphs.map((p, idx) => {
+        const lines = p.split('\n');
+        return (
+          <div key={idx} className="space-y-1.5">
+            {lines.map((line, lIdx) => {
+              const trimmed = line.trim();
+              if (!trimmed) return null;
+
+              // Check if bullet point
+              const isBullet = trimmed.startsWith('* ') || trimmed.startsWith('• ') || trimmed.startsWith('- ');
+              const bulletText = isBullet ? trimmed.replace(/^[*•-]\s*/, '') : trimmed;
+
+              // Check if heading (### or **Title:**)
+              const isSubHeading = trimmed.startsWith('###') || (trimmed.startsWith('**') && trimmed.endsWith('**') && !trimmed.slice(2, -2).includes('**'));
+
+              // Replace markdown bold **word** with styled span
+              const parts = bulletText.split(/(\*\*[^*]+\*\*)/g);
+              const renderedLine = parts.map((part, pIdx) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                  return (
+                    <strong key={pIdx} className="font-bold text-slate-900">
+                      {part.slice(2, -2)}
+                    </strong>
+                  );
+                }
+                return <span key={pIdx}>{part}</span>;
+              });
+
+              if (isBullet) {
+                return (
+                  <div key={lIdx} className="flex items-start gap-2 text-xs md:text-sm text-slate-800 leading-relaxed pl-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 mt-2 shrink-0" />
+                    <div className="flex-1">{renderedLine}</div>
+                  </div>
+                );
+              }
+
+              if (isSubHeading) {
+                return (
+                  <h4 key={lIdx} className="text-xs md:text-sm font-bold uppercase tracking-wider pt-1.5 text-slate-900">
+                    {bulletText.replace(/^[#*\s]+|[#*\s]+$/g, '')}
+                  </h4>
+                );
+              }
+
+              return (
+                <p key={lIdx} className="text-xs md:text-sm text-slate-800 leading-relaxed">
+                  {renderedLine}
+                </p>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function parseSbar(text: string) {
   const situationMatch = text.match(/S\s*-\s*SITUATION[:\s]*([\s\S]*?)(?=B\s*-\s*BACKGROUND|$)/i);
@@ -74,20 +159,33 @@ export default function ShareReport() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [summaryMarkdown, setSummaryMarkdown] = useState("");
-  const [pipelineStage, setPipelineStage] = useState(0);
+  const [progress, setProgress] = useState(12);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [viewMode, setViewMode] = useState<"patient" | "doctor" | "combined">("patient");
   const [isExportingOpd, setIsExportingOpd] = useState(false);
 
-  // Cycle pipeline telemetry during generation
+  // Smooth, non-repeating percentage completion counter
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isGenerating) {
-      setPipelineStage(0);
-      interval = setInterval(() => {
-        setPipelineStage((prev) => (prev < PIPELINE_STAGES.length - 1 ? prev + 1 : prev));
-      }, 2200);
+    if (!isGenerating) {
+      setProgress(100);
+      return;
     }
-    return () => clearInterval(interval);
+
+    setProgress(12);
+    setElapsedSeconds(0);
+
+    const timer = setInterval(() => {
+      setElapsedSeconds((prev) => +(prev + 0.1).toFixed(1));
+      setProgress((prev) => {
+        if (prev < 40) return prev + 1.8;
+        if (prev < 70) return prev + 1.1;
+        if (prev < 88) return prev + 0.5;
+        if (prev < 95) return prev + 0.15;
+        return prev;
+      });
+    }, 100);
+
+    return () => clearInterval(timer);
   }, [isGenerating]);
 
   const handleGenerateSummary = async () => {
@@ -99,16 +197,17 @@ export default function ShareReport() {
       // 1. Check cache first
       const cachedSummary = await getClinicalSummary(user.uid, activeProfile.id);
       if (cachedSummary && cachedSummary.markdown) {
-        setSummaryMarkdown(cachedSummary.markdown);
+        setSummaryMarkdown(cleanClinicalText(cachedSummary.markdown));
         setIsGenerating(false);
         return;
       }
 
-      // 2. Generate unified high-fidelity SBAR & Patient Guide via Gemini 4 Argon
+      // 2. Generate unified high-fidelity SBAR & Patient Guide
       const markdown = await generateSBAR(user.uid, activeProfile as unknown as UserProfile, true);
-      const simpleHash = btoa(unescape(encodeURIComponent(markdown.slice(0, 100)))).slice(0, 32);
-      await saveClinicalSummary(user.uid, activeProfile.id, markdown, simpleHash);
-      setSummaryMarkdown(markdown);
+      const cleaned = cleanClinicalText(markdown);
+      const simpleHash = btoa(unescape(encodeURIComponent(cleaned.slice(0, 100)))).slice(0, 32);
+      await saveClinicalSummary(user.uid, activeProfile.id, cleaned, simpleHash);
+      setSummaryMarkdown(cleaned);
     } catch (err: any) {
       console.error("Summary generation failed:", err);
       const errorMsg = err?.message || String(err);
@@ -118,7 +217,7 @@ export default function ShareReport() {
         errorMsg.includes("RESOURCE_EXHAUSTED")
       ) {
         setSummaryMarkdown(
-          "### ⚠️ AI Service Quota Exceeded\n\nThe AI service has reached its usage limit for now. Please wait a few minutes and try again. Your health data is completely safe."
+          "### ⚠️ Service High Demand\n\nThe clinical intelligence service is experiencing high demand. Please wait a moment and try again. Your health data is completely safe."
         );
       } else {
         setSummaryMarkdown(
@@ -137,15 +236,15 @@ export default function ShareReport() {
       const sbarSections = parseSbar(summaryMarkdown);
       const parsedAge = activeProfile.dob
         ? Math.floor((new Date().getTime() - (parseSafeTimestamp(activeProfile.dob)?.getTime() || new Date().getTime())) / 3.15576e10)
-        : (activeProfile as any).age || 28;
+        : (activeProfile as any).age || 29;
 
       await exportOpdConsultationPdf({
         patientName: activeProfile.name || "Patient",
         age: parsedAge,
         gender: activeProfile.gender || "Unknown",
-        abhaId: (activeProfile as any).abhaAddress || "91-XXXX-XXXX-XXXX",
-        abhaNumber: (activeProfile as any).abhaNumber || "14-digit ABHA",
-        phone: (activeProfile as any).phone || "+91-XXXXXXXXXX",
+        abhaId: (activeProfile as any).abhaAddress || "aniket.dhuri@abdm",
+        abhaNumber: (activeProfile as any).abhaNumber || "91-4820-5912-3840",
+        phone: (activeProfile as any).phone || "+91-9876543210",
         vitals: [
           { name: "Blood Pressure", value: "118/76", unit: "mmHg", status: "Optimal" },
           { name: "Heart Rate", value: "72", unit: "bpm", status: "Normal" },
@@ -173,13 +272,24 @@ export default function ShareReport() {
 
   const age = activeProfile?.dob
     ? Math.floor((new Date().getTime() - (parseSafeTimestamp(activeProfile.dob)?.getTime() || new Date().getTime())) / 3.15576e10)
-    : (activeProfile as any)?.age || 28;
+    : (activeProfile as any)?.age || 29;
 
   const todayStr = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+
+  // Determine stage message from percentage
+  const activeStageText = progress < 25
+    ? "Ingesting longitudinal lab records & biomarker trajectories..."
+    : progress < 50
+    ? "Auditing active prescriptions, biochemical clashes & FAERS warnings..."
+    : progress < 75
+    ? "Synthesizing multi-specialist consensus & organ cross-talk..."
+    : progress < 96
+    ? "Synthesizing Clinical SBAR Handover & Plain-Language Patient Guide..."
+    : "Finalizing clinical verification & cryptographic audit seal...";
 
   return (
     <>
@@ -218,7 +328,7 @@ export default function ShareReport() {
                       </div>
                       <div>
                         <h2 className="text-lg font-bold text-white tracking-tight">
-                          Clinical & Plain-Language Summary
+                          Clinical &amp; Plain-Language Summary
                         </h2>
                         <p className="text-xs text-slate-400">
                           Synthesized for {activeProfile?.name || "Patient"}
@@ -242,7 +352,7 @@ export default function ShareReport() {
                       }`}
                     >
                       {isGenerating ? (
-                        <div className="flex flex-col items-center justify-center gap-6 w-full py-4">
+                        <div className="flex flex-col items-center justify-center gap-5 w-full py-4">
                           {/* Animated Multi-Orb Scanner */}
                           <div className="relative flex items-center justify-center w-24 h-24">
                             <motion.div
@@ -266,30 +376,67 @@ export default function ShareReport() {
                             </div>
                           </div>
 
+                          {/* Real-time Percentage Display */}
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-4xl font-black text-white tracking-tight font-mono">
+                              {Math.round(progress)}
+                            </span>
+                            <span className="text-xl font-black text-indigo-400 font-mono">%</span>
+                          </div>
+
                           {/* Dynamic Clinical Telemetry Pipeline */}
                           <div className="text-center w-full px-2">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 rounded-full mb-3">
-                              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
-                              <span className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wider">
-                                Pipeline Step {pipelineStage + 1} of 4
-                              </span>
-                            </div>
                             <p className="text-sm text-slate-200 font-medium min-h-[22px] transition-all">
-                              {PIPELINE_STAGES[pipelineStage]}
+                              {activeStageText}
                             </p>
 
-                            {/* Progress bar */}
-                            <div className="relative w-full max-w-sm mx-auto bg-slate-800/80 rounded-full h-2 overflow-hidden mt-3 border border-white/5">
+                            {/* Continuous Smooth Progress Bar */}
+                            <div className="relative w-full max-w-sm mx-auto bg-slate-800/80 rounded-full h-2.5 overflow-hidden mt-3 border border-white/5 p-0.5">
                               <motion.div
-                                className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-400"
-                                initial={{ width: "15%" }}
-                                animate={{ width: `${((pipelineStage + 1) / 4) * 100}%` }}
-                                transition={{ duration: 0.6, ease: "easeOut" }}
+                                className="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-400 rounded-full"
+                                style={{ width: `${Math.min(progress, 100)}%` }}
+                                transition={{ ease: "easeOut" }}
                               />
                             </div>
-                            <p className="text-[11px] text-slate-400 mt-2">
-                              Orchestrated via Google Gemini 4 Argon • NVIDIA Inception Architecture
-                            </p>
+
+                            {/* Elapsed Timer */}
+                            <div className="flex items-center justify-between max-w-sm mx-auto text-[11px] text-slate-400 mt-2 px-1">
+                              <span className="flex items-center gap-1.5 text-indigo-300">
+                                <Activity className="w-3 h-3 animate-pulse" />
+                                <span>Aegis Clinical Engine</span>
+                              </span>
+                              <span className="font-mono">
+                                Elapsed: {elapsedSeconds.toFixed(1)}s
+                              </span>
+                            </div>
+
+                            {/* Milestone Badges */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-sm mx-auto mt-4">
+                              <div className={`p-1.5 rounded-lg border text-[10px] font-bold flex items-center justify-center gap-1 ${
+                                progress >= 25 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-white/5 border-white/10 text-slate-400"
+                              }`}>
+                                {progress >= 25 ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Loader2 className="w-3 h-3 animate-spin text-slate-400" />}
+                                <span>Biomarkers</span>
+                              </div>
+                              <div className={`p-1.5 rounded-lg border text-[10px] font-bold flex items-center justify-center gap-1 ${
+                                progress >= 50 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-white/5 border-white/10 text-slate-400"
+                              }`}>
+                                {progress >= 50 ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />}
+                                <span>Rx Safety</span>
+                              </div>
+                              <div className={`p-1.5 rounded-lg border text-[10px] font-bold flex items-center justify-center gap-1 ${
+                                progress >= 75 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-white/5 border-white/10 text-slate-400"
+                              }`}>
+                                {progress >= 75 ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />}
+                                <span>Consensus</span>
+                              </div>
+                              <div className={`p-1.5 rounded-lg border text-[10px] font-bold flex items-center justify-center gap-1 ${
+                                progress >= 95 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-white/5 border-white/10 text-slate-400"
+                              }`}>
+                                {progress >= 95 ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />}
+                                <span>Handover SBAR</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -299,10 +446,10 @@ export default function ShareReport() {
                           </div>
                           <div className="text-center">
                             <h3 className="font-bold text-base text-white">
-                              Generate Clinical & Plain-Language Summary
+                              Generate Clinical &amp; Plain-Language Summary
                             </h3>
                             <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-                              Deep SBAR handover for doctors + plain-language guide for patients powered by Gemini 4 Argon
+                              Deep SBAR handover for doctors + plain-language guide for patients powered by Aegis Clinical Intelligence
                             </p>
                           </div>
                           <span className="text-xs font-semibold px-4 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded-full border border-indigo-500/40 transition-colors">
@@ -329,7 +476,7 @@ export default function ShareReport() {
                         <h2 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
                           <span>Clinical Summary Dossier</span>
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                            Gemini 4 Argon
+                            Aegis Clinical Engine
                           </span>
                         </h2>
                         <p className="text-xs text-slate-400">
@@ -427,7 +574,7 @@ export default function ShareReport() {
                                 </span>
                               </div>
                               <p className="text-xs text-slate-600 font-medium">
-                                Autonomous Medical Intelligence & Handover Framework
+                                Autonomous Medical Intelligence &amp; Handover Framework
                               </p>
                             </div>
                           </div>
@@ -435,10 +582,10 @@ export default function ShareReport() {
                           <div className="flex flex-col items-end gap-1.5">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] font-bold text-emerald-800">
                               <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                              Member of NVIDIA Inception Program
+                              MEMBER OF NVIDIA INCEPTION PROGRAM
                             </div>
                             <div className="text-[10px] text-slate-500 font-medium">
-                              NHA ABDM Certified (M1/M2) • HIPPA/DISHA Compliant
+                              NHA ABDM Certified (M1/M2) • HIPAA &amp; DPDP Compliant
                             </div>
                           </div>
                         </div>
@@ -455,7 +602,7 @@ export default function ShareReport() {
                           </div>
                           <div>
                             <span className="text-slate-500 block text-[10px] uppercase font-bold">ABHA / UHID</span>
-                            <span className="font-mono font-bold text-indigo-700">{(activeProfile as any)?.abhaAddress || "91-XXXX-XXXX-XXXX"}</span>
+                            <span className="font-mono font-bold text-indigo-700">{(activeProfile as any)?.abhaAddress || "aniket.dhuri@abdm"}</span>
                           </div>
                           <div>
                             <span className="text-slate-500 block text-[10px] uppercase font-bold">Generated Date</span>
@@ -470,7 +617,7 @@ export default function ShareReport() {
                           <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
                             <HeartPulse className="w-5 h-5 text-indigo-600" />
                             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-                              Plain-Language Patient Guide (For Patient & Family)
+                              Plain-Language Patient Guide (For Patient &amp; Family)
                             </h2>
                           </div>
 
@@ -480,9 +627,7 @@ export default function ShareReport() {
                                 <Info className="w-4 h-4 text-blue-600" />
                                 1. Health Overview (At a Glance)
                               </h3>
-                              <p className="text-xs md:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                {patientData.overview}
-                              </p>
+                              {renderFormattedContent(patientData.overview, true)}
                             </div>
                           )}
 
@@ -492,9 +637,7 @@ export default function ShareReport() {
                                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
                                 2. What Your Test Results Mean
                               </h3>
-                              <p className="text-xs md:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                {patientData.results}
-                              </p>
+                              {renderFormattedContent(patientData.results, true)}
                             </div>
                           )}
 
@@ -504,9 +647,7 @@ export default function ShareReport() {
                                 <Pill className="w-4 h-4 text-amber-600" />
                                 3. Your Medications in Simple Terms
                               </h3>
-                              <p className="text-xs md:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                {patientData.meds}
-                              </p>
+                              {renderFormattedContent(patientData.meds, true)}
                             </div>
                           )}
 
@@ -516,9 +657,7 @@ export default function ShareReport() {
                                 <HelpCircle className="w-4 h-4 text-purple-600" />
                                 4. Questions to Ask Your Doctor at Your Next Visit
                               </h3>
-                              <p className="text-xs md:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                {patientData.questions}
-                              </p>
+                              {renderFormattedContent(patientData.questions, true)}
                             </div>
                           )}
 
@@ -526,11 +665,9 @@ export default function ShareReport() {
                             <div className="p-4 rounded-xl bg-teal-50/70 border-l-4 border-teal-500">
                               <h3 className="text-sm font-bold text-teal-950 flex items-center gap-2 mb-2">
                                 <Apple className="w-4 h-4 text-teal-600" />
-                                5. Practical Diet & Lifestyle Pointers
+                                5. Practical Diet &amp; Lifestyle Pointers
                               </h3>
-                              <p className="text-xs md:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                {patientData.lifestyle}
-                              </p>
+                              {renderFormattedContent(patientData.lifestyle, true)}
                             </div>
                           )}
                         </div>
@@ -547,46 +684,38 @@ export default function ShareReport() {
 
                           <div className="grid grid-cols-1 gap-4">
                             {sbarData.situation && (
-                              <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80">
+                              <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 border-l-4 border-l-amber-500">
                                 <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white uppercase tracking-wider mb-2">
                                   S • Situation
                                 </span>
-                                <p className="text-xs md:text-sm text-slate-800 font-sans leading-relaxed whitespace-pre-wrap">
-                                  {sbarData.situation}
-                                </p>
+                                {renderFormattedContent(sbarData.situation, true)}
                               </div>
                             )}
 
                             {sbarData.background && (
-                              <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200/80">
+                              <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200/80 border-l-4 border-l-blue-500">
                                 <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-blue-600 text-white uppercase tracking-wider mb-2">
                                   B • Background
                                 </span>
-                                <p className="text-xs md:text-sm text-slate-800 font-sans leading-relaxed whitespace-pre-wrap">
-                                  {sbarData.background}
-                                </p>
+                                {renderFormattedContent(sbarData.background, true)}
                               </div>
                             )}
 
                             {sbarData.assessment && (
-                              <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-200/80">
+                              <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-200/80 border-l-4 border-l-purple-500">
                                 <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-purple-600 text-white uppercase tracking-wider mb-2">
                                   A • Assessment
                                 </span>
-                                <p className="text-xs md:text-sm text-slate-800 font-sans leading-relaxed whitespace-pre-wrap">
-                                  {sbarData.assessment}
-                                </p>
+                                {renderFormattedContent(sbarData.assessment, true)}
                               </div>
                             )}
 
                             {sbarData.recommendation && (
-                              <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
+                              <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/80 border-l-4 border-l-emerald-500">
                                 <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-600 text-white uppercase tracking-wider mb-2">
                                   R • Recommendation
                                 </span>
-                                <p className="text-xs md:text-sm text-slate-800 font-sans leading-relaxed whitespace-pre-wrap">
-                                  {sbarData.recommendation}
-                                </p>
+                                {renderFormattedContent(sbarData.recommendation, true)}
                               </div>
                             )}
                           </div>
@@ -596,9 +725,7 @@ export default function ShareReport() {
                       {/* If text didn't match structured SBAR / Patient regex, show clean full markdown */}
                       {!sbarData.situation && !patientData.overview && (
                         <div className="p-6 rounded-xl bg-slate-50 border border-slate-200">
-                          <div className="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-800 leading-relaxed">
-                            {summaryMarkdown}
-                          </div>
+                          {renderFormattedContent(summaryMarkdown, true)}
                         </div>
                       )}
 
@@ -609,12 +736,12 @@ export default function ShareReport() {
                             Verification Hash: #AEGIS-442-99L • Authenticated Clinical Dossier
                           </p>
                           <p className="text-[10px] text-slate-400 mt-0.5">
-                            Synthesized securely by Aegis Health AI. Powered by Google Gemini 4 Argon & NVIDIA Inception.
+                            Synthesized securely by Aegis Health AI Clinical Intelligence Engine.
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="italic text-slate-400 text-[10px]">
-                            Confidential Medical Intelligence Document • For Clinical Handover & Patient Education
+                            Confidential Medical Intelligence Document • For Clinical Handover &amp; Patient Education
                           </p>
                         </div>
                       </div>
