@@ -37,9 +37,40 @@ npm run graphify:full     # deep: 1,164 nodes → graphify-out/
 - **Landing Page Stability:** Do NOT modify the landing page structure, styles, or content unless explicitly commanded to do so. It is the designated root entry point and highly tuned for brand messaging.
 - **Brand Fidelity:** Preserve the Aegis visual identity. Use the established Tailwind CSS semantic variables (like `bg-surface`, `text-theme`). Do not inject generic unbranded slate/gray designs or change global CSS variables unless requested.
 
-## 2. Authentication & Navigation Guardrails
-- **State-Driven Routing:** The main route transition between the landing page and protected paths (Dashboard) must remain bound to Firebase `onAuthStateChanged` lifecycles.
-- **Login Fixes:** We rely on browser local persistence. Do not inject new authentication libraries. Google Sign-In via Firebase is the sole provider. 
+## 2. Authentication, Login Resilience & Viewport Invariants (Strictly Enforced)
+> **Mandatory Goal:** Ensure 100% login uptime, zero redirect race conditions, zero HTTP referrer blocks, and complete immunity against blank/black screens on `/dashboard`.
+
+- **2.1 Dual-Mode OAuth & Redirect Settling Invariant (`src/context/AuthContext.tsx`)**:
+  - `initializeAuth()` MUST ALWAYS evaluate `getRedirectResult(auth)` with a dedicated safety timeout (20s) BEFORE settling `authLoading = false`.
+  - Never allow `onAuthStateChanged`'s initial transient `null` state to trigger premature navigation or flip `authLoading = false` while a redirect credential exchange is pending.
+  - When `signInWithRedirect` is triggered (on mobile or popup-blocked browsers), login modals and landing buttons MUST return early without calling `navigate('/dashboard')`, allowing the browser to navigate cleanly to `accounts.google.com`.
+  - Upon successful redirect completion, transition cleanly via React Router's `<Navigate to="/dashboard" replace />` rather than reloading the page with `window.location.replace()`.
+  - Firebase Authentication with Google Sign-In is the sole identity provider. Never inject alternative auth libraries or custom JWT storage schemes. Always enforce `browserLocalPersistence`.
+
+- **2.2 Google Cloud API Key Restriction Invariant (NO HTTP Referrer Blocks)**:
+  - The Firebase browser API key (`AIzaSy...`) MUST NEVER have HTTP Referrer restrictions configured in Google Cloud Console (`identitytoolkit.googleapis.com` will fail with `API_KEY_HTTP_REFERRER_BLOCKED`).
+  - Mobile WebViews, OAuth redirects, and internal Service Worker requests frequently send blank/empty referrers. Enforce security strictly via API Scope / Target Restrictions (limiting keys to Identity Toolkit, Firestore, Storage, and Token Service APIs) rather than HTTP referrers.
+
+- **2.3 Viewport Render Guarantee (Zero Black Screen Invariant - `src/App.tsx`, `src/components/Dashboard/Dashboard.tsx`)**:
+  - The main dashboard router container in `src/App.tsx` MUST NEVER evaluate to an empty or null render state for authenticated users.
+  - Never gate the entire dashboard container behind an incomplete boolean condition where `user` exists but `isConsentGranted` is `null` or uninitialized, while the consent modal is simultaneously skipped.
+  - Every authenticated state must resolve deterministically:
+    - If consent is required → render `<ConsentScreen>`.
+    - If consent is granted OR user is an exempt reviewer/admin account (`dhurianiket@gmail.com`, `reviewer@aegishealthai.co.in`) → render the active dashboard view.
+    - Never create a state where neither is rendered (the "blank screen trap").
+  - Admin/reviewer accounts (`dhurianiket@gmail.com`, `reviewer@aegishealthai.co.in`) MUST always have auto-granted consent state and immediate hydration of demonstration clinical telemetry in `Dashboard.tsx` so that empty/new accounts never crash, stall, or display pitch-black viewports.
+
+- **2.4 Service Worker Abort Immunity (`public/sw.js`)**:
+  - The Service Worker `fetch` event listener MUST ALWAYS catch aborted requests (`e.catch(() => {})`).
+  - Navigating to `accounts.google.com` or external OAuth endpoints naturally aborts in-flight SPA fetch requests. An unhandled promise rejection in the Service Worker crashes the worker lifecycle and throws cascading console exceptions.
+
+- **2.5 App Check & Rate Limiting Safety Boundaries**:
+  - Firebase App Check on `identitytoolkit.googleapis.com` and `firestore.googleapis.com` must remain `UNENFORCED` in production unless custom enterprise reCAPTCHA Enterprise thresholds and debug tokens are actively configured.
+  - `isTokenAutoRefreshEnabled` in `src/lib/firebase/config.ts` must remain disabled or safely handled to prevent 24-hour client storage lockouts when token exchanges fail or reCAPTCHA v3 scores fluctuate on mobile networks.
+
+- **2.6 PWA & Browser Cache Invalidation on Auth Changes**:
+  - Any modification to authentication flows, Service Worker, or PWA entry points MUST increment the Service Worker cache version (e.g. `aegis-health-ai-v*`) and HTML asset query versions (`?v=*`).
+  - `firebase.json` headers MUST enforce `no-cache, no-store, must-revalidate` on PWA manifests and auth endpoints so mobile and desktop browsers never execute stale, cached auth scripts.
 
 ## 3. Data, Layout & Performance Rules
 - **Firestore Isolation:** Write data strictly to isolated paths (e.g., `users/{userId}/{subcollection}`). Avoid global unsandboxed collections.

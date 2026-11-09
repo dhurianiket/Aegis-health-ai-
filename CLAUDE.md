@@ -22,7 +22,7 @@ Aegis is a multimodal, enterprise-grade personal health Progressive Web App (PWA
 3. **Keep Mobile-First:** Preserve `.flex-col`, `md:flex-row`, and Tailwind's mobile-first conventions at all times.
 4. **Preserve Brand Styling:** Aegis has a specific, soft, high-contrast, patient-friendly look. Do not arbitrarily change semantic colors (`bg-theme`, `text-surface`) to default gray or black without reason.
 5. **Firebase Patterns:** We use standard Firebase SDK patterns. Keep functions inside `/functions/` and frontend queries isolated in standard hook structures. Do not mix Next.js paradigms into the Vite setup.
-6. **Authentication:** The auth flow explicitly utilizes `onAuthStateChanged` state to handle seamless transition to the dashboard. 
+6. **Authentication & Viewport Invariants:** Follow AGENTS.md Section 2 strictly. Always await `getRedirectResult(auth)` with safety timeout before settling auth state. Never apply HTTP referrer restrictions to the Firebase browser key. Never gate the dashboard viewport behind an incomplete boolean condition where neither the consent screen nor the workspace mounts (zero blank screens). Use `browserLocalPersistence`. 
 7. **Real-time Synchronized Context:** Patient medications must always sync in real-time using `onSnapshot` inside `useClinicalContext.ts`. Any components formatting medications MUST dynamically fallback and support flexible keys (`genericName`, `name`, `brandName`, `medicationName`) across internal mappings.
 8. **Visual Interaction Matrix:** Hosted inside `src/components/Medications/InteractionMatrix.tsx`. Displays compatible and warning medication pairings using colored matrix grid cells linked to RxNorm datastores and Aura AI advisory cards.
 
