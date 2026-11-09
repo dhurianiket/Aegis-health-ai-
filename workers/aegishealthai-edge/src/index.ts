@@ -32,6 +32,8 @@ import {
 export interface Env {
   GEMINI_API_KEY: string;
   NVIDIA_NIM_API_KEY?: string;
+  BEDROCK_MANTLE_API_KEY?: string;
+  BEDROCK_MANTLE_ENDPOINT?: string;
   TURNSTILE_SECRET?: string;
   TURNSTILE_ENFORCE?: string;
   FIREBASE_PROJECT_ID?: string;
@@ -621,6 +623,184 @@ export default {
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
           "X-Provider": "nvidia-nim",
+        },
+      });
+    }
+
+    // 5. Amazon Bedrock Mantle Model Catalog Route
+    if (url.pathname === "/api/ai/bedrock/models" && request.method === "GET") {
+      const activeModels = [
+        {
+          id: "deepseek.v3.2",
+          name: "DeepSeek V3.2",
+          tier: "reasoning",
+          provider: "DeepSeek",
+          contextWindow: "128K",
+          description: "Frontier clinical reasoning, medical second-opinion & differential diagnosis",
+        },
+        {
+          id: "mistral.mistral-large-3-675b-instruct",
+          name: "Mistral Large 3 (675B)",
+          tier: "flagship",
+          provider: "Mistral",
+          contextWindow: "128K",
+          description: "Flagship medical comprehension and multi-lingual differential diagnosis",
+        },
+        {
+          id: "zai.glm-5",
+          name: "GLM-5",
+          tier: "flagship",
+          provider: "Z.AI",
+          contextWindow: "200K",
+          description: "Advanced diagnostic reasoning & treatment guidelines",
+        },
+        {
+          id: "zai.glm-4.7-flash",
+          name: "GLM 4.7 Flash",
+          tier: "fast",
+          provider: "Z.AI",
+          contextWindow: "200K",
+          description: "Ultra-fast triage, patient chat, and high-speed queries ($0.07/1M tokens)",
+        },
+        {
+          id: "moonshotai.kimi-k2-thinking",
+          name: "Kimi K2 Thinking",
+          tier: "reasoning",
+          provider: "Moonshot AI",
+          contextWindow: "256K",
+          description: "Deep chain-of-thought clinical reasoning & multi-step pathology analysis",
+        },
+        {
+          id: "writer.palmyra-vision-7b",
+          name: "Palmyra Vision 7B",
+          tier: "vision",
+          provider: "Writer",
+          contextWindow: "4K",
+          description: "Specialized medical prescription, handwritten notes & lab report OCR",
+        },
+        {
+          id: "qwen.qwen3-vl-235b-a22b-instruct",
+          name: "Qwen3 VL (235B)",
+          tier: "vision",
+          provider: "Qwen",
+          contextWindow: "235K",
+          description: "Multimodal medical image & chart analysis",
+        },
+        {
+          id: "openai.gpt-oss-safeguard-120b",
+          name: "GPT OSS Safeguard (120B)",
+          tier: "safety",
+          provider: "OpenAI",
+          contextWindow: "128K",
+          description: "Clinical safety guardrail and hallucination auditor",
+        },
+      ];
+
+      return new Response(
+        JSON.stringify({ models: activeModels, count: activeModels.length, status: "available" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // 6. Amazon Bedrock Mantle Multi-Model Proxy Route
+    if ((url.pathname === "/api/ai/bedrock" || url.pathname === "/api/bedrock/converse") && request.method === "POST") {
+      const authHeader = request.headers.get("Authorization") || "";
+      const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+
+      if (!bearerToken) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", message: "Missing Authorization Bearer token", request_id: requestId }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const projectId = env.FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID;
+      let authenticated = false;
+      let userUid: string | undefined;
+
+      if (bearerToken.includes(".")) {
+        const verifyResult = await verifyFirebaseIdToken(bearerToken, projectId);
+        if (verifyResult.valid) {
+          authenticated = true;
+          userUid = verifyResult.uid;
+        } else {
+          console.warn(`[Auth] JWT verification failed for Bedrock request ${requestId}:`, verifyResult.error);
+        }
+      }
+
+      if (!authenticated) {
+        return new Response(
+          JSON.stringify({
+            error: "Unauthorized",
+            message: "Invalid or expired credentials. Please provide a verified Firebase ID token.",
+            request_id: requestId,
+          }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const bedrockKey = env.BEDROCK_MANTLE_API_KEY;
+      if (!bedrockKey) {
+        return new Response(
+          JSON.stringify({
+            error: "Service Misconfiguration",
+            message: "BEDROCK_MANTLE_API_KEY is not configured on edge server.",
+            request_id: requestId,
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
+      let rawBody: any = {};
+      try {
+        rawBody = await request.json();
+      } catch {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Malformed JSON body", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const endpoint = env.BEDROCK_MANTLE_ENDPOINT || "https://bedrock-mantle.us-east-1.api.aws/v1";
+      const targetModel = rawBody.model || "deepseek.v3.2";
+
+      // Normalize OpenAI format
+      const upstreamPayload: Record<string, any> = {
+        model: targetModel,
+        messages: rawBody.messages || [
+          ...(rawBody.systemPrompt ? [{ role: "system", content: rawBody.systemPrompt }] : []),
+          ...(rawBody.prompt ? [{ role: "user", content: rawBody.prompt }] : []),
+        ],
+        temperature: rawBody.temperature ?? 0.2,
+        max_tokens: rawBody.max_tokens || rawBody.maxTokens || 2048,
+      };
+
+      if (rawBody.stream !== undefined) {
+        upstreamPayload.stream = rawBody.stream;
+      }
+
+      const upstreamResponse = await fetch(`${endpoint}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${bedrockKey}`,
+          "User-Agent": "AegisHealthAI-Edge/2.0",
+        },
+        body: JSON.stringify(upstreamPayload),
+        signal: clientSignal,
+      });
+
+      const responseText = await upstreamResponse.text();
+      return new Response(responseText, {
+        status: upstreamResponse.status,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "X-Request-Id": requestId,
+          "X-Provider": "aws-bedrock-mantle",
+          "X-Model-Used": targetModel,
         },
       });
     }

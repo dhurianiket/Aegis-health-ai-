@@ -321,8 +321,8 @@
   - *Exports*: `generateScanAndShareQrPayload`, `DEFAULT_CARE_CONTEXTS`, `DEFAULT_CONSENT_REQUESTS`, `getAbdmProfile`, `saveAbdmProfile`, `disconnectAbdm`, `getLinkedCareContexts`, `saveLinkedCareContexts`, `getConsentRequests`, `saveConsentRequests`, `formatAbhaNumber`, `generateQrCodePayload`, `generateDataProvenanceReceipt`, `downloadProvenanceReceiptJson`
   - *Imports*: `../types/abdm`, `./fhirService`
 - **[`src\services\ai\bedrockService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\bedrockService.ts)**
-  - *Exports*: `BEDROCK_MODELS`, `BedrockModelKey`, `DEFAULT_BEDROCK_REGION`, `DEFAULT_EXTRACTION_MODEL`, `DEFAULT_REASONING_MODEL`, `BedrockMessageContent`, `BedrockMessage`, `BedrockInferenceConfig`, `BedrockConverseParams`, `BedrockConverseResponse`, `BedrockError`, `__setBedrockFetchForTests`, `UnifiedAIParams`, `UnifiedAIResponse`
-  - *Imports*: `../../lib/geminiClient`, `./promptFramework`
+  - *Exports*: `BEDROCK_MODELS`, `BedrockModelKey`, `BEDROCK_MANTLE_MODELS`, `BedrockMantleModelKey`, `DEFAULT_MANTLE_MODEL`, `DEFAULT_BEDROCK_REGION`, `DEFAULT_EXTRACTION_MODEL`, `DEFAULT_REASONING_MODEL`, `BedrockMessageContent`, `BedrockMessage`, `BedrockInferenceConfig`, `BedrockConverseParams`, `BedrockConverseResponse`, `BedrockError`, `__setBedrockFetchForTests`, `BedrockChatMessage`, `BedrockChatParams`, `BedrockChatResponse`, `AvailableBedrockModel`, `ClinicalConsensusParams`, `ClinicalConsensusResponse`, `UnifiedAIParams`, `UnifiedAIResponse`
+  - *Imports*: `../../lib/geminiClient`, `./promptFramework`, `../../lib/authTokenProvider`
 - **[`src\services\ai\biochemicalClashService.ts`](file:///E:\Aegis-health-ai-\src\services\ai\biochemicalClashService.ts)**
   - *Exports*: `CytochromeP450Clash`, `PharmacodynamicSynergy`, `BiochemicalClashAnalysis`, `calculateHeuristicClash`
   - *Imports*: `./nvidiaNimService`, `../../utils/aiUtils`
