@@ -1,13 +1,30 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot XCVI — November 9, 2026
+## Current Snapshot XCVII — November 9, 2026
+### Completed by: Antigravity AI Pair Programmer (Zero Secret Leakage & GitHub Secret Scanning Remediation)
+### Tasks Completed:
+- **Zero Secret Leakage & GitHub Secret Scanning Remediation (`src/lib/firebase/config.ts`, `.github/workflows/deploy.yml`, `CURRENT_STATE.md`)**:
+  - 🛡️ **Eliminated All Hardcoded Firebase Keys**:
+    - Removed `CANONICAL_FIREBASE_API_KEY` string constant completely from `src/lib/firebase/config.ts`. The client now strictly resolves `import.meta.env.VITE_FIREBASE_API_KEY`.
+    - Synced GitHub Actions Repository Secret `VITE_FIREBASE_API_KEY` via `gh secret set` to the canonical Firebase project key (`...sGTo`), keeping it encrypted in GitHub's secret vault.
+    - Restored `.github/workflows/deploy.yml` to inject `VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}` with zero literal secrets in the repository or workflow files.
+    - Redacted all previous API key references in `CURRENT_STATE.md` to `[REDACTED_API_KEY]` to strictly satisfy GitHub Secret Scanning and GitGuardian invariants.
+  - 🔍 **Strict GGShield Pre-Commit Defense**:
+    - Staged changes verified with `ggshield secret scan pre-commit` with 0 secrets detected.
+- **Verification & Deployment**:
+  - 🧪 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🧪 **Vitest Suite (`App.test.tsx`)**: 100% green.
+  - 🛡️ **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 📦 **Vite Production Build**: 3,796 modules transformed, 9 route shells prerendered.
+
+## Previous Snapshot XCVI — November 9, 2026
 ### Completed by: Antigravity AI Pair Programmer (Firebase API Key Unification & SW 80-Error Elimination)
 ### Tasks Completed:
 - **Canonical Firebase API Key Unification (`src/lib/firebase/config.ts`, `.github/workflows/deploy.yml`)**:
   - 🔑 **Resolved API Key Mismatch**:
-    - Discovered that GitHub Actions secret `VITE_FIREBASE_API_KEY` was injecting a mismatched API key (`...FdaY`), conflicting with Firebase Hosting's native project key (`AIzaSyByMgEDM1uC3XmtMSG_xn9xApG8Va8sGTo` / `...sGTo` from `/__/firebase/init.json`).
+    - Discovered that GitHub Actions secret `VITE_FIREBASE_API_KEY` was injecting a mismatched API key (`...FdaY`), conflicting with Firebase Hosting's native project key (`...sGTo` from `/__/firebase/init.json`).
     - This mismatch caused `/__/auth/handler` to fail assertion verification and abort token exchange (`verifyAssertion`), triggering `auth/internal-error` upon redirect return.
-    - Updated `src/lib/firebase/config.ts` to enforce the project's canonical API key (`AIzaSyByMgEDM1uC3XmtMSG_xn9xApG8Va8sGTo`), correct `messagingSenderId` (`276903125313`), and `appId` (`1:276903125313:web:e414a9d6ca041d642d01c0`).
+    - Updated `src/lib/firebase/config.ts` to enforce the project's canonical API key (`[REDACTED_API_KEY]`), correct `messagingSenderId` (`276903125313`), and `appId` (`1:276903125313:web:e414a9d6ca041d642d01c0`).
     - Updated `.github/workflows/deploy.yml` to pass the canonical project key during production build.
 - **Service Worker 80-Error Elimination & Fetch Resiliency (`public/sw.js`)**:
   - 🛡️ **Same-Origin & Reserved Path Isolation**:
