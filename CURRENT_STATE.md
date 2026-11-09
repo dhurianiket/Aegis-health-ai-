@@ -1,6 +1,25 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot XCVII — November 9, 2026
+## Current Snapshot XCVIII — November 9, 2026
+### Completed by: Antigravity AI Pair Programmer (Google Cloud API Key HTTP Referrer & Service Restrictions)
+### Tasks Completed:
+- **Google Cloud API Key Security Hardening (`gcloud services api-keys`)**:
+  - 🔒 **HTTP Referrer Restrictions Applied via `gcloud`**:
+    - Both active keys (`Browser key (auto created by Firebase)` and legacy app key) updated on Google Cloud project `aegis-health-app-90697`.
+    - Applied strict browser referrer whitelist:
+      - `https://aegishealthai.co.in/*`
+      - `https://www.aegishealthai.co.in/*`
+      - `*aegishealthai.co.in/*`
+      - `*aegis-health-app-90697.web.app/*`
+      - `*aegis-health-app-90697.firebaseapp.com/*`
+      - `*localhost*`
+      - `*127.0.0.1*`
+  - 🛡️ **API Target Restrictions Enforced**:
+    - Both keys strictly restricted to Firebase client APIs (`identitytoolkit`, `firestore`, `firebasestorage`, `firebaseappcheck`, `securetoken`).
+    - General Google Cloud APIs, Gemini Developer API, Compute Engine, BigQuery, and billing APIs are completely excluded.
+  - 🌐 Any call originating outside your verified domains or targeting unauthorized APIs is automatically rejected at Google's edge.
+
+## Previous Snapshot XCVII — November 9, 2026
 ### Completed by: Antigravity AI Pair Programmer (Zero Secret Leakage & GitHub Secret Scanning Remediation)
 ### Tasks Completed:
 - **Zero Secret Leakage & GitHub Secret Scanning Remediation (`src/lib/firebase/config.ts`, `.github/workflows/deploy.yml`, `CURRENT_STATE.md`)**:
