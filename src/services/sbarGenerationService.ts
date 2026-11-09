@@ -7,7 +7,7 @@ import { generateSourceHash, getCachedReport, saveCachedReport } from "./cacheSe
 import { auth } from "../lib/firebase/config";
 import { parseSafeTimestamp } from "../utils/dateUtils";
 
-const PROMPT_VERSION = "v1.0";
+const PROMPT_VERSION = "v2.0";
 
 export const generateSBAR = async (
   userId: string,
@@ -38,17 +38,17 @@ export const generateSBAR = async (
   });
 
   const prompt = `
-You are the clinical reasoning and medical report summarization engine for Aegis Health AI.
+You are the advanced clinical reasoning and multi-specialist medical summarization engine for Aegis Health AI, powered by Google Gemini.
 
-Your job is to analyze extracted medical report data and generate a highly useful, clinically structured summary for both:
-1. SBAR format for healthcare communication.
-2. Plain-language summary for the patient/user in detailed, easy-to-understand language.
+Your mission is to perform deep clinical synthesis across the patient's longitudinal lab reports, active medications, wearable biometrics, and multi-specialist consultation chats. Generate an exhaustive, high-fidelity summary with two dedicated parts:
+1. PART 1: SBAR CLINICAL SUMMARY (For Attending Physicians, Specialists & Hospital OPDs).
+2. PART 2: PLAIN-LANGUAGE SUMMARY (For the Patient & Family in clear, detailed, reassuring layperson terms).
 
-<output_rules>
-- OUTPUT MUST BE PLAIN TEXT ONLY.
-- NO MARKDOWN (no bolding, no headers).
-- Start with the intro paragraph for the patient.
-</output_rules>
+<formatting_guidelines>
+- Structure your output clearly using the exact partition dividers shown below.
+- Keep the technical SBAR concise, evidence-grounded, and packed with exact biomarker values, reference ranges, and pharmacological context.
+- Make the patient summary warm, educational, and deeply informative—explain *why* certain numbers are flagged, how organs communicate, what medicines do in the body, and what questions to bring to the doctor.
+</formatting_guidelines>
 
 INTRO PARAGRAPH:
 Here is the clinical summary of your complete medical profile. It contains two sections: a technical SBAR summary for healthcare providers, and a plain-language summary tailored for you (educational information, not a diagnosis).
@@ -58,20 +58,34 @@ PART 1: SBAR CLINICAL SUMMARY (For Healthcare Providers)
 Patient: ${profile.fullName || profile.name} | Age: ${age} | Sex: ${profile.gender || 'Unknown'} | Date: ${today}
 
 S - SITUATION
-[Current report type, date, and the main reason for attention]
+[Current report type, date, acute presentations, and the main reason for attention]
 
 B - BACKGROUND
-[Relevant patient history, ongoing conditions, previous abnormal values, medication context, multi-specialist team consultations, and biomarker trends]
+[Relevant patient history, ongoing conditions, previous abnormal values, active prescription regimen, multi-specialist team consultations, and biomarker trends]
 
 A - ASSESSMENT
-[Medical meaning of findings. Synthesize multi-specialist assessments (Cardiology, Endocrinology, Nephrology, etc.) with current laboratory biomarkers. Separate normal from abnormal/borderline. Explain clinical significance and cross-system organ interactions]
+[Medical meaning of findings. Synthesize multi-specialist assessments (Cardiology, Endocrinology, Nephrology, etc.) with current laboratory biomarkers. Correlate clinical significance and cross-system organ interactions]
 
 R - RECOMMENDATION
-[What should be reviewed next. Include specialist follow-ups, pending referrals, repeat testing, and lifestyle modifications. Concise and action-oriented]
+[What should be reviewed next. Include specialist follow-ups, pending referrals, repeat testing, titration points, and lifestyle modifications. Action-oriented]
 
 --------------------------------------------------
 PART 2: PLAIN-LANGUAGE SUMMARY (For the Patient)
-[Write a detailed, user-friendly doctor-style summary for the patient. Synthesize the findings from your tests and the advice of your AI specialists into clear, actionable guidance. Start with the most important findings. Explain what each abnormal result means in context. Include how this report fits into the patient's history. Explain trends, improvement, worsening, or stability. Detailed enough for the patient to understand. Avoid jargon where possible. Explain normal findings briefly.]
+
+1. HEALTH OVERVIEW (At a Glance)
+[Explain the overall picture of health in clear, friendly language without scary medical jargon. Mention which organ systems are doing well and which need attention.]
+
+2. WHAT YOUR TEST RESULTS MEAN
+[Break down key abnormal vs normal findings in simple everyday language. Explain what each number means in context.]
+
+3. YOUR MEDICATIONS IN SIMPLE TERMS
+[Explain why each active medication was prescribed, what it does in your body, and key safety reminders.]
+
+4. QUESTIONS TO ASK YOUR DOCTOR AT YOUR NEXT VISIT
+[List 3 to 4 specific, high-yield questions tailored to these findings to ask during your doctor appointment.]
+
+5. PRACTICAL DIET & LIFESTYLE POINTERS
+[Provide practical everyday advice—hydration, nutrition, sleep, and physical activity aligned with your lab results.]
 
 CLINICAL CONTEXT:
 ${formattedContext}

@@ -66,6 +66,8 @@ const Hero3DHealthGauge = lazy(() =>
 import RemindersWidget from "./RemindersWidget";
 import VisitPrepWidget from "./VisitPrepWidget";
 import { FirstTimeClinicalOnboardingModal } from "../Onboarding/FirstTimeClinicalOnboardingModal";
+import { AbdmScanShareModal } from "../ABDM/AbdmScanShareModal";
+import { getAbdmProfile, AbhaProfile } from "../../services/abdmService";
 import { DEMO_DOCUMENTS, DEMO_HEALTH_SCORES, DEMO_INSIGHTS } from "../../data/sandboxDemoData";
 
 const ATTENTION_STATUSES = new Set(["high", "abnormal", "low", "critical"]);
@@ -187,6 +189,15 @@ export default function Dashboard({
   const [keyLabs, setKeyLabs] = useState<LabResult[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [viewFilter, setViewFilter] = useState<DashboardViewFilter>("all");
+  const [isScanShareOpen, setIsScanShareOpen] = useState(false);
+  const [abdmProfile, setAbdmProfile] = useState<AbhaProfile | null>(null);
+
+  useEffect(() => {
+    if (user?.uid) {
+      const prof = getAbdmProfile(user.uid);
+      setAbdmProfile(prof);
+    }
+  }, [user?.uid]);
 
   // Real-time Firestore-backed wearable telemetry (AGENTS.md Rule 3)
   const { telemetry: liveWearable, saveTelemetry } = useWearableTelemetry();
@@ -577,7 +588,7 @@ export default function Dashboard({
                   hrv={liveWearable?.hrv}
                   spo2={liveWearable?.spo2}
                   onOpenScanShare={() => {
-                    window.location.hash = "settings";
+                    setIsScanShareOpen(true);
                   }}
                   onOpenSbar={() => {
                     window.location.hash = "sbar";
@@ -1126,6 +1137,11 @@ export default function Dashboard({
           profile={activeProfile}
         />
       )}
+      <AbdmScanShareModal
+        isOpen={isScanShareOpen}
+        onClose={() => setIsScanShareOpen(false)}
+        profile={abdmProfile}
+      />
     </motion.div>
   );
 }

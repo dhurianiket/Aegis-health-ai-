@@ -1,4 +1,4 @@
-import { toPng } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import { jsPDF } from "jspdf";
 import getAI from "../lib/geminiClient";
 import { safeGeminiCall, CORE_SYSTEM_PROMPT } from "./ai/promptFramework";
@@ -130,10 +130,10 @@ export const exportToPDF = async (
     // Wait for internal renderings (like charts) to settle and fonts to load
     await new Promise((r) => setTimeout(r, 600));
 
-    // 2. Convert to Image using html-to-image
-    const dataUrl = await toPng(clone, {
+    // 2. Convert to Image using html-to-image (JPEG at 0.94 quality & 2x pixelRatio for razor-sharp vector-like clarity under 400KB)
+    const dataUrl = await toJpeg(clone, {
       backgroundColor: "#ffffff",
-      quality: 1.0,
+      quality: 0.94,
       pixelRatio: 2, // Higher density for laser-sharp text and charts
       skipAutoScale: true,
       width: targetWidth,
@@ -143,16 +143,16 @@ export const exportToPDF = async (
         transform: "none",
         opacity: "1",
         visibility: "visible",
-        fontFamily: "-apple-system, Arial, sans-serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       },
     });
 
-    // 3. Generate PDF
+    // 3. Generate PDF with gzip stream compression
     const pdf = new jsPDF({
       orientation,
       unit: "mm",
       format: "a4",
-      compress: false, // Disable compression for better quality
+      compress: true,
     });
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -171,13 +171,13 @@ export const exportToPDF = async (
       // Single page fitting
       pdf.addImage(
         dataUrl,
-        "PNG",
+        "JPEG",
         0,
         0,
         finalImgWidth,
         finalImgHeight,
         undefined,
-        "SLOW",
+        "FAST",
       );
     } else {
       // Multi-page splitting logic
@@ -186,16 +186,15 @@ export const exportToPDF = async (
 
       while (heightLeft > 0) {
         // Draw the image shifted by 'position'
-        // We use SLOW alias for better interpolation
         pdf.addImage(
           dataUrl,
-          "PNG",
+          "JPEG",
           0,
           position,
           finalImgWidth,
           finalImgHeight,
           undefined,
-          "SLOW",
+          "FAST",
         );
 
         heightLeft -= pdfHeight;
@@ -203,7 +202,6 @@ export const exportToPDF = async (
 
         if (heightLeft > 0) {
           pdf.addPage();
-          // Optional: Add some white overlap/padding between pages to avoid text clipping in middle
         }
       }
     }

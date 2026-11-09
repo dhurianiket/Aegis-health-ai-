@@ -109,7 +109,7 @@
   - *Imports*: `../../lib/firebase/config`, `../../context/AuthContext`, `../../utils/reportComparison`
 - **[`src\components\Dashboard\SBARPreview.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\SBARPreview.tsx)**
   - *Exports*: `SBARPreviewProps`, `SBARPreview`
-  - *Imports*: `../../types/medical`, `../../services/pdfExportService`, `../../services/fhirService`, `../Common/RegionalAudioPlayer`, `../../services/opdConsultationPdfService`
+  - *Imports*: `../../services/pdfExportService`, `../../services/fhirService`, `../Common/RegionalAudioPlayer`, `../../services/opdConsultationPdfService`, `../../utils/dateUtils`
 - **[`src\components\Dashboard\SmartAlertCard.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\SmartAlertCard.tsx)**
   - *Exports*: `SmartAlertCardProps`, `SmartAlertCard`
 - **[`src\components\Dashboard\SmartAlerts.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\SmartAlerts.tsx)**
@@ -140,7 +140,7 @@
   - *Imports*: `../../lib/firebase/config`
 - **[`src\components\Export\ShareReport.tsx`](file:///E:\Aegis-health-ai-\src\components\Export\ShareReport.tsx)**
   - *Exports*: `ShareReport`, `default`
-  - *Imports*: `../ui/ExportButton`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../services/ai/gemini`, `../../lib/firebase/firestore`
+  - *Imports*: `../ui/ExportButton`, `../../context/AuthContext`, `../../context/ProfileContext`, `../../services/sbarGenerationService`, `../../types/medical...`
 - **[`src\components\Form\AutoSizeTextarea.tsx`](file:///E:\Aegis-health-ai-\src\components\Form\AutoSizeTextarea.tsx)**
   - *Exports*: `AutoSizeTextareaProps`, `AutoSizeTextarea`, `default`
   - *Imports*: `../../lib/pretext`
@@ -481,6 +481,7 @@
   - *Imports*: `../types/health`, `../lib/firebase/config`, `./ai/promptFramework`, `./drugInteractionService`
 - **[`src\services\opdConsultationPdfService.ts`](file:///E:\Aegis-health-ai-\src\services\opdConsultationPdfService.ts)**
   - *Exports*: `OpdPdfInputData`
+  - *Imports*: `./abdmService`
 - **[`src\services\organHealthService.ts`](file:///E:\Aegis-health-ai-\src\services\organHealthService.ts)**
   - *Exports*: `OrganSystemKey`, `OrganHealthStatus`, `OrganSystemScore`, `OrganHealthOverview`, `LabObservationItem`, `calculateOrganSystemScores`
 - **[`src\services\pdfExportService.ts`](file:///E:\Aegis-health-ai-\src\services\pdfExportService.ts)**

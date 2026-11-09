@@ -852,6 +852,7 @@ function MainApp() {
                   sbar={sbarData}
                   isLoading={isGeneratingSBAR}
                   error={sbarError}
+                  patientProfile={activeProfile as unknown as UserProfile}
                 />
               </AIErrorBoundary>
             </Suspense>
