@@ -20,15 +20,28 @@ const getDynamicAuthDomain = () => {
   return sanitizeDomain(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "aegis-health-app-90697.firebaseapp.com";
 };
 
+// Canonical Firebase project config directly matching /__/firebase/init.json on aegis-health-app-90697
+export const CANONICAL_FIREBASE_API_KEY = "AIzaSyByMgEDM1uC3XmtMSG_xn9xApG8Va8sGTo";
+
+const getResolvedApiKey = () => {
+  const envKey = import.meta.env.VITE_FIREBASE_API_KEY;
+  if (import.meta.env.MODE === 'test') {
+    return envKey || 'mock-test-key';
+  }
+  // Enforce project canonical key (...sGTo) if env is missing, mock, or contains mismatched key (...FdaY)
+  if (!envKey || envKey.endsWith("FdaY") || envKey === "mock-test-key") {
+    return CANONICAL_FIREBASE_API_KEY;
+  }
+  return envKey;
+};
+
 const firebaseConfig = {
-  apiKey:
-    import.meta.env.VITE_FIREBASE_API_KEY ||
-    (import.meta.env.MODE === 'test' || import.meta.env.DEV ? 'mock-test-key' : ''),
+  apiKey: getResolvedApiKey(),
   authDomain: getDynamicAuthDomain(),
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'aegis-health-app-90697',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'aegis-health-app-90697.appspot.com',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '1234567890',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:1234567890:web:1234567890abcdef',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'aegis-health-app-90697.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '276903125313',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:276903125313:web:e414a9d6ca041d642d01c0',
 };
 
 const app = initializeApp(firebaseConfig);

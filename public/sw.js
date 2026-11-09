@@ -3,14 +3,15 @@
  * Ensures fast asset caching, offline resiliency, and standalone PWA compliance.
  */
 
-const CACHE_NAME = 'aegis-health-ai-v1';
+const CACHE_NAME = 'aegis-health-ai-v2';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
   '/icon-maskable.png',
-  '/apple-touch-icon.png'
+  '/apple-touch-icon.png',
+  '/apple-touch-icon-180x180.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -41,23 +42,26 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Never intercept non-GET requests (POST, PUT, DELETE, etc.)
+  // 1. Only intercept same-origin requests (never third-party fonts, analytics, APIs)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // 2. Never intercept non-GET requests (POST, PUT, DELETE, etc.)
   if (request.method !== 'GET') {
     return;
   }
 
-  // 2. Never intercept Firebase Auth, Firestore, Google Analytics, or Edge AI endpoints
+  // 3. Never intercept Firebase reserved paths (/__/*), Auth handlers, or Cloudflare Edge API (/api/*)
   if (
-    url.hostname.includes('firebase') ||
-    url.hostname.includes('googleapis.com') ||
-    url.hostname.includes('google-analytics.com') ||
-    url.hostname.includes('googletagmanager.com') ||
-    url.pathname.startsWith('/api/')
+    url.pathname.startsWith('/__/') ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.includes('/auth/')
   ) {
     return;
   }
 
-  // 3. For navigation requests (HTML pages), use Network-first with Cache fallback
+  // 4. For navigation requests (HTML pages), use Network-first with Cache fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -71,26 +75,40 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           const cachedResponse = await caches.match(request);
           if (cachedResponse) return cachedResponse;
-          return caches.match('/');
+          const fallback = await caches.match('/');
+          return fallback || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
         })
     );
     return;
   }
 
-  // 4. For static assets (images, fonts, scripts, css), use Stale-While-Revalidate
+  // 5. For static assets (images, fonts, scripts, css), use Stale-While-Revalidate with safe catch
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
+      if (cachedResponse) {
+        // Fetch in background to revalidate cache
+        fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+          })
+          .catch(() => {
+            // Background revalidation failed silently
+          });
+        return cachedResponse;
+      }
+
+      // Not in cache: fetch from network
+      return fetch(request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const clone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
           return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
+        });
     })
   );
 });

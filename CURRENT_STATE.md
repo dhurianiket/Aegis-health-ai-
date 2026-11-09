@@ -1,6 +1,27 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot XCV — November 9, 2026
+## Current Snapshot XCVI — November 9, 2026
+### Completed by: Antigravity AI Pair Programmer (Firebase API Key Unification & SW 80-Error Elimination)
+### Tasks Completed:
+- **Canonical Firebase API Key Unification (`src/lib/firebase/config.ts`, `.github/workflows/deploy.yml`)**:
+  - 🔑 **Resolved API Key Mismatch**:
+    - Discovered that GitHub Actions secret `VITE_FIREBASE_API_KEY` was injecting a mismatched API key (`...FdaY`), conflicting with Firebase Hosting's native project key (`AIzaSyByMgEDM1uC3XmtMSG_xn9xApG8Va8sGTo` / `...sGTo` from `/__/firebase/init.json`).
+    - This mismatch caused `/__/auth/handler` to fail assertion verification and abort token exchange (`verifyAssertion`), triggering `auth/internal-error` upon redirect return.
+    - Updated `src/lib/firebase/config.ts` to enforce the project's canonical API key (`AIzaSyByMgEDM1uC3XmtMSG_xn9xApG8Va8sGTo`), correct `messagingSenderId` (`276903125313`), and `appId` (`1:276903125313:web:e414a9d6ca041d642d01c0`).
+    - Updated `.github/workflows/deploy.yml` to pass the canonical project key during production build.
+- **Service Worker 80-Error Elimination & Fetch Resiliency (`public/sw.js`)**:
+  - 🛡️ **Same-Origin & Reserved Path Isolation**:
+    - `sw.js` now strictly checks `url.origin === self.location.origin`, completely ignoring cross-origin requests (`api.fontshare.com`, `cloudflareinsights.com`, etc.).
+    - Added explicit bypass for Firebase reserved paths (`/__/*`, `/auth/*`) and Edge AI (`/api/*`), preventing the service worker from intercepting `/__/auth/handler` and `/__/auth/iframe`.
+    - Fixed `event.respondWith()` TypeError by ensuring fetch promises never resolve with `undefined` when network resources are blocked or offline.
+    - Bumped service worker cache name to `aegis-health-ai-v2` to immediately invalidate old caches across client browsers.
+- **Verification & Deployment**:
+  - 🧪 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🧪 **Vitest Suite (`App.test.tsx`)**: 100% green.
+  - 🛡️ **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 📦 **Vite Production Build**: 3,796 modules transformed, 9 route shells prerendered.
+
+## Previous Snapshot XCV — November 9, 2026
 ### Completed by: Antigravity AI Pair Programmer (Mobile Auth Popup Transition, iOS Apple Touch Icon Suite & Recharts Resiliency)
 ### Tasks Completed:
 - **Mobile Auth Restoration (Zero Redirect Failure / `auth/internal-error` Elimination)**:
