@@ -323,6 +323,12 @@ function MainApp() {
     user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in" ||
     user?.email?.toLowerCase() === "dhurianiket@gmail.com";
 
+  useEffect(() => {
+    if (isReviewerAccount && isConsentGranted !== true) {
+      setIsConsentGranted(true);
+    }
+  }, [isReviewerAccount, isConsentGranted]);
+
   if (showPostLoginAnimation && (isConsentGranted === true || isReviewerAccount)) {
     return (
       <PostLoginTransition 
@@ -554,7 +560,7 @@ function MainApp() {
           )}
           <ErrorBoundary>
             <Suspense fallback={<Fallback />}>
-              {(!user || isConsentGranted === true || user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in") && (
+              {(!user || isConsentGranted === true || isReviewerAccount) && (
 
                 <AnimatePresence mode="wait">
                   <motion.div

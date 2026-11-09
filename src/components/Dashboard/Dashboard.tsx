@@ -198,6 +198,7 @@ export default function Dashboard({
     if (
       user.uid === "sandbox-demo-user" ||
       user.email?.toLowerCase() === "reviewer@aegishealthai.co.in" ||
+      user.email?.toLowerCase() === "dhurianiket@gmail.com" ||
       activeProfile?.id === "sandbox-demo-profile"
     ) {
       return false;
@@ -260,7 +261,8 @@ export default function Dashboard({
 
         const isSandboxOrReviewer =
           activeProfile?.id === "sandbox-demo-profile" ||
-          user.email?.toLowerCase() === "reviewer@aegishealthai.co.in";
+          user.email?.toLowerCase() === "reviewer@aegishealthai.co.in" ||
+          user.email?.toLowerCase() === "dhurianiket@gmail.com";
 
         if (isMounted) {
           if (
