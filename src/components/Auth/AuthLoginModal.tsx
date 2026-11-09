@@ -113,7 +113,10 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
   const handleGoogleSignIn = async () => {
     try {
       if (signIn) {
-        await signIn();
+        const res = await signIn();
+        if (res && res.method === 'redirect') {
+          return;
+        }
       }
       onClose();
       navigate('/dashboard', { replace: true });

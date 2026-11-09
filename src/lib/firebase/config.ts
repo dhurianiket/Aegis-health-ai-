@@ -20,10 +20,18 @@ const getDynamicAuthDomain = () => {
   return sanitizeDomain(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "aegis-health-app-90697.firebaseapp.com";
 };
 
-const firebaseConfig = {
-  apiKey:
+const getFirebaseApiKey = () => {
+  if (typeof window !== 'undefined' && (window as any).__FIREBASE_DEFAULTS__?.config?.apiKey) {
+    return (window as any).__FIREBASE_DEFAULTS__.config.apiKey;
+  }
+  return (
     import.meta.env.VITE_FIREBASE_API_KEY ||
-    (import.meta.env.MODE === 'test' || import.meta.env.DEV ? 'mock-test-key' : ''),
+    (import.meta.env.MODE === 'test' || import.meta.env.DEV ? 'mock-test-key' : '')
+  );
+};
+
+const firebaseConfig = {
+  apiKey: getFirebaseApiKey(),
   authDomain: getDynamicAuthDomain(),
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'aegis-health-app-90697',
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'aegis-health-app-90697.firebasestorage.app',

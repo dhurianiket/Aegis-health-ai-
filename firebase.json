@@ -55,6 +55,15 @@
     ],
     "headers": [
       {
+        "source": "/@(apple-touch-icon*|icon-*|favicon*).@(png|svg|ico)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(html|json)",
         "headers": [
           {
@@ -69,15 +78,6 @@
           {
             "key": "Cache-Control",
             "value": "public, max-age=31536000, immutable"
-          }
-        ]
-      },
-      {
-        "source": "/@(apple-touch-icon*|icon-*|favicon*).@(png|svg|ico)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=86400, must-revalidate"
           }
         ]
       },

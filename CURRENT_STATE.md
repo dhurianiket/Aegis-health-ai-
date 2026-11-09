@@ -1,6 +1,34 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot XCIX — November 9, 2026
+## Current Snapshot C — November 9, 2026
+### Completed by: Antigravity AI Pair Programmer (Mobile Auth Race Elimination, Service Worker Crash Resilience, PWA Icon Cache Invalidation, and API Key Synchronization)
+### Tasks Completed:
+- **Service Worker Error Elimination (`public/sw.js`, `firebase.json`)**:
+  - 🛠️ **Aborted Fetch Exception Shield**:
+    - Wrapped static asset fetch handlers with `.catch()` to trap aborted requests when mobile/desktop browsers navigate away to Google OAuth (`signInWithRedirect`). This completely eliminates the 80 red `Uncaught (in promise) TypeError: Failed to fetch` errors in Chrome DevTools.
+    - Bumped service worker cache name to `aegis-health-ai-v3` to evict stale cached responses.
+  - 📱 **PWA & iOS Apple Touch Icon Cache Invalidation**:
+    - Reordered `firebase.json` headers so that `/@(apple-touch-icon*|icon-*|favicon*).@(png|svg|ico)` takes precedence over the generic 1-year immutable caching rule, enforcing `no-cache, no-store, must-revalidate`.
+    - Bumped icon version query strings (`?v=20261109b`) across `index.html` and `public/manifest.json` ensuring iOS Safari and desktop browsers fetch the new authentic ShieldCheck brand logo immediately.
+- **Authentication Lifecycle & Redirect Flow Remediation (`src/context/AuthContext.tsx`, `src/App.tsx`, `src/components/Auth/AuthLoginModal.tsx`, `src/components/LandingPage/LandingPage.tsx`)**:
+  - 🔄 **Awaiting Redirect Result Before State Resolution**:
+    - Refactored `initializeAuth()` to evaluate `getRedirectResult(auth)` with a 20-second timeout before settling auth state. This guarantees that `onAuthStateChanged` firing an initial `null` before redirect assertion exchange does not flash the landing page or drop credentials.
+    - Eliminated `window.location.replace('/dashboard')` reload loops upon redirect completion, delegating seamless client-side transition to React Router's `<Navigate to="/dashboard" replace />`.
+  - 🛑 **Pre-empted Premature Modal & Landing Navigation**:
+    - Modified `signIn()` to return `{ method: 'popup' | 'redirect'; user?: User | null }`. When `signInWithRedirect` is triggered, modal and landing handlers return early without premature navigation, keeping the viewport stable as Google OAuth takes over.
+  - 🌀 **Landing Page Spinner During Auth Resolution**:
+    - In `PublicLandingPageRoute`, added an explicit loading spinner when `authLoading` is active, preventing premature landing page layout mount during initial credentials evaluation.
+- **API Key & Secrets Boundary Enforcement (`src/lib/firebase/config.ts`, GitHub Actions, GCP)**:
+  - 🔑 **Synchronized Firebase Browser API Key Across Layers**:
+    - Updated GitHub Actions repository secret `VITE_FIREBASE_API_KEY` to the canonical browser key (`AIzaSy...Ho4`) that matches `/__/firebase/init.json` and GCP key `0a39fe7b`.
+    - Added dynamic detection in `config.ts` to check `window.__FIREBASE_DEFAULTS__` if provided by Firebase Hosting.
+- **Verification & Testing**:
+  - 🧪 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🧪 **Vitest Suite (`App.test.tsx`, `AuthLoginModal.test.tsx`)**: 100% green (1,084 tests passing).
+  - 🛡️ **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 📦 **Vite Production Build**: 3,796 modules transformed, 9 route shells prerendered.
+
+## Previous Snapshot XCIX — November 9, 2026
 ### Completed by: Antigravity AI Pair Programmer (App Check Unthrottling, Referrer Bug Resolution, and Admin Consent Bypass)
 ### Tasks Completed:
 - **Authentication & App Check Remediation (`gcloud`, `firebaseappcheck`, `src/App.tsx`, `src/lib/firebase/config.ts`)**:

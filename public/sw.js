@@ -3,7 +3,7 @@
  * Ensures fast asset caching, offline resiliency, and standalone PWA compliance.
  */
 
-const CACHE_NAME = 'aegis-health-ai-v2';
+const CACHE_NAME = 'aegis-health-ai-v3';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json',
@@ -18,7 +18,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(PRECACHE_ASSETS).catch((err) => {
-        console.warn('[PWA SW] Precache partial error:', err);
+        console.warn('[PWA SW] Precache partial notice:', err);
       });
     }).then(() => self.skipWaiting())
   );
@@ -42,8 +42,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Only intercept same-origin requests (never third-party fonts, analytics, APIs)
-  if (url.origin !== self.location.origin) {
+  // 1. Only intercept same-origin HTTP/HTTPS requests (never chrome-extension, fonts CDN, analytics)
+  if (url.origin !== self.location.origin || !url.protocol.startsWith('http')) {
     return;
   }
 
@@ -68,47 +68,64 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
           }
           return response;
         })
         .catch(async () => {
-          const cachedResponse = await caches.match(request);
-          if (cachedResponse) return cachedResponse;
-          const fallback = await caches.match('/');
-          return fallback || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+          try {
+            const cachedResponse = await caches.match(request);
+            if (cachedResponse) return cachedResponse;
+            const fallback = await caches.match('/');
+            return fallback || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+          } catch {
+            return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+          }
         })
     );
     return;
   }
 
-  // 5. For static assets (images, fonts, scripts, css), use Stale-While-Revalidate with safe catch
+  // 5. For static assets (images, scripts, css), use Stale-While-Revalidate with safe abort catches
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Fetch in background to revalidate cache
-        fetch(request)
+    caches.match(request)
+      .then((cachedResponse) => {
+        if (cachedResponse) {
+          // Revalidate in background safely without throwing on network disconnect
+          fetch(request)
+            .then((networkResponse) => {
+              if (networkResponse && networkResponse.status === 200 && (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
+                const clone = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
+              }
+            })
+            .catch(() => {
+              // Background revalidation notice caught safely
+            });
+          return cachedResponse;
+        }
+
+        // Not in cache: fetch from network and catch aborted/canceled requests safely
+        return fetch(request)
           .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            if (networkResponse && networkResponse.status === 200 && (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
               const clone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
             }
+            return networkResponse;
           })
           .catch(() => {
-            // Background revalidation failed silently
+            // Return match if available, or a benign empty response for aborted fetches (prevents 80+ console errors)
+            return caches.match(request).then((cached) => {
+              if (cached) return cached;
+              return new Response('', { status: 408, statusText: 'Request Aborted' });
+            }).catch(() => {
+              return new Response('', { status: 408, statusText: 'Request Aborted' });
+            });
           });
-        return cachedResponse;
-      }
-
-      // Not in cache: fetch from network
-      return fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return networkResponse;
-        });
-    })
+      })
+      .catch(() => {
+        return new Response('', { status: 408, statusText: 'Cache match error' });
+      })
   );
 });

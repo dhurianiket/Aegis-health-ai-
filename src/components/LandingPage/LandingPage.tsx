@@ -167,7 +167,10 @@ export default function LandingPage() {
   const handleGoogleSignIn = async () => {
     setLoginError(null);
     try {
-      await signIn();
+      const res = await signIn();
+      if (res && res.method === 'redirect') {
+        return;
+      }
       navigate('/dashboard', { replace: true });
     } catch (error: any) {
       setLoginError(error?.message || "Google sign-in failed.");

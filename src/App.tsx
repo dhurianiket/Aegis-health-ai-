@@ -931,7 +931,15 @@ const PublicLandingPageRoute = () => {
     return <Navigate to={`/dashboard${location.hash}`} replace />;
   }
 
-  if (!authLoading && user) {
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--color-bg,#090e13)] text-[var(--color-text-muted,#94a3b8)]">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+      </div>
+    );
+  }
+
+  if (user) {
     if (import.meta.env.DEV) console.log("[PublicLandingPageRoute] User found! Redirecting to /dashboard via <Navigate />");
     return <Navigate to="/dashboard" replace />;
   }
