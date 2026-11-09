@@ -1,6 +1,30 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot XCIV — November 8, 2026
+## Current Snapshot XCV — November 9, 2026
+### Completed by: Antigravity AI Pair Programmer (Mobile Auth Popup Transition, iOS Apple Touch Icon Suite & Recharts Resiliency)
+### Tasks Completed:
+- **Mobile Auth Restoration (Zero Redirect Failure / `auth/internal-error` Elimination)**:
+  - 🔓 **In-Place Popup Authentication Across Mobile (`src/context/AuthContext.tsx`)**:
+    - Discontinued forced `signInWithRedirect` on mobile devices. Replaced with universal `signInWithPopup(auth, googleProvider)` triggered directly by user gesture. Eliminates Safari/Chrome ITP cookie loss, cross-origin storage partitioning, and PWA standalone shell escape.
+    - Added graceful fallback to `signInWithRedirect` only when popup blockers actively prevent window creation (`auth/popup-blocked`).
+    - Fixed race condition: `await setPersistence(auth, browserLocalPersistence)` before invoking `getRedirectResult(auth)`.
+    - Extended bot safety timeout from 1.2s to 6.0s to accommodate mobile cellular cold boots without premature `null` user resolutions.
+    - Updated `LandingPage.tsx` and `AuthLoginModal.tsx` to immediately route to `/dashboard` upon sign-in completion.
+- **iOS Apple Touch Icon Suite & Full-Bleed Squircle Compliance (`public/`, `index.html`, `firebase.json`)**:
+  - 🍎 **Full iOS Resolution Matrix**:
+    - Generated `apple-touch-icon.png` (180×180), `apple-touch-icon-180x180.png` (180×180), `apple-touch-icon-167x167.png` (167×167), `apple-touch-icon-152x152.png` (152×152), `apple-touch-icon-120x120.png` (120×120), and `apple-touch-icon-precomposed.png` (180×180).
+    - Rendered with solid edge-to-edge `#0A192F` background (alpha 255 everywhere, zero transparent corners) preventing iOS from rendering black borders around icon squircles.
+    - Configured version query tags (`?v=20261109`) in `index.html` and `public/manifest.json`.
+    - Added specific cache header rule in `firebase.json` for icons with `max-age=86400, must-revalidate` to avoid 1-year immutable edge caching.
+- **Recharts Flexible Layout Stabilization (`BiomarkerTrajectoryWidget.tsx`, `WearableCoachWidget.tsx`)**:
+  - 📊 Resolved `-1` width/height warnings by enforcing strict pixel boundaries (`height={300} minWidth={0}` and `height={40} minWidth={0}`) on all chart containers.
+- **Verification & Deployment**:
+  - 🧪 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🧪 **Vitest Suite (`App.test.tsx`)**: 100% green.
+  - 🛡️ **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 📦 **Vite Production Build**: 3,796 modules transformed, 9 route shells prerendered.
+
+## Previous Snapshot XCIV — November 8, 2026
 ### Completed by: Antigravity AI Pair Programmer (Authentic ShieldCheck Brand Unification Across App, Favicons & All Views)
 ### Tasks Completed:
 - **Authentic Aegis Brand Unification Across Application (`ShieldCheck` & Emerald-400)**:

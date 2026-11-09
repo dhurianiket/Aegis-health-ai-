@@ -168,6 +168,7 @@ export default function LandingPage() {
     setLoginError(null);
     try {
       await signIn();
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
       setLoginError(error?.message || "Google sign-in failed.");
     }

@@ -71,10 +71,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoading(false);
         setAuthResolved(true);
       }
-    }, 1200);
+    }, 6000);
 
     const initializeAuth = async () => {
-      // Step 1: Register onAuthStateChanged IMMEDIATELY before awaiting setPersistence
+      // Step 1: Ensure persistence is initialized before reading redirect/auth state
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+      } catch (err) {
+        console.warn("[Auth] Failed to set persistence:", err);
+      }
+
+      // Step 2: Register onAuthStateChanged listener
       unsubscribeFn = onAuthStateChanged(
         auth,
         (u) => {
@@ -96,11 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       );
 
-      setPersistence(auth, browserLocalPersistence).catch((err) => {
-        console.error("Failed to set persistence:", err);
-      });
-
-      // Step 2: Extract redirect credential if available, but do not block on it
+      // Step 3: Extract redirect credential if available, but do not block on it
       const isMockDevKey =
         import.meta.env.MODE !== "test" &&
         (auth as any)?.app?.options?.apiKey === "mock-test-key";
@@ -125,6 +128,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             }
             if (isMounted) {
                resolveAuth(result.user);
+               if (typeof window !== "undefined" && (window.location.pathname === "/" || window.location.pathname === "")) {
+                 window.location.replace("/dashboard");
+               }
             }
           }
         } catch (error: any) {
@@ -164,27 +170,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (import.meta.env.DEV) console.log("Current Origin:", window.location.origin);
 
-      const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
-      const preferRedirect = (window !== window.parent) || isMobileDevice; // Use redirect if in iframe or on mobile
+      const isEmbedded = (window !== window.parent);
 
-      if (preferRedirect) {
-        if (import.meta.env.DEV) console.log("[Auth] Embedded/Mobile detected. Attempting signInWithRedirect...");
+      if (isEmbedded) {
+        if (import.meta.env.DEV) console.log("[Auth] Embedded iframe detected. Attempting signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
         if (import.meta.env.DEV) console.log("[Auth] signInWithRedirect initiated.");
-        // Redirect navigates away from the page, no need to resolve state here
         return;
       }
       
       if (import.meta.env.DEV) console.log("[Auth] Attempting signInWithPopup...");
       
-      // We implement a custom timeout race specifically for COOP blocked configurations in Safari/Desktop
+      // Popup auth is used for both mobile (Safari/Chrome/PWA) and desktop browsers for seamless in-place login
       const popupPromise = signInWithPopup(auth, googleProvider);
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("auth/popup-timeout")), 20000)
+        setTimeout(() => reject(new Error("auth/popup-timeout")), 45000)
       );
       
       const result: any = await Promise.race([popupPromise, timeoutPromise]);
-      if (result) {
+      if (result?.user) {
         const credential = GoogleAuthProvider.credentialFromResult(result);
         if (credential?.accessToken) {
           cachedAccessToken = credential.accessToken;
@@ -194,6 +198,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             console.warn("[Auth] Failed to persist google_access_token to sessionStorage:", e);
           }
         }
+        setUser(result.user);
+        setLoading(false);
+        setAuthResolved(true);
       }
       if (import.meta.env.DEV) console.log("[Auth] Sign-in with popup successful.");
 

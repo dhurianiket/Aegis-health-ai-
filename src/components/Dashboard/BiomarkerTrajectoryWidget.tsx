@@ -218,7 +218,7 @@ export const BiomarkerTrajectoryWidget: React.FC<BiomarkerTrajectoryWidgetProps>
 
       {/* Recharts Area Chart Container with 3D Gradient Fill — Enforced h-[300px] Pixel Boundary */}
       <div className="w-full h-[300px] min-h-[300px] bg-slate-50/90 dark:bg-slate-950/90 rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-white/10 relative overflow-hidden z-10">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={300} minWidth={0}>
           <AreaChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
             <defs>
               <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">

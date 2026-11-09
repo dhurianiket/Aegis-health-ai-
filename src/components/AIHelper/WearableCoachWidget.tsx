@@ -433,7 +433,7 @@ export default function WearableCoachWidget({
           {/* Recharts Boundary Envelope: Strict h-[300px] min-h-[300px] (AGENTS.md Rule 3) */}
           <div className="h-[300px] min-h-[300px] w-full relative">
             {hasSleepData ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <BarChart data={sleepData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
                   <XAxis dataKey="name" stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} />
                   <YAxis stroke="#cbd5e1" tick={{ fill: "#cbd5e1", fontWeight: "bold" }} unit="m" />
@@ -489,7 +489,7 @@ export default function WearableCoachWidget({
               {isDisconnected ? "--" : (telemetry?.rhr ?? 0)} <span className="text-xs font-semibold text-slate-300">bpm</span>
             </div>
             <div className="h-10 w-full relative min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={40} minWidth={0}>
                 <LineChart data={sparklineData}>
                   <Line type="monotone" dataKey="rhr" stroke="#06b6d4" strokeWidth={2.5} dot={false} />
                 </LineChart>
@@ -509,7 +509,7 @@ export default function WearableCoachWidget({
               {isDisconnected ? "--" : (telemetry?.hrv ?? 0)} <span className="text-xs font-semibold text-slate-300">ms</span>
             </div>
             <div className="h-10 w-full relative min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={40} minWidth={0}>
                 <LineChart data={sparklineData}>
                   <Line type="monotone" dataKey="hrv" stroke="#a855f7" strokeWidth={2.5} dot={false} />
                 </LineChart>
@@ -529,7 +529,7 @@ export default function WearableCoachWidget({
               {isDisconnected ? "--%" : `${telemetry?.spo2 ?? 0}%`}
             </div>
             <div className="h-10 w-full relative min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={40} minWidth={0}>
                 <LineChart data={sparklineData}>
                   <Line type="monotone" dataKey="spo2" stroke="#10b981" strokeWidth={2.5} dot={false} />
                 </LineChart>
@@ -549,7 +549,7 @@ export default function WearableCoachWidget({
               {isDisconnected ? "--" : (telemetry?.steps ?? 0).toLocaleString()}
             </div>
             <div className="h-10 w-full relative min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={40} minWidth={0}>
                 <LineChart data={sparklineData}>
                   <Line type="monotone" dataKey="steps" stroke="#3b82f6" strokeWidth={2.5} dot={false} />
                 </LineChart>
