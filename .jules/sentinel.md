@@ -12,3 +12,7 @@
 **Learning:** Query parameters are often recorded in server and proxy access logs, risking credential exposure even over HTTPS.
 **Prevention:** Always pass sensitive credentials like API keys via secure HTTP headers (e.g., `x-goog-api-key`) rather than URL strings.
 
+## 2025-03-09 - Unauthenticated Local Server AI Endpoint
+**Vulnerability:** A local express server endpoint (`POST /api/generate-visit-prep`) exposed access to the Gemini API directly without any authentication checks, bypassing the standard edge worker authentication.
+**Learning:** Even development or specific component backends must route through the established authenticated edge infrastructure instead of introducing their own direct unauthenticated secrets usage.
+**Prevention:** Remove custom unauthenticated local endpoints and always use the global `getAI()` client which routes requests through the authenticated Cloudflare edge worker.
