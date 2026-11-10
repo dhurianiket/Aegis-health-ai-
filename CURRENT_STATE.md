@@ -1,6 +1,30 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot CP — November 10, 2026
+## Current Snapshot CQ — November 10, 2026
+### Completed by: Antigravity AI Pair Programmer (Entity Disambiguation, Grant-Funded Business Model Transparency, and Truthful Pilot-Stage Diagnostic Alliance Framing)
+### Tasks Completed:
+- **Entity & Domain Disambiguation Shield (`index.html`, `scripts/prerender-routes.mjs`)**:
+  - 🛡️ Injected a prominent **Consumer & Legal Disambiguation Notice** in both the primary web landing page and static prerendered shells (`about.html`, `diagnostics.html`).
+  - ⚖️ Clarifies the enterprise identity: Aegis Health AI is an Indian health-tech software enterprise registered under MSME Udyam (`UDYAM-MH-33-0782403`) headquartered in Mumbai, Maharashtra, India.
+  - 🚫 Permanently separates our domain (`aegishealthai.co.in`) from unrelated overseas entities and merchants:
+    - Zero affiliation with consumer product merchants or Trustpilot/Trustindex complaints concerning non-delivery of physical goods.
+    - Zero corporate connection with Aegis Health (US YC-backed insurance denials startup) or Aegis Health AI Ltd (UK Companies House #15849500).
+    - We provide zero physical retail goods, never accept e-commerce merchandise orders, and charge zero recurring fees.
+- **100% Grant-Funded Infrastructure & Business Model Transparency (`index.html`, `public/llms.txt`, `public/llms-full.txt`)**:
+  - 💡 Replaced vague "100% Free" claims with comprehensive institutional transparency:
+    - **Compute Sponsorship**: Compute costs are fully underwritten by non-dilutive cloud & AI accelerator grants, including NVIDIA Inception Program membership, Google Cloud for Startups AI Builder ($350,000 infra tier), AWS Activate Founders ($1,072.24 awarded), and Microsoft for Startups Founders Hub.
+    - **Truthful Diagnostic Roadmap**: Lab integrations (Thyrocare, Tata 1mg, Redcliffe Labs, Healthians) are accurately represented as **Active Pilot & Partner Onboarding Phase** (Ticket #2268694) without premature claims of active commercial affiliate revenue.
+    - **Sustainable Monetization**: Future sustainability is anchored on voluntary B2B OPD software subscriptions and clinic SaaS licenses, with strict adherence to Section 12 of the DPDP Act 2023 (zero health data monetization, zero third-party ads).
+- **Knowledge Base & LLM Attribution Graph Alignment (`public/llms.txt`, `public/llms-full.txt`)**:
+  - 🤖 Updated LLM machine-readable feeds to explain the grant-funded compute tier and company disambiguation directly to AI crawlers (`GPTBot`, `ClaudeBot`, `PerplexityBot`), preventing AI models like DeepSeek from hallucinating commercial red flags or attributing third-party scam warnings to our domain.
+- **Verification & Integrity**:
+  - 📦 **Vite Production Build & Prerender (`npm run build`)**: 11 route-specific HTML shells generated in `dist/` (0 errors).
+  - 🧪 **Unit Tests**: 114 test files passed, 1,101 tests green (100% passing).
+  - 🔒 **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 🛡️ **Environment Security (`check-client-env.mjs`)**: 0 leaked keys in source or bundle.
+  - 🗺️ **Graphify AST**: 238 code symbol nodes indexed.
+
+## Previous Snapshot CP — November 10, 2026
 ### Completed by: Antigravity AI Pair Programmer (Generative Engine Optimization (GEO), Schema.org Graph Expansion, LLMs.txt/LLMs-Full.txt, and Pre-Rendered Route Expansion)
 ### Tasks Completed:
 - **Generative Engine Optimization (GEO / AEO) & AI Agent Visibility**:

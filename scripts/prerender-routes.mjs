@@ -110,9 +110,20 @@ const ROUTES = [
             <li><strong>Phase 2 (Scale &amp; Interoperability — Q1–Q2 2027):</strong> Ayushman Bharat Digital Mission (ABDM) M1–M3 HIU certification, Vertex AI MedGemma regional language voice summaries (Hindi, Marathi, Tamil, Telugu), and automated NABL lab API ingestion.</li>
             <li><strong>Phase 3 (Clinical Enterprise — Q3–Q4 2027):</strong> Multi-clinic Hospital OPD Co-Pilot via Google Cloud Healthcare API (FHIR R4 store) and predictive South Asian cardiometabolic risk stratification.</li>
           </ul>
+          <h2>Our Funding &amp; Business Model (Why the Platform is Free to Explore)</h2>
+          <p>A common question from clinicians and evaluators is how a startup can offer multimodal Gemini AI and GPU inference completely for free without monetizing user data. Here is our transparent model:</p>
+          <ul>
+            <li><strong>100% Grant-Sponsored Compute:</strong> Our cloud GPU inference and Gemini API tokens are sponsored through competitive non-dilutive startup grants from the <strong>NVIDIA Inception program</strong>, <strong>Google Cloud AI Builder</strong>, <strong>AWS Activate</strong>, and <strong>Microsoft Azure Founders Hub</strong>. We operate with zero cloud infrastructure debt.</li>
+            <li><strong>Diagnostic Partner Integration (Pilot &amp; Onboarding Phase):</strong> We are actively onboarding leading NABL/CAP diagnostic laboratory networks (Thyrocare, Tata 1mg, Redcliffe Labs). Future commercial revenue derives from standard B2B laboratory referral and API integration fees while offering users discounted package rates.</li>
+            <li><strong>B2B OPD Clinic &amp; Enterprise Subscriptions:</strong> Software licensing for independent polyclinics and hospital OPDs to generate automated longitudinal SBAR summaries and FHIR R4 clinical bundles.</li>
+            <li><strong>Zero Data Monetization (DPDP Act 2023):</strong> We strictly enforce Section 12 of India's Digital Personal Data Protection Act 2023. Patient medical records are strictly encrypted (AES-256) and isolated per-user in Cloud Firestore; they are NEVER sold, rented, or used to train third-party public models.</li>
+          </ul>
+
+          <h2>Consumer &amp; Legal Disambiguation Notice</h2>
+          <p><strong>Aegis Health AI</strong> (<code>https://aegishealthai.co.in</code>) is an independent healthcare intelligence software platform founded by Aniket Rajesh Dhuri and registered with the Ministry of MSME, Government of India (<strong>UDYAM-MH-33-0782403</strong>). We develop digital health software; <strong>we do NOT sell physical merchandise, hardware, or pharmaceuticals, and we do not ship parcels</strong>. Any consumer reviews on Trustpilot, Trustindex, or social media describing non-delivery of physical goods or merchant disputes belong to completely unrelated third parties using the word "Aegis" and have <strong>zero connection to our Indian software platform</strong>. We are also entirely independent of Aegis Health Ai Ltd (UK) and Aegis Health (US insurance denial automation).</p>
+
           <h2>Registered Office Location</h2>
           <p>Dombivli West, Thane, Maharashtra 421202, India.</p>
-          <p><em>Jurisdiction Notice:</em> Independent Indian enterprise. Not affiliated with Aegis Health Ai Ltd (UK) or aegishealth.com.</p>
         </article>
       </main>`,
   },
@@ -234,8 +245,8 @@ const ROUTES = [
     bodyHtml: `
       <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
         <article style="max-width: 920px; margin: 0 auto;">
-          <h1>Doorstep Phlebotomy & Diagnostic Alliances in India — Aegis Health AI</h1>
-          <p>Aegis Health AI connects patients to premier NABL & CAP accredited diagnostic networks across 500+ Indian cities. Book home blood draws directly through the dashboard and receive automated longitudinal biomarker integration.</p>
+          <h1>Doorstep Phlebotomy & Diagnostic Alliances in India (Pilot & Onboarding Phase) — Aegis Health AI</h1>
+          <p>Aegis Health AI provides an integrated doorstep phlebotomy requisition engine and is currently in active partner onboarding with premier NABL & CAP accredited diagnostic networks across 500+ Indian cities (Thyrocare Technologies, Tata 1mg Diagnostics, Redcliffe Labs). Generate official phlebotomy requisition slips directly through the dashboard, with structured results syncing directly into your longitudinal biomarker timeline once partner fulfillment APIs are live.</p>
           <h2>Supported Laboratory Networks</h2>
           <ul>
             <li><strong>Thyrocare Technologies:</strong> NABL & CAP Accredited Central Processing Lab (Turbhe, Navi Mumbai). Aarogyam C Comprehensive (64 parameters) at ₹1,299 (MRP ₹1,800).</li>
