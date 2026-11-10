@@ -5,6 +5,7 @@ import { useProfile } from '../../context/ProfileContext';
 import { getForm, getFormResponses } from '../../services/googleFormsService';
 import { useClinicalContext } from '../../hooks/useClinicalContext';
 import AutoSizeTextarea from '../Form/AutoSizeTextarea';
+import getAI from '../../lib/geminiClient';
 
 const SYMPTOMS_LIST = [
   "Fatigue",
@@ -108,17 +109,9 @@ Format as a clean, highly structured Markdown document with:
 4. Current Medications.
 `;
 
-      const resp = await fetch("/api/generate-visit-prep", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: promptText })
-      });
-         
-      if (!resp.ok) {
-         throw new Error("Failed to generate summary via backend");
-      }
-      const data = await resp.json();
-      setSummary(data.text || "Generated Document empty.");
+      const ai = getAI();
+      const resp = await ai.models.generateContent({ contents: promptText });
+      setSummary(resp.text || "Generated Document empty.");
 
     } catch (e: any) {
       let msg = e.message || "Failed to generate Visit Prep summary.";

@@ -14,12 +14,10 @@ describe('phlebotomyRequisitionPdfService', () => {
     scheduledSlot: '07:00 AM – 07:30 AM',
     address: 'Powai, Mumbai',
     pincode: '400076',
-    phone: '8591330257',
-    email: 'aniket@aegishealthai.co.in',
     totalPayable: 1299,
     phlebotomyProtocol: 'Requires 10 hours overnight fasting. Plain water allowed.',
-    status: 'phlebotomist_assigned',
-    message: 'Technician dispatched for home collection.',
+    status: 'COLLECTION_ASSIGNED',
+    message: 'Technician dispatched for home collection.', createdAt: '2026-11-10T12:00:00Z',
   };
 
   it('generates a valid PDF blob for phlebotomy requisition', async () => {
