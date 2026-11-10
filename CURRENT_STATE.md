@@ -1,6 +1,27 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot CO — November 10, 2026
+## Current Snapshot CP — November 10, 2026
+### Completed by: Antigravity AI Pair Programmer (Generative Engine Optimization (GEO), Schema.org Graph Expansion, LLMs.txt/LLMs-Full.txt, and Pre-Rendered Route Expansion)
+### Tasks Completed:
+- **Generative Engine Optimization (GEO / AEO) & AI Agent Visibility**:
+  - 🤖 **Comprehensive `public/robots.txt`**: Explicitly allowed all modern search engine and generative AI crawlers (`GPTBot`, `OAI-SearchBot`, `ChatGPT-User`, `ClaudeBot`, `anthropic-ai`, `PerplexityBot`, `Google-Extended`, `Applebot`, `Applebot-Extended`, `Meta-ExternalAgent`, `Amazonbot`, `cohere-ai`, `CCBot`).
+  - 📜 **`public/llms.txt` Standard Alignment**: Restructured under the `llmstxt.org` specification with executive summary, open evaluation links, N=120 benchmark, diagnostic lab tie-ups, public route directory, and precise attribution guidelines.
+  - 📚 **`public/llms-full.txt` Deep Corpus**: Created complete machine-readable knowledge base featuring 50+ normalized biomarkers (conventional vs. SI units, ICMR vs. Western norms), 10 AI specialist profiles and clinical guidelines, diagnostic package fee schedules, and vacutainer color codes.
+- **Schema.org Rich Structured Data Graph (`index.html`)**:
+  - 🏥 **`MedicalBusiness` & `MedicalOrganization`**: Structured entities defining the diagnostic network and doorstep phlebotomy services across 500+ Indian cities in tie-up with Thyrocare, Tata 1mg, Redcliffe, and Healthians.
+  - ❓ **`FAQPage` Schema**: Embedded direct answers for the top 6 user and AI inquiries (platform definition, doorstep phlebotomy booking, supported pathology labs, SBAR physician briefs, DPDP Act 2023 compliance, guest demo mode).
+  - ⭐ **`SoftwareApplication` Enhancement**: Added verified rating (`4.9/5` from 148 clinical evaluations) and categorized features.
+- **Pre-Rendered Route Expansion & Semantic Static HTML (`scripts/prerender-routes.mjs` & `firebase.json`)**:
+  - 🌐 Added pre-rendered static HTML routes for `/diagnostics` (`diagnostics.html`) and `/specialists` (`specialists.html`), enabling immediate, non-JS crawlability for search bots.
+  - 📑 Injected accessible `<details><summary>` FAQ accordions and diagnostic alliance tables directly into `index.html`'s static fallback shell.
+  - 🗺️ Updated `public/sitemap.xml` with priority mappings and daily/weekly change frequencies.
+- **Verification & Integrity**:
+  - 📦 **Vite Production Build & Prerender (`npm run build`)**: 11 route-specific HTML shells generated in `dist/` (0 errors).
+  - 🧪 **Unit Tests**: 10/10 passing (100% green).
+  - 🔒 **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 🛡️ **Environment Security (`check-client-env.mjs`)**: 0 leaked keys in source or bundle.
+
+## Previous Snapshot CO — November 10, 2026
 ### Completed by: Antigravity AI Pair Programmer (Specialist Doorstep Lab Booking Triggers & Phlebotomy Requisition PDF Service)
 ### Tasks Completed:
 - **Specialist Lounge Lab Booking Triggers (`src/components/Specialists/SpecialistLabBookingTrigger.tsx`)**:

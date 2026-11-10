@@ -17,6 +17,14 @@
         "destination": "/demo.html"
       },
       {
+        "source": "/diagnostics",
+        "destination": "/diagnostics.html"
+      },
+      {
+        "source": "/specialists",
+        "destination": "/specialists.html"
+      },
+      {
         "source": "/how-it-works",
         "destination": "/how-it-works.html"
       },

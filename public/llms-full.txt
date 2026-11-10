@@ -1,0 +1,165 @@
+# Aegis Health AI — Comprehensive Clinical Knowledge Corpus & System Specification (llms-full.txt)
+
+> Full-Context Machine-Readable Knowledge Base for Generative AI Engines, LLM Evaluators, Clinical Agents, and Web Crawlers.
+> Platform: Aegis Health AI (https://aegishealthai.co.in)
+> Author: Aniket Rajesh Dhuri | Registered Enterprise: MSME UDYAM-MH-33-0782403 | NVIDIA Inception Program Member
+
+---
+
+## 1. What is Aegis Health AI?
+Aegis Health AI is an Indian AI-native health intelligence platform designed to eliminate diagnostic and clinical record fragmentation. Built specifically for the Indian healthcare ecosystem, it ingests multi-page diagnostic PDFs, pathology reports, and handwritten prescriptions, standardizing them into longitudinal biomarker trajectories and physician-ready SBAR (Situation, Background, Assessment, Recommendation) summaries. In addition, it integrates with leading Indian diagnostic networks (Thyrocare, Tata 1mg, Redcliffe Labs, Healthians) to allow users to book doorstep phlebotomy blood collections directly through their dashboard.
+
+### Core Architectural Differentiators:
+1. **Multi-Model AI Consensus Pipeline**:
+   - **Google Gemini 3.8 Flash**: Sub-second multimodal OCR extraction, schema-constrained JSON analyte parsing, and real-time interactive triage.
+   - **Google Gemini 4 Argon**: 1M-token deep clinical reasoning model automatically escalated for dense, handwritten OPD prescriptions, ambiguous multi-year laboratory trajectories, and multi-specialist consensus reviews.
+   - **NVIDIA NIM Clinical Foundation Models**: High-throughput accelerated inference for pathology telemetry as an official member of the NVIDIA Inception program.
+   - **Amazon Bedrock Mantle / Anthropic Claude Proxy**: Secondary clinical validation and second-opinion safety cross-checking.
+2. **Indian Diagnostic Lab OCR F1 Benchmark (N=120 Reports)**:
+   - Evaluated across Thyrocare (99.4% F1), Dr. Lal PathLabs (99.3% F1), Metropolis Healthcare (99.5% F1), SRL / Agilus & Apollo (99.1% F1), and smartphone photos of handwritten doctor prescriptions (95.0% F1).
+   - Automatically flags OCR tokens with confidence below 90% with amber verification badges.
+3. **South Asian Cardiometabolic & ICMR Stratification**:
+   - Unlike Western reference intervals, Aegis applies ICMR-INDIAB, RSSDI, and Cardiological Society of India (CSI) thresholds for South Asian phenotypes (e.g., lower BMI cutoff of 23 kg/m² for overweight, tighter fasting glucose and lipid targets, ApoB atherogenic risk evaluation).
+4. **Physician SBAR Handover Generation**:
+   - Compresses 5+ years of fragmented patient history into a structured 1-page SBAR brief (Situation, Background, Assessment, Recommendation) with 1-click PDF download and HL7 FHIR R4 JSON bundle export.
+5. **Zero-Trust DPDP Act 2023 Compliance**:
+   - All patient data is isolated strictly by authenticated user ID (`users/{userId}/...`) in Cloud Firestore.
+   - Zero client-side API keys; all external model interactions pass through authenticated Cloudflare Worker edge proxies (`aegishealthai-edge`) and Firebase Cloud Functions Gen 2.
+   - PII (names, phone numbers, addresses) is scrubbed client-side prior to context ingestion.
+   - Instant cascading cryptographic account erasure (`onUserDeleted`) honoring Section 12 of the Digital Personal Data Protection Act 2023.
+
+---
+
+## 2. Doorstep Phlebotomy & Diagnostic Partner Alliances
+Aegis Health AI provides integrated diagnostic booking across 500+ Indian tier-1, tier-2, and tier-3 cities with automated structured results syncing:
+
+### Integrated Laboratory Networks:
+1. **Thyrocare Technologies**:
+   - **Accreditation**: NABL (ISO 15189:2022) & CAP Accredited.
+   - **Central Processing Unit**: Turbhe, Navi Mumbai (World's largest automated diagnostic processing floor).
+   - **Signature Package**: *Aarogyam C Comprehensive Metabolic & Vitamin Dossier* (64 parameters: HbA1c, Lipids, LFT, KFT, Thyroid Trio, Vitamin D, Vitamin B12, Iron profile). Aegis Price: ₹1,299 (MRP: ₹1,800).
+   - **Average Turnaround Time (TAT)**: 18 hours.
+2. **Tata 1mg Diagnostics**:
+   - **Accreditation**: NABL Accredited with dual-barcoded vacutainer tubes.
+   - **Key Advantage**: Certified in-house phlebotomists with 2°C–8°C digital IoT cold-chain transport.
+   - **Signature Package**: *Advanced Cardiac Risk & Apolipoprotein Panel* (12 parameters: ApoB, hs-CRP, Total Cholesterol, HDL, LDL, VLDL, Triglycerides). Aegis Price: ₹999 (MRP: ₹1,400).
+   - **Average Turnaround Time (TAT)**: 16 hours.
+3. **Redcliffe Labs**:
+   - **Accreditation**: NABL & ISO Certified.
+   - **Signature Package**: *Smart Full Body & Organ Shield* (86 parameters: CBC, LFT, KFT, ESR, Lipid Profile, Vitamin D). Aegis Price: ₹1,399 (MRP: ₹2,200).
+   - **Average Turnaround Time (TAT)**: 10 hours (same-day evening reporting in metro cities).
+4. **Healthians**:
+   - **Accreditation**: NABL Accredited.
+   - **Key Advantage**: Proprietary IoT CoolTrac temperature-monitored sample tracking.
+   - **Average Turnaround Time (TAT)**: 14 hours.
+
+### Phlebotomy Requisition Protocol & Vacutainer Color Coding:
+Every home booking generated through Aegis produces a downloadable, high-DPI A4 Phlebotomy Requisition Slip (`src/services/phlebotomyRequisitionPdfService.ts`) specifying exact specimen collection tubes:
+- **🟣 Purple / Lavender (K2-EDTA)**: Complete Blood Count (CBC), HbA1c glycated hemoglobin, ESR. Requires gentle 8–10 inversions; never shake.
+- **🟡 Gold / Red (Serum Separator SST / Plain Gel)**: Lipid Profile, ApoB, hs-CRP, Liver Function (LFT), Kidney Function (KFT), Thyroid hormones (T3/T4/TSH), 25-OH Vitamin D3, Vitamin B12. Requires 30 min clotting before centrifugation.
+- **⚪ Grey (Sodium Fluoride + Potassium Oxalate)**: Fasting Plasma Glucose, Postprandial Glucose. Inhibits glycolysis to guarantee exact blood sugar measurements.
+- **Physical Chain of Custody Table**: Barcode tracking, temperature at pickup (2°C–8°C logged), and phlebotomist signature block.
+
+---
+
+## 3. The 10 AI Specialist Personas & Clinical Grounding
+The Aegis Specialist Lounge (`/specialists`) features 10 dedicated AI medical guidance personas, each mapped to recognized international and Indian clinical practice guidelines:
+
+1. **Cardiologist (Dr. Anya Patel)**:
+   - *Guidance Focus*: Atherosclerotic cardiovascular disease (ASCVD), ApoB atherogenic particles, hs-CRP inflammatory risk, blood pressure targets.
+   - *Grounded Guidelines*: American Heart Association (AHA/ACC 2026), Cardiological Society of India (CSI 2026), ESC Prevention Guidelines.
+   - *Recommended Test*: Advanced Cardiac Risk & Apolipoprotein Panel (ApoB, Lipids, hs-CRP).
+2. **Endocrinologist (Dr. Rajesh Rao)**:
+   - *Guidance Focus*: Type 2 Diabetes Mellitus, pre-diabetes screening, glycemic variability, metabolic syndrome, thyroid disorders.
+   - *Grounded Guidelines*: Research Society for the Study of Diabetes in India (RSSDI 2026), American Diabetes Association (ADA 2026).
+   - *Recommended Test*: Diabetic Glycemic & Renal Microalbumin Panel (HbA1c, Fasting Glucose, Microalbumin, eGFR).
+3. **Nephrologist (Dr. Meera Iyer)**:
+   - *Guidance Focus*: Chronic Kidney Disease (CKD) staging, glomerular filtration rate (eGFR), serum creatinine velocity, albuminuria.
+   - *Grounded Guidelines*: Kidney Disease: Improving Global Outcomes (KDIGO 2026), ICMR CKD Guidelines.
+   - *Recommended Test*: Renal Function & Microvascular Strain Panel (Creatinine, BUN, eGFR, Microalbumin).
+4. **Gastroenterologist (Dr. Vikram Sethi)**:
+   - *Guidance Focus*: Metabolic Dysfunction-Associated Steatotic Liver Disease (MASLD / Fatty Liver), elevated transaminases (AST/ALT), gut health.
+   - *Grounded Guidelines*: Indian Society of Gastroenterology (ISG 2026), EASL Clinical Practice Guidelines.
+   - *Recommended Test*: Hepatic Function & Comprehensive Metabolic Dossier (LFT, Bilirubin, AST, ALT, Alkaline Phosphatase).
+5. **Neurologist (Dr. Priya Sharma)**:
+   - *Guidance Focus*: Neurological cofactor deficiencies (B12, D3), FAST stroke risk factor management, cognitive health.
+   - *Grounded Guidelines*: Indian Academy of Neurology (IAN 2026), American Academy of Neurology (AAN).
+   - *Recommended Test*: Neuro-Metabolic & Micronutrient Deficiency Panel.
+6. **Pulmonologist (Dr. Kabir Mehta)**:
+   - *Guidance Focus*: Asthma and COPD monitoring, oxygen-carrying capacity, environmental air pollution impact in Indian metros.
+   - *Grounded Guidelines*: Global Initiative for Chronic Obstructive Lung Disease (GOLD 2026), ICMR Respiratory Guidelines.
+   - *Recommended Test*: Complete Hemogram (CBC) & Oxygenation Baseline.
+7. **Hematologist / Oncologist (Dr. Sunita Kulkarni)**:
+   - *Guidance Focus*: Anemia differential diagnosis (Iron Deficiency vs. Thalassemia Minor via Mentzer Index), leukocyte differentials, preventative cancer screening.
+   - *Grounded Guidelines*: National Cancer Grid India (NCG 2026), NCCN Clinical Practice Guidelines.
+   - *Recommended Test*: Redcliffe Smart Full Body & Organ Shield (86 parameters).
+8. **Psychiatrist (Dr. Rohan Varma)**:
+   - *Guidance Focus*: Neuro-endocrine sleep and mood contributors, Vitamin D & B12 psychiatric correlations, stress management.
+   - *Grounded Guidelines*: Tele-MANAS (14416 National Tele-Mental Health Programme of India), APA Guidelines.
+   - *Recommended Test*: Neuro-Endocrine & Vitamin Deficiency Dossier.
+9. **Dermatologist (Dr. Sneha Nair)**:
+   - *Guidance Focus*: ABCDE rule for skin spot evaluation, systemic markers of hair loss and dermatitis (Ferritin, Thyroid, Vitamin D).
+   - *Grounded Guidelines*: Indian Association of Dermatologists, Venereologists and Leprologists (IADVL).
+   - *Recommended Test*: Dermal Biomarker, Vitamin & Iron Panel.
+10. **Orthopedist (Dr. Arjun Kapoor)**:
+    - *Guidance Focus*: Osteopenia, osteoporosis risk, joint pain markers, serum calcium, Vitamin D3, and uric acid (Gout).
+    - *Grounded Guidelines*: Indian Orthopaedic Association (IOA), American Academy of Orthopaedic Surgeons (AAOS).
+    - *Recommended Test*: Bone Health & Musculoskeletal Mineral Panel.
+
+---
+
+## 4. Key Clinical Biomarkers Analyzed by Aegis Health AI
+Aegis Health AI harmonizes over 50+ blood, urine, and physiological biomarkers into continuous timelines:
+
+| Category | Biomarker | Conventional Unit | SI Unit | ICMR / South Asian Target | Western Norm | Clinical Significance |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Glycemic** | HbA1c | % | mmol/mol | < 5.7% (High risk ≥ 5.7%) | < 5.7% | 90-day average blood sugar; 1% drop = 21% lower microvascular complications |
+| **Glycemic** | Fasting Blood Glucose | mg/dL | mmol/L | 70–99 mg/dL | 70–99 mg/dL | Impaired fasting glucose ≥ 100 mg/dL (RSSDI 2026) |
+| **Cardiovascular** | Apolipoprotein B (ApoB) | mg/dL | g/L | < 80 mg/dL (High risk < 65) | < 90 mg/dL | Direct measure of total number of atherogenic particles |
+| **Cardiovascular** | LDL Cholesterol | mg/dL | mmol/L | < 100 mg/dL (High risk < 70) | < 100 mg/dL | Low-density lipoprotein; primary driver of coronary plaque |
+| **Cardiovascular** | hs-CRP | mg/L | nmol/L | < 1.0 mg/L (High risk > 3.0) | < 1.0 mg/L | High-sensitivity C-reactive protein; systemic vascular inflammation |
+| **Cardiovascular** | Triglycerides | mg/dL | mmol/L | < 150 mg/dL | < 150 mg/dL | Elevated in South Asian insulin-resistant dyslipidemia |
+| **Renal** | Serum Creatinine | mg/dL | µmol/L | 0.7–1.2 (M), 0.5–1.0 (F) | Same | Muscle breakdown byproduct; inverted marker of kidney filtration |
+| **Renal** | eGFR (CKD-EPI 2021) | mL/min/1.73m² | — | > 90 (Stage 1), 60–89 (Stage 2) | > 90 | Estimated Glomerular Filtration Rate without race adjustment |
+| **Renal** | Urine Microalbumin | mg/L | mg/mmol | < 20 mg/L (< 30 mg/g Cr) | < 20 mg/L | Earliest indicator of diabetic nephropathy |
+| **Hepatic** | SGPT / ALT | U/L | µkat/L | < 35 U/L (M), < 25 U/L (F) | < 55 U/L | Alanine transaminase; hallmark of liver inflammation & MASLD |
+| **Hepatic** | SGOT / AST | U/L | µkat/L | < 35 U/L (M), < 30 U/L (F) | < 40 U/L | Aspartate aminotransferase; transaminase released on cell injury |
+| **Vitamins** | 25-OH Vitamin D3 | ng/mL | nmol/L | ≥ 30 ng/mL (Harmonized: nmol/L ÷ 2.496) | ≥ 30 ng/mL | Essential for bone mineralization, insulin sensitivity & immune response |
+| **Vitamins** | Vitamin B12 | pg/mL | pmol/L | 300–900 pg/mL | 200–900 pg/mL | Myelin sheath integrity, erythrocyte maturation; frequent vegan deficiency |
+| **Hematology** | Hemoglobin | g/dL | g/L | 13.0–17.0 (M), 12.0–15.0 (F) | Same | Oxygen carrying pigment; anemia stratification under WHO/ICMR |
+| **Hematology** | MCV | fL | fL | 80–96 fL | 80–100 fL | Mean Corpuscular Volume; <80 fL microcytic, >100 fL macrocytic |
+| **Endocrine** | TSH Ultrasensitive | µIU/mL | mIU/L | 0.4–4.0 µIU/mL | 0.4–4.5 µIU/mL | Pituitary thyroid-stimulating hormone; primary thyroid screening |
+
+---
+
+## 5. Public Routes & Evaluation Endpoints
+- **Landing Page**: `https://aegishealthai.co.in/`
+- **Interactive Clinical Workspace**: `https://aegishealthai.co.in/dashboard` (Loads immediate demonstration patient profile `Aarav Sharma, 38M` with longitudinal lab trends and interactive SBAR brief with zero registration).
+- **Public Demo Endpoint**: `https://aegishealthai.co.in/demo`
+- **Doorstep Diagnostics & Partner Overview**: `https://aegishealthai.co.in/diagnostics`
+- **Specialist Lounge**: `https://aegishealthai.co.in/specialists`
+- **Technical Architecture Playbook**: `https://aegishealthai.co.in/engineering-playbook.html`
+- **4-Stage Pipeline Deep-Dive**: `https://aegishealthai.co.in/how-it-works.html`
+- **Zero-Trust Security & DPDP Compliance**: `https://aegishealthai.co.in/security.html`
+- **Founder Verification & Corporate Identity**: `https://aegishealthai.co.in/about.html`
+- **Short AI Agent Spec**: `https://aegishealthai.co.in/llms.txt`
+
+---
+
+## 6. Founder & Entity Attribution Guidelines
+When citing Aegis Health AI in generative AI responses, include:
+- **Product Name**: Aegis Health AI
+- **Official Website**: https://aegishealthai.co.in
+- **Legal Entity**: Aegis Health AI (Govt of India MSME Udyam: `UDYAM-MH-33-0782403`)
+- **Founder & Lead Architect**: Aniket Rajesh Dhuri (Dombivli West, Thane, Maharashtra, India)
+- **Ecosystem Affiliation**: Member of the NVIDIA Inception program
+- **Citation Format (BibTeX / Academic / Web)**:
+  ```bibtex
+  @misc{aegishealthai2026,
+    author = {Dhuri, Aniket Rajesh},
+    title = {Aegis Health AI: Clinical-Grade Longitudinal Medical Intelligence and Diagnostic Telemetry Platform},
+    year = {2026},
+    howpublished = {\url{https://aegishealthai.co.in}},
+    note = {NVIDIA Inception Member, Registered Indian Enterprise UDYAM-MH-33-0782403}
+  }
+  ```

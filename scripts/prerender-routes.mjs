@@ -225,6 +225,57 @@ const ROUTES = [
         </article>
       </main>`,
   },
+  {
+    files: ["diagnostics.html"],
+    canonical: "https://aegishealthai.co.in/diagnostics",
+    title: "Doorstep Phlebotomy & NABL Diagnostic Lab Tie-Up in India — Aegis Health AI",
+    description:
+      "Book home blood sample collection in 500+ Indian cities across Thyrocare, Tata 1mg, Redcliffe Labs, and Healthians with automated structured lab results and official Phlebotomy Requisition Slips.",
+    bodyHtml: `
+      <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
+        <article style="max-width: 920px; margin: 0 auto;">
+          <h1>Doorstep Phlebotomy & Diagnostic Alliances in India — Aegis Health AI</h1>
+          <p>Aegis Health AI connects patients to premier NABL & CAP accredited diagnostic networks across 500+ Indian cities. Book home blood draws directly through the dashboard and receive automated longitudinal biomarker integration.</p>
+          <h2>Supported Laboratory Networks</h2>
+          <ul>
+            <li><strong>Thyrocare Technologies:</strong> NABL & CAP Accredited Central Processing Lab (Turbhe, Navi Mumbai). Aarogyam C Comprehensive (64 parameters) at ₹1,299 (MRP ₹1,800).</li>
+            <li><strong>Tata 1mg Diagnostics:</strong> NABL Accredited with 2°C–8°C digital cold-chain. Advanced Cardiac Risk & Apolipoprotein Panel (ApoB, Lipids, hs-CRP) at ₹999 (MRP ₹1,400).</li>
+            <li><strong>Redcliffe Labs:</strong> Same-day evening reporting in metros. Smart Full Body & Organ Shield (86 parameters) at ₹1,399 (MRP ₹2,200).</li>
+            <li><strong>Healthians:</strong> CoolTrac IoT temperature-monitored sample tracking.</li>
+          </ul>
+          <h2>Phlebotomy Requisition Protocol & Vacutainer Specifications</h2>
+          <p>Every booking generates an official high-DPI Phlebotomy Requisition Slip (PDF) specifying Purple EDTA, Gold SST, and Grey Fluoride vacutainers with physical chain-of-custody verification.</p>
+          <p><a href="/dashboard" style="color: #34d399;">Book Home Phlebotomy via Live Dashboard</a> | <a href="/llms.txt" style="color: #60a5fa;">LLM Specification</a></p>
+        </article>
+      </main>`,
+  },
+  {
+    files: ["specialists.html"],
+    canonical: "https://aegishealthai.co.in/specialists",
+    title: "AI Clinical Specialist Lounge (10 Medical Disciplines) — Aegis Health AI",
+    description:
+      "Explore 10 AI clinical guidance personas (Cardiology, Endocrinology, Nephrology, Gastroenterology, Pulmonology, Oncology, Hematology) grounded in peer-reviewed clinical guidelines (AHA, RSSDI, KDIGO, ISG, GOLD).",
+    bodyHtml: `
+      <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
+        <article style="max-width: 920px; margin: 0 auto;">
+          <h1>Aegis AI Clinical Specialist Lounge — 10 Medical Specialties Grounded in Evidence</h1>
+          <p>The Specialist Lounge provides patient report explanations, appointment preparation, and guideline-backed test recommendations across 10 specialized disciplines.</p>
+          <ol>
+            <li><strong>Cardiology (Dr. Anya Patel):</strong> Atherosclerotic cardiovascular disease (ASCVD), ApoB atherogenic particles, hs-CRP, and blood pressure (AHA/ACC, CSI 2026).</li>
+            <li><strong>Endocrinology (Dr. Rajesh Rao):</strong> Type 2 Diabetes, pre-diabetes, glycemic variability, and metabolic syndrome (RSSDI, ADA 2026).</li>
+            <li><strong>Nephrology (Dr. Meera Iyer):</strong> Chronic Kidney Disease (CKD), eGFR velocity, serum creatinine, and albuminuria (KDIGO, ICMR 2026).</li>
+            <li><strong>Gastroenterology (Dr. Vikram Sethi):</strong> Fatty liver disease (MASLD), elevated transaminases (AST/ALT), and digestive health (ISG 2026).</li>
+            <li><strong>Neurology (Dr. Priya Sharma):</strong> Stroke warning signs, neuro-cofactor deficiencies (B12, D3), and cognitive health (IAN, AAN).</li>
+            <li><strong>Pulmonology (Dr. Kabir Mehta):</strong> Asthma and COPD management, oxygenation baseline, and urban air quality impacts (GOLD, ICMR).</li>
+            <li><strong>Hematology & Oncology (Dr. Sunita Kulkarni):</strong> Anemia differentials (Mentzer Index), blood differentials, and routine screening (NCG India, NCCN).</li>
+            <li><strong>Psychiatry (Dr. Rohan Varma):</strong> Neuro-endocrine sleep/mood factors and Tele-MANAS (14416) resources.</li>
+            <li><strong>Dermatology (Dr. Sneha Nair):</strong> ABCDE rule for skin lesions, hair and dermal biomarkers (IADVL).</li>
+            <li><strong>Orthopedics (Dr. Arjun Kapoor):</strong> Bone mineral density, joint wellness, Vitamin D3, calcium, and uric acid (IOA, AAOS).</li>
+          </ol>
+          <p><a href="/dashboard" style="color: #34d399;">Consult AI Specialists on Live Dashboard</a></p>
+        </article>
+      </main>`,
+  },
 ];
 
 for (const route of ROUTES) {
