@@ -90,6 +90,9 @@
 - **[`src\components\Dashboard\HolographicBodyScanner.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\HolographicBodyScanner.tsx)**
   - *Exports*: `HolographicBodyScannerProps`, `HolographicBodyScanner`, `default`
   - *Imports*: `../../services/organHealthService`, `../../types/wearables`, `./ThreeBodyScanner3D`
+- **[`src\components\Dashboard\LabBookingModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\LabBookingModal.tsx)**
+  - *Exports*: `LabBookingModalProps`, `LabBookingModal`
+  - *Imports*: `../../services/integrations/labBookingService`
 - **[`src\components\Dashboard\LabReportsSection.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\LabReportsSection.tsx)**
   - *Imports*: `../Reports/LabReportsSection`
 - **[`src\components\Dashboard\LabTrendChart.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\LabTrendChart.tsx)**
@@ -109,7 +112,7 @@
   - *Imports*: `../../lib/firebase/config`, `../../context/AuthContext`, `../../utils/reportComparison`
 - **[`src\components\Dashboard\SBARPreview.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\SBARPreview.tsx)**
   - *Exports*: `SBARPreviewProps`, `SBARPreview`
-  - *Imports*: `../../services/pdfExportService`, `../../services/fhirService`, `../Common/RegionalAudioPlayer`, `../../services/opdConsultationPdfService`, `../../utils/dateUtils`
+  - *Imports*: `../../services/pdfExportService`, `../../services/fhirService`, `../Common/RegionalAudioPlayer`, `../../services/opdConsultationPdfService`, `../../utils/dateUtils...`
 - **[`src\components\Dashboard\SmartAlertCard.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\SmartAlertCard.tsx)**
   - *Exports*: `SmartAlertCardProps`, `SmartAlertCard`
 - **[`src\components\Dashboard\SmartAlerts.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\SmartAlerts.tsx)**
@@ -458,6 +461,8 @@
 - **[`src\services\healthSyncService.ts`](file:///E:\Aegis-health-ai-\src\services\healthSyncService.ts)**
   - *Exports*: `HealthProvider`, `HealthProviderConfig`, `HealthSyncState`, `SyncResult`, `getHealthSyncState`, `saveHealthSyncState`, `HealthPermissions`, `DEFAULT_PERMISSIONS`, `getHealthPermissions`, `saveHealthPermissions`, `parseAppleHealthExport`, `parseGoogleHealthExport`
   - *Imports*: `../types/wearables`, `../lib/firebase/firestore`, `./wearableService`
+- **[`src\services\integrations\labBookingService.ts`](file:///E:\Aegis-health-ai-\src\services\integrations\labBookingService.ts)**
+  - *Exports*: `LabPartnerId`, `LabPartnerInfo`, `LAB_PARTNERS`, `LabPackage`, `LAB_PACKAGES_CATALOG`, `LabBookingRequest`, `LabBookingConfirmation`, `getAvailableLabPackages`, `findRecommendedPackagesForBiomarkers`, `checkPincodeServiceability`
 - **[`src\services\integrationService.ts`](file:///E:\Aegis-health-ai-\src\services\integrationService.ts)**
   - *Exports*: `exportToCSV`, `exportToFHIR`
   - *Imports*: `./fhirService`

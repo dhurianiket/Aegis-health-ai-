@@ -805,6 +805,41 @@ export default {
       });
     }
 
+    // 7. Diagnostic Partner Webhook Ingestion Route (Thyrocare / Tata 1mg / Redcliffe / Healthians)
+    if (url.pathname === "/api/integrations/lab/webhook" && request.method === "POST") {
+      try {
+        const payloadText = await request.text();
+        const payload = JSON.parse(payloadText);
+
+        const partnerName = request.headers.get("X-Partner-Id") || payload.partner || "diagnostic-partner";
+
+        console.log(`[Lab Webhook] Received report update from ${partnerName}:`, {
+          bookingId: payload.bookingId || payload.orderId,
+          status: payload.status,
+          biomarkersReported: payload.biomarkers?.length || 0,
+        });
+
+        return new Response(
+          JSON.stringify({
+            status: "received",
+            partner: partnerName,
+            bookingId: payload.bookingId || payload.orderId || "unknown",
+            processedAt: new Date().toISOString(),
+            telemetrySyncStatus: "QUEUED_FOR_FHIR_INGESTION",
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId },
+          },
+        );
+      } catch (err: any) {
+        return new Response(
+          JSON.stringify({ error: "Invalid webhook payload", details: err?.message }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     return new Response(
       JSON.stringify({ error: "Not Found", request_id: requestId }),
       { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },

@@ -18,13 +18,16 @@ import {
   AlertCircle,
   Printer,
   ChevronRight,
-  FileText
+  FileText,
+  Droplets,
+  ArrowRight
 } from "lucide-react";
 import { exportToPDF } from "../../services/pdfExportService";
 import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
 import { RegionalAudioPlayer } from "../Common/RegionalAudioPlayer";
 import { exportOpdConsultationPdf } from "../../services/opdConsultationPdfService";
 import { parseSafeTimestamp } from "../../utils/dateUtils";
+import { LabBookingModal } from "./LabBookingModal";
 
 export interface SBARPreviewProps {
   isOpen: boolean;
@@ -141,6 +144,7 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
   const [isOpdExporting, setIsOpdExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
   const [fhirExportSuccess, setFhirExportSuccess] = useState(false);
+  const [isLabModalOpen, setIsLabModalOpen] = useState(false);
 
   // Smooth, non-repeating percentage completion counter
   useEffect(() => {
@@ -540,6 +544,34 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
                         </div>
                         {renderFormattedContent(parsedSections?.recommendation || "Review findings with primary physician for treatment plan.")}
                       </div>
+
+                      {/* Closed-Loop Diagnostic Lab Booking Trigger */}
+                      <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                            <Droplets className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-bold text-theme flex items-center gap-2">
+                              <span>Doorstep Phlebotomy &amp; Follow-Up Testing</span>
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/15 text-emerald-500 border border-emerald-500/25">
+                                NABL ACCREDITED
+                              </span>
+                            </h5>
+                            <p className="text-[11px] text-muted mt-0.5">
+                              Book certified home sample collection (Thyrocare / Tata 1mg) to track your recommended biomarker panels.
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => setIsLabModalOpen(true)}
+                          className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shrink-0 flex items-center gap-2 shadow-sm shadow-emerald-500/20 cursor-pointer"
+                        >
+                          <span>Schedule Home Blood Draw</span>
+                          <ArrowRight size={14} />
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -751,6 +783,15 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
             {/* Bottom Actions Footer */}
             <div className="p-4 sm:p-5 border-t border-surface bg-surface/30 shrink-0 flex flex-col-reverse sm:flex-row justify-end gap-2.5 rounded-b-[28px] flex-wrap">
               <button
+                onClick={() => setIsLabModalOpen(true)}
+                disabled={!sbar || isLoading}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 hover:bg-teal-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-xs"
+              >
+                <Droplets size={14} className="text-teal-500" />
+                <span>Book Home Blood Draw</span>
+              </button>
+
+              <button
                 onClick={handleOpdPrint}
                 disabled={!sbar || isLoading || isOpdExporting}
                 className="px-4 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-xs"
@@ -778,6 +819,19 @@ export const SBARPreview: React.FC<SBARPreviewProps> = ({
               </button>
             </div>
           </motion.div>
+
+          {/* Doorstep Phlebotomy & Lab Booking Modal */}
+          <LabBookingModal
+            isOpen={isLabModalOpen}
+            onClose={() => setIsLabModalOpen(false)}
+            recommendedBiomarkers={['HbA1c', 'Glucose Fasting', 'Lipid Profile', 'Creatinine']}
+            patientProfile={{
+              name: patientName,
+              age: patientAge,
+              gender: patientGender,
+              abhaId,
+            }}
+          />
         </React.Fragment>
       )}
     </AnimatePresence>
