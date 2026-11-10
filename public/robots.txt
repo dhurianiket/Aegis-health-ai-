@@ -6,14 +6,18 @@
 User-agent: Googlebot
 Allow: /
 Disallow: /cdn-cgi/
+Disallow: /__/
+Disallow: /*?login=*
 
 User-agent: Google-InspectionTool
 Allow: /
 Disallow: /cdn-cgi/
+Disallow: /__/
 
 User-agent: GoogleOther
 Allow: /
 Disallow: /cdn-cgi/
+Disallow: /__/
 
 User-agent: Bingbot
 Allow: /
@@ -95,6 +99,8 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /cdn-cgi/
+Disallow: /__/
+Disallow: /*?login=*
 
 # Sitemaps & Machine-Readable AI Knowledge
 Sitemap: https://aegishealthai.co.in/sitemap.xml
