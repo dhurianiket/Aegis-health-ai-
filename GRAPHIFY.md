@@ -245,6 +245,8 @@
   - *Imports*: `../../context/AuthContext`, `../../context/ProfileContext`, `../../lib/firebase/firestore`, `../../types/medical`, `../../utils/dateUtils...`
 - **[`src\components\SBAR\SBARView.tsx`](file:///E:\Aegis-health-ai-\src\components\SBAR\SBARView.tsx)**
   - *Imports*: `../Export/SBARPreview`
+- **[`src\components\Search\ClinicalProtocolSearchModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Search\ClinicalProtocolSearchModal.tsx)**
+  - *Exports*: `ClinicalProtocol`, `CLINICAL_PROTOCOLS`, `ClinicalProtocolSearchModal`, `default`
 - **[`src\components\Security\TurnstileWidget.tsx`](file:///E:\Aegis-health-ai-\src\components\Security\TurnstileWidget.tsx)**
   - *Exports*: `TurnstileWidgetProps`, `TurnstileWidget`, `default`
   - *Imports*: `../../hooks/useTurnstile`
