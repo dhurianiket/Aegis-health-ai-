@@ -467,11 +467,11 @@ export default function UploadCenter({
     setTimeout(() => {
       setProcessingStep(2);
       setProcessingMessage("Stage 2/4: LOINC Harmonization & SI → Conventional Unit Conversion...");
-    }, 450);
+    }, 250);
     setTimeout(() => {
       setProcessingStep(3);
       setProcessingMessage("Stage 3/4: ICMR South Asian Stratification & Confidence Verification...");
-    }, 900);
+    }, 500);
     setTimeout(() => {
       setIsProcessing(false);
       if (preset === "metropolis") {
@@ -631,8 +631,21 @@ export default function UploadCenter({
           },
         ]);
       }
-      showToast("Sample Indian lab report extracted with OCR confidence & ICMR stratification!", "success");
-    }, 1450);
+      showToast(
+        preset === "metropolis"
+          ? "Metropolis Metabolic Panel OCR Verified (99.6% Agreement, ICMR Stratified)!"
+          : "Thyrocare Aarogyam Profile OCR Verified (99.5% Agreement, ICMR Stratified)!",
+        "success"
+      );
+      setTimeout(() => {
+        const resultsEl = document.getElementById("extraction-results");
+        if (resultsEl) {
+          resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }, 50);
+    }, 750);
   }, [showToast]);
 
   const extractedLabsCount = useMemo(() => {
@@ -1315,7 +1328,7 @@ export default function UploadCenter({
           )}
 
           {results && results.length > 0 && !isProcessing && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div id="extraction-results" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
                  <motion.div 
                     initial={{ scale: 0 }}

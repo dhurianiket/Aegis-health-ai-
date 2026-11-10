@@ -66,7 +66,71 @@ export default function Medications({
   const [interactions, setInteractions] = useState<DrugInteraction[]>([]);
 
   const fetchData = async () => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      // In Guest/Demo mode, hydrate demo medications so the Pharmacy and Drug-Drug / Drug-Lab Matrix are immediately interactive
+      const demoMeds: Medication[] = [
+        {
+          id: "med-demo-1",
+          userId: "sandbox-demo-user",
+          profileId: "sandbox-demo-profile",
+          genericName: "Cholecalciferol (Vitamin D3)",
+          brandName: "Cholecalciferol 60K",
+          rxcui: "2418",
+          dosage: "60,000 IU",
+          frequency: "Once Weekly (Sunday after meal)",
+          startDate: "2026-08-10",
+          endDate: null,
+          prescribedFor: "Vitamin D replenishment",
+          addedAt: "2026-08-10T09:00:00.000Z",
+        },
+        {
+          id: "med-demo-2",
+          userId: "sandbox-demo-user",
+          profileId: "sandbox-demo-profile",
+          genericName: "Metformin",
+          brandName: "Metformin SR 500mg",
+          rxcui: "6809",
+          dosage: "500 mg",
+          frequency: "Once Daily (With Dinner)",
+          startDate: "2026-07-01",
+          endDate: null,
+          prescribedFor: "Glycemic control & insulin sensitivity",
+          addedAt: "2026-07-01T09:00:00.000Z",
+        },
+        {
+          id: "med-demo-3",
+          userId: "sandbox-demo-user",
+          profileId: "sandbox-demo-profile",
+          genericName: "Rosuvastatin",
+          brandName: "Rosuvastatin 10mg",
+          rxcui: "301542",
+          dosage: "10 mg",
+          frequency: "Once Daily (Bedtime)",
+          startDate: "2026-07-15",
+          endDate: null,
+          prescribedFor: "Lipid optimization (LDL reduction)",
+          addedAt: "2026-07-15T09:00:00.000Z",
+        },
+      ];
+      setMeds(demoMeds);
+
+      const demoInteractions: DrugInteraction[] = [
+        {
+          id: "demo-int-1",
+          drugA: "Metformin",
+          drugB: "Rosuvastatin",
+          rxcuiA: "6809",
+          rxcuiB: "301542",
+          severity: "mild",
+          description: "Concurrent use of metformin and rosuvastatin is standard in cardiometabolic management. Monitor renal filtration and hepatic transaminases periodically.",
+          plainSummary: "Routine co-prescription for glucose and lipid control. Well-tolerated; ensure regular kidney and liver enzyme screening.",
+          source: "rxnorm",
+          checkedAt: new Date().toISOString(),
+        },
+      ];
+      setInteractions(demoInteractions);
+      return;
+    }
     try {
       // Medications live in an account-level collection: scope the list to the
       // active profile (primary profile also sees untagged legacy records).
@@ -91,7 +155,39 @@ export default function Medications({
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.uid || !name.trim()) return;
+    if (!name.trim()) return;
+
+    if (!user?.uid) {
+      // In Guest/Demo mode, simulate adding medication to local state
+      setIsLoading(true);
+      try {
+        const genericName = name.trim();
+        const rxcui = await lookupRxCUI(genericName);
+        const newMed: Medication = {
+          id: `med-demo-${Date.now()}`,
+          userId: "sandbox-demo-user",
+          profileId: "sandbox-demo-profile",
+          genericName,
+          brandName: null,
+          rxcui,
+          dosage: dose.trim() || null,
+          frequency: frequency || null,
+          startDate: startDate || new Date().toISOString().split("T")[0],
+          endDate: null,
+          prescribedFor: null,
+          addedAt: new Date().toISOString(),
+        };
+        setMeds((prev) => [...prev, newMed]);
+        setIsAdding(false);
+        setName("");
+        setDose("");
+        setFrequency("Once daily");
+        setStartDate("");
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -127,7 +223,11 @@ export default function Medications({
   };
 
   const handleRemove = async (med: Medication) => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      // In Guest/Demo mode, remove from local state
+      setMeds((prev) => prev.filter((m) => m.id !== med.id));
+      return;
+    }
     try {
       const docRef = doc(db, "users", user.uid, "medications", med.id);
       await updateDoc(docRef, {

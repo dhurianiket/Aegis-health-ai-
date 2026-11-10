@@ -71,9 +71,14 @@ export function CountUp({
 
   useEffect(() => {
     if (ref.current) {
-      ref.current.textContent = formatValue(direction === 'down' ? to : from);
+      // Avoid zero-placeholder flash on first paint or headless bot evaluation.
+      if (isInView && startWhen && from !== undefined && from !== to) {
+        ref.current.textContent = formatValue(direction === 'down' ? to : from);
+      } else {
+        ref.current.textContent = formatValue(to);
+      }
     }
-  }, [from, to, direction, formatValue]);
+  }, [from, to, direction, formatValue, isInView, startWhen]);
 
   useEffect(() => {
     if (isInView && startWhen) {
@@ -107,7 +112,7 @@ export function CountUp({
     return () => unsubscribe();
   }, [springValue, formatValue]);
 
-  return <span className={className} ref={ref} />;
+  return <span className={className} ref={ref}>{formatValue(to)}</span>;
 }
 
 export default CountUp;
