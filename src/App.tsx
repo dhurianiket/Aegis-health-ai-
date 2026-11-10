@@ -89,6 +89,9 @@ const AdminDashboard = lazy(() => import("./components/Admin/AdminDashboard"));
 const FeedbackWidget = lazy(() => import("./components/Dashboard/FeedbackWidget"));
 const CareMap = lazy(() => import("./components/CareMap/CareMap"));
 const CalendarSync = lazy(() => import("./components/CalendarSync/CalendarSync"));
+const ClinicalProtocolSearchModal = lazy(
+  () => import("./components/Search/ClinicalProtocolSearchModal")
+);
 
 import PrivacyPolicy from "./components/Legal/PrivacyPolicy";
 import TermsOfService from "./components/Legal/TermsOfService";
@@ -154,10 +157,23 @@ function MainApp() {
     useState(false);
   const [isSBAROpen, setIsSBAROpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isProtocolSearchOpen, setIsProtocolSearchOpen] = useState(false);
+  const [pendingChatQuery, setPendingChatQuery] = useState<string | null>(null);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [userSub, setUserSub] = useState<UserSubscription | null>(null);
   const [sbarData, setSbarData] = useState<any>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsProtocolSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (user?.uid) {
@@ -431,14 +447,22 @@ function MainApp() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            <div className="hidden xl:flex relative group">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+            <div
+              className="hidden xl:flex relative group cursor-pointer"
+              onClick={() => setIsProtocolSearchOpen(true)}
+            >
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-hover:text-[var(--color-primary)] transition-colors" />
               <input
                 type="text"
-                placeholder="Search records..."
-                aria-label="Search records"
-                className="pl-10 pr-4 py-2.5 bg-surface border-transparent rounded-[12px] text-sm md:w-56 focus:ring-1 focus:ring-[var(--color-primary)] transition-all placeholder-muted text-theme outline-none"
+                readOnly
+                placeholder="Search protocols & records..."
+                aria-label="Search records and protocols (Ctrl+K)"
+                onClick={() => setIsProtocolSearchOpen(true)}
+                className="pl-10 pr-12 py-2.5 bg-surface border-transparent rounded-[12px] text-sm md:w-64 focus:ring-1 focus:ring-[var(--color-primary)] transition-all placeholder-muted text-theme outline-none cursor-pointer"
               />
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-muted bg-surface/80 border border-surface px-1.5 py-0.5 rounded pointer-events-none">
+                ⌘K
+              </kbd>
             </div>
             <button
               className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center text-muted hover:text-theme bg-surface border border-surface hover:border-[var(--color-primary)]/40 rounded-full transition-all duration-100 active:scale-90 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer shadow-xs"
@@ -866,8 +890,14 @@ function MainApp() {
           >
             <ChatCoach
               externalOpen={isChatOpen}
-              onClose={() => setIsChatOpen(false)}
+              onClose={() => {
+                setIsChatOpen(false);
+                setPendingChatQuery(null);
+              }}
               showTrigger={false}
+              initialMessage={pendingChatQuery || undefined}
+              onClearInitialMessage={() => setPendingChatQuery(null)}
+              onOpenProtocolSearch={() => setIsProtocolSearchOpen(true)}
             />
           </AIErrorBoundary>
         </Suspense>
@@ -896,6 +926,17 @@ function MainApp() {
               if (user?.uid) {
                 getUserSubscription(user.uid).then(setUserSub);
               }
+            }}
+          />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <ClinicalProtocolSearchModal
+            isOpen={isProtocolSearchOpen}
+            onClose={() => setIsProtocolSearchOpen(false)}
+            onSelectQuery={(q) => {
+              setPendingChatQuery(q);
+              setIsChatOpen(true);
             }}
           />
         </Suspense>

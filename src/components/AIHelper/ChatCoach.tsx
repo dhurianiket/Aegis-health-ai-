@@ -31,12 +31,18 @@ interface ChatCoachProps {
   externalOpen?: boolean;
   onClose?: () => void;
   showTrigger?: boolean;
+  initialMessage?: string;
+  onClearInitialMessage?: () => void;
+  onOpenProtocolSearch?: () => void;
 }
 
 export default function ChatCoach({
   externalOpen,
   onClose,
   showTrigger = true,
+  initialMessage,
+  onClearInitialMessage,
+  onOpenProtocolSearch,
 }: ChatCoachProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
@@ -50,6 +56,15 @@ export default function ChatCoach({
   };
 
   const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    if (initialMessage && initialMessage.trim().length > 0) {
+      setInputValue(initialMessage);
+      if (onClearInitialMessage) {
+        onClearInitialMessage();
+      }
+    }
+  }, [initialMessage, onClearInitialMessage]);
   const [isAlAvailable, setIsAlAvailable] = useState(() => isEdgeConfigured());
   const [isListening, setIsListening] = useState(false);
   const voiceServiceRef = useRef<any>(null);
@@ -539,6 +554,18 @@ ${remindersContext}`;
                     </div>
 
                     <div className="flex flex-col gap-2">
+                      {onOpenProtocolSearch && (
+                        <button
+                          onClick={onOpenProtocolSearch}
+                          className="text-left px-4 py-3 rounded-[16px] bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 text-sm font-semibold text-[var(--color-primary)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] flex items-center justify-between shadow-xs cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            Search Clinical Research Protocols
+                          </span>
+                          <span className="text-xs opacity-75 font-mono">⌘K</span>
+                        </button>
+                      )}
                       {[
                         "What are my abnormal values?",
                         "Explain my cholesterol results",
@@ -638,6 +665,17 @@ ${remindersContext}`;
                 )}
                 {messages.length > 0 && !isTyping && (
                   <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-none -mx-1 px-1 scroll-mask-right">
+                    {onOpenProtocolSearch && (
+                      <button
+                        type="button"
+                        onClick={onOpenProtocolSearch}
+                        className="shrink-0 px-3 py-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 text-xs font-semibold text-[var(--color-primary)] whitespace-nowrap hover:bg-[var(--color-primary)]/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                        title="Search Clinical Research Protocols (⌘K)"
+                      >
+                        <Sparkles size={12} />
+                        Protocols
+                      </button>
+                    )}
                     {suggestedQuestions.map((q, i) => (
                       <button
                         key={i}

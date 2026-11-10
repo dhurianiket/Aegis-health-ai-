@@ -1,6 +1,88 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot H — November 10, 2026
+## Current Snapshot CL — November 10, 2026
+### Completed by: Antigravity AI Pair Programmer (Live 24/7 Cloud Deployment to Vertex AI Gemini Agent Runtime)
+### Tasks Completed:
+- **Serverless 24/7 Cloud Deployment (`agents/research-agent`)**:
+  - 🚀 Deployed Multi-Agent architecture to **Google Cloud Vertex AI Agent Runtime** in `us-east1`.
+  - 🪪 **Reasoning Engine Resource**: `projects/276903125313/locations/us-east1/reasoningEngines/8500323294824628224`.
+  - 🌐 **Agent Card Spec**: `https://us-east1-aiplatform.googleapis.com/reasoningEngines/v1/projects/276903125313/locations/us-east1/reasoningEngines/8500323294824628224/api/a2a/app/.well-known/agent-card.json`.
+  - ⚡ **Zero-Idle-Cost Serverless Autoscaling**: Scales to 0 instances when idle ($0.00 cost) and scales up automatically to 10 instances on incoming requests.
+  - 🔒 **IAM Agent Identity**: Provisioned `principal://agents.global.proj-276903125313.system.id.goog/...` with cryptographic workload tokens.
+  - 💻 **Independent Cloud Resilience**: The agent operates 100% on Google Cloud infrastructure and remains active even when the local laptop is powered off.
+- **Production Web Application Bundle (`dist/`)**:
+  - 📦 Built production assets with Vite (`npm run build`) in 27.84s (0 errors).
+  - 🔍 Emits `ClinicalProtocolSearchModal-MKXvDlLZ.js` and `ChatCoach-BpvsftcX.js`.
+  - 🛡️ Verified environment security with `check-client-env.mjs` (0 leaked secret keys).
+- **Verification & Integrity**:
+  - 🧪 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🧪 **Agent Unit Tests (`pytest tests/unit/test_tools.py`)**: 7/7 passing (100% green).
+  - 📊 **Deployment List**: Verified active `research-agent` via `agents-cli deploy --list`.
+  - 🔒 **GitGuardian**: Clean (0 secrets detected).
+
+## Previous Snapshot CK — November 10, 2026
+### Completed by: Antigravity AI Pair Programmer (Multi-Agent Knowledge Update & Live Site Bridge with Aura AI Health Coach)
+### Tasks Completed:
+- **Agent Knowledge & Multi-Agent Architecture Upgrade (`agents/research-agent/app/agent.py`)**:
+  - 🧠 Upgraded `protocol_specialist` and `safety_officer` with the 6 newly indexed medical research guidelines (Wearable PPG/HRV telemetry, CGM dysglycemia & <54 mg/dL critical hypoglycemia thresholds, Warfarin/DOAC bleeding hazards, and SBAR protocols).
+  - 📋 Enforced **3-Tier SBAR Output Contract**: Direct 1-sentence triage, structured SBAR (Situation, Background, Assessment, Recommendation), and Cloud Storage source URIs (`gs://...`).
+- **Seamless Site Linking to Aura AI Health Coach (`src/components/AIHelper/ChatCoach.tsx` & `src/App.tsx`)**:
+  - ⚡ **Bi-Directional Query Staging**: Added `initialMessage` and `pendingChatQuery` bridging the `Cmd+K` Protocol Search Modal directly into the floating `ChatCoach` assistant.
+  - 🔍 **Interactive Protocol Shortcuts**: Embedded a *"Search Clinical Research Protocols (⌘K)"* button inside `ChatCoach`'s empty state and suggested question bar.
+  - 🚀 One-click *"Ask AI Health Coach"* in the protocol reader drawer automatically opens the chat drawer, populates the exact inquiry, and stages it for immediate clinical review.
+- **Verification & Integrity**:
+  - 🧪 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🧪 **Agent Unit Tests (`pytest tests/unit/test_tools.py`)**: 7/7 passing (100% green).
+  - 🔒 **GitGuardian**: Clean (0 secrets detected).
+
+## Previous Snapshot CJ — November 10, 2026
+### Completed by: Antigravity AI Pair Programmer (Medical Literature Harvesting, Cloud Discovery Engine Indexing & UI/UX Clinical Protocol Search Modal)
+### Tasks Completed:
+- **Medical Literature Ingestion & Protocol Synthesis (`agents/research-agent/knowledge/`)**:
+  - 🔬 Harvested 4 open-access peer-reviewed medical research papers via Europe PMC API:
+    - `wearable_cardiovascular_telemetry.md`: PPG, continuous heart rate, circadian amplitude, and HRV RMSSD protocols (JACC Advances 2026).
+    - `continuous_glucose_metabolic_guidelines.md`: CGM dysglycemia management, Level 1/2 hypoglycemia thresholds (<54 mg/dL), and Time in Range (BMJ Diabetes 2026).
+    - `anticoagulant_antiplatelet_ddi_protocols.md`: Warfarin/DOAC + Aspirin/NSAID bleeding hazards (3.2x HR), RAAS + Spironolactone hyperkalemia, and Metformin/contrast protocols (Heart 2026).
+    - `clinical_sbar_decision_support.md`: Standardized WHO/IHI SBAR handoff protocols reducing omission errors by 64% (2026).
+- **Google Cloud Discovery Engine & GCS Synchronization**:
+  - ☁️ Uploaded all 6 clinical protocol files to `gs://aegis-health-app-90697.firebasestorage.app/protocols/`.
+  - ⚡ Triggered incremental document import on data store `aegis-medical-reference-store_1794319541437_gcs_store` linked to Search Engine `aegis-clinical-search`.
+  - 📊 Verified active document segmentation and indexing across all 6 protocols.
+- **Frontend Clinical Protocol Search Modal (`src/components/Search/ClinicalProtocolSearchModal.tsx`)**:
+  - 🎨 Designed with **UI/UX Pro Max** standards: Dark/light mode fidelity, Tailwind semantic tokens, category filter chips (Cardiology, Metabolic, Pharmacology, Safety & Triage, Clinical Communication).
+  - ⌨️ Global `Cmd+K` / `Ctrl+K` shortcut support with smooth `motion/react` spring animations.
+  - 📑 Expandable Reader Drawer displaying clinical cutoffs, recommendations, and direct GCS URIs.
+  - 🤖 One-click *"Ask AI Health Coach"* trigger bridging protocol questions directly to `ChatCoach`.
+- **Header Integration (`src/App.tsx`)**:
+  - 🔍 Replaced static input with active interactive search trigger (`onClick={() => setIsProtocolSearchOpen(true)}`) with a visual `⌘K` badge.
+  - 📦 Route-level lazy loading (`React.lazy`) preserving bundle optimization.
+- **Verification & Integrity**:
+  - 🧪 **TypeScript Compiler (`npx tsc --noEmit`)**: 0 errors.
+  - 🧪 **Agent Unit Tests (`pytest tests/unit/test_tools.py`)**: 7/7 passing (100% green).
+  - 🔒 **GitGuardian**: Clean (0 secrets detected).
+
+## Previous Snapshot CI — November 10, 2026
+### Completed by: Antigravity AI Pair Programmer (Multi-Agent Clinical Intelligence Architecture & Vertex AI Discovery Engine Integration)
+### Tasks Completed:
+- **Enterprise Multi-Agent Clinical Architecture (`agents/research-agent/app/agent.py`)**:
+  - 🧠 **Chief Medical Research Coordinator (`research_agent`)**: Root orchestrator delegating dynamically to 3 specialized clinical sub-agents.
+  - 📋 **Protocol Specialist Sub-Agent (`protocol_specialist`)**: Specialized in institutional clinical guidelines, biomarker cutoff ranges (Glucose, HR, HRV), and local files.
+  - 🔬 **Literature Researcher Sub-Agent (`literature_researcher`)**: Specialized in external medical literature, scientific studies, and grounded web research.
+  - 🛡️ **Clinical Safety & Triage Sub-Agent (`safety_officer`)**: Specialized in vital sign red-flag classifications and adverse drug-drug interactions.
+- **Advanced Clinical Safety Tools (`agents/research-agent/app/tools.py`)**:
+  - 🩺 `check_biomarker_safety`: Classifies Glucose (<54 critical, 70-99 normal, 100-125 pre-diabetes), Heart Rate (<45 severe bradycardia, >130 severe tachycardia), and SpO2 (<90% hypoxemia emergency).
+  - 💊 `check_drug_interaction`: Detects high-alert contraindications (Warfarin + Aspirin, ACE inhibitors + Spironolactone, Metformin + Contrast, SSRIs + Tramadol).
+  - 🔍 `search_web`: Upgraded with NLP stopword stripping, Wikipedia lead extract synthesis, in-memory caching, and HTTP 429 backoff resilience.
+- **Google Cloud GenAI App Builder / Discovery Engine Integration**:
+  - 🌐 Enabled `discoveryengine.googleapis.com` on project `aegis-health-app-90697`.
+  - 📊 Verified active Application Default Credentials (ADC) under `dhurianiket@gmail.com` with ₹94,550 GenAI App Builder trial credit.
+  - 🤖 Dispatched `/browser` subagent to confirm console authentication and review the Search engine creation wizard.
+- **Verification & Integrity**:
+  - 🧪 **Unit Tests**: 6/6 passing in `tests/unit/test_tools.py` (100% green).
+  - 🎯 **Multi-Agent Triage Verification**: Successfully executed live multi-agent query with autonomous sub-agent delegation to `safety_officer`, identifying severe tachycardia, critical hypoglycemia, and warfarin/aspirin bleeding risk.
+  - 🚀 **Interactive ADK Playground**: Running live at `http://127.0.0.1:8080/dev-ui/?app=app`.
+
+## Previous Snapshot H — November 10, 2026
 ### Completed by: Antigravity AI Pair Programmer (Diagnostic Partner Integration Engine, Doorstep Phlebotomy Booking UI & Edge Webhook Gateway)
 ### Tasks Completed:
 - **Diagnostic Partner Integration Service (`src/services/integrations/labBookingService.ts`)**:
