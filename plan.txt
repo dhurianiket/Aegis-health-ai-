@@ -1,0 +1,4 @@
+1. Modify `filteredProtocols` in `src/components/Search/ClinicalProtocolSearchModal.tsx`.
+   - The current code eagerly evaluates all string matching conditions and uses `.some()` combined with `.toLowerCase()`. This is unoptimized and ignores early return (short-circuiting).
+   - Use early returns and regular `for` loops inside the filter to prevent evaluating unnecessary string allocations, matching the journal guidance for array filtering inside `useMemo`.
+2. Run standard pre-commit steps like formatting and tests.

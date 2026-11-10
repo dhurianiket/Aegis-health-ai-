@@ -98,3 +98,7 @@
 **Learning:** Checking the `.length` of an intermediate `.filter()` result (e.g. `arr.filter(a => ...).length`) creates temporary arrays that stress the garbage collector and causes O(N) memory allocations, particularly when done inline inside React render functions.
 **Action:** Replace array `.filter(...).length` statements with single-pass `for` loops, `useMemo` counting, or short-circuiting `.some()` checks to eliminate intermediate array creation.
 
+
+## $(date +%Y-%m-%d) - Optimize array filtering inside useMemo
+**Learning:** Eagerly evaluating all string matching conditions and assigning them to variables before checking a boolean OR inside an array `.filter()` bypasses short-circuiting. When combined with inline closures like `.some()` and `.toLowerCase()`, it creates O(N*M) CPU bottlenecks and redundant garbage collection overhead, particularly inside `useMemo` React hooks.
+**Action:** Replace eager variable assignments in filter callbacks with sequential early returns (e.g., `if (!q) return true;`). If nested array loops are necessary, use a standard `for` loop that can cleanly return early, eliminating callback allocation and unnecessary string allocations.
