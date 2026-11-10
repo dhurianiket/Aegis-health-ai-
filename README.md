@@ -5,6 +5,7 @@
 [![Live Website](https://img.shields.io/badge/Live%20Production%20Site-aegishealthai.co.in-0ea5e9?style=for-the-badge&logo=google-chrome&logoColor=white)](https://aegishealthai.co.in)
 [![Status](https://img.shields.io/badge/Status-Online%2024%2F7-10b981?style=for-the-badge)](https://aegishealthai.co.in)
 [![Google Cloud](https://img.shields.io/badge/Google%20Cloud-GenAI%20App%20Builder%20%26%20Vertex%20AI-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://console.cloud.google.com/gen-app-builder/engines?project=aegis-health-app-90697)
+[![NVIDIA Inception](https://img.shields.io/badge/NVIDIA%20Inception-Member-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://www.nvidia.com/en-us/startups/)
 
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/dhurianiket/Aegis-health-ai-)
 [![GitGuardian](https://img.shields.io/badge/GitGuardian-Protected-000000.svg)](https://www.gitguardian.com/)
@@ -20,7 +21,7 @@
 
 ## 🌟 Overview
 
-**Aegis Health AI** is an enterprise-grade, clinical-grade health management and diagnostic copilot application. Backed by Google Cloud's **GenAI App Builder (Discovery Engine)**, **Vertex AI Agent Runtime**, and **Gemini 2.5 Flash**, Aegis enables patients, families, and physicians to centralize complex medical records, parse longitudinal lab biomarker trajectories, search verified institutional protocols, and triage emergency risks in real time.
+**Aegis Health AI** is an enterprise-grade, clinical-grade health management and diagnostic copilot application. Backed by Google Cloud's **GenAI App Builder (Discovery Engine)**, **Vertex AI Agent Runtime**, and multi-model consensus combining **Google Gemini 3.8 Flash**, **Gemini 4 Argon**, **Anthropic Claude** (via AWS Bedrock Mantle), and **NVIDIA NIM** (NVIDIA Inception member), Aegis enables patients, families, and physicians to centralize complex medical records, parse longitudinal lab biomarker trajectories, search verified institutional protocols, and triage emergency risks in real time.
 
 ---
 
@@ -58,7 +59,7 @@
 | **Zero-Layout-Shift** | `@chenglou/pretext` canvas measurement, `VirtualizedChatList` |
 | **Search & Grounding** | Google Cloud GenAI App Builder / Discovery Engine (`aegis-clinical-search`) |
 | **Agent Serverless** | Google Cloud Vertex AI Agent Runtime (`us-east1`) |
-| **AI Models** | Google Gemini 2.5 Flash, Gemini 2.0 Flash |
+| **AI Models & Consensus** | Google Gemini 3.8 Flash, Gemini 4 Argon, Anthropic Claude (AWS Bedrock Mantle), NVIDIA NIM |
 | **Edge Gateway** | Cloudflare Workers (`aegishealthai-edge`), Google JWKs verification |
 | **Database & Auth** | Firebase Firestore (Real-time snapshots), Firebase Authentication (Google OAuth) |
 | **Storage** | Google Cloud Storage (`gs://aegis-health-app-90697.firebasestorage.app`) |
