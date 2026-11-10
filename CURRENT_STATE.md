@@ -1,6 +1,27 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot CN — November 10, 2026
+## Current Snapshot CO — November 10, 2026
+### Completed by: Antigravity AI Pair Programmer (Specialist Doorstep Lab Booking Triggers & Phlebotomy Requisition PDF Service)
+### Tasks Completed:
+- **Specialist Lounge Lab Booking Triggers (`src/components/Specialists/SpecialistLabBookingTrigger.tsx`)**:
+  - 🩸 Built interactive diagnostic order trigger mapping all 10 clinical specialist personas (Cardiologist, Endocrinologist, Nephrologist, Gastroenterologist, Neurologist, Pulmonologist, Oncologist, Psychiatrist, Dermatologist, Orthopedist) to targeted NABL/CAP-accredited diagnostic panels (ApoB/Lipids, HbA1c/Microalbumin, Hemogram/CBC, Aarogyam C).
+  - 📋 Surface clinical guideline justification (AHA/ACC, RSSDI, KDIGO, ISG, GOLD), fasting requirements, test parameter counts, and 1-click booking CTA (`Book Home Draw`).
+  - 🔗 Integrated dynamically into `SpecialistLounge.tsx` across both the empty starter state and active conversation flow.
+- **Doorstep Phlebotomy Requisition Slip PDF Service (`src/services/phlebotomyRequisitionPdfService.ts`)**:
+  - 📄 Generates official A4 1-page high-DPI Phlebotomy Requisition Slip using `jsPDF`.
+  - 🏷️ Includes Aegis Health AI credentials, NVIDIA Inception membership, unique booking ID barcode reference, patient demographics, schedule, diagnostic partner fulfillment tags (Thyrocare, Tata 1mg, Redcliffe Labs), specimen collection protocol with vacutainer tube color codes (🟣 Purple EDTA, 🟡 Gold SST, ⚪ Grey Fluoride), and chain-of-custody sign-off table.
+  - 📥 Wired 1-click download button into Step 3 of `LabBookingModal.tsx`.
+- **Automated Verification & Integrity**:
+  - 🧪 **Unit Tests**:
+    - `SpecialistLabBookingTrigger.test.tsx`: 3/3 passing (100% green).
+    - `phlebotomyRequisitionPdfService.test.ts`: 1/1 passing (100% green).
+    - `labBookingService.test.ts`: 6/6 passing (100% green).
+    - `SpecialistLoungeSafety.test.tsx`: 6/6 passing (100% green).
+  - 🔬 **TypeScript Compiler (`tsc --noEmit`)**: 0 errors.
+  - 🔒 **GitGuardian (`ggshield secret scan pre-commit`)**: 0 secrets detected.
+  - 🗺️ **Graphify Knowledge Graph**: Re-indexed (238 nodes).
+
+## Previous Snapshot CN — November 10, 2026
 ### Completed by: Antigravity AI Pair Programmer (Graphify Knowledge Graph Re-Extraction & AST Synchronization)
 ### Tasks Completed:
 - **Full Codebase Knowledge Graph Re-Extraction (`GRAPHIFY.md` & `graphify-out/`)**:

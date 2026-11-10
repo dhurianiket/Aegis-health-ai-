@@ -92,7 +92,7 @@
   - *Imports*: `../../services/organHealthService`, `../../types/wearables`, `./ThreeBodyScanner3D`
 - **[`src\components\Dashboard\LabBookingModal.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\LabBookingModal.tsx)**
   - *Exports*: `LabBookingModalProps`, `LabBookingModal`
-  - *Imports*: `../../services/integrations/labBookingService`
+  - *Imports*: `../../services/integrations/labBookingService`, `../../services/phlebotomyRequisitionPdfService`
 - **[`src\components\Dashboard\LabReportsSection.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\LabReportsSection.tsx)**
   - *Imports*: `../Reports/LabReportsSection`
 - **[`src\components\Dashboard\LabTrendChart.tsx`](file:///E:\Aegis-health-ai-\src\components\Dashboard\LabTrendChart.tsx)**
@@ -282,6 +282,9 @@
 - **[`src\components\Specialists\ReferralSuggestionChips.tsx`](file:///E:\Aegis-health-ai-\src\components\Specialists\ReferralSuggestionChips.tsx)**
   - *Exports*: `ReferralSuggestionStatus`, `ReferralSuggestionItem`, `ReferralSuggestionChips`, `default`
   - *Imports*: `../../services/ai/specialists/specialistFactory`, `../../services/ai/specialists/referrals`, `../Avatars/ProceduralAvatar`
+- **[`src\components\Specialists\SpecialistLabBookingTrigger.tsx`](file:///E:\Aegis-health-ai-\src\components\Specialists\SpecialistLabBookingTrigger.tsx)**
+  - *Exports*: `SpecialistLabBookingTriggerProps`, `SpecialistLabBookingTrigger`, `default`
+  - *Imports*: `../../types/ai`, `../../services/integrations/labBookingService`
 - **[`src\components\Specialists\SpecialistLounge.tsx`](file:///E:\Aegis-health-ai-\src\components\Specialists\SpecialistLounge.tsx)**
   - *Exports*: `HighlightMatch`, `SPECIALIST_STARTER_PROMPTS`, `SpecialistLounge`, `default`
   - *Imports*: `../../services/cacheService`, `../../services/sourceGroundedService`, `../Common/CitationBadge`, `../../types/ai`, `../../services/ai/specialists/specialistFactory...`
@@ -494,6 +497,9 @@
 - **[`src\services\pdfExportService.ts`](file:///E:\Aegis-health-ai-\src\services\pdfExportService.ts)**
   - *Exports*: `exportToPDF`, `generateTrendNarrative`, `SBAROutput`, `TrendSummary`, `LabObservation`
   - *Imports*: `../lib/geminiClient`, `./ai/promptFramework`, `../utils/aiUtils`
+- **[`src\services\phlebotomyRequisitionPdfService.ts`](file:///E:\Aegis-health-ai-\src\services\phlebotomyRequisitionPdfService.ts)**
+  - *Exports*: `PhlebotomySlipOptions`
+  - *Imports*: `./integrations/labBookingService`
 - **[`src\services\qrCodeService.ts`](file:///E:\Aegis-health-ai-\src\services\qrCodeService.ts)**
   - *Exports*: `ShareOptions`, `generateShareLink`
   - *Imports*: `../lib/firebase/config`

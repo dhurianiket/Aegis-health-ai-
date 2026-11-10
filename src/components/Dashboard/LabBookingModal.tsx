@@ -15,6 +15,7 @@ import {
   Building2,
   ChevronRight,
   FileCheck2,
+  Download,
 } from 'lucide-react';
 import {
   LAB_PACKAGES_CATALOG,
@@ -25,11 +26,13 @@ import {
   createLabBooking,
   findRecommendedPackagesForBiomarkers,
 } from '../../services/integrations/labBookingService';
+import { downloadPhlebotomyRequisitionPdf } from '../../services/phlebotomyRequisitionPdfService';
 
 export interface LabBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   recommendedBiomarkers?: string[];
+  initialPackageId?: string;
   patientProfile?: {
     name?: string;
     age?: number | string;
@@ -56,10 +59,11 @@ export const LabBookingModal: React.FC<LabBookingModalProps> = ({
   isOpen,
   onClose,
   recommendedBiomarkers = [],
+  initialPackageId,
   patientProfile,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [selectedPkgId, setSelectedPkgId] = useState<string>('pkg-aarogyam-c');
+  const [selectedPkgId, setSelectedPkgId] = useState<string>(initialPackageId || 'pkg-aarogyam-c');
 
   // Form State
   const [patientName, setPatientName] = useState(patientProfile?.name || 'Aniket Dhuri');
@@ -80,13 +84,15 @@ export const LabBookingModal: React.FC<LabBookingModalProps> = ({
   const [confirmation, setConfirmation] = useState<LabBookingConfirmation | null>(null);
 
   useEffect(() => {
-    if (recommendedBiomarkers.length > 0) {
+    if (initialPackageId) {
+      setSelectedPkgId(initialPackageId);
+    } else if (recommendedBiomarkers.length > 0) {
       const recs = findRecommendedPackagesForBiomarkers(recommendedBiomarkers);
       if (recs.length > 0) {
         setSelectedPkgId(recs[0].id);
       }
     }
-  }, [recommendedBiomarkers]);
+  }, [initialPackageId, recommendedBiomarkers]);
 
   useEffect(() => {
     if (pincode.length === 6) {
@@ -500,6 +506,21 @@ export const LabBookingModal: React.FC<LabBookingModalProps> = ({
                 <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 text-xs text-teal-300 max-w-md mx-auto">
                   ⚡ <strong>Automated Ingestion:</strong> As soon as the laboratory analyzes your samples, your structured results will sync directly into your Aegis Health Timeline and recalculate your SBAR report.
                 </div>
+
+                {/* PDF Requisition Download Action */}
+                <div className="max-w-md mx-auto pt-1">
+                  <button
+                    type="button"
+                    onClick={() => downloadPhlebotomyRequisitionPdf(confirmation)}
+                    className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98]"
+                  >
+                    <Download size={15} className="stroke-[2.5]" />
+                    <span>Download Phlebotomy Requisition Slip (PDF)</span>
+                  </button>
+                  <p className="text-[10px] text-muted text-center mt-1.5">
+                    Print or show this requisition slip to the visiting phlebotomist upon arrival.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -547,12 +568,23 @@ export const LabBookingModal: React.FC<LabBookingModalProps> = ({
             )}
 
             {step === 3 && (
-              <button
-                onClick={onClose}
-                className="w-full py-2.5 rounded-xl text-xs font-bold bg-surface hover:bg-surface/80 text-theme transition-colors cursor-pointer"
-              >
-                Done · Return to Dashboard
-              </button>
+              <div className="w-full flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => confirmation && downloadPhlebotomyRequisitionPdf(confirmation)}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-surface border border-surface hover:bg-surface/80 text-theme flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Download size={14} />
+                  <span>Download Slip</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer"
+                >
+                  Done · Return
+                </button>
+              </div>
             )}
           </div>
         </motion.div>

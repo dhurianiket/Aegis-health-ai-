@@ -43,6 +43,8 @@ import {
 } from "../../services/ai/specialists/loungeModelConfig";
 import type { GeminiGenerateResponse } from "../../lib/geminiClient";
 import EmergencyTriageCard from "./EmergencyTriageCard";
+import SpecialistLabBookingTrigger from "./SpecialistLabBookingTrigger";
+import { LabBookingModal } from "../Dashboard/LabBookingModal";
 import { trackEvent } from "../../utils/analytics";
 import { ProceduralAvatar } from "../Avatars/ProceduralAvatar";
 
@@ -185,6 +187,15 @@ export default function SpecialistLounge() {
   const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
   const [historyVersion, setHistoryVersion] = useState(0);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
+  const [isLabBookingOpen, setIsLabBookingOpen] = useState(false);
+  const [bookingPackageId, setBookingPackageId] = useState<string | undefined>();
+  const [bookingBiomarkers, setBookingBiomarkers] = useState<string[]>([]);
+
+  const handleOpenLabBooking = (packageId?: string, biomarkers?: string[]) => {
+    setBookingPackageId(packageId);
+    setBookingBiomarkers(biomarkers || []);
+    setIsLabBookingOpen(true);
+  };
   const profileFirstName = firstNameOnly(activeProfile?.fullName || activeProfile?.name);
   const isMinorProfile = !!activeProfile && (isMinor(activeProfile.dob) || activeProfile.paediatricConsent?.isMinor === true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -714,6 +725,15 @@ export default function SpecialistLounge() {
                  ))}
                </div>
              </div>
+
+             {/* Recommended Diagnostic Panel for this Specialist */}
+             <div className="w-full pt-1">
+               <SpecialistLabBookingTrigger
+                 specialistId={activeSpecialist}
+                 specialistName={activeSpecProfile.displayName}
+                 onBookTest={(pkgId, biomarkers) => handleOpenLabBooking(pkgId, biomarkers)}
+               />
+             </div>
           </div>
         ) : (
           <div className="flex-1 w-full relative min-h-[450px] h-full flex flex-col">
@@ -730,6 +750,13 @@ export default function SpecialistLounge() {
           onSave={handleSaveReferralSuggestion}
           onDismiss={handleDismissReferralSuggestion}
           className="pr-12"
+        />
+
+        <SpecialistLabBookingTrigger
+          specialistId={activeSpecialist}
+          specialistName={activeSpecProfile.displayName}
+          onBookTest={(pkgId, biomarkers) => handleOpenLabBooking(pkgId, biomarkers)}
+          className="mr-0 md:mr-12 my-2"
         />
 
         {streamedText && (
@@ -1132,6 +1159,20 @@ export default function SpecialistLounge() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Phlebotomist Requisition & Home Lab Booking Modal */}
+      <LabBookingModal
+        isOpen={isLabBookingOpen}
+        onClose={() => setIsLabBookingOpen(false)}
+        initialPackageId={bookingPackageId}
+        recommendedBiomarkers={bookingBiomarkers}
+        patientProfile={{
+          name: activeProfile?.fullName || activeProfile?.name || user?.displayName || undefined,
+          email: user?.email || undefined,
+          phone: user?.phoneNumber || undefined,
+          gender: activeProfile?.gender || undefined,
+        }}
+      />
     </div>
   );
 }
