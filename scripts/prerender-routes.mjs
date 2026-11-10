@@ -188,9 +188,40 @@ const ROUTES = [
       "Clinical guide to HbA1c, Estimated Average Glucose (eAG), South Asian insulin resistance thresholds (ICMR/RSSDI), and erythrocyte turnover confounders.",
     bodyHtml: `
       <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
-        <article style="max-width: 920px; margin: 0 auto;">
-          <h1>Clinical Guide to HbA1c (Glycated Hemoglobin) &amp; Longitudinal Glycemic Velocity</h1>
-          <p>Understand how Aegis Health AI converts HbA1c (%) into Estimated Average Glucose (eAG = 28.7 × HbA1c − 46.7 mg/dL), tracks 90-day glycemic trajectory, and cross-checks Hemoglobin &amp; MCV for iron-deficiency or hemoglobinopathy confounders in Indian patients.</p>
+        <article style="max-width: 920px; margin: 0 auto; line-height: 1.7;">
+          <a href="/" style="color: #60a5fa; text-decoration: none; font-size: 14px;">← Back to Aegis Health AI Home</a>
+          <h1 style="color: #ffffff; font-size: 28px; margin-top: 16px;">Clinical Guide to HbA1c (Glycated Hemoglobin) &amp; Longitudinal Glycemic Velocity</h1>
+          <p style="color: #94a3b8; font-size: 14px;">Clinical Reference • ICMR (Indian Council of Medical Research) &amp; RSSDI Aligned • Updated November 2026</p>
+
+          <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 78, 59, 0.4)); border: 1px solid #10b981; border-radius: 12px; padding: 20px; margin: 24px 0;">
+            <h3 style="color: #34d399; margin: 0 0 8px 0; font-size: 18px;">📊 Test Your HbA1c in the Live Clinical Sandbox</h3>
+            <p style="color: #e5e7eb; margin: 0 0 14px 0; font-size: 14px;">See how Aegis Health AI maps your longitudinal HbA1c trajectory, calculates glycemic velocity, and flags hemoglobinopathy confounders. No account or payment required.</p>
+            <a href="/demo" style="display: inline-block; background: #10b981; color: #030712; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none;">Launch Interactive Workspace ➔</a>
+          </div>
+
+          <h2>1. What is HbA1c and Estimated Average Glucose (eAG)?</h2>
+          <p>Glycated hemoglobin (HbA1c) measures the percentage of hemoglobin proteins in red blood cells that have glucose attached to them. Because red blood cells circulate for approximately 90 to 120 days, HbA1c provides a weighted 3-month running average of plasma glucose.</p>
+          <p>Using the validated ADAG formula (Nathan et al.), HbA1c is converted to Estimated Average Glucose (eAG):</p>
+          <pre style="background: #111827; padding: 14px; border-radius: 8px; color: #38bdf8; font-size: 14px;">eAG (mg/dL) = 28.7 × HbA1c (%) − 46.7</pre>
+
+          <h2>2. Standard Reference Thresholds vs. South Asian Risk Phenotype</h2>
+          <ul>
+            <li><strong>Normal:</strong> HbA1c &lt; 5.7% (eAG &lt; 117 mg/dL)</li>
+            <li><strong>Prediabetes (Impaired Glucose Tolerance):</strong> HbA1c 5.7% – 6.4% (eAG 117 – 137 mg/dL)</li>
+            <li><strong>Diabetes Mellitus:</strong> HbA1c ≥ 6.5% (eAG ≥ 140 mg/dL) on two separate occasions</li>
+          </ul>
+          <p><em>ICMR &amp; RSSDI Guidelines Note:</em> Due to the "Asian Indian Phenotype" (higher visceral adiposity and early beta-cell exhaustion at lower BMI thresholds of ≥23 kg/m²), Indian patients experience diabetic microvascular and renal complications at lower glycemic thresholds than Caucasian cohorts.</p>
+
+          <h2>3. Clinical Confounders in Indian Patients (Why Context Matters)</h2>
+          <p>HbA1c tests can produce misleading results when red blood cell survival is altered:</p>
+          <ul>
+            <li><strong>Iron Deficiency Anemia:</strong> Prolongs erythrocyte survival, causing falsely elevated HbA1c readings.</li>
+            <li><strong>Thalassemia Minor &amp; Hemoglobinopathies:</strong> Highly prevalent in Western and Northern India; shortens red cell survival and produces falsely low HbA1c results. Aegis Health AI cross-verifies Hemoglobin and MCV from simultaneous CBC reports to prevent diagnostic misclassification.</li>
+          </ul>
+
+          <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #374151;">
+            <p style="color: #9ca3af; font-size: 13px;">Need to book an accredited HbA1c test with doorstep phlebotomy? <a href="/diagnostics" style="color: #38bdf8;">Explore Diagnostic Partner Panels across 500+ Indian cities</a>.</p>
+          </div>
         </article>
       </main>`,
   },
@@ -199,12 +230,53 @@ const ROUTES = [
     canonical: "https://aegishealthai.co.in/blog-cbc.html",
     title: "Complete Blood Count (CBC) & Hematology Biomarker Guide — Aegis Health AI",
     description:
-      "Clinical guide to Complete Blood Count (CBC) parameters: Hemoglobin, MCV, MCH, RDW-CV, Neutrophil-to-Lymphocyte Ratio (NLR), and Platelet trends.",
+      "Clinical guide to Complete Blood Count (CBC) parameters: Hemoglobin, MCV, MCH, RDW-CV, Neutrophil-to-Lymphocyte Ratio (NLR), and Low Lymphocyte Count causes.",
     bodyHtml: `
       <main style="min-height: 100vh; font-family: sans-serif; background-color: #030712; color: #f3f4f6; padding: 32px 24px;">
-        <article style="max-width: 920px; margin: 0 auto;">
-          <h1>Decoding the Complete Blood Count (CBC): Red Cell Indices, WBC Differential &amp; Platelets</h1>
-          <p>Explore how Aegis Health AI analyzes MCV, RDW-CV, Mentzer Index, and Neutrophil-to-Lymphocyte Ratio (NLR) across serial Indian hematology reports to distinguish nutritional iron/B12 deficiency from thalassemia trait and acute inflammation.</p>
+        <article style="max-width: 920px; margin: 0 auto; line-height: 1.7;">
+          <a href="/" style="color: #60a5fa; text-decoration: none; font-size: 14px;">← Back to Aegis Health AI Home</a>
+          <h1 style="color: #ffffff; font-size: 28px; margin-top: 16px;">Decoding the Complete Blood Count (CBC): Red Cell Indices, WBC Differential &amp; Platelets</h1>
+          <p style="color: #94a3b8; font-size: 14px;">Clinical Reference • Hematology &amp; Differential Triage • Updated November 2026</p>
+
+          <div style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(12, 74, 110, 0.4)); border: 1px solid #38bdf8; border-radius: 12px; padding: 20px; margin: 24px 0;">
+            <h3 style="color: #38bdf8; margin: 0 0 8px 0; font-size: 18px;">🩸 Check Your CBC &amp; Lymphocyte Count with AI</h3>
+            <p style="color: #e5e7eb; margin: 0 0 14px 0; font-size: 14px;">Upload any NABL pathology report (Thyrocare, Lal PathLabs, Metropolis) to calculate your Absolute Lymphocyte Count, Mentzer Index, and NLR automatically in seconds.</p>
+            <a href="/demo" style="display: inline-block; background: #38bdf8; color: #030712; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none;">Try Live CBC Analyzer (Zero Login) ➔</a>
+          </div>
+
+          <h2>1. What Does a Low Lymphocyte Count Mean (Lymphopenia)?</h2>
+          <p>Lymphocytes are a vital subtype of white blood cells (WBCs) responsible for viral defense, antibody production (B-cells), and cell-mediated immunity (T-cells). In a healthy adult, lymphocytes comprise 20% to 40% of circulating WBCs.</p>
+          <p>A low lymphocyte count—medically known as <strong>lymphopenia</strong> or <strong>lymphocytopenia</strong>—occurs when the Absolute Lymphocyte Count (ALC) drops below reference thresholds:</p>
+          <pre style="background: #111827; padding: 14px; border-radius: 8px; color: #38bdf8; font-size: 14px;">Absolute Lymphocyte Count (ALC) = (Total WBC Count × Lymphocyte %) ÷ 100
+Threshold: &lt; 1,000 cells/µL in adults (&lt; 3,000 cells/µL in children)</pre>
+
+          <h3>Common Causes of Low Lymphocytes</h3>
+          <ul>
+            <li><strong>Acute Viral Infections:</strong> Transient lymphopenia often occurs in the early stages of viral fevers (influenza, dengue, chikungunya, COVID-19) as lymphocytes migrate to lymph nodes or undergo apoptosis.</li>
+            <li><strong>Systemic Corticosteroids:</strong> Medications like prednisone or dexamethasone induce rapid lymphocyte redistribution out of the bloodstream.</li>
+            <li><strong>Autoimmune Conditions:</strong> Systemic Lupus Erythematosus (SLE) and rheumatoid arthritis can produce anti-lymphocyte autoantibodies.</li>
+            <li><strong>Severe Physical Stress or Malnutrition:</strong> Severe systemic stress, critical illness, protein malnutrition, and severe zinc deficiency impair lymphopoiesis.</li>
+          </ul>
+
+          <h2>2. Red Cell Indices: Mentzer Index &amp; Anemia Triage</h2>
+          <p>When Hemoglobin is low, Aegis Health AI computes the <strong>Mentzer Index</strong>:</p>
+          <pre style="background: #111827; padding: 14px; border-radius: 8px; color: #38bdf8; font-size: 14px;">Mentzer Index = MCV (fL) ÷ RBC Count (million/µL)</pre>
+          <ul>
+            <li><strong>Mentzer Index &gt; 13:</strong> Strongly suggests Nutritional Iron Deficiency Anemia.</li>
+            <li><strong>Mentzer Index &lt; 13:</strong> Suggests Beta-Thalassemia Trait / Minor (common in Indian populations, requiring Hemoglobin Electrophoresis confirmation rather than iron supplements).</li>
+          </ul>
+
+          <h2>3. Neutrophil-to-Lymphocyte Ratio (NLR) as an Inflammatory Marker</h2>
+          <p>The Neutrophil-to-Lymphocyte Ratio (NLR) serves as a rapid, cost-effective indicator of systemic physiological stress and subclinical inflammation:</p>
+          <ul>
+            <li><strong>NLR 1.0 – 2.0:</strong> Normal healthy physiological baseline.</li>
+            <li><strong>NLR 2.0 – 3.0:</strong> Mild systemic stress, subclinical infection, or metabolic syndrome.</li>
+            <li><strong>NLR &gt; 3.0:</strong> Elevated systemic inflammatory response requiring clinical review.</li>
+          </ul>
+
+          <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #374151;">
+            <p style="color: #9ca3af; font-size: 13px;">Need to book a NABL-accredited complete hemogram with doorstep collection? <a href="/diagnostics" style="color: #38bdf8;">View Phlebotomy Requisition options</a>.</p>
+          </div>
         </article>
       </main>`,
   },
