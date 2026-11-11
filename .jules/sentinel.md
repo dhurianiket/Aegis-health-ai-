@@ -12,3 +12,8 @@
 **Learning:** Query parameters are often recorded in server and proxy access logs, risking credential exposure even over HTTPS.
 **Prevention:** Always pass sensitive credentials like API keys via secure HTTP headers (e.g., `x-goog-api-key`) rather than URL strings.
 
+
+## 2025-03-09 - Insecure Randomness in Lab Booking IDs
+**Vulnerability:** Use of `Math.random()` for generating sensitive Lab Booking IDs.
+**Learning:** `Math.random()` is predictable and flagged by SAST tools for insecure randomness in sensitive operations.
+**Prevention:** Always use `crypto.randomUUID()` or `window.crypto` for generating identifiers, tokens, and receipts. Ensure proper fallback.
