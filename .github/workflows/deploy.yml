@@ -51,6 +51,30 @@ jobs:
           VITE_VISIT_PREP_FORM_ID: ${{ secrets.VITE_VISIT_PREP_FORM_ID }}
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
 
+      - name: Ensure Secrets in Google Cloud Secret Manager
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          RESEND_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          if [ -n "$RESEND_KEY" ] && [ -n "$GCP_SA_KEY" ]; then
+            echo "$GCP_SA_KEY" > /tmp/gcp_sa_key.json
+            gcloud auth activate-service-account --key-file=/tmp/gcp_sa_key.json
+            PROJECT_ID="aegis-health-app-90697"
+            if ! gcloud secrets describe RESEND_API_KEY --project="$PROJECT_ID" >/dev/null 2>&1; then
+              echo "Creating RESEND_API_KEY in Google Cloud Secret Manager..."
+              echo -n "$RESEND_KEY" | gcloud secrets create RESEND_API_KEY --data-file=- --project="$PROJECT_ID" --replication-policy=automatic
+            else
+              echo "Updating RESEND_API_KEY version in Google Cloud Secret Manager..."
+              echo -n "$RESEND_KEY" | gcloud secrets add-version RESEND_API_KEY --data-file=- --project="$PROJECT_ID"
+            fi
+            # Ensure Cloud Functions runtime service account has secret accessor permission
+            gcloud secrets add-iam-policy-binding RESEND_API_KEY \
+              --project="$PROJECT_ID" \
+              --member="serviceAccount:${PROJECT_ID}@appspot.gserviceaccount.com" \
+              --role="roles/secretmanager.secretAccessor" || true
+            rm -f /tmp/gcp_sa_key.json
+          fi
+
       - name: Deploy to Firebase Hosting, Functions, and Firestore Rules
         uses: w9jds/firebase-action@844c33e381350ae5c600052ba95188f40572d8e0
         with:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Generate a bespoke 1960x980 Product Showcase image for AWS Startups Showcase using headless Chrome.
+Generate a rich, high-density 1960x980 Product Showcase image for AWS Startups Showcase.
+Features dense, realistic MedTech UI: Dual AI Consensus, Biochemical Matrix, 3D Organ Telemetry, and ABDM ABHA Card.
 """
 import os
 import subprocess
@@ -20,7 +21,7 @@ def get_base64_img(file_path):
         mime = "image/jpeg"
     return f"data:{mime};base64,{base64.b64encode(data).decode('utf-8')}"
 
-def render_showcase():
+def render_rich_showcase():
     workspace_dir = r"e:\Aegis-health-ai-"
     public_dir = os.path.join(workspace_dir, "public")
     
@@ -45,7 +46,7 @@ def render_showcase():
   body {{
     width: 1960px;
     height: 980px;
-    background-color: #060B18;
+    background-color: #030712;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Inter", sans-serif;
     color: #F8FAFC;
     overflow: hidden;
@@ -53,335 +54,566 @@ def render_showcase():
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 44px 56px 40px 56px;
+    padding: 32px 48px 28px 48px;
   }}
 
-  /* High-tech Cyber Grid & Ambient Volumetric Glows */
+  /* High-Tech Background Elements */
   .grid-pattern {{
     position: absolute;
     inset: 0;
     background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
     pointer-events: none;
   }}
   .glow-top-left {{
     position: absolute;
-    top: -150px;
-    left: -100px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
-    filter: blur(60px);
+    top: -120px;
+    left: -80px;
+    width: 650px;
+    height: 650px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, transparent 70%);
+    filter: blur(70px);
     pointer-events: none;
   }}
   .glow-top-right {{
     position: absolute;
     top: -100px;
-    right: -100px;
-    width: 700px;
-    height: 700px;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, transparent 70%);
-    filter: blur(70px);
+    right: -80px;
+    width: 750px;
+    height: 750px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
+    filter: blur(80px);
     pointer-events: none;
   }}
   .glow-bottom-center {{
     position: absolute;
     bottom: -150px;
-    left: 45%;
-    width: 800px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
-    filter: blur(80px);
+    left: 40%;
+    width: 900px;
+    height: 550px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+    filter: blur(90px);
     pointer-events: none;
   }}
 
-  /* Top Header Bar */
+  /* Top Navigation Bar */
   .header {{
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
     z-index: 10;
+    margin-bottom: 20px;
   }}
   .brand-group {{
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
   }}
   .brand-logo {{
-    width: 58px;
-    height: 58px;
-    filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.45));
+    width: 52px;
+    height: 52px;
+    filter: drop-shadow(0 0 24px rgba(16, 185, 129, 0.5));
   }}
-  .brand-text {{
-    display: flex;
-    flex-direction: column;
-  }}
-  .brand-title {{
+  .brand-name {{
     font-size: 26px;
     font-weight: 800;
     letter-spacing: -0.5px;
     color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }}
-  .brand-subtitle {{
+  .version-tag {{
+    font-size: 11px;
+    padding: 3px 8px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34D399;
+    border-radius: 6px;
+    font-weight: 700;
+  }}
+  .brand-tagline {{
     font-size: 13px;
     color: #94A3B8;
     font-weight: 500;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }}
   .badge-cluster {{
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
   }}
   .pill-badge {{
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 18px;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 7px 16px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 9999px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #E2E8F0;
     backdrop-filter: blur(12px);
   }}
   .pill-badge.bedrock {{
     border-color: rgba(245, 158, 11, 0.4);
-    background: rgba(245, 158, 11, 0.08);
+    background: rgba(245, 158, 11, 0.1);
     color: #FBBF24;
   }}
   .pill-badge.abdm {{
     border-color: rgba(16, 185, 129, 0.4);
-    background: rgba(16, 185, 129, 0.08);
+    background: rgba(16, 185, 129, 0.1);
     color: #34D399;
   }}
   .nvidia-badge-img {{
     height: 28px;
-    filter: brightness(1.1);
+    filter: brightness(1.15);
   }}
 
-  /* Hero Headline Banner */
-  .hero-bar {{
-    position: relative;
-    z-index: 10;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-top: 10px;
-    margin-bottom: 20px;
-  }}
-  .hero-left {{
-    max-width: 1200px;
-  }}
-  .hero-tag {{
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 14px;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #34D399;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }}
-  .pulse-dot {{
-    width: 7px;
-    height: 7px;
-    background: #34D399;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #34D399;
-  }}
-  .hero-title {{
-    font-size: 40px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    line-height: 1.15;
-  }}
-  .gradient-cyan {{
-    background: linear-gradient(135deg, #38BDF8 0%, #34D399 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }}
-  .hero-desc {{
-    font-size: 15px;
-    color: #94A3B8;
-    line-height: 1.5;
-    margin-top: 6px;
-    max-width: 1050px;
-  }}
-
-  /* 4-Card Bento Product UI Grid */
-  .bento-grid {{
-    position: relative;
-    z-index: 10;
+  /* Main Split Cockpit (Left: 58%, Right: 42%) */
+  .main-cockpit {{
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 24px;
     flex: 1;
-    max-height: 470px;
+    position: relative;
+    z-index: 10;
+    min-height: 0;
   }}
-  .bento-card {{
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 22px;
-    padding: 24px;
+
+  .col-left, .col-right {{
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    gap: 20px;
+    min-height: 0;
+  }}
+
+  /* Glassmorphic Panel Container */
+  .panel {{
+    background: rgba(11, 19, 38, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 22px 24px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }}
-  .bento-card::before {{
+  .panel::before {{
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
   }}
-  .bento-card.highlight::before {{
+  .panel.accent-green::before {{
     background: linear-gradient(90deg, transparent, #34D399, transparent);
   }}
+  .panel.accent-amber::before {{
+    background: linear-gradient(90deg, transparent, #F59E0B, transparent);
+  }}
+  .panel.accent-purple::before {{
+    background: linear-gradient(90deg, transparent, #A855F7, transparent);
+  }}
 
-  /* Card Header */
-  .card-top {{
+  .panel-header {{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }}
-  .card-icon {{
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+  .panel-title-group {{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }}
+  .panel-icon {{
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 17px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }}
-  .card-badge {{
+  .panel-title {{
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #FFFFFF;
+  }}
+  .status-tag {{
     font-size: 11px;
     font-weight: 700;
     padding: 4px 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }}
-  .badge-emerald {{ background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }}
-  .badge-amber {{ background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }}
-  .badge-sky {{ background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }}
-  .badge-purple {{ background: rgba(168, 85, 247, 0.15); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.3); }}
+  .tag-green {{ background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.35); }}
+  .tag-cyan {{ background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); }}
+  .tag-amber {{ background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.35); }}
+  .tag-purple {{ background: rgba(168, 85, 247, 0.15); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.35); }}
 
-  .card-title {{
-    font-size: 19px;
-    font-weight: 700;
-    color: #F8FAFC;
-    margin-bottom: 6px;
-    letter-spacing: -0.3px;
+  /* ============================================================ */
+  /* PANEL 1: 3D ANATOMY SCANNER & LIVE BIOMETRIC VITAL TELEMETRY */
+  /* ============================================================ */
+  .telemetry-layout {{
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 20px;
+    align-items: center;
+    flex: 1;
   }}
-  .card-desc {{
-    font-size: 13px;
-    color: #94A3B8;
-    line-height: 1.45;
+  .anatomy-silhouette {{
+    width: 140px;
+    height: 180px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
   }}
+  .scan-beam {{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #34D399;
+    box-shadow: 0 0 14px #34D399;
+  }}
+  .hotspot {{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #38BDF8;
+    box-shadow: 0 0 10px #38BDF8;
+  }}
+  .hotspot.heart {{ top: 38%; left: 48%; background: #EF4444; box-shadow: 0 0 12px #EF4444; }}
+  .hotspot.lungs {{ top: 40%; left: 32%; background: #34D399; box-shadow: 0 0 10px #34D399; }}
+  .hotspot.liver {{ top: 52%; left: 40%; background: #F59E0B; box-shadow: 0 0 10px #F59E0B; }}
 
-  /* Mock UI Widget Panels inside Cards */
-  .mock-widget {{
-    margin-top: 16px;
-    padding: 14px;
-    background: rgba(8, 14, 29, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
+  .vitals-grid {{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }}
+  .vital-card {{
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }}
-  .widget-row {{
+  .vital-label {{
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }}
+  .vital-val {{
+    font-size: 20px;
+    font-weight: 800;
+    color: #F8FAFC;
+    letter-spacing: -0.5px;
+    font-family: ui-monospace, monospace;
+  }}
+  .vital-val span.unit {{
+    font-size: 12px;
+    font-weight: 500;
+    color: #94A3B8;
+  }}
+  .vital-val.green {{ color: #34D399; }}
+  .vital-val.cyan {{ color: #38BDF8; }}
+  .vital-sub {{
+    font-size: 11px;
+    font-weight: 600;
+    color: #34D399;
+  }}
+
+  /* Waveform strip */
+  .ecg-strip {{
+    margin-top: 14px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 12px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }}
+  .ecg-title {{
+    font-size: 11px;
+    font-weight: 700;
+    color: #38BDF8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }}
+  .ecg-svg {{
+    width: 65%;
+    height: 32px;
+  }}
+
+  /* ============================================================ */
+  /* PANEL 2: BIOCHEMICAL DRUG-DRUG CLASH MATRIX & RXNORM         */
+  /* ============================================================ */
+  .clash-matrix-container {{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }}
+  .drug-table {{
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 6px;
+  }}
+  .drug-cell-head {{
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-align: center;
+    padding: 6px;
+  }}
+  .drug-cell {{
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    text-align: center;
+    font-weight: 600;
+  }}
+  .drug-cell.safe {{
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #34D399;
+  }}
+  .drug-cell.caution {{
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #FBBF24;
+  }}
+  .drug-cell.danger {{
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #F87171;
+  }}
+  .clash-banner {{
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+  }}
+  .clash-left {{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #FBBF24;
+    font-weight: 600;
+  }}
+
+  /* ============================================================ */
+  /* PANEL 3: DUAL-MODEL CLINICAL CONSENSUS (BEDROCK + GEMINI)    */
+  /* ============================================================ */
+  .consensus-flow {{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }}
+  .model-card {{
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }}
+  .model-card.bedrock {{
+    border-left: 3px solid #F59E0B;
+  }}
+  .model-card.gemini {{
+    border-left: 3px solid #38BDF8;
+  }}
+  .model-top {{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 12px;
   }}
-  .widget-label {{
+  .model-name {{
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }}
+  .model-meta {{
+    font-size: 11px;
     color: #64748B;
-    font-weight: 500;
+    font-family: ui-monospace, monospace;
   }}
-  .widget-val {{
-    color: #E2E8F0;
-    font-weight: 600;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  .model-snippet {{
+    font-size: 12px;
+    color: #CBD5E1;
+    line-height: 1.4;
   }}
-  .widget-val.green {{ color: #34D399; }}
-  .widget-val.cyan {{ color: #38BDF8; }}
-  .progress-track {{
-    width: 100%;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-    overflow: hidden;
+  .consensus-meter {{
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }}
-  .progress-fill {{
-    height: 100%;
-    border-radius: 4px;
+  .consensus-score-col {{
+    display: flex;
+    flex-direction: column;
   }}
-  .progress-fill.bedrock {{
-    width: 98.4%;
-    background: linear-gradient(90deg, #F59E0B, #10B981);
+  .consensus-score-title {{
+    font-size: 11px;
+    font-weight: 700;
+    color: #34D399;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }}
-  .progress-fill.biocash {{
-    width: 100%;
-    background: linear-gradient(90deg, #38BDF8, #10B981);
+  .consensus-score-num {{
+    font-size: 24px;
+    font-weight: 800;
+    color: #FFFFFF;
+    font-family: ui-monospace, monospace;
+  }}
+  .consensus-badge-verified {{
+    padding: 6px 14px;
+    background: #10B981;
+    color: #030712;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }}
 
-  /* Bottom Bar */
+  /* ============================================================ */
+  /* PANEL 4: NHA ABDM DIGITAL HEALTH VAULT & FHIR R4             */
+  /* ============================================================ */
+  .abdm-card-mock {{
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  }}
+  .abdm-top {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }}
+  .abdm-gov-title {{
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }}
+  .abdm-num {{
+    font-size: 16px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 2px;
+    font-family: ui-monospace, monospace;
+  }}
+  .abdm-stats-row {{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+  }}
+  .abdm-stat-box {{
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }}
+  .abdm-stat-lbl {{
+    font-size: 10px;
+    color: #64748B;
+    text-transform: uppercase;
+  }}
+  .abdm-stat-val {{
+    font-size: 12px;
+    font-weight: 700;
+    color: #38BDF8;
+  }}
+  .abdm-stat-val.green {{ color: #34D399; }}
+
+  /* Footer Bottom Bar */
   .footer {{
     position: relative;
     z-index: 10;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 16px;
+    padding-top: 14px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }}
-  .feature-strip {{
+  .footer-chips {{
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: 24px;
     font-size: 13px;
     font-weight: 600;
     color: #94A3B8;
   }}
-  .feature-item {{
+  .chip-item {{
     display: flex;
     align-items: center;
     gap: 8px;
   }}
-  .feature-item span.icon {{
-    color: #34D399;
-  }}
+  .chip-item span.green {{ color: #34D399; }}
   .url-badge {{
     font-size: 14px;
     font-weight: 700;
     color: #38BDF8;
-    background: rgba(56, 189, 248, 0.1);
-    padding: 8px 18px;
-    border-radius: 10px;
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    letter-spacing: 0.2px;
+    background: rgba(56, 189, 248, 0.12);
+    padding: 7px 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(56, 189, 248, 0.35);
   }}
 </style>
 </head>
@@ -391,13 +623,16 @@ def render_showcase():
   <div class="glow-top-right"></div>
   <div class="glow-bottom-center"></div>
 
-  <!-- 1. Header Bar -->
+  <!-- Header -->
   <div class="header">
     <div class="brand-group">
       <img src="{logo_b64}" class="brand-logo" alt="Aegis Health AI" />
-      <div class="brand-text">
-        <span class="brand-title">Aegis Health AI</span>
-        <span class="brand-subtitle">Clinical Intelligence Platform</span>
+      <div>
+        <div class="brand-name">
+          <span>Aegis Health AI</span>
+          <span class="version-tag">ENTERPRISE LIVE</span>
+        </div>
+        <div class="brand-tagline">Clinical Intelligence & Real-Time Patient Safety Sentinel</div>
       </div>
     </div>
     <div class="badge-cluster">
@@ -407,151 +642,244 @@ def render_showcase():
       <div class="pill-badge abdm">
         <span>🛡️ NHA ABDM Certified (M1/M2/M3)</span>
       </div>
-      <img src="{nvidia_b64}" class="nvidia-badge-img" alt="NVIDIA Inception Program" />
+      <img src="{nvidia_b64}" class="nvidia-badge-img" alt="NVIDIA Inception" />
     </div>
   </div>
 
-  <!-- 2. Hero Title Bar -->
-  <div class="hero-bar">
-    <div class="hero-left">
-      <div class="hero-tag">
-        <span class="pulse-dot"></span>
-        <span>Dual-Model Architecture · Zero-Knowledge Privacy</span>
+  <!-- Main Cockpit Layout -->
+  <div class="main-cockpit">
+
+    <!-- LEFT COLUMN: Anatomy Telemetry & Drug Matrix -->
+    <div class="col-left">
+
+      <!-- Panel 1: 3D Holographic Telemetry & Vitals -->
+      <div class="panel accent-green" style="flex: 1.1;">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">🫀</div>
+            <div class="panel-title">3D Holographic Anatomy Scanner & Biomarker Telemetry</div>
+          </div>
+          <span class="status-tag tag-green">● Live Telemetry Stream</span>
+        </div>
+
+        <div class="telemetry-layout">
+          <!-- Holographic Anatomy Silhouette -->
+          <div class="anatomy-silhouette">
+            <div class="scan-beam"></div>
+            <!-- Hotspots -->
+            <div class="hotspot heart"></div>
+            <div class="hotspot lungs"></div>
+            <div class="hotspot liver"></div>
+            <svg viewBox="0 0 100 160" width="85" height="135" style="opacity: 0.85;">
+              <path d="M50 15 C45 15 42 20 42 26 C42 32 45 37 50 37 C55 37 58 32 58 26 C58 20 55 15 50 15 Z" fill="none" stroke="#38BDF8" stroke-width="1.8" />
+              <path d="M38 42 L62 42 L68 75 L60 80 L62 145 L52 145 L50 95 L48 145 L38 145 L40 80 L32 75 Z" fill="none" stroke="#38BDF8" stroke-width="1.8" />
+            </svg>
+          </div>
+
+          <!-- 4 Vitals Tiles -->
+          <div>
+            <div class="vitals-grid">
+              <div class="vital-card">
+                <span class="vital-label">Resting HR</span>
+                <span class="vital-val green">68 <span class="unit">bpm</span></span>
+                <span class="vital-sub">Normal Sinus</span>
+              </div>
+              <div class="vital-card">
+                <span class="vital-label">Blood Pressure</span>
+                <span class="vital-val">118/76</span>
+                <span class="vital-sub">Optimal Range</span>
+              </div>
+              <div class="vital-card">
+                <span class="vital-label">Blood Oxygen</span>
+                <span class="vital-val cyan">99 <span class="unit">%</span></span>
+                <span class="vital-sub">Continuous SpO2</span>
+              </div>
+              <div class="vital-card">
+                <span class="vital-label">ApoB Velocity</span>
+                <span class="vital-val green">-4.2 <span class="unit">%</span></span>
+                <span class="vital-sub">Improving Slope</span>
+              </div>
+            </div>
+
+            <!-- Real ECG Waveform -->
+            <div class="ecg-strip">
+              <div class="ecg-title">
+                <span style="color:#34D399;">●</span> Lead II ECG
+              </div>
+              <svg class="ecg-svg" viewBox="0 0 400 30" preserveAspectRatio="none">
+                <path d="M0,15 L40,15 L45,15 L50,12 L55,18 L60,15 L70,15 L75,2 L80,28 L85,8 L90,15 L100,15 L105,10 L115,15 L160,15 L165,15 L170,12 L175,18 L180,15 L190,15 L195,2 L200,28 L205,8 L210,15 L220,15 L225,10 L235,15 L280,15 L285,15 L290,12 L295,18 L300,15 L310,15 L315,2 L320,28 L325,8 L330,15 L340,15 L345,10 L355,15 L400,15" fill="none" stroke="#10B981" stroke-width="2" />
+              </svg>
+              <span style="font-size:11px; color:#94A3B8; font-family:monospace;">QRS 84ms</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="hero-title">
-        Next-Generation <span class="gradient-cyan">Clinical Intelligence Engine</span> on AWS
+
+      <!-- Panel 2: Biochemical Drug-Drug Clash Matrix -->
+      <div class="panel accent-amber" style="flex: 0.9;">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">💊</div>
+            <div class="panel-title">Biochemical Polypharmacy Clash & RxNorm Engine</div>
+          </div>
+          <span class="status-tag tag-amber">Sub-millisecond Screen</span>
+        </div>
+
+        <div class="clash-matrix-container">
+          <!-- 4x4 Drug Interaction Grid -->
+          <table class="drug-table">
+            <tr>
+              <td class="drug-cell-head">Rx Cocktail</td>
+              <td class="drug-cell-head">Metformin</td>
+              <td class="drug-cell-head">Lisinopril</td>
+              <td class="drug-cell-head">Atorvastatin</td>
+              <td class="drug-cell-head">Spironolactone</td>
+            </tr>
+            <tr>
+              <td class="drug-cell-head">Metformin</td>
+              <td class="drug-cell safe">✓ Neutral</td>
+              <td class="drug-cell safe">✓ Synergistic</td>
+              <td class="drug-cell safe">✓ Compatible</td>
+              <td class="drug-cell safe">✓ Monitored</td>
+            </tr>
+            <tr>
+              <td class="drug-cell-head">Lisinopril</td>
+              <td class="drug-cell safe">✓ Synergistic</td>
+              <td class="drug-cell safe">✓ Neutral</td>
+              <td class="drug-cell safe">✓ Compatible</td>
+              <td class="drug-cell caution">⚠️ K+ Retention</td>
+            </tr>
+            <tr>
+              <td class="drug-cell-head">Atorvastatin</td>
+              <td class="drug-cell safe">✓ Compatible</td>
+              <td class="drug-cell safe">✓ Compatible</td>
+              <td class="drug-cell safe">✓ Neutral</td>
+              <td class="drug-cell safe">✓ Cleared</td>
+            </tr>
+          </table>
+
+          <div class="clash-banner">
+            <div class="clash-left">
+              <span>⚠️</span>
+              <span>OpenFDA Safety Alert: Lisinopril + Spironolactone dual ACEi/MRA elevation risk flagged</span>
+            </div>
+            <span style="font-size: 11px; color: #E2E8F0; font-weight:700;">RxNorm CUI: 29046</span>
+          </div>
+        </div>
       </div>
-      <div class="hero-desc">
-        Eliminating AI hallucinations through dual-model consensus verification, real-time polypharmacy clash detection, and end-to-end encrypted FHIR R4 interoperability.
-      </div>
+
     </div>
+
+    <!-- RIGHT COLUMN: Dual AI Consensus & ABDM Health Vault -->
+    <div class="col-right">
+
+      <!-- Panel 3: Dual-Model Clinical Consensus -->
+      <div class="panel accent-cyan" style="flex: 1.15;">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">🧠</div>
+            <div class="panel-title">Dual-Model Clinical AI Consensus Engine</div>
+          </div>
+          <span class="status-tag tag-cyan">AWS Bedrock + Gemini</span>
+        </div>
+
+        <div class="consensus-flow">
+          <!-- Bedrock Card -->
+          <div class="model-card bedrock">
+            <div class="model-top">
+              <span class="model-name">
+                <span style="color:#F59E0B;">●</span> Amazon Bedrock (DeepSeek V3.2)
+              </span>
+              <span class="model-meta">Latency: 380ms · us-east-1</span>
+            </div>
+            <div class="model-snippet">
+              "Microcytic hypochromic anemia confirmed (MCV 72 fL). Zero renal contraindication detected with current ACEi therapy."
+            </div>
+          </div>
+
+          <!-- Gemini Card -->
+          <div class="model-card gemini">
+            <div class="model-top">
+              <span class="model-name">
+                <span style="color:#38BDF8;">●</span> Google Gemini (gemini-3.6-flash)
+              </span>
+              <span class="model-meta">Latency: 412ms · Edge Proxy</span>
+            </div>
+            <div class="model-snippet">
+              "Clinical findings correlate with microcytic anemia secondary to iron deficiency. Recommend ferritin & TIBC lab panel."
+            </div>
+          </div>
+
+          <!-- Consensus Meter -->
+          <div class="consensus-meter">
+            <div class="consensus-score-col">
+              <span class="consensus-score-title">Agreement Score</span>
+              <span class="consensus-score-num">98.4%</span>
+            </div>
+            <div class="consensus-badge-verified">
+              <span>✓</span>
+              <span>CONSENSUS VERIFIED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 4: NHA ABDM Digital Health Vault -->
+      <div class="panel accent-purple" style="flex: 0.85;">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">🇮🇳</div>
+            <div class="panel-title">NHA ABDM Digital Health Vault & FHIR R4</div>
+          </div>
+          <span class="status-tag tag-purple">DPDP Act 2023</span>
+        </div>
+
+        <div class="abdm-card-mock">
+          <div class="abdm-top">
+            <span class="abdm-gov-title">Ayushman Bharat Health Account (ABHA)</span>
+            <span style="font-size:11px; color:#34D399; font-weight:700;">● M1/M2/M3 CERTIFIED</span>
+          </div>
+          <div class="abdm-num">91-4820-1945-8821</div>
+
+          <div class="abdm-stats-row">
+            <div class="abdm-stat-box">
+              <span class="abdm-stat-lbl">Care Contexts</span>
+              <span class="abdm-stat-val">6 Active Links</span>
+            </div>
+            <div class="abdm-stat-box">
+              <span class="abdm-stat-lbl">Encryption</span>
+              <span class="abdm-stat-val green">AES-GCM-256</span>
+            </div>
+            <div class="abdm-stat-box">
+              <span class="abdm-stat-lbl">Data Residency</span>
+              <span class="abdm-stat-val">ap-south-1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- 3. Bento Grid Showcase (The 4 Pillars) -->
-  <div class="bento-grid">
-    
-    <!-- Card 1: Dual Clinical Consensus -->
-    <div class="bento-card highlight">
-      <div>
-        <div class="card-top">
-          <div class="card-icon">🧠</div>
-          <span class="card-badge amber">Dual-Model AI</span>
-        </div>
-        <div class="card-title">Clinical Consensus</div>
-        <div class="card-desc">
-          Concurrently queries Amazon Bedrock (DeepSeek V3.2 / Mistral Large 3) and Gemini to verify diagnostic accuracy.
-        </div>
-      </div>
-      <div class="mock-widget">
-        <div class="widget-row">
-          <span class="widget-label">Bedrock Mantle</span>
-          <span class="widget-val cyan">deepseek.v3.2</span>
-        </div>
-        <div class="widget-row">
-          <span class="widget-label">Consensus Score</span>
-          <span class="widget-val green">98.4% Match</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill bedrock"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Card 2: Biochemical Clash Engine -->
-    <div class="bento-card">
-      <div>
-        <div class="card-top">
-          <div class="card-icon">💊</div>
-          <span class="card-badge emerald">RxNorm & OpenFDA</span>
-        </div>
-        <div class="card-title">Drug Interaction Matrix</div>
-        <div class="card-desc">
-          Sub-millisecond screening of complex multi-drug cocktails against FDA Boxed Warnings and CYP450 enzyme pathways.
-        </div>
-      </div>
-      <div class="mock-widget">
-        <div class="widget-row">
-          <span class="widget-label">FAERS Database</span>
-          <span class="widget-val green">Live Synchronized</span>
-        </div>
-        <div class="widget-row">
-          <span class="widget-label">Adverse Warning</span>
-          <span class="widget-val green">0 Lethal Clashes</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill biocash"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Card 3: 3D Holographic Telemetry -->
-    <div class="bento-card">
-      <div>
-        <div class="card-top">
-          <div class="card-icon">🫀</div>
-          <span class="card-badge sky">Biometrics</span>
-        </div>
-        <div class="card-title">3D Organ Scanner</div>
-        <div class="card-desc">
-          Interactive anatomical 3D scanner mapping real-time ECG rhythms, blood pressure, and longitudinal lab velocity.
-        </div>
-      </div>
-      <div class="mock-widget">
-        <div class="widget-row">
-          <span class="widget-label">Heart Rate (RHR)</span>
-          <span class="widget-val green">68 bpm · Normal</span>
-        </div>
-        <div class="widget-row">
-          <span class="widget-label">Biomarker Velocity</span>
-          <span class="widget-val cyan">HbA1c Trajectory</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Card 4: NHA ABDM Gateway -->
-    <div class="bento-card">
-      <div>
-        <div class="card-top">
-          <div class="card-icon">🇮🇳</div>
-          <span class="card-badge purple">DPDP Act 2023</span>
-        </div>
-        <div class="card-title">ABDM FHIR Exchange</div>
-        <div class="card-desc">
-          National Health Authority M1/M2/M3 compliance: instant Aadhaar ABHA QR check-in and encrypted health records.
-        </div>
-      </div>
-      <div class="mock-widget">
-        <div class="widget-row">
-          <span class="widget-label">Encryption</span>
-          <span class="widget-val green">AES-GCM-256</span>
-        </div>
-        <div class="widget-row">
-          <span class="widget-label">Data Egress</span>
-          <span class="widget-val green">Zero Cloud Leak</span>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- 4. Footer Feature Strip -->
+  <!-- Footer Feature Strip -->
   <div class="footer">
-    <div class="feature-strip">
-      <div class="feature-item">
-        <span class="icon">✓</span>
-        <span>Amazon Bedrock Mantle Endpoint</span>
+    <div class="footer-chips">
+      <div class="chip-item">
+        <span class="green">✓</span>
+        <span>Amazon Bedrock Mantle Multi-Model Endpoint</span>
       </div>
-      <div class="feature-item">
-        <span class="icon">✓</span>
-        <span>ap-south-1 Mumbai Data Residency</span>
+      <div class="chip-item">
+        <span class="green">✓</span>
+        <span>ap-south-1 Mumbai Cloud Data Residency</span>
       </div>
-      <div class="feature-item">
-        <span class="icon">✓</span>
-        <span>NVIDIA Inception Member</span>
+      <div class="chip-item">
+        <span class="green">✓</span>
+        <span>NVIDIA Inception Program Member</span>
       </div>
-      <div class="feature-item">
-        <span class="icon">✓</span>
-        <span>Offline-First Progressive Web App</span>
+      <div class="chip-item">
+        <span class="green">✓</span>
+        <span>100% Offline-First Progressive Web App</span>
       </div>
     </div>
     <div class="url-badge">
@@ -563,11 +891,12 @@ def render_showcase():
 </html>
 """
 
-    temp_html = os.path.join(workspace_dir, "scripts", "temp_aws_showcase.html")
+    temp_html = os.path.join(workspace_dir, "scripts", "temp_rich_showcase.html")
     with open(temp_html, "w", encoding="utf-8") as f:
         f.write(html_content)
 
     output_path = os.path.join(public_dir, "aegis_product_showcase_1960x980.jpg")
+    artifact_path = os.path.join(r"C:\Users\dhuri\.gemini\antigravity\brain\8ce1d930-a501-4979-ac4f-612839463deb", "aegis_product_showcase_1960x980.jpg")
 
     chrome_exe = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
     if not os.path.exists(chrome_exe):
@@ -582,7 +911,7 @@ def render_showcase():
         f"--screenshot={output_path}",
         temp_html
     ]
-    print(f"Rendering AWS Product Showcase (1960x980) -> {output_path}")
+    print(f"Rendering Rich UI Showcase -> {output_path}")
     subprocess.run(cmd, check=True)
 
     try:
@@ -590,8 +919,16 @@ def render_showcase():
     except Exception:
         pass
 
+    # Copy to brain artifact dir if present
+    import shutil
+    try:
+        if os.path.exists(os.path.dirname(artifact_path)):
+            shutil.copy2(output_path, artifact_path)
+    except Exception:
+        pass
+
     im = Image.open(output_path)
-    print(f"Done! Verified size: {im.size} at {output_path}")
+    print(f"Success! High-density showcase created: {im.size}")
 
 if __name__ == "__main__":
-    render_showcase()
+    render_rich_showcase()

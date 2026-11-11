@@ -1,6 +1,22 @@
 # CURRENT_STATE.md — Verified Production SnapshotChannels
 
-## Current Snapshot CV — November 11, 2026
+## Current Snapshot CW — November 11, 2026
+### Completed by: Antigravity AI Pair Programmer (CI/CD Deployment Recovery: Secret Manager Provisioning & IAM Hardening)
+### Tasks Completed:
+- **Diagnosed GitHub Actions Deployment Failure**:
+  - 🔍 Analyzed run 42989133706 for workflow Deploy Aegis Health AI to Firebase Hosting.
+  - ❌ Root cause identified: Firebase CLI failed at the Cloud Functions analysis phase with HTTP 404 (Secret [projects/***/secrets/RESEND_API_KEY] not found or has no versions).
+- **GCP IAM Policy Configuration**:
+  - 🔑 Granted roles/secretmanager.admin to serviceAccount:firebase-adminsdk-fbsvc@aegis-health-app-90697.iam.gserviceaccount.com in project aegis-health-app-90697.
+- **Automated Secret Provisioning in CI Pipeline (.github/workflows/deploy.yml)**:
+  - 🛡️ Added Ensure Secrets in Google Cloud Secret Manager step prior to firebase-action deployment.
+  - ⚡ Automatically reads GitHub Secrets (RESEND_API_KEY and FIREBASE_SERVICE_ACCOUNT) to idempotently create/update RESEND_API_KEY in Google Cloud Secret Manager with roles/secretmanager.secretAccessor permissions for Cloud Functions runtime.
+- **Showcase Script Hardening**:
+  - 🧼 Handled artifact directory copying safely in scripts/generate_aws_product_showcase.py and purged transient crop screenshots.
+- **Knowledge Graph Synchronization**:
+  - 🌐 Graphify AST re-verified and synchronized.
+
+## Previous Snapshot CV — November 11, 2026
 ### Completed by: Antigravity AI Pair Programmer (Meta Platform Integration, Social Launch Studio Media Suite & Omni-Channel Live Publishing)
 ### Tasks Completed:
 - **Meta Social Technologies Custom MCP Server (`scripts/meta_social_mcp.py`)**:
