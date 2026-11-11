@@ -326,8 +326,17 @@ export async function createLabBooking(
 
   // In production, this dispatches via Cloudflare Edge Worker POST /api/integrations/lab/book
   // Simulate deterministic client response with realistic reference IDs
-  const bookingId = `AEGIS-LAB-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-  const partnerBookingRef = `${partner.id.toUpperCase()}-${Math.floor(100000 + Math.random() * 900000)}`;
+  const getSecureRandomNum = (min: number, max: number) => {
+    if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      return min + (array[0] % (max - min));
+    }
+    // Fallback if crypto isn't available
+    return Math.floor(min + Math.random() * (max - min));
+  };
+  const bookingId = `AEGIS-LAB-${Date.now().toString(36).toUpperCase()}-${getSecureRandomNum(1000, 10000)}`;
+  const partnerBookingRef = `${partner.id.toUpperCase()}-${getSecureRandomNum(100000, 1000000)}`;
 
   const totalPayable = selectedPkg.aegisPrice >= partner.waiveFeeAbove
     ? selectedPkg.aegisPrice
