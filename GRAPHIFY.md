@@ -455,6 +455,8 @@
 - **[`src\services\drugLabEngine.ts`](file:///E:\Aegis-health-ai-\src\services\drugLabEngine.ts)**
   - *Exports*: `LabBiomarker`, `DrugLabContraindication`, `BioRegimenSafetySummary`, `isMedInCategory`, `parseNumericValue`, `evaluateDrugLabContraindications`, `buildBioRegimenSafetySummary`
   - *Imports*: `../types/health`
+- **[`src\services\emailNotificationService.ts`](file:///E:\Aegis-health-ai-\src\services\emailNotificationService.ts)**
+  - *Imports*: `../lib/firebase/config`
 - **[`src\services\fhirService.ts`](file:///E:\Aegis-health-ai-\src\services\fhirService.ts)**
   - *Exports*: `FHIRResource`, `FHIRBundle`, `LoincMapping`, `LOINC_DICTIONARY`, `lookupLoincCode`, `mapProfileToPatient`, `mapLabToObservation`, `mapReportToDiagnosticReport`, `mapSbarToDocumentReference`, `exportToFhirBundle`, `validateFhirBundle`, `downloadFhirJson`, `convertToFHIRPatient`, `convertToFHIRObservation`, `convertReportToFHIRBundle`, `downloadFHIRBundle`
   - *Imports*: `../types/fhir`, `./snomedService`

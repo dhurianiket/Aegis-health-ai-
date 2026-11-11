@@ -9,6 +9,8 @@ yarn.lock
 .env
 .env.*
 !.env.example
+__pycache__/
+*.py[cod]
 .dev.vars
 .dev.vars.*
 firebase-applet-config.json

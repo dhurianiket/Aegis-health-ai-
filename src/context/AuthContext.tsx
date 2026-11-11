@@ -125,6 +125,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             if (import.meta.env.DEV) console.log("[Auth] onAuthStateChanged fired with user:", activeUser ? activeUser.uid : "null");
             if (activeUser) {
               markUserActive(activeUser.uid, activeUser.email, activeUser.displayName, activeUser.photoURL).catch((err) => console.error("Error marking user active:", err));
+              // Asynchronous, session-guarded login security alert
+              try {
+                const sessionNotifiedKey = `aegis_session_notified_${activeUser.uid}`;
+                if (!sessionStorage.getItem(sessionNotifiedKey)) {
+                  sessionStorage.setItem(sessionNotifiedKey, "true");
+                  import("../services/emailNotificationService")
+                    .then((m) => m.sendLoginSecurityAlert())
+                    .catch(() => {});
+                }
+              } catch (_) {
+                // Ignore storage access errors in sandboxed contexts
+              }
             }
             resolveAuth(activeUser ?? null);
           }

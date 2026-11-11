@@ -213,3 +213,60 @@ export const beforeCreate = beforeUserCreated(async (event) => {
 
   return {};
 });
+
+// Resend Email Dispatch Integration
+export * from "./emailService";
+
+export const sendClinicalEmail = onCall(
+  { secrets: ["RESEND_API_KEY"] },
+  async (request: CallableRequest<{
+    to: string;
+    subject: string;
+    html: string;
+    text?: string;
+  }>) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Authentication required to trigger clinical email dispatch.");
+    }
+
+    const { to, subject, html, text } = request.data;
+    if (!to || !subject || !html) {
+      throw new HttpsError("invalid-argument", "Missing mandatory parameters: 'to', 'subject', or 'html'.");
+    }
+
+    const { sendTransactionalEmail } = await import("./emailService");
+    const result = await sendTransactionalEmail({ to, subject, html, text });
+    if (!result.success) {
+      throw new HttpsError("internal", result.error || "Failed to send email via Resend.");
+    }
+
+    return { success: true, emailId: result.id };
+  }
+);
+
+export const notifyLogin = onCall(
+  { secrets: ["RESEND_API_KEY"] },
+  async (request: CallableRequest<{
+    deviceType?: string;
+    userAgent?: string;
+  }>) => {
+    if (!request.auth || !request.auth.token?.email) {
+      throw new HttpsError("unauthenticated", "Authentication required to send login notification.");
+    }
+
+    const userEmail = request.auth.token.email;
+    const displayName = request.auth.token.name || userEmail.split("@")[0];
+    const { deviceType, userAgent } = request.data || {};
+
+    const { sendLoginNotificationEmail } = await import("./emailService");
+    const result = await sendLoginNotificationEmail({
+      userEmail,
+      displayName,
+      deviceType,
+      userAgent,
+      authMethod: request.auth.token.firebase?.sign_in_provider || "Google Identity",
+    });
+
+    return { success: result.success, emailId: result.id };
+  }
+);
