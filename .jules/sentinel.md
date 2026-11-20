@@ -16,3 +16,8 @@
 **Vulnerability:** A local express server endpoint (`POST /api/generate-visit-prep`) exposed access to the Gemini API directly without any authentication checks, bypassing the standard edge worker authentication.
 **Learning:** Even development or specific component backends must route through the established authenticated edge infrastructure instead of introducing their own direct unauthenticated secrets usage.
 **Prevention:** Remove custom unauthenticated local endpoints and always use the global `getAI()` client which routes requests through the authenticated Cloudflare edge worker.
+
+## 2026-11-12 - Insecure Randomness in Lab Booking IDs
+**Vulnerability:** Use of `Math.random()` for generating sensitive Lab Booking IDs.
+**Learning:** `Math.random()` is predictable and flagged by SAST tools for insecure randomness in sensitive operations.
+**Prevention:** Always use `crypto.getRandomValues()` (with rejection sampling) or `crypto.randomUUID()` for generating identifiers, tokens, and receipts, avoiding `Math.random()` fallbacks.
