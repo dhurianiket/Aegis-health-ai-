@@ -325,18 +325,24 @@ export async function createLabBooking(
   const partner = LAB_PARTNERS[selectedPkg.partnerId];
 
   // In production, this dispatches via Cloudflare Edge Worker POST /api/integrations/lab/book
-  // Simulate deterministic client response with realistic reference IDs
-  const getSecureRandomNum = (min: number, max: number) => {
-    if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
-      const array = new Uint32Array(1);
-      crypto.getRandomValues(array);
-      return min + (array[0] % (max - min));
+  // Generate cryptographically unbiased reference IDs using Web Crypto rejection sampling
+  const getSecureRandomInt = (min: number, max: number): number => {
+    const range = max - min;
+    if (range <= 0) return min;
+    if (typeof globalThis.crypto === 'undefined' || typeof globalThis.crypto.getRandomValues !== 'function') {
+      throw new Error('Cryptographically secure random number generator is unavailable.');
     }
-    // Fallback if crypto isn't available
-    return Math.floor(min + Math.random() * (max - min));
+    const maxValid = Math.floor(0x100000000 / range) * range;
+    const array = new Uint32Array(1);
+    let value: number;
+    do {
+      globalThis.crypto.getRandomValues(array);
+      value = array[0];
+    } while (value >= maxValid);
+    return min + (value % range);
   };
-  const bookingId = `AEGIS-LAB-${Date.now().toString(36).toUpperCase()}-${getSecureRandomNum(1000, 10000)}`;
-  const partnerBookingRef = `${partner.id.toUpperCase()}-${getSecureRandomNum(100000, 1000000)}`;
+  const bookingId = `AEGIS-LAB-${Date.now().toString(36).toUpperCase()}-${getSecureRandomInt(1000, 10000)}`;
+  const partnerBookingRef = `${partner.id.toUpperCase()}-${getSecureRandomInt(100000, 1000000)}`;
 
   const totalPayable = selectedPkg.aegisPrice >= partner.waiveFeeAbove
     ? selectedPkg.aegisPrice

@@ -30,44 +30,6 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  app.post("/api/generate-visit-prep", async (req, res) => {
-    try {
-       const prompt = req.body.prompt;
-       if (!prompt) return res.status(400).json({ error: "No prompt provided" });
-       if (typeof prompt !== 'string') return res.status(400).json({ error: "Prompt must be a string" });
-       if (prompt.length > 5000) return res.status(400).json({ error: "Prompt is too long (maximum 5000 characters)" });
-       
-       const gApiKey = process.env.GEMINI_API_KEY;
-       if (!gApiKey) return res.status(500).json({ error: "Gemini API key is not configured on server" });
-
-       // Using the highly stable, reliable and supported gemini-3.5-flash model
-       let targetModel = "gemini-3.5-flash";
-       let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent`, {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-           "x-goog-api-key": gApiKey,
-         },
-         body: JSON.stringify({
-             contents: [{ role: "user", parts: [{ text: prompt }]}]
-         })
-       });
-
-       if (!response.ok) {
-           const errBody = await response.text();
-           console.error("[Server Gemini API Error]:", errBody);
-           return res.status(response.status).json({ error: "Gemini generation failed" });
-       }
-       
-       const data = await response.json();
-       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-       res.json({ text });
-    } catch (e: any) {
-       console.error("[Server Internal Error]:", e);
-       res.status(500).json({ error: "Failed to generate report" });
-    }
-  });
-
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
