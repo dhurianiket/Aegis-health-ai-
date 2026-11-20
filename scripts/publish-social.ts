@@ -41,18 +41,17 @@ function makeGraphRequest(endpoint: string, method: "GET" | "POST", data?: Recor
     }
 
     const url = new URL(endpoint.startsWith("http") ? endpoint : `${GRAPH_BASE_URL}/${endpoint}`);
-    const postData = data ? new URLSearchParams({ ...data, access_token: ACCESS_TOKEN }).toString() : "";
-
-    if (method === "GET") {
-      url.searchParams.append("access_token", ACCESS_TOKEN);
-    }
+    const postData = data ? new URLSearchParams(data).toString() : "";
 
     const options = {
       method,
       headers: method === "POST" ? {
+        "Authorization": `Bearer ${ACCESS_TOKEN}`,
         "Content-Type": "application/x-www-form-urlencoded",
         "Content-Length": Buffer.byteLength(postData),
-      } : {},
+      } : {
+        "Authorization": `Bearer ${ACCESS_TOKEN}`,
+      },
     };
 
     const req = https.request(url, options, (res) => {
@@ -84,7 +83,7 @@ function makeGraphRequest(endpoint: string, method: "GET" | "POST", data?: Recor
  * 1. Publish to Facebook Page
  */
 export async function publishToFacebookPage(message: string, link?: string): Promise<string> {
-  console.log(`[FB] Publishing to Facebook Page ${PAGE_ID}...`);
+  console.log("[FB] Publishing to configured Facebook Page...");
   const payload: Record<string, string> = { message };
   if (link) payload.link = link;
 
@@ -101,7 +100,7 @@ export async function publishToInstagram(imageUrl: string, caption: string): Pro
     throw new Error("Missing META_IG_ACCOUNT_ID. Query 'GET /{PAGE_ID}?fields=instagram_business_account' first.");
   }
 
-  console.log(`[IG] Step 1: Creating Media Container for ${IG_ACCOUNT_ID}...`);
+  console.log("[IG] Step 1: Creating Media Container...");
   const containerRes = await makeGraphRequest(`${IG_ACCOUNT_ID}/media`, "POST", {
     image_url: imageUrl,
     caption,
@@ -111,7 +110,7 @@ export async function publishToInstagram(imageUrl: string, caption: string): Pro
   console.log(`[IG] Container created: ${creationId}. Waiting 3s for container readiness...`);
   await new Promise((r) => setTimeout(r, 3000));
 
-  console.log(`[IG] Step 2: Publishing Media Container...`);
+  console.log("[IG] Step 2: Publishing Media Container...");
   const publishRes = await makeGraphRequest(`${IG_ACCOUNT_ID}/media_publish`, "POST", {
     creation_id: creationId,
   });
@@ -128,7 +127,7 @@ export async function sendWhatsAppTemplate(toPhone: string, templateName = "hell
     throw new Error("Missing META_WHATSAPP_PHONE_ID.");
   }
 
-  console.log(`[WA] Sending template '${templateName}' to ${toPhone}...`);
+  console.log(`[WA] Sending template '${templateName}'...`);
   return new Promise((resolve, reject) => {
     const url = new URL(`${GRAPH_BASE_URL}/${WA_PHONE_ID}/messages`);
     const payload = JSON.stringify({
