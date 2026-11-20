@@ -41,7 +41,7 @@ function scanDirectory(dir: string, fileList: string[] = []): string[] {
 
 function parseFile(filePath: string): GraphNode {
   const content = fs.readFileSync(filePath, 'utf-8');
-  const relativePath = path.relative(process.cwd(), filePath);
+  const relativePath = path.relative(process.cwd(), filePath).split(path.sep).join('/');
   const category = getCategory(filePath);
 
   const exports: string[] = [];
@@ -109,15 +109,17 @@ function generateGraphifyMarkdown(nodes: GraphNode[]): string {
   (Object.keys(categories) as GraphNode['category'][]).forEach((cat) => {
     if (categories[cat].length === 0) return;
     md += `### ${sectionTitles[cat]}\n`;
-    categories[cat].forEach((node) => {
-      md += `- **[\`${node.file}\`](file:///${path.resolve(node.file)})**\n`;
-      if (node.exports.length > 0) {
-        md += `  - *Exports*: \`${node.exports.join('`, `')}\`\n`;
-      }
-      if (node.imports.length > 0) {
-        md += `  - *Imports*: \`${node.imports.slice(0, 5).join('`, `')}${node.imports.length > 5 ? '...' : ''}\`\n`;
-      }
-    });
+    categories[cat]
+      .sort((a, b) => a.file.localeCompare(b.file))
+      .forEach((node) => {
+        md += `- **[\`${node.file}\`](./${node.file})**\n`;
+        if (node.exports.length > 0) {
+          md += `  - *Exports*: \`${node.exports.join('`, `')}\`\n`;
+        }
+        if (node.imports.length > 0) {
+          md += `  - *Imports*: \`${node.imports.slice(0, 5).join('`, `')}${node.imports.length > 5 ? '...' : ''}\`\n`;
+        }
+      });
     md += `\n`;
   });
 
