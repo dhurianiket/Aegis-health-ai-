@@ -57,22 +57,28 @@ jobs:
           RESEND_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           if [ -n "$RESEND_KEY" ] && [ -n "$GCP_SA_KEY" ]; then
-            echo "$GCP_SA_KEY" > /tmp/gcp_sa_key.json
+            trap 'rm -f /tmp/gcp_sa_key.json' EXIT
+            umask 077
+            printf '%s' "$GCP_SA_KEY" > /tmp/gcp_sa_key.json
             gcloud auth activate-service-account --key-file=/tmp/gcp_sa_key.json
             PROJECT_ID="aegis-health-app-90697"
             if ! gcloud secrets describe RESEND_API_KEY --project="$PROJECT_ID" >/dev/null 2>&1; then
               echo "Creating RESEND_API_KEY in Google Cloud Secret Manager..."
-              echo -n "$RESEND_KEY" | gcloud secrets create RESEND_API_KEY --data-file=- --project="$PROJECT_ID" --replication-policy=automatic
+              printf '%s' "$RESEND_KEY" | gcloud secrets create RESEND_API_KEY --data-file=- --project="$PROJECT_ID" --replication-policy=automatic
             else
-              echo "Updating RESEND_API_KEY version in Google Cloud Secret Manager..."
-              echo -n "$RESEND_KEY" | gcloud secrets add-version RESEND_API_KEY --data-file=- --project="$PROJECT_ID"
+              CURRENT_VAL="$(gcloud secrets versions access latest --secret=RESEND_API_KEY --project="$PROJECT_ID" 2>/dev/null || true)"
+              if [ "$CURRENT_VAL" != "$RESEND_KEY" ]; then
+                echo "Updating RESEND_API_KEY version in Google Cloud Secret Manager..."
+                printf '%s' "$RESEND_KEY" | gcloud secrets versions add RESEND_API_KEY --data-file=- --project="$PROJECT_ID"
+              else
+                echo "RESEND_API_KEY in Google Cloud Secret Manager is already up to date."
+              fi
             fi
             # Ensure Cloud Functions runtime service account has secret accessor permission
             gcloud secrets add-iam-policy-binding RESEND_API_KEY \
               --project="$PROJECT_ID" \
               --member="serviceAccount:${PROJECT_ID}@appspot.gserviceaccount.com" \
               --role="roles/secretmanager.secretAccessor" || true
-            rm -f /tmp/gcp_sa_key.json
           fi
 
       - name: Deploy to Firebase Hosting, Functions, and Firestore Rules
