@@ -169,15 +169,17 @@ export default function ClinicalProtocolSearchModal({
   const filteredProtocols = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return CLINICAL_PROTOCOLS.filter((p) => {
-      const matchesCategory =
-        selectedCategory === "All" || p.category === selectedCategory;
-      const matchesQuery =
-        !q ||
-        p.title.toLowerCase().includes(q) ||
-        p.summary.toLowerCase().includes(q) ||
-        p.source.toLowerCase().includes(q) ||
-        p.keyCutoffs.some((c) => c.toLowerCase().includes(q));
-      return matchesCategory && matchesQuery;
+      if (selectedCategory !== "All" && p.category !== selectedCategory) {
+        return false;
+      }
+      if (!q) return true;
+      if (p.title.toLowerCase().includes(q)) return true;
+      if (p.summary.toLowerCase().includes(q)) return true;
+      if (p.source.toLowerCase().includes(q)) return true;
+      for (let i = 0; i < p.keyCutoffs.length; i++) {
+        if (p.keyCutoffs[i].toLowerCase().includes(q)) return true;
+      }
+      return false;
     });
   }, [searchQuery, selectedCategory]);
 
