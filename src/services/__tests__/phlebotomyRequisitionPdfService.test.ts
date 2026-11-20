@@ -17,7 +17,8 @@ describe('phlebotomyRequisitionPdfService', () => {
     totalPayable: 1299,
     phlebotomyProtocol: 'Requires 10 hours overnight fasting. Plain water allowed.',
     status: 'COLLECTION_ASSIGNED',
-    message: 'Technician dispatched for home collection.', createdAt: '2026-11-10T12:00:00Z',
+    message: 'Technician dispatched for home collection.',
+    createdAt: '2026-11-10T12:00:00Z',
   };
 
   it('generates a valid PDF blob for phlebotomy requisition', async () => {
