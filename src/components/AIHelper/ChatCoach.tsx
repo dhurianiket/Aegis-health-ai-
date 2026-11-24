@@ -247,12 +247,14 @@ export default function ChatCoach({
         ? `\nPending Lab Reminders: ${reminders.map(r => `${r.testName} (Due: ${r.dueDate})`).join(', ')}`
         : '';
 
-      const historyItems = JSON.parse(JSON.stringify(messages
-        .filter((m) => m.role !== "system" && (m.role as string) !== "context_note")
-        .map((m) => ({
-          role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
-          parts: [{ text: String(m.content || "") }],
-        }))));
+      const historyItems = structuredClone(
+        messages
+          .filter((m) => m.role !== "system" && (m.role as string) !== "context_note")
+          .map((m) => ({
+            role: (m.role === "assistant" ? "model" : "user") as "user" | "model",
+            parts: [{ text: String(m.content || "") }],
+          }))
+      );
 
       const sysInstruction = `You are Aura AI, the primary clinical health coach for Aegis Health AI. Today's date is ${new Date().toISOString().split("T")[0]}. 
 Clinical Context is provided below. 

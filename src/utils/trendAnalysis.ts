@@ -123,17 +123,12 @@ export function computeTrend(
 export function computeAllTrends(
   observations: LabObservation[],
 ): Record<string, TrendSummary> {
-  const groups: Record<string, LabObservation[]> = {};
-
-  observations.forEach((obs) => {
-    if (!groups[obs.testName]) groups[obs.testName] = [];
-    groups[obs.testName].push(obs);
-  });
+  const groups = Object.groupBy(observations, (obs) => obs.testName);
 
   const trends: Record<string, TrendSummary> = {};
 
-  Object.keys(groups).forEach((testName) => {
-    const trend = computeTrend(groups[testName], testName);
+  Object.entries(groups).forEach(([testName, group]) => {
+    const trend = computeTrend(group ?? [], testName);
     if (trend) {
       trends[testName] = trend;
     }

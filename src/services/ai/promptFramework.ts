@@ -524,7 +524,7 @@ export async function extractLabData(
         lastValidationErrors = err.message;
         continue;
       }
-      if (attempt === 3) throw new Error(`Lab extraction failed: ${err.message}`);
+      if (attempt === 3) throw new Error(`Lab extraction failed: ${err.message}`, { cause: err });
     }
   }
 

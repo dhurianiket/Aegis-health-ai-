@@ -12,6 +12,15 @@
       gtag('config', 'G-KKGF16H7CY');
     </script>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      try {
+        var t = localStorage.getItem("theme");
+        var scheme = (t === "light" || t === "dark") ? t : "dark";
+        document.querySelector('meta[name="color-scheme"]').content = scheme;
+        if (scheme === "light") document.documentElement.classList.remove("dark");
+      } catch (e) {}
+    </script>
     <title>Aegis Health AI — Clinical-Grade Medical Intelligence & Longitudinal Health Platform (NVIDIA Inception Member)</title>
     <meta name="description" content="Aegis Health AI is an official NVIDIA Inception Program member and AI-native medical intelligence platform built on Google Cloud & Vertex AI (Gemini 3.8 Flash & Gemini 4 Argon). Converts fragmented pathology lab reports and prescriptions into longitudinal biomarker trends and physician-ready SBAR summaries. Registered Indian Enterprise (MSME Udyam: UDYAM-MH-33-0782403)." />
     <meta name="author" content="Aniket Rajesh Dhuri" />
@@ -55,10 +64,8 @@
     <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-precomposed.png?v=20261109b" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,900&display=swap"
       rel="stylesheet"
     />
 

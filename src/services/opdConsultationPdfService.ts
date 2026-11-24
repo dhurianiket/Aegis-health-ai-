@@ -6,11 +6,50 @@
 
 import { jsPDF } from 'jspdf';
 import { toJpeg } from 'html-to-image';
-import DOMPurify from 'dompurify';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { QRCodeSVG } from 'qrcode.react';
 import { generateScanAndShareQrPayload } from './abdmService';
+
+type DOMPurifyModule = typeof import('dompurify')['default'];
+let domPurifyPromise: Promise<DOMPurifyModule> | null = null;
+
+function loadDOMPurify(): Promise<DOMPurifyModule> {
+  // Code-split DOMPurify so browsers with native Element.prototype.setHTML() never download it
+  domPurifyPromise ??= import('dompurify').then((mod) => (mod.default ?? mod) as DOMPurifyModule);
+  return domPurifyPromise;
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const OPD_ALLOWED_HTML_ELEMENTS = ['div', 'span', 'p', 'h3', 'table', 'thead', 'tbody', 'tr', 'th', 'td'];
+const OPD_ALLOWED_SVG_ELEMENTS = ['svg', 'path', 'rect', 'g'];
+const OPD_ALLOWED_ATTRIBUTES = [
+  'd', 'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap',
+  'stroke-linejoin', 'width', 'height', 'style', 'class', 'shape-rendering',
+];
+
+async function safeSetOpdHtml(el: HTMLElement, html: string): Promise<void> {
+  if ('setHTML' in Element.prototype) {
+    (el as HTMLElement & { setHTML: (markup: string, options?: unknown) => void }).setHTML(html, {
+      sanitizer: {
+        elements: [
+          ...OPD_ALLOWED_HTML_ELEMENTS,
+          ...OPD_ALLOWED_SVG_ELEMENTS.map((name) => ({ name, namespace: SVG_NS })),
+        ],
+        attributes: OPD_ALLOWED_ATTRIBUTES,
+      },
+    });
+  } else {
+    const DOMPurify = await loadDOMPurify();
+    el.innerHTML = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [...OPD_ALLOWED_HTML_ELEMENTS, ...OPD_ALLOWED_SVG_ELEMENTS, '#text'],
+      ALLOWED_ATTR: OPD_ALLOWED_ATTRIBUTES,
+      ALLOW_ARIA_ATTR: false,
+      ALLOW_DATA_ATTR: false,
+      KEEP_CONTENT: false,
+    });
+  }
+}
 
 function escapeHtml(unsafe: string | number | undefined | null): string {
   if (unsafe == null) return '';
@@ -247,11 +286,8 @@ export async function exportOpdConsultationPdf(
     </div>
   `;
 
-  // Sanitize while preserving SVGs and paths
-  printCard.innerHTML = DOMPurify.sanitize(rawHtml, {
-    ADD_TAGS: ['svg', 'path', 'rect', 'g'],
-    ADD_ATTR: ['d', 'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'width', 'height', 'style', 'class'],
-  });
+  // Sanitize while preserving SVGs and paths (native Sanitizer API with code-split DOMPurify fallback)
+  await safeSetOpdHtml(printCard, rawHtml);
 
   hiddenHost.appendChild(printCard);
   document.body.appendChild(hiddenHost);

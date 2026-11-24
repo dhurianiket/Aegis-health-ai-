@@ -18,6 +18,15 @@ const applyTheme = (targetTheme: Theme) => {
   } else {
     root.classList.remove('dark');
   }
+  let colorSchemeMeta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (!colorSchemeMeta && document.head) {
+    colorSchemeMeta = document.createElement('meta');
+    colorSchemeMeta.name = 'color-scheme';
+    document.head.appendChild(colorSchemeMeta);
+  }
+  if (colorSchemeMeta) {
+    colorSchemeMeta.content = targetTheme;
+  }
   try {
     localStorage.setItem('theme', targetTheme);
   } catch (e) {

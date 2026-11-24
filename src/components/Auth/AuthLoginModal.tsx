@@ -517,7 +517,11 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
                     </label>
                     <input
                       id="login-email"
+                      name="email"
                       type="email"
+                      autoComplete="username"
+                      spellCheck={false}
+                      enterKeyHint="next"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       placeholder="name@example.com"
@@ -531,7 +535,10 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
                     </label>
                     <input
                       id="login-password"
+                      name={emailMode === 'register' ? 'new-password' : 'password'}
                       type="password"
+                      autoComplete={emailMode === 'register' ? 'new-password' : 'current-password'}
+                      enterKeyHint={emailMode === 'register' ? 'next' : 'done'}
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       placeholder="••••••••"
@@ -548,7 +555,10 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ isOpen, onClose 
                       </label>
                       <input
                         id="confirm-password"
+                        name="confirm-password"
                         type="password"
+                        autoComplete="new-password"
+                        enterKeyHint="done"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"

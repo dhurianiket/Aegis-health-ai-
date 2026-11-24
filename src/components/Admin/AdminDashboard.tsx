@@ -308,14 +308,14 @@ export default function AdminDashboard() {
   // Wrapped expensive sorting in useMemo to prevent main thread blocking on re-renders.
   // Impact: Prevents O(N log N) sorting execution on every dashboard refresh.
   const topUsersByTokens = useMemo(() => {
-    return [...users]
-      .sort((a, b) => (b.totalTokensUsed || 0) - (a.totalTokensUsed || 0))
+    return users
+      .toSorted((a, b) => (b.totalTokensUsed || 0) - (a.totalTokensUsed || 0))
       .slice(0, 10);
   }, [users]);
 
   const topUsersByStorage = useMemo(() => {
-    return [...users]
-      .sort((a, b) => (b.totalStorageBytes || 0) - (a.totalStorageBytes || 0))
+    return users
+      .toSorted((a, b) => (b.totalStorageBytes || 0) - (a.totalStorageBytes || 0))
       .slice(0, 10);
   }, [users]);
 

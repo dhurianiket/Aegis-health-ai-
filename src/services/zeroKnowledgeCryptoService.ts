@@ -17,7 +17,7 @@ export interface EncryptedPayload {
 /**
  * Converts ArrayBuffer to Base64 string
  */
-function bufferToBase64(buffer: ArrayBuffer): string {
+function bufferToBase64(buffer: ArrayBufferLike): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
   for (let i = 0; i < bytes.byteLength; i++) {

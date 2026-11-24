@@ -375,9 +375,17 @@ export function extractBiometricSamples(biometrics: WearableBiometrics): Biometr
 
 const LOCAL_STORAGE_PREFIX = 'aegis_wearable_telemetry';
 
+const utf8Encoder = new TextEncoder();
+const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+
 function encodeSensitiveTelemetry(data: WearableBiometrics): string {
   try {
-    return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    const bytes = utf8Encoder.encode(JSON.stringify(data));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(binary);
   } catch {
     return JSON.stringify(data);
   }
@@ -385,7 +393,9 @@ function encodeSensitiveTelemetry(data: WearableBiometrics): string {
 
 function decodeSensitiveTelemetry(raw: string): any {
   try {
-    const decoded = decodeURIComponent(escape(atob(raw)));
+    const binary = atob(raw);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    const decoded = utf8Decoder.decode(bytes);
     return JSON.parse(decoded);
   } catch {
     return JSON.parse(raw);

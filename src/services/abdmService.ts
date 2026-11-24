@@ -159,9 +159,17 @@ export const DEFAULT_CONSENT_REQUESTS: ConsentRequest[] = [
   },
 ];
 
+const utf8Encoder = new TextEncoder();
+const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+
 function encodeSensitiveProfile(profile: any): string {
   try {
-    return btoa(unescape(encodeURIComponent(JSON.stringify(profile))));
+    const bytes = utf8Encoder.encode(JSON.stringify(profile));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(binary);
   } catch {
     return JSON.stringify(profile);
   }
@@ -169,7 +177,9 @@ function encodeSensitiveProfile(profile: any): string {
 
 function decodeSensitiveProfile(raw: string): any {
   try {
-    const decoded = decodeURIComponent(escape(atob(raw)));
+    const binary = atob(raw);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    const decoded = utf8Decoder.decode(bytes);
     return JSON.parse(decoded);
   } catch {
     return JSON.parse(raw);

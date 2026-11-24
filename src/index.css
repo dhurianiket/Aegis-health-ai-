@@ -1,4 +1,3 @@
-@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap");
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @plugin "@tailwindcss/typography";
@@ -86,6 +85,16 @@
 
 @layer base {
   :root {
+    color-scheme: light dark;
+    accent-color: var(--color-primary);
+
+    &:has(> head > meta[name="color-scheme"][content="dark"]) {
+      color-scheme: dark;
+    }
+    &:has(> head > meta[name="color-scheme"][content="light"]) {
+      color-scheme: light;
+    }
+
     --color-bg: #f8fafc;
     --color-surface: #ffffff;
     --color-border: rgba(15, 23, 42, 0.12);
@@ -98,6 +107,14 @@
     --color-text: #0f172a;
     --color-text-muted: #334155;
     --color-text-faint: #334155;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   .dark {

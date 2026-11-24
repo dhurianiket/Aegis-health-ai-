@@ -652,6 +652,7 @@ export async function callWithUnifiedFallback(
       } catch (bedrockErr: any) {
         throw new Error(
           `Unified AI failed on both providers. Gemini error: [${firstAttemptError?.message}]. Bedrock error: [${bedrockErr?.message}]`,
+          { cause: bedrockErr },
         );
       }
     }
@@ -706,6 +707,7 @@ export async function callWithUnifiedFallback(
       } catch (geminiErr: any) {
         throw new Error(
           `Unified AI failed on both providers. Bedrock error: [${firstAttemptError?.message}]. Gemini error: [${geminiErr?.message}]`,
+          { cause: geminiErr },
         );
       }
     }

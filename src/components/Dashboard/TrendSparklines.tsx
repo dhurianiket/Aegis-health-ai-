@@ -23,17 +23,12 @@ function TrendSparklines({ labs }: TrendSparklinesProps) {
   }, []);
 
   const sparklinesData = useMemo(() => {
-    const byMarker: Record<string, LabResult[]> = {};
-    labs.forEach((lab) => {
-      const name = lab.markerName
-        ? lab.markerName.trim().toUpperCase()
-        : "UNKNOWN";
-      if (!byMarker[name]) byMarker[name] = [];
-      byMarker[name].push(lab);
-    });
+    const byMarker = Object.groupBy(labs, (lab) =>
+      lab.markerName ? lab.markerName.trim().toUpperCase() : "UNKNOWN"
+    );
 
     const processed = Object.entries(byMarker)
-      .map(([name, results]) => {
+      .map(([name, results = []]) => {
         // Sanitize and filter out invalid values first
         const validResults = results.map(r => ({
           ...r,
