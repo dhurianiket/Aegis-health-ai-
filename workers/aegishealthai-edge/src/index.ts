@@ -33,9 +33,20 @@ import {
   parseJsonSafely,
   parseSafeJsonBody,
 } from "./payloadSecurity";
+import {
+  getGcpAccessToken,
+  normalizeVertexContents,
+  normalizeVertexSystemInstruction,
+  resolveVertexModel,
+  sanitizeDiscoverySnippet,
+} from "./gcpAuth";
 
 export interface Env {
-  GEMINI_API_KEY: string;
+  GEMINI_API_KEY?: string;
+  GCP_VERTEX_SA_JSON?: string;
+  GCP_VERTEX_LOCATION?: string;
+  DISCOVERY_ENGINE_ID?: string;
+  DISCOVERY_ENGINE_LOCATION?: string;
   NVIDIA_NIM_API_KEY?: string;
   BEDROCK_MANTLE_API_KEY?: string;
   BEDROCK_MANTLE_ENDPOINT?: string;
@@ -476,6 +487,48 @@ export default {
   },
 };
 
+async function fetchWithGatewayFailover(
+  gatewayUrl: string,
+  gatewayHeaders: Record<string, string>,
+  directUrl: string,
+  directHeaders: Record<string, string>,
+  payload: string,
+  clientSignal: AbortSignal | undefined,
+  label: string,
+): Promise<{ response: Response; usedGateway: boolean }> {
+  try {
+    const gwResponse = await fetch(gatewayUrl, {
+      method: "POST",
+      headers: gatewayHeaders,
+      body: payload,
+      signal: clientSignal,
+    });
+
+    if (!gwResponse.ok && (gwResponse.status >= 502 || gwResponse.status === 401)) {
+      console.warn(`[AIGateway] ${label} gateway returned HTTP ${gwResponse.status}, failing over to direct endpoint`);
+      const directResponse = await fetch(directUrl, {
+        method: "POST",
+        headers: directHeaders,
+        body: payload,
+        signal: clientSignal,
+      });
+      return { response: directResponse, usedGateway: false };
+    }
+
+    return { response: gwResponse, usedGateway: true };
+  } catch (gatewayErr) {
+    if (clientSignal?.aborted) throw gatewayErr;
+    console.warn(`[AIGateway] ${label} gateway fetch exception, failing over to direct endpoint:`, gatewayErr);
+    const directResponse = await fetch(directUrl, {
+      method: "POST",
+      headers: directHeaders,
+      body: payload,
+      signal: clientSignal,
+    });
+    return { response: directResponse, usedGateway: false };
+  }
+}
+
 async function handleDynamicRoute(
   request: Request,
   env: Env,
@@ -486,7 +539,11 @@ async function handleDynamicRoute(
     // 2. Health probe
     if (url.pathname === "/api/health" || url.pathname === "/health") {
       return new Response(
-        JSON.stringify({ status: "healthy" }),
+        JSON.stringify({
+          status: "healthy",
+          vertexAiConfigured: Boolean(env.GCP_VERTEX_SA_JSON),
+          clinicalSearchConfigured: Boolean(env.GCP_VERTEX_SA_JSON),
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -675,92 +732,160 @@ async function handleDynamicRoute(
 
       const model = typeof body.model === "string" && body.model ? body.model : "gemini-3.6-flash";
       const apiKey = env.GEMINI_API_KEY;
+      const hasVertexCreds = Boolean(env.GCP_VERTEX_SA_JSON);
 
-      if (!apiKey) {
+      if (!hasVertexCreds && !apiKey) {
         return new Response(
-          JSON.stringify({ error: "Server Configuration Error", message: "GEMINI_API_KEY is unset on edge", request_id: requestId }),
+          JSON.stringify({ error: "Server Configuration Error", message: "No Gemini or Vertex AI credentials configured on edge", request_id: requestId }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
-      // Primary: Route via Cloudflare AI Gateway for edge caching, telemetry, and analytics
-      // Fallback: Direct Google AI Studio endpoint for 100% failover resilience
       const accountId = env.CLOUDFLARE_ACCOUNT_ID || "ca163e8753d019d7dfa1937535d7ea57";
       const gatewayId = env.CF_AI_GATEWAY_ID || "aegishealthai";
-      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-ai-studio/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-      const directGoogleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+      const effectiveGenerationConfig = isLounge
+        ? clampLoungeGenerationConfig(body.generationConfig)
+        : body.generationConfig;
 
-      const payload = JSON.stringify({
-        contents: body.contents,
-        // Lounge: never trust the client alone for output-token caps.
-        generationConfig: isLounge ? clampLoungeGenerationConfig(body.generationConfig) : body.generationConfig,
-        systemInstruction: body.systemInstruction,
-        safetySettings: body.safetySettings,
-      });
-
-      const gatewayHeaders: Record<string, string> = {
-        "Content-Type": "application/json",
-        "User-Agent": "AegisHealthAI-Edge/2.0",
-        "x-goog-api-key": apiKey,
-        // Privacy: never cache clinical requests/responses (PHI) or store bodies in AI Gateway logs.
-        "cf-aig-collect-log-payload": "false",
-        "cf-aig-skip-cache": "true",
-      };
-      if (env.CF_AIG_TOKEN) {
-        gatewayHeaders["cf-aig-authorization"] = `Bearer ${env.CF_AIG_TOKEN}`;
-      }
-
-      // Propagate client disconnect / Stop to the upstream Gemini call so we
+      // Propagate client disconnect / Stop to the upstream call so we
       // stop spending tokens on a reply nobody will read.
       const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
-      const directHeaders: Record<string, string> = {
-        "Content-Type": "application/json",
-        "User-Agent": "AegisHealthAI-Edge/2.0",
-        "x-goog-api-key": apiKey,
-      };
       const clientClosedResponse = () =>
         new Response(
           JSON.stringify({ error: "Client Closed Request", code: "CLIENT_ABORTED", request_id: requestId }),
           { status: 499, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
 
-      let upstreamResponse: Response;
+      let upstreamResponse: Response | undefined;
       let usedGateway = true;
+      let providerUsed: "vertex-ai" | "google-ai-studio" = "google-ai-studio";
 
-      try {
-        upstreamResponse = await fetch(gatewayUrl, {
-          method: "POST",
-          headers: gatewayHeaders,
-          body: payload,
-          signal: clientSignal,
+      // Primary: Vertex AI via Cloudflare AI Gateway (draws from GCP Startup credits & enterprise privacy)
+      if (env.GCP_VERTEX_SA_JSON) {
+        try {
+          const tokenInfo = await getGcpAccessToken(env.GCP_VERTEX_SA_JSON);
+          const vertexProjectId = tokenInfo.projectId || projectId;
+          const vertexLocation = env.GCP_VERTEX_LOCATION || "global";
+          const vertexModel = resolveVertexModel(model);
+
+          const vertexGatewayUrl =
+            `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-vertex-ai/v1/projects/${encodeURIComponent(vertexProjectId)}/locations/${encodeURIComponent(vertexLocation)}/publishers/google/models/${encodeURIComponent(vertexModel)}:generateContent`;
+          const directVertexUrl =
+            `https://aiplatform.googleapis.com/v1/projects/${encodeURIComponent(vertexProjectId)}/locations/${encodeURIComponent(vertexLocation)}/publishers/google/models/${encodeURIComponent(vertexModel)}:generateContent`;
+
+          const vertexPayload = JSON.stringify({
+            contents: normalizeVertexContents(body.contents),
+            generationConfig: effectiveGenerationConfig,
+            systemInstruction: normalizeVertexSystemInstruction(body.systemInstruction),
+            safetySettings: body.safetySettings,
+          });
+
+          const vertexGatewayHeaders: Record<string, string> = {
+            "Content-Type": "application/json",
+            "User-Agent": "AegisHealthAI-Edge/2.0",
+            "Authorization": `Bearer ${tokenInfo.token}`,
+            // Privacy: never cache clinical requests/responses (PHI) or store bodies in AI Gateway logs.
+            "cf-aig-collect-log-payload": "false",
+            "cf-aig-skip-cache": "true",
+          };
+          if (env.CF_AIG_TOKEN) {
+            vertexGatewayHeaders["cf-aig-authorization"] = `Bearer ${env.CF_AIG_TOKEN}`;
+          }
+          const directVertexHeaders: Record<string, string> = {
+            "Content-Type": "application/json",
+            "User-Agent": "AegisHealthAI-Edge/2.0",
+            "Authorization": `Bearer ${tokenInfo.token}`,
+          };
+
+          const vertexAttempt = await fetchWithGatewayFailover(
+            vertexGatewayUrl,
+            vertexGatewayHeaders,
+            directVertexUrl,
+            directVertexHeaders,
+            vertexPayload,
+            clientSignal,
+            "VertexAI",
+          );
+
+          const shouldFallbackToAiStudio =
+            Boolean(apiKey) &&
+            !clientSignal?.aborted &&
+            (vertexAttempt.response.status === 404 ||
+              vertexAttempt.response.status === 403 ||
+              vertexAttempt.response.status >= 500);
+
+          if (shouldFallbackToAiStudio) {
+            console.warn(`[VertexAI] Returned HTTP ${vertexAttempt.response.status}, falling back to Google AI Studio`);
+          } else {
+            upstreamResponse = vertexAttempt.response;
+            usedGateway = vertexAttempt.usedGateway;
+            providerUsed = "vertex-ai";
+          }
+        } catch (vertexErr) {
+          if (clientSignal?.aborted) return clientClosedResponse();
+          console.warn("[VertexAI] Exception invoking Vertex AI, checking Google AI Studio fallback:", vertexErr);
+          if (!apiKey) {
+            return new Response(
+              JSON.stringify({ error: "Bad Gateway", message: "Vertex AI request failed and GEMINI_API_KEY fallback is unset", request_id: requestId }),
+              { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+        }
+      }
+
+      // Secondary / Fallback: Google AI Studio via Cloudflare AI Gateway -> Direct Google AI Studio
+      if (!upstreamResponse) {
+        if (!apiKey) {
+          return new Response(
+            JSON.stringify({ error: "Server Configuration Error", message: "GEMINI_API_KEY is unset on edge", request_id: requestId }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-ai-studio/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+        const directGoogleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+
+        const payload = JSON.stringify({
+          contents: body.contents,
+          generationConfig: effectiveGenerationConfig,
+          systemInstruction: body.systemInstruction,
+          safetySettings: body.safetySettings,
         });
 
-        // Failover if Cloudflare AI Gateway encounters transient 502/503/504 or auth error
-        if (!upstreamResponse.ok && (upstreamResponse.status >= 502 || upstreamResponse.status === 401)) {
-          console.warn(`[AIGateway] Gateway returned HTTP ${upstreamResponse.status}, failing over to direct Google AI Studio`);
-          upstreamResponse = await fetch(directGoogleUrl, {
-            method: "POST",
-            headers: directHeaders,
-            body: payload,
-            signal: clientSignal,
-          });
-          usedGateway = false;
+        const gatewayHeaders: Record<string, string> = {
+          "Content-Type": "application/json",
+          "User-Agent": "AegisHealthAI-Edge/2.0",
+          "x-goog-api-key": apiKey,
+          // Privacy: never cache clinical requests/responses (PHI) or store bodies in AI Gateway logs.
+          "cf-aig-collect-log-payload": "false",
+          "cf-aig-skip-cache": "true",
+        };
+        if (env.CF_AIG_TOKEN) {
+          gatewayHeaders["cf-aig-authorization"] = `Bearer ${env.CF_AIG_TOKEN}`;
         }
-      } catch (gatewayErr) {
-        if (clientSignal?.aborted) return clientClosedResponse();
-        console.warn("[AIGateway] Gateway fetch exception, failing over to direct Google AI Studio:", gatewayErr);
+        const directHeaders: Record<string, string> = {
+          "Content-Type": "application/json",
+          "User-Agent": "AegisHealthAI-Edge/2.0",
+          "x-goog-api-key": apiKey,
+        };
+
         try {
-          upstreamResponse = await fetch(directGoogleUrl, {
-            method: "POST",
-            headers: directHeaders,
-            body: payload,
-            signal: clientSignal,
-          });
+          const studioAttempt = await fetchWithGatewayFailover(
+            gatewayUrl,
+            gatewayHeaders,
+            directGoogleUrl,
+            directHeaders,
+            payload,
+            clientSignal,
+            "GoogleAIStudio",
+          );
+          upstreamResponse = studioAttempt.response;
+          usedGateway = studioAttempt.usedGateway;
+          providerUsed = "google-ai-studio";
         } catch (directErr) {
           if (clientSignal?.aborted) return clientClosedResponse();
           throw directErr;
         }
-        usedGateway = false;
       }
 
       let upstreamData = await upstreamResponse.json() as any;
@@ -800,12 +925,258 @@ async function handleDynamicRoute(
           "Content-Type": "application/json",
           "X-Auth-Method": authMethod,
           "X-Request-Id": requestId,
+          "X-AI-Provider": providerUsed,
           "X-AI-Gateway": usedGateway ? gatewayId : "direct-fallback",
           "X-AI-Cache-Status": aigCacheStatus,
           "X-Turnstile-Status": turnstileVerified ? "verified" : (env.TURNSTILE_SECRET ? "unverified" : "disabled"),
           "X-Aegis-Output-Guard": outputGuard,
         },
       });
+    }
+
+    // 3b. Vertex AI Search / Discovery Engine Clinical Protocol Search Route
+    if (url.pathname === "/api/ai/clinical-search" && request.method === "POST") {
+      const verifiedClientIp = getVerifiedClientIp(request);
+      const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `clinical-search:ip:${verifiedClientIp}`, 60);
+      if (!ipLimit.allowed) {
+        return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+      }
+
+      const authHeader = request.headers.get("Authorization") || "";
+      const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+      if (!bearerToken) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", message: "Missing Authorization Bearer token", request_id: requestId }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const projectId = env.FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID;
+      let authenticated = false;
+      let userUid: string | undefined;
+
+      if (bearerToken.includes(".")) {
+        const verifyResult = await verifyFirebaseIdToken(bearerToken, projectId);
+        if (verifyResult.valid) {
+          authenticated = true;
+          userUid = verifyResult.uid;
+        } else {
+          console.warn(`[Auth] JWT verification failed for clinical search ${requestId}:`, verifyResult.error);
+        }
+      }
+
+      if (!authenticated) {
+        return new Response(
+          JSON.stringify({
+            error: "Unauthorized",
+            message: "Invalid or expired credentials. Please provide a verified Firebase ID token.",
+            request_id: requestId,
+          }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      if (userUid) {
+        const userLimit = await enforceRateLimit(env.USER_RATE_LIMITER, `clinical-search:uid:${userUid}`, 40);
+        if (!userLimit.allowed) {
+          return rateLimitExceededResponse(userLimit.retryAfterSec, corsHeaders, requestId);
+        }
+      }
+
+      const parsedSearch = await parseSafeJsonBody(request, 16 * 1024);
+      if (!parsedSearch.ok) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: parsedSearch.error, request_id: requestId }),
+          { status: parsedSearch.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const body = parsedSearch.data;
+
+      if (typeof body.query !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "query must be a non-empty string", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const trimmedQuery = body.query.trim();
+      if (trimmedQuery.length === 0 || trimmedQuery.length > 300) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "query length must be between 1 and 300 characters", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      let pageSize = 5;
+      if (body.pageSize !== undefined) {
+        if (typeof body.pageSize !== "number" || !Number.isFinite(body.pageSize)) {
+          return new Response(
+            JSON.stringify({ error: "Bad Request", message: "Invalid pageSize parameter", request_id: requestId }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        pageSize = Math.max(1, Math.min(10, Math.floor(body.pageSize)));
+      }
+
+      let includeSummary = true;
+      if (body.includeSummary !== undefined) {
+        if (typeof body.includeSummary !== "boolean") {
+          return new Response(
+            JSON.stringify({ error: "Bad Request", message: "Invalid includeSummary flag", request_id: requestId }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        includeSummary = body.includeSummary;
+      }
+
+      if (!env.GCP_VERTEX_SA_JSON) {
+        return new Response(
+          JSON.stringify({ error: "Service Unavailable", message: "Clinical search credentials are not configured on edge", request_id: requestId }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
+      try {
+        const tokenInfo = await getGcpAccessToken(env.GCP_VERTEX_SA_JSON);
+        const searchProjectId = tokenInfo.projectId || projectId;
+        const engineLocation = env.DISCOVERY_ENGINE_LOCATION || "global";
+        const engineId = env.DISCOVERY_ENGINE_ID || "aegis-clinical-search";
+
+        const searchUrl =
+          `https://discoveryengine.googleapis.com/v1/projects/${encodeURIComponent(searchProjectId)}/locations/${encodeURIComponent(engineLocation)}/collections/default_collection/engines/${encodeURIComponent(engineId)}/servingConfigs/default_search:search`;
+
+        const searchPayload: Record<string, unknown> = {
+          query: trimmedQuery,
+          pageSize,
+          contentSearchSpec: {
+            snippetSpec: { returnSnippet: true },
+            ...(includeSummary
+              ? {
+                  summarySpec: {
+                    summaryResultCount: Math.min(pageSize, 5),
+                    includeCitations: true,
+                    ignoreAdversarialQuery: true,
+                  },
+                }
+              : {}),
+          },
+        };
+
+        const searchRes = await fetch(searchUrl, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${tokenInfo.token}`,
+            "x-goog-user-project": searchProjectId,
+            "Content-Type": "application/json",
+            "User-Agent": "AegisHealthAI-Edge/2.0",
+          },
+          body: JSON.stringify(searchPayload),
+          signal: clientSignal,
+        });
+
+        if (!searchRes.ok) {
+          const errStatus = searchRes.status >= 500 ? 502 : searchRes.status;
+          return new Response(
+            JSON.stringify({ error: "Clinical Search Error", message: `Discovery Engine returned HTTP ${searchRes.status}`, request_id: requestId }),
+            { status: errStatus, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "discovery-engine" } },
+          );
+        }
+
+        const rawData = (await searchRes.json()) as {
+          totalSize?: unknown;
+          summary?: {
+            summaryText?: unknown;
+            summaryWithMetadata?: {
+              summary?: unknown;
+              references?: Array<{ title?: unknown; document?: unknown }>;
+            };
+          };
+          results?: Array<{
+            id?: unknown;
+            document?: {
+              id?: unknown;
+              derivedStructData?: {
+                title?: unknown;
+                link?: unknown;
+                snippets?: Array<{ snippet?: unknown }>;
+              };
+            };
+            retrievalSignals?: {
+              semanticRelevanceScore?: unknown;
+            };
+          }>;
+        };
+
+        const mappedResults = Array.isArray(rawData.results)
+          ? rawData.results.map((item) => {
+              const doc = item.document;
+              const derived = doc?.derivedStructData;
+              const rawTitle = typeof derived?.title === "string" ? derived.title : (typeof doc?.id === "string" ? doc.id : "Clinical Protocol");
+              const rawSnippet = typeof derived?.snippets?.[0]?.snippet === "string" ? derived.snippets[0].snippet : "";
+              const uri = typeof derived?.link === "string" ? derived.link : "";
+              const relevanceScore = typeof item.retrievalSignals?.semanticRelevanceScore === "number"
+                ? item.retrievalSignals.semanticRelevanceScore
+                : undefined;
+
+              return {
+                id: String(item.id || doc?.id || ""),
+                title: sanitizeDiscoverySnippet(rawTitle),
+                uri,
+                snippet: sanitizeDiscoverySnippet(rawSnippet),
+                ...(relevanceScore !== undefined ? { relevanceScore } : {}),
+              };
+            })
+          : [];
+
+        const rawSummaryText =
+          typeof rawData.summary?.summaryWithMetadata?.summary === "string"
+            ? rawData.summary.summaryWithMetadata.summary
+            : (typeof rawData.summary?.summaryText === "string" ? rawData.summary.summaryText : "");
+        const summary = sanitizeDiscoverySnippet(rawSummaryText);
+
+        const references = Array.isArray(rawData.summary?.summaryWithMetadata?.references)
+          ? rawData.summary.summaryWithMetadata.references.map((ref) => ({
+              title: sanitizeDiscoverySnippet(typeof ref.title === "string" ? ref.title : ""),
+              document: typeof ref.document === "string" ? ref.document : "",
+            }))
+          : [];
+
+        const totalSize = typeof rawData.totalSize === "number" ? rawData.totalSize : mappedResults.length;
+
+        return new Response(
+          JSON.stringify({
+            query: trimmedQuery,
+            engine: engineId,
+            source: "discovery-engine",
+            totalSize,
+            summary,
+            references,
+            results: mappedResults,
+            request_id: requestId,
+          }),
+          {
+            status: 200,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+              "X-Request-Id": requestId,
+              "X-AI-Provider": "discovery-engine",
+            },
+          },
+        );
+      } catch (err) {
+        if (clientSignal?.aborted) {
+          return new Response(
+            JSON.stringify({ error: "Client Closed Request", code: "CLIENT_ABORTED", request_id: requestId }),
+            { status: 499, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        console.error(`[ClinicalSearch] Error on request ${requestId}:`, err);
+        return new Response(
+          JSON.stringify({ error: "Clinical Search Error", message: "Failed to query clinical search index", request_id: requestId }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "discovery-engine" } },
+        );
+      }
     }
 
         // 4. NVIDIA NIM Proxy Route

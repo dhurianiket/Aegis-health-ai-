@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Search,
@@ -9,12 +9,17 @@ import {
   Pill,
   ShieldAlert,
   Sparkles,
-  ExternalLink,
   BookOpen,
   ArrowRight,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { normalizeText } from "../../utils/security";
+import { isAbortError } from "../../lib/geminiClient";
+import {
+  searchClinicalProtocols,
+  type ClinicalSearchResponse,
+} from "../../services/clinicalSearchService";
 
 export interface ClinicalProtocol {
   id: string;
@@ -151,17 +156,87 @@ export default function ClinicalProtocolSearchModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [activeProtocol, setActiveProtocol] = useState<ClinicalProtocol | null>(null);
+  const [liveSearch, setLiveSearch] = useState<ClinicalSearchResponse | null>(null);
+  const [isSearchingLive, setIsSearchingLive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const executeLiveSearch = useCallback(async (rawQuery: string) => {
+    const trimmed = rawQuery.trim();
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
+    if (trimmed.length < 3) {
+      setLiveSearch(null);
+      setIsSearchingLive(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    setIsSearchingLive(true);
+
+    try {
+      const result = await searchClinicalProtocols(trimmed, {
+        pageSize: 5,
+        includeSummary: true,
+        signal: controller.signal,
+      });
+      if (!controller.signal.aborted) {
+        setLiveSearch(result);
+      }
+    } catch (err) {
+      if (!isAbortError(err) && !controller.signal.aborted) {
+        // Silently retain local CLINICAL_PROTOCOLS results when signed out or offline.
+        setLiveSearch(null);
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+        setIsSearchingLive(false);
+      }
+    }
+  }, []);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K
   useEffect(() => {
     if (!isOpen) {
       setSearchQuery("");
       setActiveProtocol(null);
+      setLiveSearch(null);
+      setIsSearchingLive(false);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
     } else {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const trimmed = searchQuery.trim();
+    if (trimmed.length < 3) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      setLiveSearch(null);
+      setIsSearchingLive(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      void executeLiveSearch(trimmed);
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [isOpen, searchQuery, executeLiveSearch]);
 
   const categories = useMemo(() => {
     return ["All", "Cardiology", "Metabolic", "Pharmacology", "Safety & Triage", "Clinical Communication"];
@@ -221,6 +296,11 @@ export default function ClinicalProtocolSearchModal({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim().length >= 3) {
+                  void executeLiveSearch(searchQuery);
+                }
+              }}
               placeholder="Search clinical research, protocols, drug interactions, vitals..."
               className="w-full bg-transparent text-sm md:text-base text-theme placeholder-muted outline-none"
             />
@@ -283,6 +363,80 @@ export default function ClinicalProtocolSearchModal({
                     )
                   )}
                 </div>
+              </div>
+            )}
+
+            {(isSearchingLive || (liveSearch && (liveSearch.summary || liveSearch.results.length > 0))) && (
+              <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-theme flex items-center gap-1.5">
+                    {isSearchingLive ? (
+                      <Loader2 className="w-3.5 h-3.5 text-emerald-500 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                    )}
+                    Vertex AI Search Synthesis
+                  </span>
+                  <span className="text-[10px] font-medium text-emerald-500 uppercase tracking-wider">
+                    {isSearchingLive ? "Querying index..." : `${liveSearch?.results.length || 0} indexed matches`}
+                  </span>
+                </div>
+
+                {liveSearch?.summary && (
+                  <p className="text-xs text-theme leading-relaxed whitespace-pre-line">
+                    {liveSearch.summary}
+                  </p>
+                )}
+
+                {liveSearch && liveSearch.references.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {liveSearch.references.map((ref, idx) => (
+                      <span
+                        key={`${ref.document}-${idx}`}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-surface border border-surface text-muted"
+                      >
+                        Source {idx + 1}: {ref.title || "Clinical Protocol"}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {liveSearch && liveSearch.results.length > 0 && (
+                  <div className="space-y-2 pt-1">
+                    {liveSearch.results.slice(0, 3).map((res) => (
+                      <div
+                        key={res.id || res.title}
+                        className="p-2.5 rounded-lg bg-surface/80 border border-surface flex items-start justify-between gap-3"
+                      >
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="text-xs font-semibold text-theme truncate">
+                            {res.title}
+                          </div>
+                          {res.snippet && (
+                            <p className="text-[11px] text-muted line-clamp-2">
+                              {res.snippet}
+                            </p>
+                          )}
+                        </div>
+                        {onSelectQuery && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onClose();
+                              onSelectQuery(
+                                `Based on clinical protocol "${res.title}" (${res.snippet || searchQuery.trim()}), what clinical considerations apply?`
+                              );
+                            }}
+                            className="shrink-0 px-2.5 py-1 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-md text-[11px] font-semibold flex items-center gap-1 transition-all"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            Ask AI
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -391,8 +545,13 @@ export default function ClinicalProtocolSearchModal({
           {/* Footer Info Bar */}
           <div className="px-4 py-2.5 bg-surface/80 border-t border-surface flex items-center justify-between text-xs text-muted">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              Google Discovery Engine Store: <strong className="text-theme">aegis-clinical-search</strong>
+              <span className={`w-2 h-2 rounded-full ${isSearchingLive ? "bg-amber-400 animate-pulse" : "bg-emerald-500"}`}></span>
+              Vertex AI Search: <strong className="text-theme">aegis-clinical-search</strong>
+              {isSearchingLive
+                ? " • Searching..."
+                : liveSearch
+                  ? ` • Live (${liveSearch.results.length} matched)`
+                  : ""}
             </span>
             <span className="hidden sm:inline">6 Research Protocols Indexed</span>
           </div>
