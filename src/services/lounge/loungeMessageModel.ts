@@ -72,13 +72,12 @@ function defaultRandomSuffix(): string {
       return crypto.randomUUID().split("-")[0].slice(0, 6);
     }
     if (typeof crypto.getRandomValues === "function") {
-      const bytes = new Uint8Array(4);
+      const bytes = new Uint32Array(1);
       crypto.getRandomValues(bytes);
-      const num = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
-      return Math.abs(num).toString(36).padStart(6, "0").slice(0, 6);
+      return (bytes[0] >>> 0).toString(36).padStart(6, "0").slice(0, 6);
     }
   }
-  return Math.floor(Math.random() * 36 ** 6).toString(36).padStart(6, "0");
+  throw new Error("Web Crypto API is required for message ID generation.");
 }
 
 /**

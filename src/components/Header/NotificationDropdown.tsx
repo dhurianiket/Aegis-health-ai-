@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { HealthAlert } from "../../types/alerts";
 import { useAlerts } from "../../context/AlertsContext";
+import { sanitizeHref } from "../../utils/security";
 
 interface NotificationDropdownProps {
   onClose: () => void;
@@ -182,10 +183,12 @@ export default function NotificationDropdown({
 
                   <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 transition-opacity">
                     <button
-                      onClick={() =>
-                        alert.actionUrl &&
-                        window.open(alert.actionUrl, "_blank")
-                      }
+                      onClick={() => {
+                        const safeUrl = sanitizeHref(alert.actionUrl, "");
+                        if (safeUrl) {
+                          window.open(safeUrl, "_blank", "noopener,noreferrer");
+                        }
+                      }}
                       className="text-xs font-black text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
                     >
                       View Details <ChevronRight className="w-3 h-3" />

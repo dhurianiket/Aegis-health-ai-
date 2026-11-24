@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase/config';
 import { updateUserSubscription } from './usageService';
+import { normalizeEmail } from '../utils/security';
 
 export interface CouponData {
   code: string;
@@ -46,10 +47,10 @@ export async function redeemCoupon(
   userId: string,
   userEmail?: string
 ): Promise<RedeemCouponResult> {
-  const normalizedCode = (code || '').trim().toUpperCase();
+  const normalizedCode = (code || '').normalize('NFKC').trim().toUpperCase();
 
   // 1. Admin email master access check (even if no code is typed)
-  if (userEmail && userEmail.toLowerCase() === 'dhurianiket@gmail.com') {
+  if (normalizeEmail(userEmail) === 'dhurianiket@gmail.com') {
     const expDate = new Date();
     expDate.setFullYear(expDate.getFullYear() + 5); // 5 Years Master Access
 

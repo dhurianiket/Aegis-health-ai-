@@ -10,6 +10,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebase/config";
+import { normalizeEmail } from "../utils/security";
 
 export interface UsageData {
   promptTokens?: number;
@@ -60,7 +61,7 @@ export const getUserSubscription = async (userId: string, userEmail?: string): P
     updatedAt: new Date().toISOString(),
   };
 
-  if (userEmail && userEmail.toLowerCase() === 'dhurianiket@gmail.com') {
+  if (normalizeEmail(userEmail) === 'dhurianiket@gmail.com') {
     return masterAdminSub;
   }
 
@@ -268,7 +269,7 @@ export const markUserActive = async (
   // 1. Ensure root user document exists and is up-to-date
   try {
     const userDocRef = doc(db, `users/${userId}`);
-    const isMasterAdmin = email?.toLowerCase() === "dhurianiket@gmail.com";
+    const isMasterAdmin = normalizeEmail(email) === "dhurianiket@gmail.com";
     const userProfileUpdates: Record<string, any> = {
       lastActive: nowIso,
     };
@@ -508,7 +509,7 @@ export const getAllUsersUsage = async () => {
         userId,
         email,
         displayName: rootUserInfo?.displayName || "",
-        role: rootUserInfo?.role || (email.toLowerCase() === "dhurianiket@gmail.com" ? "admin" : "user"),
+        role: rootUserInfo?.role || (normalizeEmail(email) === "dhurianiket@gmail.com" ? "admin" : "user"),
         isActiveToday,
         isActiveThisMonth,
         totalTokensUsed: statsData.totalTokensUsed || 0,

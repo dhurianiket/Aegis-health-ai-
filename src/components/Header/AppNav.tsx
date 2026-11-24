@@ -22,6 +22,7 @@ import {
 import { BottomSheet } from "./BottomSheet";
 import { useProfile } from "../../context/ProfileContext";
 import { useAuth } from "../../context/AuthContext";
+import { normalizeEmail } from "../../utils/security";
 
 export interface AppNavProps {
   activeTab: string;
@@ -61,7 +62,8 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
   const { user } = useAuth();
   
   const desktopTabs = [...ALL_DESKTOP_TABS];
-  if (user?.email === "dhurianiket@gmail.com") {
+  const isFounderAdmin = normalizeEmail(user?.email) === "dhurianiket@gmail.com";
+  if (isFounderAdmin) {
     desktopTabs.push({ id: "admin", label: "Admin Console", icon: ShieldAlert });
   }
 
@@ -317,7 +319,7 @@ export function AppNav({ activeTab, onTabChange, onOpenChat }: AppNavProps) {
               </span>
             </button>
           )}
-          {user?.email === "dhurianiket@gmail.com" && (
+          {isFounderAdmin && (
              <button
               onClick={() => handleTabChange("admin")}
               className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex flex-col items-center gap-3 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--color-primary)]/40 hover:shadow-md"

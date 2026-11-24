@@ -14,6 +14,7 @@ import {
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
+import { normalizeText } from "../../utils/security";
 
 export interface ClinicalProtocol {
   id: string;
@@ -167,17 +168,17 @@ export default function ClinicalProtocolSearchModal({
   }, []);
 
   const filteredProtocols = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
+    const q = normalizeText(searchQuery);
     return CLINICAL_PROTOCOLS.filter((p) => {
       if (selectedCategory !== "All" && p.category !== selectedCategory) {
         return false;
       }
       if (!q) return true;
-      if (p.title.toLowerCase().includes(q)) return true;
-      if (p.summary.toLowerCase().includes(q)) return true;
-      if (p.source.toLowerCase().includes(q)) return true;
+      if (normalizeText(p.title).includes(q)) return true;
+      if (normalizeText(p.summary).includes(q)) return true;
+      if (normalizeText(p.source).includes(q)) return true;
       for (let i = 0; i < p.keyCutoffs.length; i++) {
-        if (p.keyCutoffs[i].toLowerCase().includes(q)) return true;
+        if (normalizeText(p.keyCutoffs[i]).includes(q)) return true;
       }
       return false;
     });

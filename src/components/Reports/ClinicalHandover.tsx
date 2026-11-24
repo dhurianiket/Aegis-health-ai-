@@ -163,42 +163,53 @@ export default function ClinicalHandover() {
     }
   }, [user, activeProfile]);
 
-  // SBAR Parsing Helper
+  // SBAR Parsing Helper (linear slicing without ReDoS lookahead backtracking)
   const parseSBARText = (text: string): SBAROutput => {
     const result: SBAROutput = { situation: "", background: "", assessment: [], recommendation: [] };
     if (!text) return result;
+    const bounded = text.slice(0, 50_000);
 
-    // Use whitespace-tolerant, case-insensitive regex matching for headers
-    const situationRegex = /(?:S\s*-\s*SITUATION|SITUATION\s*:?)([\s\S]*?)(?=B\s*-\s*BACKGROUND|BACKGROUND\s*:?|$)/i;
-    const backgroundRegex = /(?:B\s*-\s*BACKGROUND|BACKGROUND\s*:?)([\s\S]*?)(?=A\s*-\s*ASSESSMENT|ASSESSMENT\s*:?|$)/i;
-    const assessmentRegex = /(?:A\s*-\s*ASSESSMENT|ASSESSMENT\s*:?)([\s\S]*?)(?=R\s*-\s*RECOMMENDATION|RECOMMENDATION\s*:?|$)/i;
-    const recommendationRegex = /(?:R\s*-\s*RECOMMENDATION|RECOMMENDATION\s*:?)([\s\S]*?)(?=PART\s*2|AI\s*DR\s*SUMMARY|---+|$)/i;
+    const sliceSection = (startRe: RegExp, endRes: RegExp[]): string => {
+      const m = startRe.exec(bounded);
+      if (!m) return "";
+      const startIdx = m.index + m[0].length;
+      let endIdx = bounded.length;
+      const rest = bounded.slice(startIdx);
+      for (const endRe of endRes) {
+        const em = endRe.exec(rest);
+        if (em && startIdx + em.index < endIdx) {
+          endIdx = startIdx + em.index;
+        }
+      }
+      return bounded.slice(startIdx, endIdx).trim();
+    };
 
-    const sMatch = text.match(situationRegex);
-    const bMatch = text.match(backgroundRegex);
-    const aMatch = text.match(assessmentRegex);
-    const rMatch = text.match(recommendationRegex);
+    const sText = sliceSection(/(?:S\s{0,4}-\s{0,4}SITUATION|SITUATION\s{0,4}:?)/i, [/(?:B\s{0,4}-\s{0,4}BACKGROUND|BACKGROUND\s{0,4}:?)/i]);
+    const bText = sliceSection(/(?:B\s{0,4}-\s{0,4}BACKGROUND|BACKGROUND\s{0,4}:?)/i, [/(?:A\s{0,4}-\s{0,4}ASSESSMENT|ASSESSMENT\s{0,4}:?)/i]);
+    const aText = sliceSection(/(?:A\s{0,4}-\s{0,4}ASSESSMENT|ASSESSMENT\s{0,4}:?)/i, [/(?:R\s{0,4}-\s{0,4}RECOMMENDATION|RECOMMENDATION\s{0,4}:?)/i]);
+    const rText = sliceSection(/(?:R\s{0,4}-\s{0,4}RECOMMENDATION|RECOMMENDATION\s{0,4}:?)/i, [/PART\s{0,4}2/i, /AI\s{0,4}DR\s{0,4}SUMMARY/i, /---+/]);
 
-    if (sMatch && sMatch[1]) {
-      result.situation = sMatch[1].trim();
+    if (sText) {
+      result.situation = sText;
     }
-    if (bMatch && bMatch[1]) {
-      result.background = bMatch[1].trim();
+    if (bText) {
+      result.background = bText;
     }
 
     const parseList = (sectionText: string): string[] => {
       if (!sectionText) return [];
       return sectionText
         .split("\n")
+        .slice(0, 500)
         .map((line) => line.replace(/^[•\-\*\d\.\s]+/, "").trim())
         .filter((line) => line.length > 2);
     };
 
-    if (aMatch && aMatch[1]) {
-      result.assessment = parseList(aMatch[1]);
+    if (aText) {
+      result.assessment = parseList(aText);
     }
-    if (rMatch && rMatch[1]) {
-      result.recommendation = parseList(rMatch[1]);
+    if (rText) {
+      result.recommendation = parseList(rText);
     }
 
     // Elegant fallbacks

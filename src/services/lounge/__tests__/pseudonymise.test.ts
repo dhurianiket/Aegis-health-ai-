@@ -64,4 +64,13 @@ describe("pseudonymisation — common-word surnames", () => {
     expect(out).not.toContain("Synthetic Patient");
     expect(out).toContain("Synthetic came for review.");
   });
+
+  it("redacts NFD-decomposed and NFC-composed Unicode names consistently", () => {
+    const nfdText = "Patient: Jose\u0301 Garc\u0069\u0301a attended review. Mr. Garc\u0069\u0301a reports normal BP.";
+    const nfcName = "Jos\u00e9 Garc\u00eda";
+    const out = pseudonymiseName(nfdText, nfcName);
+    expect(out).not.toContain("Garc\u00eda");
+    expect(out).not.toContain("Garc\u0069\u0301a");
+    expect(out).toContain("Patient: Jos\u00e9 attended review.");
+  });
 });

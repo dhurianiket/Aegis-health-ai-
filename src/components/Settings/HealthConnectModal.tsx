@@ -109,6 +109,23 @@ export default function HealthConnectModal({
   };
 
   const processFile = (file: File) => {
+    const MAX_HEALTH_EXPORT_BYTES = 5 * 1024 * 1024;
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    if (!['xml', 'json', 'txt', 'csv'].includes(ext)) {
+      setFeedback({
+        type: 'error',
+        message: 'Unsupported export format. Please select an XML, JSON, TXT, or CSV export file.',
+      });
+      return;
+    }
+    if (file.size > MAX_HEALTH_EXPORT_BYTES) {
+      setFeedback({
+        type: 'error',
+        message: 'Export file is too large (max 5MB). Please export a narrower date range.',
+      });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const content = event.target?.result as string;

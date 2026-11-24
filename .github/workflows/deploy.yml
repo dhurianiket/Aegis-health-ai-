@@ -81,10 +81,10 @@ jobs:
               --role="roles/secretmanager.secretAccessor" || true
           fi
 
-      - name: Deploy to Firebase Hosting, Functions, and Firestore Rules
+      - name: Deploy to Firebase Hosting, Functions, Firestore Rules, and Storage Rules
         uses: w9jds/firebase-action@844c33e381350ae5c600052ba95188f40572d8e0
         with:
-          args: deploy --only hosting,functions,firestore:rules --force
+          args: deploy --only hosting,functions,firestore:rules,storage --force
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

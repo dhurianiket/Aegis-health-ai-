@@ -60,19 +60,51 @@ const EXTRACTION_STEPS = [
   { id: 4, label: 'Done ✅', duration: 500 },
 ];
 
+const ALLOWED_UPLOAD_MIME_TYPES = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+]);
+
+const BLOCKED_UPLOAD_EXTENSIONS = new Set([
+  "svg",
+  "svgz",
+  "html",
+  "htm",
+  "xhtml",
+  "xml",
+  "js",
+  "mjs",
+]);
+
 const getMimeType = (file: File): string => {
-  if (file.type && file.type.length > 0) return file.type;
-  const ext = file.name.split('.').pop()?.toLowerCase();
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  if (BLOCKED_UPLOAD_EXTENSIONS.has(ext)) {
+    return "";
+  }
+  const normalizedType = (file.type || "").split(";")[0].trim().toLowerCase();
+  if (normalizedType === "image/jpg") return "image/jpeg";
+  if (normalizedType.length > 0) {
+    if (normalizedType.includes("svg")) return "";
+    return ALLOWED_UPLOAD_MIME_TYPES.has(normalizedType) ? normalizedType : "";
+  }
   const types: Record<string, string> = {
-    'pdf': 'application/pdf',
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png'
+    pdf: "application/pdf",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    heic: "image/heic",
+    heif: "image/heif",
   };
-  return types[ext || ''] || 'application/pdf';
+  return types[ext] || "";
 };
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const userAgentLower = (typeof navigator !== "undefined" ? navigator.userAgent : "").toLowerCase();
+const isSafari = userAgentLower.includes("safari") && !userAgentLower.includes("chrome") && !userAgentLower.includes("android");
 
 /**
  * Compresses images > 4MB using HTML5 Canvas
@@ -136,8 +168,13 @@ const readFileAsSafeBase64 = async (file: File): Promise<{
   base64Data: string;
   mimeType: string;
 }> => {
+  const initialMime = getMimeType(file);
+  if (!ALLOWED_UPLOAD_MIME_TYPES.has(initialMime)) {
+    throw new Error("Unsupported or unsafe file type.");
+  }
+
   let fileToRead = file;
-  if (file.type.startsWith("image/") && file.size > 4 * 1024 * 1024) {
+  if (initialMime.startsWith("image/") && file.size > 4 * 1024 * 1024) {
     try {
       fileToRead = await compressImageIfNeeded(file);
     } catch (e) {
@@ -147,6 +184,10 @@ const readFileAsSafeBase64 = async (file: File): Promise<{
 
   return new Promise((resolve, reject) => {
     const mimeType = getMimeType(fileToRead);
+    if (!ALLOWED_UPLOAD_MIME_TYPES.has(mimeType)) {
+      reject(new Error("Unsupported or unsafe file type."));
+      return;
+    }
 
     if (fileToRead.size > 4 * 1024 * 1024) {
       reject(new Error("File too large. Maximum 4MB per file."));
@@ -1003,11 +1044,20 @@ export default function UploadCenter({
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
     
-    // Add file size check (max 4MB) with auto-compression for photo payloads
+    // Validate allowed safe raster/PDF MIME types and file size (max 4MB) with auto-compression
     const validFiles: File[] = [];
     for (const file of acceptedFiles) {
+      const resolvedMime = getMimeType(file);
+      if (!ALLOWED_UPLOAD_MIME_TYPES.has(resolvedMime)) {
+        showToast(
+          `Unsupported file type: ${file.name}. Only PDF, JPEG, PNG, WebP, and HEIC are allowed.`,
+          "error",
+        );
+        continue;
+      }
+
       let fileToUse = file;
-      if (file.type.startsWith("image/") && file.size > 4 * 1024 * 1024) {
+      if (resolvedMime.startsWith("image/") && file.size > 4 * 1024 * 1024) {
         try {
           fileToUse = await compressImageIfNeeded(file);
         } catch (err) {
@@ -1046,7 +1096,11 @@ export default function UploadCenter({
     multiple: true,
     accept: {
       "application/pdf": [".pdf"],
-      "image/*": [".jpeg", ".jpg", ".png"],
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+      "image/heic": [".heic"],
+      "image/heif": [".heif"],
     },
   } as any);
 

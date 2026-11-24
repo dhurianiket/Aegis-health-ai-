@@ -106,4 +106,14 @@ describe('healthSyncService Integration Test Suite', () => {
     expect(parsed.steps).toBe(9150);
     expect(parsed.sleep.sleepScore).toBeGreaterThan(50);
   });
+
+  it('7. Handles large/malformed XML export linearly without ReDoS backtracking', () => {
+    const padding = '<Record type="HKQuantityTypeIdentifierHeartRate" '.repeat(8000);
+    const maliciousXml = `<HealthData>${padding}</HealthData>`;
+    const start = performance.now();
+    const parsed = parseAppleHealthExport(maliciousXml, TEST_USER);
+    const elapsedMs = performance.now() - start;
+    expect(parsed.heartRate).toBeGreaterThan(0);
+    expect(elapsedMs).toBeLessThan(100);
+  });
 });

@@ -1,6 +1,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as crypto from "crypto";
 import { getFirestore } from "firebase-admin/firestore";
+import { hasForbiddenKeys, isPlainObject } from "./validation";
 
 // Google Cloud Project & Jules API Config
 const GCP_PROJECT_ID = process.env.GCP_PROJECT_ID || "aegis-health-app-90697";
@@ -10,7 +11,7 @@ const JULES_API_URL = `https://jules.googleapis.com/v1/projects/${GCP_PROJECT_ID
 const ADMIN_DEV_USER_ID = "developer_agent_jules";
 
 /**
- * Verify GitHub webhook signature using HMAC-SHA512 or HMAC-SHA256.
+ * Verify GitHub webhook signature using HMAC-SHA256 in constant time.
  */
 function verifySignature(payload: string, signature: string | string[] | undefined, secret: string | undefined): boolean {
   if (!secret) {
@@ -20,23 +21,18 @@ function verifySignature(payload: string, signature: string | string[] | undefin
   if (!signature) return false;
 
   const checkSig = Array.isArray(signature) ? signature[0] : signature;
-  const match = checkSig.match(/^(sha256|sha1)=(.*)$/);
+  if (typeof checkSig !== "string") return false;
+  const match = checkSig.match(/^sha256=([0-9a-f]{64})$/i);
   if (!match) return false;
 
-  const algo = match[1];
-  const hash = match[2];
+  const calculatedDigest = crypto.createHmac("sha256", secret).update(payload).digest();
+  const providedDigest = Buffer.from(match[1], "hex");
 
-  const hmac = crypto.createHmac(algo, secret);
-  const calculated = hmac.update(payload).digest("hex");
-
-  const calculatedBuffer = Buffer.from(calculated);
-  const hashBuffer = Buffer.from(hash);
-
-  if (calculatedBuffer.length !== hashBuffer.length) {
+  if (calculatedDigest.length !== 32 || providedDigest.length !== 32) {
     return false;
   }
 
-  return crypto.timingSafeEqual(calculatedBuffer, hashBuffer);
+  return crypto.timingSafeEqual(calculatedDigest, providedDigest);
 }
 
 /**
@@ -53,8 +49,8 @@ export const handleGitHubWebhook = onRequest(
         return;
       }
 
-      // 1. Signature Verification (Defensive Guard)
-      const githubSignature = req.headers["x-github-signature-256"] || req.headers["x-github-signature"];
+      // 1. Signature Verification (Defensive Guard — SHA-256 only)
+      const githubSignature = req.headers["x-github-signature-256"];
       const secret = process.env.GITHUB_WEBHOOK_SECRET;
 
       if (!verifySignature(rawBody, githubSignature, secret)) {
@@ -70,11 +66,15 @@ export const handleGitHubWebhook = onRequest(
       }
 
       const body = req.body;
-      const action = body.action; // e.g., "labeled" or "opened"
-      const issue = body.issue;
+      if (!isPlainObject(body) || hasForbiddenKeys(body)) {
+        res.status(400).send("Bad Request: Invalid or unsafe JSON payload.");
+        return;
+      }
+      const action = typeof body.action === "string" ? body.action : "";
+      const rawIssue = body.issue;
 
-      if (!issue) {
-        res.status(400).send("No issue object found in payload.");
+      if (!isPlainObject(rawIssue) || typeof rawIssue.number !== "number" || typeof rawIssue.title !== "string") {
+        res.status(400).send("No valid issue object found in payload.");
         return;
       }
 
@@ -84,19 +84,26 @@ export const handleGitHubWebhook = onRequest(
         return;
       }
 
-      const addedLabel = body.label?.name;
+      const rawLabel = body.label;
+      const addedLabel = isPlainObject(rawLabel) && typeof rawLabel.name === "string" ? rawLabel.name : undefined;
       if (addedLabel !== "jules-fix" && addedLabel !== "jules-feature") {
         res.status(200).send(`Ignored label addition: ${addedLabel}`);
         return;
       }
 
-      console.log(`🚀 GitHub Issue #${issue.number} labeled with '${addedLabel}'. Starting Jules integration flow...`);
+      const rawRepo = body.repository;
+      if (!isPlainObject(rawRepo) || typeof rawRepo.clone_url !== "string") {
+        res.status(400).send("No valid repository clone_url found in payload.");
+        return;
+      }
 
-      // 2. Format Context details for Jules session invocation
-      const issueTitle = issue.title;
-      const issueBody = issue.body || "No description provided.";
-      const repoUrl = body.repository.clone_url;
-      const headBranch = `jules/branch-issue-${issue.number}`;
+      const issueNumber = rawIssue.number;
+      const issueTitle = rawIssue.title;
+      const issueBody = typeof rawIssue.body === "string" && rawIssue.body ? rawIssue.body : "No description provided.";
+      const repoUrl = rawRepo.clone_url;
+      const headBranch = `jules/branch-issue-${issueNumber}`;
+
+      console.log(`🚀 GitHub Issue #${issueNumber} labeled with '${addedLabel}'. Starting Jules integration flow...`);
 
       // Construct a pristine system prompt telling Jules what to do
       const directive = addedLabel === "jules-fix" 
@@ -174,7 +181,7 @@ Ensure your code adheres strictly to the invariants listed in AGENTS.md.
       await sessionRef.set({
         sessionId: julesResult.sessionId,
         sessionUrl: julesResult.sessionUrl,
-        issueNumber: issue.number,
+        issueNumber,
         issueTitle: issueTitle,
         labelApplied: addedLabel,
         status: "SPAWNED",

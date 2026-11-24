@@ -174,14 +174,18 @@ export function renderEmailLayout(params: {
               </div>
 
               <!-- BULLETPROOF APPLE PILL ACTION BUTTON -->
-              ${params.actionButton ? `
+              ${(() => {
+                if (!params.actionButton) return "";
+                const safeActionUrl = sanitizeEmailUrl(params.actionButton.url);
+                if (!safeActionUrl) return "";
+                return `
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 36px; margin-bottom: 8px;">
                 <tr>
                   <td align="center">
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                       <tr>
                         <td align="center" bgcolor="#0f766e" style="border-radius: 980px; background-color: #0f766e; box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35);">
-                          <a href="${params.actionButton.url}" target="_blank" style="display: inline-block; padding: 14px 34px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 600; color: #ffffff !important; text-decoration: none; border-radius: 980px; letter-spacing: -0.01em; border: 1px solid #0f766e;">
+                          <a href="${safeActionUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 14px 34px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 600; color: #ffffff !important; text-decoration: none; border-radius: 980px; letter-spacing: -0.01em; border: 1px solid #0f766e;">
                             ${escapeHtml(params.actionButton.label)} &rarr;
                           </a>
                         </td>
@@ -189,7 +193,8 @@ export function renderEmailLayout(params: {
                     </table>
                   </td>
                 </tr>
-              </table>` : ""}
+              </table>`;
+              })()}
 
             </td>
           </tr>
@@ -785,7 +790,22 @@ export async function sendCriticalTriageAlertEmail(params: {
   });
 }
 
-function escapeHtml(text: string): string {
+export function sanitizeEmailUrl(url: string): string | null {
+  if (!url || typeof url !== "string") return null;
+  const cleaned = url.replace(/[\u0000-\u001F\u007F]+/g, "").trim().normalize("NFC");
+  if (!cleaned) return null;
+  try {
+    const parsed = new URL(cleaned);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "mailto:") {
+      return null;
+    }
+    return escapeHtml(parsed.toString());
+  } catch {
+    return null;
+  }
+}
+
+export function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

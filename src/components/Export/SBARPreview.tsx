@@ -63,16 +63,31 @@ export default function SBARPreview({
   const parseSBAR = (text: string): SBAROutput => {
     const result: SBAROutput = { situation: '', background: '', assessment: [], recommendation: [] };
     if (!text) return result;
-    const t = text;
-    const matchS = t.match(/SITUATION:(.*?)(?=BACKGROUND:|$)/is);
-    const matchB = t.match(/BACKGROUND:(.*?)(?=ASSESSMENT:|$)/is);
-    const matchA = t.match(/ASSESSMENT:(.*?)(?=RECOMMENDATION:|$)/is);
-    const matchR = t.match(/RECOMMENDATION:(.*?)$/is);
+    const t = text.slice(0, 50_000);
+    const sliceSection = (startRe: RegExp, endRes: RegExp[]): string => {
+      const m = startRe.exec(t);
+      if (!m) return '';
+      const startIdx = m.index + m[0].length;
+      let endIdx = t.length;
+      const rest = t.slice(startIdx);
+      for (const endRe of endRes) {
+        const em = endRe.exec(rest);
+        if (em && startIdx + em.index < endIdx) {
+          endIdx = startIdx + em.index;
+        }
+      }
+      return t.slice(startIdx, endIdx).trim();
+    };
 
-    if (matchS) result.situation = matchS[1].trim();
-    if (matchB) result.background = matchB[1].trim();
-    if (matchA) result.assessment = matchA[1].trim().split('\n').map(s=>s.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
-    if (matchR) result.recommendation = matchR[1].trim().split('\n').map(s=>s.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+    const sSection = sliceSection(/SITUATION:/i, [/BACKGROUND:/i]);
+    const bSection = sliceSection(/BACKGROUND:/i, [/ASSESSMENT:/i]);
+    const aSection = sliceSection(/ASSESSMENT:/i, [/RECOMMENDATION:/i]);
+    const rSection = sliceSection(/RECOMMENDATION:/i, []);
+
+    if (sSection) result.situation = sSection;
+    if (bSection) result.background = bSection;
+    if (aSection) result.assessment = aSection.split('\n').slice(0, 500).map(s => s.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+    if (rSection) result.recommendation = rSection.split('\n').slice(0, 500).map(s => s.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
     return result;
   };
 

@@ -20,7 +20,7 @@ export function sanitizeHref(url?: string | null, fallback: string = "#"): strin
     return fallback;
   }
 
-  const trimmed = url.trim();
+  const trimmed = url.replace(/[\u0000-\u001F\u007F]+/g, "").trim();
 
   // Explicitly disallow any javascript:, vbscript:, or data: schemes
   if (DANGEROUS_SCHEMES_REGEX.test(trimmed)) {
@@ -40,7 +40,22 @@ export function sanitizeHref(url?: string | null, fallback: string = "#"): strin
  */
 export function isSafeUrl(url?: string | null): boolean {
   if (!url || typeof url !== "string") return false;
-  const trimmed = url.trim();
+  const trimmed = url.replace(/[\u0000-\u001F\u007F]+/g, "").trim();
   if (DANGEROUS_SCHEMES_REGEX.test(trimmed)) return false;
   return SAFE_SCHEMES_REGEX.test(trimmed);
+}
+
+/**
+ * Normalizes an email address with NFKC, trimming whitespace, and lowercasing
+ * to prevent Unicode homoglyph / canonical-equivalence bypasses.
+ */
+export function normalizeEmail(email?: string | null): string {
+  return typeof email === "string" ? email.normalize("NFKC").trim().toLowerCase() : "";
+}
+
+/**
+ * Normalizes clinical/search text with NFC, trimming whitespace, and lowercasing.
+ */
+export function normalizeText(value?: string | null): string {
+  return typeof value === "string" ? value.normalize("NFC").trim().toLowerCase() : "";
 }

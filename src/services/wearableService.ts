@@ -91,7 +91,7 @@ function secureRandomFloat(): number {
     crypto.getRandomValues(buffer);
     return buffer[0] / 4294967296;
   }
-  return Math.random();
+  throw new Error("Web Crypto API (crypto.getRandomValues) is unavailable.");
 }
 
 /**

@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { getFirestore } from "firebase-admin/firestore";
+import { sanitizePlainObject } from "./validation";
 
 // Google GenAI SDK configuration (from @google/genai module listed in package.json)
 let aiClient: GoogleGenAI | null = null;
@@ -380,8 +381,9 @@ Respond ONLY as a structured JSON document conforming to this exact syntax bound
       .collection("julesSessions")
       .doc(sessionId);
 
+    const safePayload = sanitizePlainObject(payload);
     await sessionRef.set({
-      ...payload,
+      ...safePayload,
       updatedAt: new Date().toISOString()
     }, { merge: true });
   }

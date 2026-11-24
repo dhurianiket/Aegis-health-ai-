@@ -42,26 +42,58 @@ const SURNAME_STOPWORDS = new Set([
   "skin", "thyroid", "diabetes", "cancer", "fever", "pain", "white", "black", "brown", "green", "gold", "rose",
 ]);
 
+const MAX_PSEUDONYMISE_CHUNK_CHARS = 50_000;
+const MAX_FULLNAME_CHARS = 120;
+const MAX_NAME_TOKENS = 6;
+
+function processInChunks(text: string, transform: (chunk: string) => string): string {
+  if (!text || text.length <= MAX_PSEUDONYMISE_CHUNK_CHARS) {
+    return transform(text);
+  }
+  const chunks: string[] = [];
+  let cursor = 0;
+  while (cursor < text.length) {
+    let end = Math.min(text.length, cursor + MAX_PSEUDONYMISE_CHUNK_CHARS);
+    if (end < text.length) {
+      const lastNewline = text.lastIndexOf("\n", end);
+      if (lastNewline > cursor) {
+        end = lastNewline + 1;
+      }
+    }
+    chunks.push(transform(text.slice(cursor, end)));
+    cursor = end;
+  }
+  return chunks.join("");
+}
+
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+const UNI_BOUNDARY_START = "(?<![\\p{L}\\p{N}\\p{M}])";
+const UNI_BOUNDARY_END = "(?![\\p{L}\\p{N}\\p{M}])";
+
 export function redactIdentifiers(text: string): string {
   if (!text) return text;
-  return text
-    .replace(ABHA_ADDRESS, REDACTION.abhaAddress)
-    .replace(EMAIL, REDACTION.email)
-    .replace(ABHA_NUMBER, REDACTION.abha)
-    .replace(AADHAAR, REDACTION.aadhaar)
-    .replace(INDIAN_MOBILE, REDACTION.phone)
-    .replace(LANDLINE, REDACTION.phone)
-    // Labelled ids last, so numbers already redacted above are not half-matched.
-    .replace(LABELLED_ID, (m) => `${m.split(/[:#-]/)[0].trim()}: [identifier removed]`);
+  const normalized = text.normalize("NFC");
+  return processInChunks(normalized, (chunk) =>
+    chunk
+      .replace(ABHA_ADDRESS, REDACTION.abhaAddress)
+      .replace(EMAIL, REDACTION.email)
+      .replace(ABHA_NUMBER, REDACTION.abha)
+      .replace(AADHAAR, REDACTION.aadhaar)
+      .replace(INDIAN_MOBILE, REDACTION.phone)
+      .replace(LANDLINE, REDACTION.phone)
+      // Labelled ids last, so numbers already redacted above are not half-matched.
+      .replace(LABELLED_ID, (m) => `${m.split(/[:#-]/)[0].trim()}: [identifier removed]`),
+  );
 }
 
 /** First given name only (never the full name). Returns null when not derivable. */
 export function firstNameOnly(fullName: string | null | undefined): string | null {
   const cleaned = String(fullName ?? "")
+    .normalize("NFC")
+    .slice(0, MAX_FULLNAME_CHARS)
     .replace(/^(?:mr|mrs|ms|miss|dr|master|baby|shri|smt|kumari)\.?\s+/i, "")
     .trim();
   const first = cleaned.split(/\s+/)[0] ?? "";
@@ -78,21 +110,39 @@ export function firstNameOnly(fullName: string | null | undefined): string | nul
  */
 export function pseudonymiseName(text: string, fullName: string | null | undefined): string {
   if (!text || !fullName) return text;
-  const tokens = String(fullName).trim().split(/\s+/).filter(Boolean);
+  const normalizedText = text.normalize("NFC");
+  const boundedFullName = String(fullName).normalize("NFC").slice(0, MAX_FULLNAME_CHARS).trim();
+  const tokens = boundedFullName.split(/\s+/).filter(Boolean).slice(0, MAX_NAME_TOKENS);
   if (tokens.length === 0) return text;
-  const first = firstNameOnly(fullName);
-  let out = text;
-  if (tokens.length > 1) {
-    out = out.replace(new RegExp(`\\b${tokens.map(escapeRegExp).join("\\s+")}\\b`, "gi"), first ?? REDACTION.name);
-    const surname = tokens[tokens.length - 1];
-    if (surname.length >= 3 && !SURNAME_STOPWORDS.has(surname.toLowerCase())) {
-      const s = escapeRegExp(surname);
-      out = out
-        .replace(new RegExp(`\\b(?:mr|mrs|ms|miss|shri|smt)\\.?\\s+${s}\\b`, "gi"), first ?? REDACTION.name)
-        .replace(new RegExp(`\\b${s}\\b`, "gi"), REDACTION.surname);
+  const first = firstNameOnly(boundedFullName);
+
+  const fullNameRe =
+    tokens.length > 1
+      ? new RegExp(`${UNI_BOUNDARY_START}${tokens.map(escapeRegExp).join("\\s+")}${UNI_BOUNDARY_END}`, "giu")
+      : null;
+  const surname = tokens.length > 1 ? tokens[tokens.length - 1] : "";
+  const hasRedactableSurname = Boolean(surname && surname.length >= 3 && !SURNAME_STOPWORDS.has(surname.toLowerCase()));
+  const escapedSurname = hasRedactableSurname ? escapeRegExp(surname) : "";
+  const titleSurnameRe = hasRedactableSurname
+    ? new RegExp(`${UNI_BOUNDARY_START}(?:mr|mrs|ms|miss|shri|smt)\\.?\\s+${escapedSurname}${UNI_BOUNDARY_END}`, "giu")
+    : null;
+  const surnameRe = hasRedactableSurname
+    ? new RegExp(`${UNI_BOUNDARY_START}${escapedSurname}${UNI_BOUNDARY_END}`, "giu")
+    : null;
+
+  return processInChunks(normalizedText, (chunk) => {
+    let out = chunk;
+    if (fullNameRe) {
+      out = out.replace(fullNameRe, first ?? REDACTION.name);
     }
-  }
-  return out;
+    if (titleSurnameRe) {
+      out = out.replace(titleSurnameRe, first ?? REDACTION.name);
+    }
+    if (surnameRe) {
+      out = out.replace(surnameRe, REDACTION.surname);
+    }
+    return out;
+  });
 }
 
 /** Full pipeline for record text entering <patient_data>. */

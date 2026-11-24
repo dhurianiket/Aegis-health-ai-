@@ -28,6 +28,7 @@ import { useProfile } from "./context/ProfileContext";
 import { useAlerts } from "./context/AlertsContext";
 import { useTheme } from "./context/ThemeContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { normalizeEmail } from "./utils/security";
 import { AIErrorBoundary } from "./components/ui/AIErrorBoundary";
 import NotificationDropdown from "./components/Header/NotificationDropdown";
 import OfflineIndicator from "./components/OfflineIndicator";
@@ -335,9 +336,10 @@ function MainApp() {
   }
 
 
-  const isReviewerAccount = 
-    user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in" ||
-    user?.email?.toLowerCase() === "dhurianiket@gmail.com";
+  const normalizedUserEmail = normalizeEmail(user?.email);
+  const isReviewerAccount =
+    normalizedUserEmail === "reviewer@aegishealthai.co.in" ||
+    normalizedUserEmail === "dhurianiket@gmail.com";
 
   useEffect(() => {
     if (isReviewerAccount && isConsentGranted !== true) {
@@ -566,7 +568,7 @@ function MainApp() {
               </button>
             </div>
           )}
-          {user?.email?.toLowerCase() === "reviewer@aegishealthai.co.in" && (
+          {normalizedUserEmail === "reviewer@aegishealthai.co.in" && (
             <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping shrink-0" />
@@ -712,7 +714,7 @@ function MainApp() {
                       if (activeTab === "admin") {
                         if (import.meta.env.DEV) console.log("[Admin] user email:", user?.email);
                       }
-                      return activeTab === "admin" && user?.email === "dhurianiket@gmail.com" && (
+                      return activeTab === "admin" && normalizedUserEmail === "dhurianiket@gmail.com" && (
                         <SectionErrorBoundary sectionName="Admin">
                           <AdminDashboard />
                         </SectionErrorBoundary>

@@ -4,6 +4,7 @@ import {
   getEstCost,
   syncGlobalStatsLive,
 } from "../../services/usageService";
+import { normalizeEmail, normalizeText } from "../../utils/security";
 import {
   ShieldAlert,
   Database,
@@ -111,8 +112,7 @@ export default function AdminDashboard() {
     // Enforce role check
     try {
       const userDoc = await getDoc(doc(db, `users/${user.uid}`));
-      const userEmail = user.email || "";
-      const isEmailAdmin = userEmail.toLowerCase() === "dhurianiket@gmail.com";
+      const isEmailAdmin = normalizeEmail(user.email) === "dhurianiket@gmail.com";
       const isRoleAdmin = userDoc.exists() && userDoc.data().role === "admin";
 
       if (!isEmailAdmin && !isRoleAdmin) {
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
   // Real-time listener for live updates
   useEffect(() => {
     if (!user) return;
-    const isMaster = user.email?.toLowerCase() === "dhurianiket@gmail.com";
+    const isMaster = normalizeEmail(user.email) === "dhurianiket@gmail.com";
     if (!isMaster) return;
 
     let debounceTimer: NodeJS.Timeout;
@@ -269,7 +269,7 @@ export default function AdminDashboard() {
   };
 
   const filteredUsers = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
+    const q = normalizeText(searchQuery);
     const hasQuery = q.length > 0;
 
     return users.filter((u) => {
@@ -278,9 +278,9 @@ export default function AdminDashboard() {
 
       if (!hasQuery) return true;
 
-      if (u.email?.toLowerCase().includes(q)) return true;
-      if (u.displayName?.toLowerCase().includes(q)) return true;
-      if (u.userId?.toLowerCase().includes(q)) return true;
+      if (normalizeEmail(u.email).includes(q)) return true;
+      if (normalizeText(u.displayName).includes(q)) return true;
+      if (normalizeText(u.userId).includes(q)) return true;
 
       return false;
     });
@@ -864,7 +864,7 @@ export default function AdminDashboard() {
             <tbody>
               {filteredUsers.map((row, idx) => {
                 const rowCost = getEstCost(row.promptTokens, row.responseTokens, row.thinkingTokens);
-                const isAdmin = row.role === "admin" || row.email?.toLowerCase() === "dhurianiket@gmail.com";
+                const isAdmin = row.role === "admin" || normalizeEmail(row.email) === "dhurianiket@gmail.com";
                 return (
                   <tr
                     key={idx}

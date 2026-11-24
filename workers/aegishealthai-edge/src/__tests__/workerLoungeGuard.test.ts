@@ -117,13 +117,15 @@ describe("Worker /api/ai/generate — Lounge guard, token clamp, gateway logging
     expect(res.headers.get("Access-Control-Allow-Headers")).toContain("X-Aegis-Feature");
   });
 
-  it("skips the AI Gateway cache for Lounge requests only", async () => {
+  it("skips the AI Gateway cache on all /api/ai/generate requests to prevent PHI caching and sends Cache-Control: no-store", async () => {
     installFetch(fetchMock, [geminiReply("General heart-health information."), geminiReply("{}")]);
-    await worker.fetch(generateRequest({ aegisFeature: "specialist", contents: [] }), TEST_ENV, {});
-    await worker.fetch(generateRequest({ contents: [] }), TEST_ENV, {});
+    const loungeRes = await worker.fetch(generateRequest({ aegisFeature: "specialist", contents: [] }), TEST_ENV, {});
+    const extractRes = await worker.fetch(generateRequest({ contents: [] }), TEST_ENV, {});
     const [lounge, extraction] = upstreamCalls(fetchMock);
     expect((lounge[1].headers as Record<string, string>)["cf-aig-skip-cache"]).toBe("true");
-    expect((extraction[1].headers as Record<string, string>)["cf-aig-skip-cache"]).toBeUndefined();
+    expect((extraction[1].headers as Record<string, string>)["cf-aig-skip-cache"]).toBe("true");
+    expect(loungeRes.headers.get("Cache-Control")).toBe("no-store, private");
+    expect(extractRes.headers.get("Cache-Control")).toBe("no-store, private");
   });
 
   it("passes the client abort signal through to the upstream Gemini fetch", async () => {

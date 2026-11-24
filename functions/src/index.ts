@@ -2,6 +2,7 @@ import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https
 import { beforeUserCreated, HttpsError as AuthBlockingError } from "firebase-functions/v2/identity";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { hasForbiddenKeys, isPlainObject } from "./validation";
 
 initializeApp();
 
@@ -72,10 +73,14 @@ export const verifyRecaptchaToken = async (
 export const verifyRecaptcha = onCall(
   { secrets: ["RECAPTCHA_SECRET_KEY"] },
   async (request: CallableRequest<VerifyRecaptchaRequestData>) => {
-    const token = request.data?.token;
+    const rawData = request.data as unknown;
+    if (!isPlainObject(rawData) || hasForbiddenKeys(rawData)) {
+      throw new HttpsError("invalid-argument", "Invalid or unsafe reCAPTCHA request payload.");
+    }
+    const token = rawData.token;
 
-    if (!token || typeof token !== "string") {
-      throw new HttpsError("invalid-argument", "Missing reCAPTCHA validation token.");
+    if (!token || typeof token !== "string" || token.length > 4096) {
+      throw new HttpsError("invalid-argument", "Missing or invalid reCAPTCHA validation token.");
     }
 
     const isHuman = await verifyRecaptchaToken(token, process.env.RECAPTCHA_SECRET_KEY);
@@ -98,7 +103,7 @@ export const linkFounderPhoneNumber = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "Authentication required to link phone number.");
   }
 
-  const userEmail = request.auth.token?.email?.toLowerCase();
+  const userEmail = request.auth.token?.email?.normalize("NFKC").trim().toLowerCase();
   const isEmailVerified = request.auth.token?.email_verified === true;
   if (userEmail !== "dhurianiket@gmail.com" || !isEmailVerified) {
     throw new HttpsError(
@@ -163,14 +168,20 @@ export const beforeCreate = beforeUserCreated(async (event) => {
   const isEmailOnly = (!user.providerData || user.providerData.length === 0) && !!user.email && !user.phoneNumber;
 
   if (hasPasswordProvider || isEmailOnly) {
-    const rawEmail = (user.email || "").toLowerCase().trim();
+    const rawEmail = (user.email || "").normalize("NFKC").trim().toLowerCase();
     const parts = rawEmail.split("@");
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
       console.warn(`[SecurityAudit] Blocked malformed email registration attempt: ${rawEmail}`);
       throw new AuthBlockingError("invalid-argument", "Invalid email address format.");
     }
 
-    const domain = parts[1];
+    let domain: string;
+    try {
+      domain = new URL(`https://${parts[1]}`).hostname.toLowerCase();
+    } catch {
+      console.warn(`[SecurityAudit] Blocked malformed email domain: ${rawEmail}`);
+      throw new AuthBlockingError("invalid-argument", "Invalid email address format.");
+    }
 
     // 1. Block RFC 2606 and RFC 6761 reserved test/scanner domains (e.g. pentest-probe@test.invalid)
     const blockedTlds = [".invalid", ".test", ".example", ".localhost"];
@@ -220,22 +231,50 @@ export * from "./emailService";
 export const sendClinicalEmail = onCall(
   { secrets: ["RESEND_API_KEY"] },
   async (request: CallableRequest<{
-    to: string;
-    subject: string;
-    html: string;
+    to?: string;
+    subject?: string;
     text?: string;
+    html?: unknown;
   }>) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Authentication required to trigger clinical email dispatch.");
     }
-
-    const { to, subject, html, text } = request.data;
-    if (!to || !subject || !html) {
-      throw new HttpsError("invalid-argument", "Missing mandatory parameters: 'to', 'subject', or 'html'.");
+    if (request.auth.token?.admin !== true) {
+      throw new HttpsError("permission-denied", "Admin privileges required to trigger clinical email dispatch.");
     }
 
-    const { sendTransactionalEmail } = await import("./emailService");
-    const result = await sendTransactionalEmail({ to, subject, html, text });
+    const rawData = request.data as unknown;
+    if (!isPlainObject(rawData) || hasForbiddenKeys(rawData)) {
+      throw new HttpsError("invalid-argument", "Request payload must be a safe JSON object.");
+    }
+
+    const dataObj = rawData;
+    if ("html" in dataObj && dataObj.html !== undefined) {
+      throw new HttpsError("invalid-argument", "Raw HTML payloads are not permitted; pass plain 'text' instead.");
+    }
+
+    const to = typeof dataObj.to === "string" ? dataObj.to.trim() : "";
+    const subject = typeof dataObj.subject === "string" ? dataObj.subject.trim() : "";
+    const text = typeof dataObj.text === "string" ? dataObj.text.trim() : "";
+
+    if (!to || to.length > 254 || /[\r\n]/.test(to) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      throw new HttpsError("invalid-argument", "Invalid recipient email address.");
+    }
+    if (!subject || subject.length > 200 || /[\r\n]/.test(subject)) {
+      throw new HttpsError("invalid-argument", "Subject is required (max 200 single-line characters).");
+    }
+    if (!text || text.length > 10000) {
+      throw new HttpsError("invalid-argument", "Plain text body is required (max 10000 characters).");
+    }
+
+    const { escapeHtml, renderEmailLayout, sendTransactionalEmail } = await import("./emailService");
+    const safeHtml = renderEmailLayout({
+      preheader: subject,
+      title: subject,
+      contentHtml: `<p style="white-space: pre-wrap;">${escapeHtml(text)}</p>`,
+    });
+
+    const result = await sendTransactionalEmail({ to, subject, html: safeHtml, text });
     if (!result.success) {
       throw new HttpsError("internal", result.error || "Failed to send email via Resend.");
     }
@@ -256,7 +295,14 @@ export const notifyLogin = onCall(
 
     const userEmail = request.auth.token.email;
     const displayName = request.auth.token.name || userEmail.split("@")[0];
-    const { deviceType, userAgent } = request.data || {};
+    const rawNotify = (request.data ?? {}) as unknown;
+    if (!isPlainObject(rawNotify) || hasForbiddenKeys(rawNotify)) {
+      throw new HttpsError("invalid-argument", "Invalid or unsafe notification payload.");
+    }
+    const deviceType =
+      typeof rawNotify.deviceType === "string" ? rawNotify.deviceType.slice(0, 64) : undefined;
+    const userAgent =
+      typeof rawNotify.userAgent === "string" ? rawNotify.userAgent.slice(0, 512) : undefined;
 
     const { sendLoginNotificationEmail } = await import("./emailService");
     const result = await sendLoginNotificationEmail({

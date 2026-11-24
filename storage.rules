@@ -8,10 +8,10 @@ service firebase.storage {
         request.auth.token.admin == true
       );
 
-      // Create & Update: Restrict to owner with 25MB max size and safe medical document / media MIME types
+      // Create & Update: Restrict to owner with 25MB max size and explicit safe raster/document/audio MIME types (block image/svg+xml)
       allow create, update: if request.auth != null && request.auth.uid == userId
         && request.resource.size < 25 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*|application/pdf|application/json|audio/.*|text/plain');
+        && request.resource.contentType.matches('image/(jpeg|jpg|png|webp|heic|heif|gif)|application/pdf|application/json|audio/(mpeg|mp3|mp4|wav|webm|ogg|aac)|text/plain');
     }
   }
 }

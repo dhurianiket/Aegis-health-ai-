@@ -123,33 +123,39 @@ function renderFormattedContent(text: string, isLightExport: boolean = true) {
   );
 }
 
-function parseSbar(text: string) {
-  const situationMatch = text.match(/S\s*-\s*SITUATION[:\s]*([\s\S]*?)(?=B\s*-\s*BACKGROUND|$)/i);
-  const backgroundMatch = text.match(/B\s*-\s*BACKGROUND[:\s]*([\s\S]*?)(?=A\s*-\s*ASSESSMENT|$)/i);
-  const assessmentMatch = text.match(/A\s*-\s*ASSESSMENT[:\s]*([\s\S]*?)(?=R\s*-\s*RECOMMENDATION|$)/i);
-  const recommendationMatch = text.match(/R\s*-\s*RECOMMENDATION[:\s]*([\s\S]*?)(?=-----|PART 2|$)/i);
+function sliceBoundedSection(text: string, startRegex: RegExp, endRegexes: RegExp[]): string {
+  const m = startRegex.exec(text);
+  if (!m) return "";
+  const contentStart = m.index + m[0].length;
+  let contentEnd = text.length;
+  const rest = text.slice(contentStart);
+  for (const endRe of endRegexes) {
+    const em = endRe.exec(rest);
+    if (em && contentStart + em.index < contentEnd) {
+      contentEnd = contentStart + em.index;
+    }
+  }
+  return text.slice(contentStart, contentEnd).trim();
+}
 
+function parseSbar(rawText: string) {
+  const text = (rawText || "").slice(0, 50_000);
   return {
-    situation: situationMatch ? situationMatch[1].trim() : "",
-    background: backgroundMatch ? backgroundMatch[1].trim() : "",
-    assessment: assessmentMatch ? assessmentMatch[1].trim() : "",
-    recommendation: recommendationMatch ? recommendationMatch[1].trim() : "",
+    situation: sliceBoundedSection(text, /S\s{0,4}-\s{0,4}SITUATION[:\s]*/i, [/B\s{0,4}-\s{0,4}BACKGROUND/i]),
+    background: sliceBoundedSection(text, /B\s{0,4}-\s{0,4}BACKGROUND[:\s]*/i, [/A\s{0,4}-\s{0,4}ASSESSMENT/i]),
+    assessment: sliceBoundedSection(text, /A\s{0,4}-\s{0,4}ASSESSMENT[:\s]*/i, [/R\s{0,4}-\s{0,4}RECOMMENDATION/i]),
+    recommendation: sliceBoundedSection(text, /R\s{0,4}-\s{0,4}RECOMMENDATION[:\s]*/i, [/-----/, /PART 2/i]),
   };
 }
 
-function parsePatientGuide(text: string) {
-  const overviewMatch = text.match(/1\.\s*HEALTH OVERVIEW[^\n]*\n([\s\S]*?)(?=2\.\s*WHAT YOUR TEST|$)/i);
-  const resultsMatch = text.match(/2\.\s*WHAT YOUR TEST[^\n]*\n([\s\S]*?)(?=3\.\s*YOUR MEDICATIONS|$)/i);
-  const medsMatch = text.match(/3\.\s*YOUR MEDICATIONS[^\n]*\n([\s\S]*?)(?=4\.\s*QUESTIONS TO ASK|$)/i);
-  const questionsMatch = text.match(/4\.\s*QUESTIONS TO ASK[^\n]*\n([\s\S]*?)(?=5\.\s*PRACTICAL DIET|$)/i);
-  const lifestyleMatch = text.match(/5\.\s*PRACTICAL DIET[^\n]*\n([\s\S]*?)(?=$)/i);
-
+function parsePatientGuide(rawText: string) {
+  const text = (rawText || "").slice(0, 50_000);
   return {
-    overview: overviewMatch ? overviewMatch[1].trim() : "",
-    results: resultsMatch ? resultsMatch[1].trim() : "",
-    meds: medsMatch ? medsMatch[1].trim() : "",
-    questions: questionsMatch ? questionsMatch[1].trim() : "",
-    lifestyle: lifestyleMatch ? lifestyleMatch[1].trim() : "",
+    overview: sliceBoundedSection(text, /1\.\s{0,4}HEALTH OVERVIEW[^\n]{0,200}\n/i, [/2\.\s{0,4}WHAT YOUR TEST/i]),
+    results: sliceBoundedSection(text, /2\.\s{0,4}WHAT YOUR TEST[^\n]{0,200}\n/i, [/3\.\s{0,4}YOUR MEDICATIONS/i]),
+    meds: sliceBoundedSection(text, /3\.\s{0,4}YOUR MEDICATIONS[^\n]{0,200}\n/i, [/4\.\s{0,4}QUESTIONS TO ASK/i]),
+    questions: sliceBoundedSection(text, /4\.\s{0,4}QUESTIONS TO ASK[^\n]{0,200}\n/i, [/5\.\s{0,4}PRACTICAL DIET/i]),
+    lifestyle: sliceBoundedSection(text, /5\.\s{0,4}PRACTICAL DIET[^\n]{0,200}\n/i, []),
   };
 }
 

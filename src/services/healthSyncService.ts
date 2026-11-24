@@ -98,7 +98,7 @@ function secureRandomFloat(): number {
     crypto.getRandomValues(buffer);
     return buffer[0] / 4294967296;
   }
-  return Math.random();
+  throw new Error("Web Crypto API (crypto.getRandomValues) is unavailable.");
 }
 
 /**
@@ -272,10 +272,47 @@ export function saveHealthPermissions(
   return updated;
 }
 
+const MAX_EXPORT_PARSE_CHARS = 512_000;
+
+function extractAppleRecordValue(xml: string, recordType: string): string | null {
+  const marker = `${recordType}"`;
+  let searchFrom = 0;
+  while (searchFrom < xml.length) {
+    const idx = xml.indexOf(marker, searchFrom);
+    if (idx === -1) return null;
+    const tagEnd = xml.indexOf('>', idx);
+    const sliceEnd = tagEnd === -1 ? idx + 2048 : Math.min(tagEnd, idx + 2048);
+    const tagSlice = xml.slice(idx, sliceEnd);
+    const valMatch = tagSlice.match(/value="([0-9.]+)"/);
+    if (valMatch) return valMatch[1];
+    searchFrom = idx + marker.length;
+  }
+  return null;
+}
+
+function countAppleSleepRecords(xml: string, maxCount: number = 20): number {
+  const marker = 'HKCategoryTypeIdentifierSleepAnalysis"';
+  let count = 0;
+  let searchFrom = 0;
+  while (count < maxCount && searchFrom < xml.length) {
+    const idx = xml.indexOf(marker, searchFrom);
+    if (idx === -1) break;
+    const tagEnd = xml.indexOf('>', idx);
+    const sliceEnd = tagEnd === -1 ? idx + 2048 : Math.min(tagEnd, idx + 2048);
+    const tagSlice = xml.slice(idx, sliceEnd);
+    if (/value="[A-Za-z0-9.]+"/.test(tagSlice)) {
+      count += 1;
+    }
+    searchFrom = idx + marker.length;
+  }
+  return count;
+}
+
 /**
  * Parses Apple Health export XML or JSON format into structured WearableBiometrics entity.
  */
 export function parseAppleHealthExport(fileContent: string, userId: string): WearableBiometrics {
+  const boundedContent = (fileContent || '').slice(0, MAX_EXPORT_PARSE_CHARS);
   let heartRate: number = CLINICAL_BOUNDS.HEART_RATE.default;
   let rhr: number = CLINICAL_BOUNDS.RHR.default;
   let hrv: number = CLINICAL_BOUNDS.HRV.default;
@@ -287,29 +324,29 @@ export function parseAppleHealthExport(fileContent: string, userId: string): Wea
   let remMinutes = 95;
   let lightMinutes = 255;
 
-  if (fileContent.trim().startsWith('<') || fileContent.includes('HealthData') || fileContent.includes('HKQuantityTypeIdentifier')) {
-    // XML Export Parsing
-    const hrMatch = fileContent.match(/HKQuantityTypeIdentifierHeartRate"[\s\S]*?value="([0-9.]+)"/);
-    if (hrMatch) heartRate = parseFloat(hrMatch[1]);
+  if (boundedContent.trim().startsWith('<') || boundedContent.includes('HealthData') || boundedContent.includes('HKQuantityTypeIdentifier')) {
+    // Linear-time bounded XML export parsing (ReDoS-safe)
+    const hrVal = extractAppleRecordValue(boundedContent, 'HKQuantityTypeIdentifierHeartRate');
+    if (hrVal) heartRate = parseFloat(hrVal);
 
-    const rhrMatch = fileContent.match(/HKQuantityTypeIdentifierRestingHeartRate"[\s\S]*?value="([0-9.]+)"/);
-    if (rhrMatch) rhr = parseFloat(rhrMatch[1]);
+    const rhrVal = extractAppleRecordValue(boundedContent, 'HKQuantityTypeIdentifierRestingHeartRate');
+    if (rhrVal) rhr = parseFloat(rhrVal);
 
-    const hrvMatch = fileContent.match(/HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[\s\S]*?value="([0-9.]+)"/);
-    if (hrvMatch) hrv = parseFloat(hrvMatch[1]);
+    const hrvVal = extractAppleRecordValue(boundedContent, 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN');
+    if (hrvVal) hrv = parseFloat(hrvVal);
 
-    const spo2Match = fileContent.match(/HKQuantityTypeIdentifierOxygenSaturation"[\s\S]*?value="([0-9.]+)"/);
-    if (spo2Match) {
-      const parsedVal = parseFloat(spo2Match[1]);
+    const spo2Val = extractAppleRecordValue(boundedContent, 'HKQuantityTypeIdentifierOxygenSaturation');
+    if (spo2Val) {
+      const parsedVal = parseFloat(spo2Val);
       spo2 = parsedVal <= 1 ? Math.round(parsedVal * 100) : Math.round(parsedVal);
     }
 
-    const stepMatch = fileContent.match(/HKQuantityTypeIdentifierStepCount"[\s\S]*?value="([0-9.]+)"/);
-    if (stepMatch) steps = parseInt(stepMatch[1], 10);
+    const stepVal = extractAppleRecordValue(boundedContent, 'HKQuantityTypeIdentifierStepCount');
+    if (stepVal) steps = parseInt(stepVal, 10);
 
-    const sleepMatches = fileContent.match(/HKCategoryTypeIdentifierSleepAnalysis"[\s\S]*?value="([A-Za-z0-9.]+)"/g);
-    if (sleepMatches && sleepMatches.length > 0) {
-      totalMinutes = Math.min(600, sleepMatches.length * 30);
+    const sleepCount = countAppleSleepRecords(boundedContent, 20);
+    if (sleepCount > 0) {
+      totalMinutes = Math.min(600, sleepCount * 30);
       deepMinutes = Math.round(totalMinutes * 0.25);
       remMinutes = Math.round(totalMinutes * 0.22);
       lightMinutes = totalMinutes - deepMinutes - remMinutes;
@@ -317,7 +354,7 @@ export function parseAppleHealthExport(fileContent: string, userId: string): Wea
   } else {
     // JSON Format Parsing
     try {
-      const obj = JSON.parse(fileContent);
+      const obj = JSON.parse(boundedContent);
       if (obj.heartRate ?? obj.heart_rate ?? obj.bpm) heartRate = Number(obj.heartRate ?? obj.heart_rate ?? obj.bpm);
       if (obj.rhr ?? obj.restingHeartRate ?? obj.resting_heart_rate) rhr = Number(obj.rhr ?? obj.restingHeartRate ?? obj.resting_heart_rate);
       if (obj.hrv ?? obj.heartRateVariability ?? obj.heart_rate_variability) hrv = Number(obj.hrv ?? obj.heartRateVariability ?? obj.heart_rate_variability);

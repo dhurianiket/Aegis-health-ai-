@@ -70,7 +70,7 @@
     "minimatch": "^11.0.4"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.8.1"
   },
   "devDependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",

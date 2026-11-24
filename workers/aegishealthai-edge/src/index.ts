@@ -28,6 +28,11 @@ import {
   clampLoungeGenerationConfig,
   resolveFeature,
 } from "./dosingGuard";
+import {
+  isPlainObject,
+  parseJsonSafely,
+  parseSafeJsonBody,
+} from "./payloadSecurity";
 
 export interface Env {
   GEMINI_API_KEY: string;
@@ -36,10 +41,13 @@ export interface Env {
   BEDROCK_MANTLE_ENDPOINT?: string;
   TURNSTILE_SECRET?: string;
   TURNSTILE_ENFORCE?: string;
+  LAB_WEBHOOK_SECRET?: string;
   FIREBASE_PROJECT_ID?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
   CF_AI_GATEWAY_ID?: string;
   CF_AIG_TOKEN?: string;
+  IP_RATE_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> };
+  USER_RATE_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> };
 }
 
 const DEFAULT_FIREBASE_PROJECT_ID = "aegis-health-app-90697";
@@ -70,18 +78,27 @@ function base64UrlToUint8Array(base64Url: string): Uint8Array {
   return bytes;
 }
 
-function parseJwtParts(token: string): { header: any; payload: any; signatureBytes: Uint8Array; signedData: Uint8Array } | null {
+function parseJwtParts(token: string): { header: Record<string, unknown>; payload: Record<string, unknown>; signatureBytes: Uint8Array; signedData: Uint8Array } | null {
   const parts = token.split(".");
   if (parts.length !== 3) return null;
 
   try {
-    const headerJson = atob(parts[0].replace(/-/g, "+").replace(/_/g, "/"));
-    const payloadJson = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"));
-    const header = JSON.parse(headerJson);
-    const payload = JSON.parse(payloadJson);
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const headerJson = decoder.decode(base64UrlToUint8Array(parts[0]));
+    const payloadJson = decoder.decode(base64UrlToUint8Array(parts[1]));
+    const parsedHeader = parseJsonSafely(headerJson);
+    const parsedPayload = parseJsonSafely(payloadJson);
+    if (!parsedHeader.ok || !parsedPayload.ok) {
+      return null;
+    }
     const signatureBytes = base64UrlToUint8Array(parts[2]);
     const signedData = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
-    return { header, payload, signatureBytes, signedData };
+    return {
+      header: parsedHeader.data,
+      payload: parsedPayload.data,
+      signatureBytes,
+      signedData,
+    };
   } catch {
     return null;
   }
@@ -116,7 +133,12 @@ async function verifyFirebaseIdToken(token: string, projectId: string): Promise<
 
   const { header, payload, signatureBytes, signedData } = parsed;
 
-  if (header.alg !== "RS256" || !header.kid) {
+  if (
+    header.alg !== "RS256" ||
+    typeof header.kid !== "string" ||
+    header.kid.length === 0 ||
+    header.kid.length > 128
+  ) {
     return { valid: false, error: "Invalid JWT header algorithm or missing key ID" };
   }
 
@@ -129,17 +151,28 @@ async function verifyFirebaseIdToken(token: string, projectId: string): Promise<
   if (payload.aud !== projectId) {
     return { valid: false, error: `Invalid audience: expected ${projectId}, got ${payload.aud}` };
   }
-  if (typeof payload.exp !== "number" || payload.exp < nowSec) {
+  if (typeof payload.sub !== "string" || payload.sub.length === 0 || payload.sub.length > 128) {
+    return { valid: false, error: "Missing or invalid JWT subject (sub)" };
+  }
+  if (typeof payload.exp !== "number" || !Number.isFinite(payload.exp) || payload.exp <= nowSec) {
     return { valid: false, error: "Token has expired" };
   }
-  if (typeof payload.auth_time !== "number" || payload.auth_time > nowSec + 300) {
+  if (typeof payload.iat !== "number" || !Number.isFinite(payload.iat) || payload.iat > nowSec + 300) {
+    return { valid: false, error: "Token issued-at (iat) is in the future" };
+  }
+  if (typeof payload.auth_time !== "number" || !Number.isFinite(payload.auth_time) || payload.auth_time > nowSec + 300) {
     return { valid: false, error: "Token auth_time is in the future" };
   }
 
   const keys = await getGooglePublicKeys();
-  const matchingJwk = keys.find((k) => k.kid === header.kid);
-  if (!matchingJwk) {
-    return { valid: false, error: `No matching public key found for kid ${header.kid}` };
+  const matchingJwk = keys.find((k) => k && typeof k === "object" && k.kid === header.kid);
+  if (
+    !matchingJwk ||
+    matchingJwk.kty !== "RSA" ||
+    (matchingJwk.alg && matchingJwk.alg !== "RS256") ||
+    (matchingJwk.use && matchingJwk.use !== "sig")
+  ) {
+    return { valid: false, error: `No valid RSA public key found for kid ${header.kid}` };
   }
 
   try {
@@ -162,7 +195,11 @@ async function verifyFirebaseIdToken(token: string, projectId: string): Promise<
       return { valid: false, error: "Cryptographic signature mismatch" };
     }
 
-    return { valid: true, uid: payload.sub, email: payload.email };
+    return {
+      valid: true,
+      uid: payload.sub,
+      email: typeof payload.email === "string" ? payload.email : undefined,
+    };
   } catch (cryptoErr: any) {
     return { valid: false, error: `Crypto verification failed: ${cryptoErr?.message}` };
   }
@@ -237,6 +274,156 @@ async function verifyTurnstileToken(
   }
 }
 
+function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  const subtle = crypto.subtle as SubtleCrypto & {
+    timingSafeEqual?: (a: ArrayBufferView, b: ArrayBufferView) => boolean;
+  };
+  if (typeof subtle.timingSafeEqual === "function") {
+    return subtle.timingSafeEqual(a, b);
+  }
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a[i] ^ b[i];
+  }
+  return diff === 0;
+}
+
+async function verifyWebhookHmacSha256(
+  payload: string,
+  signatureHeader: string | null,
+  secret: string | undefined,
+): Promise<boolean> {
+  if (!secret || !signatureHeader) return false;
+  const normalizedHex = signatureHeader.trim().toLowerCase().replace(/^sha256=/, "");
+  if (!/^[0-9a-f]{64}$/.test(normalizedHex)) return false;
+
+  const providedBytes = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    providedBytes[i] = parseInt(normalizedHex.slice(i * 2, i * 2 + 2), 16);
+  }
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const expectedSig = new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, encoder.encode(payload)),
+  );
+  return timingSafeEqualBytes(expectedSig, providedBytes);
+}
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const MAX_RATE_LIMIT_ENTRIES = 10_000;
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+export function resetRateLimitersForTest(): void {
+  rateLimitStore.clear();
+}
+
+export function resetJwksCacheForTest(): void {
+  jwksCache = null;
+}
+
+function evictRateLimitEntries(now: number): void {
+  for (const [k, v] of rateLimitStore.entries()) {
+    if (v.resetAt <= now) {
+      rateLimitStore.delete(k);
+    }
+  }
+  while (rateLimitStore.size >= MAX_RATE_LIMIT_ENTRIES) {
+    const oldestKey = rateLimitStore.keys().next().value;
+    if (oldestKey === undefined) break;
+    rateLimitStore.delete(oldestKey);
+  }
+}
+
+async function enforceRateLimit(
+  binding: { limit(options: { key: string }): Promise<{ success: boolean }> } | undefined,
+  key: string,
+  maxRequests: number,
+  windowMs: number = RATE_LIMIT_WINDOW_MS,
+): Promise<{ allowed: boolean; retryAfterSec: number }> {
+  if (binding) {
+    try {
+      const outcome = await binding.limit({ key });
+      if (!outcome.success) {
+        return { allowed: false, retryAfterSec: Math.ceil(windowMs / 1000) };
+      }
+    } catch (err) {
+      console.warn("[RateLimit] Cloudflare binding error, falling back to isolate limiter:", err);
+    }
+  }
+
+  const now = Date.now();
+  const existing = rateLimitStore.get(key);
+  if (!existing || existing.resetAt <= now) {
+    if (rateLimitStore.size >= MAX_RATE_LIMIT_ENTRIES) {
+      evictRateLimitEntries(now);
+    }
+    rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
+    return { allowed: true, retryAfterSec: Math.ceil(windowMs / 1000) };
+  }
+
+  if (existing.count >= maxRequests) {
+    return {
+      allowed: false,
+      retryAfterSec: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
+    };
+  }
+
+  existing.count += 1;
+  return { allowed: true, retryAfterSec: Math.ceil((existing.resetAt - now) / 1000) };
+}
+
+function getVerifiedClientIp(request: Request): string {
+  // Always trust Cloudflare's verified edge header; never read spoofable X-Forwarded-For.
+  return request.headers.get("CF-Connecting-IP")?.trim() || "unknown";
+}
+
+const NO_STORE_HEADERS: Record<string, string> = {
+  "Cache-Control": "no-store, private",
+  "Pragma": "no-cache",
+};
+
+function withNoStoreHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", NO_STORE_HEADERS["Cache-Control"]);
+  headers.set("Pragma", NO_STORE_HEADERS.Pragma);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+function rateLimitExceededResponse(
+  retryAfterSec: number,
+  corsHeaders: Record<string, string>,
+  requestId: string,
+): Response {
+  return new Response(
+    JSON.stringify({
+      error: "Too Many Requests",
+      message: "Rate limit exceeded. Please wait before retrying.",
+      request_id: requestId,
+    }),
+    {
+      status: 429,
+      headers: {
+        ...corsHeaders,
+        ...NO_STORE_HEADERS,
+        "Content-Type": "application/json",
+        "Retry-After": String(retryAfterSec),
+      },
+    },
+  );
+}
+
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("Origin") || "";
   const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "https://aegishealthai.co.in";
@@ -261,15 +448,7 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    // 2. Health probe
-    if (url.pathname === "/api/health" || url.pathname === "/health") {
-      return new Response(
-        JSON.stringify({ status: "healthy" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // 2b. RFC 9116 security.txt
+    // 2b. RFC 9116 security.txt (static public metadata; only cacheable Edge route)
     if (url.pathname === "/.well-known/security.txt" || url.pathname === "/security.txt") {
       const securityTxt = [
         "Contact: mailto:founder@aegishealthai.co.in",
@@ -292,8 +471,34 @@ export default {
       });
     }
 
+    const response = await handleDynamicRoute(request, env, corsHeaders, url, requestId);
+    return withNoStoreHeaders(response);
+  },
+};
+
+async function handleDynamicRoute(
+  request: Request,
+  env: Env,
+  corsHeaders: Record<string, string>,
+  url: URL,
+  requestId: string,
+): Promise<Response> {
+    // 2. Health probe
+    if (url.pathname === "/api/health" || url.pathname === "/health") {
+      return new Response(
+        JSON.stringify({ status: "healthy" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // 2c. Standalone Turnstile Token Verification
     if (url.pathname === "/api/turnstile/verify" && request.method === "POST") {
+      const clientIp = getVerifiedClientIp(request);
+      const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `turnstile:ip:${clientIp}`, 30);
+      if (!ipLimit.allowed) {
+        return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+      }
+
       if (!env.TURNSTILE_SECRET) {
         return new Response(
           JSON.stringify({ error: "Configuration Error", message: "TURNSTILE_SECRET is not configured on edge", request_id: requestId }),
@@ -301,15 +506,25 @@ export default {
         );
       }
 
-      let payload: any = {};
-      try {
-        payload = await request.json();
-      } catch {}
+      const parsedTurnstile = await parseSafeJsonBody(request, 8 * 1024, true);
+      if (!parsedTurnstile.ok) {
+        return new Response(
+          JSON.stringify({ success: false, error: parsedTurnstile.error, request_id: requestId }),
+          { status: parsedTurnstile.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const payload = parsedTurnstile.data;
+      if (payload.token !== undefined && (typeof payload.token !== "string" || payload.token.length > 2048)) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Invalid Turnstile token field", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
 
-      const token = payload.token || request.headers.get("X-Turnstile-Token") || "";
-      const clientIp = request.headers.get("CF-Connecting-IP") || undefined;
+      const token = (typeof payload.token === "string" ? payload.token : "") || request.headers.get("X-Turnstile-Token") || "";
+      const remoteIp = clientIp !== "unknown" ? clientIp : undefined;
 
-      const verifyResult = await verifyTurnstileToken(token, env.TURNSTILE_SECRET, clientIp);
+      const verifyResult = await verifyTurnstileToken(token, env.TURNSTILE_SECRET, remoteIp);
       if (!verifyResult.valid) {
         return new Response(
           JSON.stringify({ success: false, error: verifyResult.error, request_id: requestId }),
@@ -325,6 +540,12 @@ export default {
 
     // 3. AI Generation Route
     if (url.pathname === "/api/ai/generate" && request.method === "POST") {
+      const verifiedClientIp = getVerifiedClientIp(request);
+      const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `ai:ip:${verifiedClientIp}`, 60);
+      if (!ipLimit.allowed) {
+        return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+      }
+
       const authHeader = request.headers.get("Authorization") || "";
       const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
@@ -363,12 +584,19 @@ export default {
         );
       }
 
+      if (userUid) {
+        const userLimit = await enforceRateLimit(env.USER_RATE_LIMITER, `ai:uid:${userUid}`, 40);
+        if (!userLimit.allowed) {
+          return rateLimitExceededResponse(userLimit.retryAfterSec, corsHeaders, requestId);
+        }
+      }
+
       // 3a. Turnstile Bot Verification (Additive Bot Defense)
       const turnstileToken =
         request.headers.get("X-Turnstile-Token") ||
         request.headers.get("cf-turnstile-response") ||
         "";
-      const clientIp = request.headers.get("CF-Connecting-IP") || undefined;
+      const clientIp = verifiedClientIp !== "unknown" ? verifiedClientIp : undefined;
       let turnstileVerified = false;
 
       if (env.TURNSTILE_SECRET) {
@@ -401,13 +629,43 @@ export default {
         }
       }
 
-      // Read client payload
-      let body: any;
-      try {
-        body = await request.json();
-      } catch {
+      // Read & validate client payload (prototype-pollution guard + field schema)
+      const parsedGenerate = await parseSafeJsonBody(request, 6 * 1024 * 1024);
+      if (!parsedGenerate.ok) {
         return new Response(
-          JSON.stringify({ error: "Bad Request", message: "Malformed JSON body", request_id: requestId }),
+          JSON.stringify({ error: "Bad Request", message: parsedGenerate.error, request_id: requestId }),
+          { status: parsedGenerate.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const body = parsedGenerate.data;
+
+      if (body.model !== undefined && (typeof body.model !== "string" || !/^[a-zA-Z0-9._-]{1,100}$/.test(body.model))) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid model identifier", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (body.contents !== undefined && !Array.isArray(body.contents) && typeof body.contents !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid contents payload", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (body.generationConfig !== undefined && !isPlainObject(body.generationConfig)) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid generationConfig object", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (body.systemInstruction !== undefined && !isPlainObject(body.systemInstruction) && typeof body.systemInstruction !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid systemInstruction", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (body.safetySettings !== undefined && !Array.isArray(body.safetySettings)) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid safetySettings array", request_id: requestId }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
@@ -415,7 +673,7 @@ export default {
       const feature = resolveFeature(request.headers.get("X-Aegis-Feature"), body);
       const isLounge = feature === LOUNGE_FEATURE;
 
-      const model = body.model || "gemini-3.6-flash";
+      const model = typeof body.model === "string" && body.model ? body.model : "gemini-3.6-flash";
       const apiKey = env.GEMINI_API_KEY;
 
       if (!apiKey) {
@@ -444,13 +702,10 @@ export default {
         "Content-Type": "application/json",
         "User-Agent": "AegisHealthAI-Edge/2.0",
         "x-goog-api-key": apiKey,
-        // Privacy: do not store prompt/response bodies (PHI) in AI Gateway logs; metadata only.
+        // Privacy: never cache clinical requests/responses (PHI) or store bodies in AI Gateway logs.
         "cf-aig-collect-log-payload": "false",
+        "cf-aig-skip-cache": "true",
       };
-      if (isLounge) {
-        // Lounge replies are personalised (PHI in the prompt): never serve or store them from the gateway cache.
-        gatewayHeaders["cf-aig-skip-cache"] = "true";
-      }
       if (env.CF_AIG_TOKEN) {
         gatewayHeaders["cf-aig-authorization"] = `Bearer ${env.CF_AIG_TOKEN}`;
       }
@@ -555,6 +810,12 @@ export default {
 
         // 4. NVIDIA NIM Proxy Route
     if (url.pathname === "/api/ai/nim" && request.method === "POST") {
+      const clientIp = getVerifiedClientIp(request);
+      const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `ai:ip:${clientIp}`, 60);
+      if (!ipLimit.allowed) {
+        return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+      }
+
       const authHeader = request.headers.get("Authorization") || "";
       const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
@@ -590,6 +851,13 @@ export default {
         );
       }
 
+      if (userUid) {
+        const userLimit = await enforceRateLimit(env.USER_RATE_LIMITER, `ai:uid:${userUid}`, 40);
+        if (!userLimit.allowed) {
+          return rateLimitExceededResponse(userLimit.retryAfterSec, corsHeaders, requestId);
+        }
+      }
+
       const nimKey = env.NVIDIA_NIM_API_KEY;
       if (!nimKey) {
         return new Response(
@@ -603,7 +871,47 @@ export default {
       }
 
       const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
-      const bodyText = await request.text();
+      const parsedNim = await parseSafeJsonBody(request, 1024 * 1024);
+      if (!parsedNim.ok) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: parsedNim.error, request_id: requestId }),
+          { status: parsedNim.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const nimRaw = parsedNim.data;
+      if (typeof nimRaw.model !== "string" || !/^[a-zA-Z0-9./:_-]{1,120}$/.test(nimRaw.model)) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid NIM model identifier", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (!Array.isArray(nimRaw.messages) || nimRaw.messages.length === 0 || nimRaw.messages.length > 100) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "NIM request requires non-empty messages array (max 100)", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const nimPayload: Record<string, unknown> = {
+        model: nimRaw.model,
+        messages: nimRaw.messages,
+      };
+      if (typeof nimRaw.temperature === "number" && Number.isFinite(nimRaw.temperature)) {
+        nimPayload.temperature = Math.max(0, Math.min(2, nimRaw.temperature));
+      }
+      if (typeof nimRaw.top_p === "number" && Number.isFinite(nimRaw.top_p)) {
+        nimPayload.top_p = Math.max(0, Math.min(1, nimRaw.top_p));
+      }
+      if (typeof nimRaw.max_tokens === "number" && Number.isFinite(nimRaw.max_tokens)) {
+        nimPayload.max_tokens = Math.max(1, Math.min(16384, Math.floor(nimRaw.max_tokens)));
+      }
+      if (typeof nimRaw.stream === "boolean") {
+        nimPayload.stream = nimRaw.stream;
+      }
+      if (isPlainObject(nimRaw.response_format)) {
+        nimPayload.response_format = nimRaw.response_format;
+      }
+
       const upstreamResponse = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -611,7 +919,7 @@ export default {
           "Accept": "application/json",
           "Authorization": `Bearer ${nimKey}`,
         },
-        body: bodyText,
+        body: JSON.stringify(nimPayload),
         signal: clientSignal,
       });
 
@@ -704,6 +1012,12 @@ export default {
 
     // 6. Amazon Bedrock Mantle Multi-Model Proxy Route
     if ((url.pathname === "/api/ai/bedrock" || url.pathname === "/api/bedrock/converse") && request.method === "POST") {
+      const clientIp = getVerifiedClientIp(request);
+      const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `ai:ip:${clientIp}`, 60);
+      if (!ipLimit.allowed) {
+        return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+      }
+
       const authHeader = request.headers.get("Authorization") || "";
       const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
@@ -739,6 +1053,13 @@ export default {
         );
       }
 
+      if (userUid) {
+        const userLimit = await enforceRateLimit(env.USER_RATE_LIMITER, `ai:uid:${userUid}`, 40);
+        if (!userLimit.allowed) {
+          return rateLimitExceededResponse(userLimit.retryAfterSec, corsHeaders, requestId);
+        }
+      }
+
       const bedrockKey = env.BEDROCK_MANTLE_API_KEY;
       if (!bedrockKey) {
         return new Response(
@@ -752,31 +1073,83 @@ export default {
       }
 
       const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
-      let rawBody: any = {};
-      try {
-        rawBody = await request.json();
-      } catch {
+      const parsedBedrock = await parseSafeJsonBody(request, 1024 * 1024);
+      if (!parsedBedrock.ok) {
         return new Response(
-          JSON.stringify({ error: "Bad Request", message: "Malformed JSON body", request_id: requestId }),
+          JSON.stringify({ error: "Bad Request", message: parsedBedrock.error, request_id: requestId }),
+          { status: parsedBedrock.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const rawBody = parsedBedrock.data;
+
+      const endpoint = env.BEDROCK_MANTLE_ENDPOINT || "https://bedrock-mantle.us-east-1.api.aws/v1";
+      const targetModel = rawBody.model ?? "deepseek.v3.2";
+      if (typeof targetModel !== "string" || !/^[a-zA-Z0-9._:-]{1,120}$/.test(targetModel)) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid Bedrock model identifier", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (rawBody.messages !== undefined && (!Array.isArray(rawBody.messages) || rawBody.messages.length > 100)) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid messages array", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (rawBody.prompt !== undefined && typeof rawBody.prompt !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid prompt field", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (rawBody.systemPrompt !== undefined && typeof rawBody.systemPrompt !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid systemPrompt field", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (rawBody.stream !== undefined && typeof rawBody.stream !== "boolean") {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Invalid stream flag", request_id: requestId }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
-      const endpoint = env.BEDROCK_MANTLE_ENDPOINT || "https://bedrock-mantle.us-east-1.api.aws/v1";
-      const targetModel = rawBody.model || "deepseek.v3.2";
+      const messages = Array.isArray(rawBody.messages)
+        ? rawBody.messages
+        : [
+            ...(typeof rawBody.systemPrompt === "string" && rawBody.systemPrompt
+              ? [{ role: "system", content: rawBody.systemPrompt }]
+              : []),
+            ...(typeof rawBody.prompt === "string" && rawBody.prompt
+              ? [{ role: "user", content: rawBody.prompt }]
+              : []),
+          ];
 
-      // Normalize OpenAI format
-      const upstreamPayload: Record<string, any> = {
+      if (messages.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: "Bedrock request requires messages or prompt", request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const rawTemp = typeof rawBody.temperature === "number" && Number.isFinite(rawBody.temperature)
+        ? Math.max(0, Math.min(2, rawBody.temperature))
+        : 0.2;
+      const rawMaxTokens = rawBody.max_tokens ?? rawBody.maxTokens;
+      const clampedMaxTokens = typeof rawMaxTokens === "number" && Number.isFinite(rawMaxTokens)
+        ? Math.max(1, Math.min(16384, Math.floor(rawMaxTokens)))
+        : 2048;
+
+      // Normalize OpenAI format with allowlisted keys
+      const upstreamPayload: Record<string, unknown> = {
         model: targetModel,
-        messages: rawBody.messages || [
-          ...(rawBody.systemPrompt ? [{ role: "system", content: rawBody.systemPrompt }] : []),
-          ...(rawBody.prompt ? [{ role: "user", content: rawBody.prompt }] : []),
-        ],
-        temperature: rawBody.temperature ?? 0.2,
-        max_tokens: rawBody.max_tokens || rawBody.maxTokens || 2048,
+        messages,
+        temperature: rawTemp,
+        max_tokens: clampedMaxTokens,
       };
 
-      if (rawBody.stream !== undefined) {
+      if (typeof rawBody.stream === "boolean") {
         upstreamPayload.stream = rawBody.stream;
       }
 
@@ -807,42 +1180,89 @@ export default {
 
     // 7. Diagnostic Partner Webhook Ingestion Route (Thyrocare / Tata 1mg / Redcliffe / Healthians)
     if (url.pathname === "/api/integrations/lab/webhook" && request.method === "POST") {
-      try {
-        const payloadText = await request.text();
-        const payload = JSON.parse(payloadText);
+      const clientIp = getVerifiedClientIp(request);
+      const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `webhook:ip:${clientIp}`, 60);
+      if (!ipLimit.allowed) {
+        return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+      }
 
-        const partnerName = request.headers.get("X-Partner-Id") || payload.partner || "diagnostic-partner";
-
-        console.log(`[Lab Webhook] Received report update from ${partnerName}:`, {
-          bookingId: payload.bookingId || payload.orderId,
-          status: payload.status,
-          biomarkersReported: payload.biomarkers?.length || 0,
-        });
-
+      if (!env.LAB_WEBHOOK_SECRET) {
         return new Response(
-          JSON.stringify({
-            status: "received",
-            partner: partnerName,
-            bookingId: payload.bookingId || payload.orderId || "unknown",
-            processedAt: new Date().toISOString(),
-            telemetrySyncStatus: "QUEUED_FOR_FHIR_INGESTION",
-          }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId },
-          },
+          JSON.stringify({ error: "Service Unavailable", message: "Webhook secret is not configured on edge", request_id: requestId }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
-      } catch (err: any) {
+      }
+
+      const payloadText = await request.text();
+      if (payloadText.length > 256 * 1024) {
         return new Response(
-          JSON.stringify({ error: "Invalid webhook payload", details: err?.message }),
+          JSON.stringify({ error: "Payload Too Large", message: "Webhook payload exceeds 256KB limit", request_id: requestId }),
+          { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const sigHeader =
+        request.headers.get("X-Lab-Signature-256") ||
+        request.headers.get("X-Webhook-Signature");
+      const validSig = await verifyWebhookHmacSha256(
+        payloadText,
+        sigHeader,
+        env.LAB_WEBHOOK_SECRET,
+      );
+      if (!validSig) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", message: "Invalid webhook signature", request_id: requestId }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const parsedWebhook = parseJsonSafely(payloadText);
+      if (!parsedWebhook.ok) {
+        return new Response(
+          JSON.stringify({ error: parsedWebhook.error, request_id: requestId }),
+          { status: parsedWebhook.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const payload = parsedWebhook.data;
+
+      const rawPartner = typeof payload.partner === "string" ? payload.partner.slice(0, 128) : undefined;
+      const rawBookingId = typeof payload.bookingId === "string"
+        ? payload.bookingId.slice(0, 128)
+        : (typeof payload.orderId === "string" ? payload.orderId.slice(0, 128) : undefined);
+      const rawStatus = typeof payload.status === "string" ? payload.status.slice(0, 128) : undefined;
+      if (payload.biomarkers !== undefined && !Array.isArray(payload.biomarkers)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid webhook payload", request_id: requestId }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
+
+      const headerPartner = request.headers.get("X-Partner-Id")?.slice(0, 128);
+      const partnerName = headerPartner || rawPartner || "diagnostic-partner";
+
+      console.log(`[Lab Webhook] Received report update from ${partnerName}:`, {
+        bookingId: rawBookingId,
+        status: rawStatus,
+        biomarkersReported: Array.isArray(payload.biomarkers) ? payload.biomarkers.length : 0,
+      });
+
+      return new Response(
+        JSON.stringify({
+          status: "received",
+          partner: partnerName,
+          bookingId: rawBookingId || "unknown",
+          processedAt: new Date().toISOString(),
+          telemetrySyncStatus: "QUEUED_FOR_FHIR_INGESTION",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId },
+        },
+      );
     }
 
     return new Response(
       JSON.stringify({ error: "Not Found", request_id: requestId }),
       { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-  },
-};
+}

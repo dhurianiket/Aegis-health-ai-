@@ -33,7 +33,10 @@ export const SAFE_DOSING_REPLY = [
   "_AI health information, not medical advice. Please consult a registered medical practitioner before making health decisions._",
 ].join("\n");
 
-const NUM = String.raw`\d+(?:[.,]\d+)*(?:\s*(?:-|–|to|se)\s*\d+(?:[.,]\d+)*)?`;
+const MAX_GUARD_TEXT_CHARS = 32_768;
+const MAX_SENTENCES = 250;
+
+const NUM = String.raw`\d{1,7}(?:[.,]\d{1,4}){0,3}(?:\s*(?:-|–|to|se)\s*\d{1,7}(?:[.,]\d{1,4}){0,3})?`;
 const UNIT =
   String.raw`(?:mg|mgs|milligrams?|mcg|µg|μg|micrograms?|units?|iu|ml|mls|millilit(?:er|re)s?|tablets?|tabs?|capsules?|caps?|puffs?|drops?|sachets?|goli(?:yan|yaan|yon)?|मिलीग्राम|यूनिट|गोली|गोलियां|गोलियाँ)`;
 /** Denominators that turn a unit into a lab concentration / rate rather than a dose. */
@@ -106,8 +109,10 @@ const UNIT_CANON: ReadonlyArray<[RegExp, string]> = [
 
 /** Canonical dose strings (e.g. "500mg", "10unit") found in `text`. */
 export function extractDoseAmounts(text: string): string[] {
+  if (!text) return [];
   const out: string[] = [];
-  for (const m of text.normalize("NFKC").matchAll(DOSE_AMOUNT_GLOBAL)) {
+  const bounded = text.slice(0, MAX_GUARD_TEXT_CHARS).normalize("NFKC");
+  for (const m of bounded.matchAll(DOSE_AMOUNT_GLOBAL)) {
     const raw = m[0].toLowerCase().replace(/\s+/g, "");
     const unitMatch = raw.match(/[^\d.,\-–]+$/u);
     const unitRaw = unitMatch ? unitMatch[0] : "";
@@ -133,14 +138,16 @@ export interface DosingDetectionOptions {
 /** Splits text into sentence-ish chunks (., !, ?, danda, newlines). Decimals survive (no whitespace after '.'). */
 function splitSentences(text: string): string[] {
   return text
+    .slice(0, MAX_GUARD_TEXT_CHARS)
     .split(/(?<=[.!?।])\s+|\n+/u)
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, MAX_SENTENCES);
 }
 
 export function detectPatientDirectedDosing(text: string, options: DosingDetectionOptions = {}): DosingDetection {
   if (!text) return { matched: false };
-  const normalised = text.normalize("NFKC");
+  const normalised = text.slice(0, MAX_GUARD_TEXT_CHARS).normalize("NFKC");
   const perKg = normalised.match(PER_KG_DOSE);
   if (perKg) return { matched: true, reason: "per_kg_dose", sentence: perKg[0] };
   const known = options.knownDoses ?? new Set<string>();
@@ -161,17 +168,25 @@ export function detectPatientDirectedDosing(text: string, options: DosingDetecti
 
 /** Collects all text parts from a Gemini `contents` array (the request's own data). */
 export function collectRequestText(contents: unknown): string {
-  if (!Array.isArray(contents)) return typeof contents === "string" ? contents : "";
+  if (!Array.isArray(contents)) {
+    return typeof contents === "string" ? contents.slice(0, MAX_GUARD_TEXT_CHARS) : "";
+  }
   const chunks: string[] = [];
+  let totalChars = 0;
   for (const c of contents) {
+    if (totalChars >= MAX_GUARD_TEXT_CHARS) break;
     const parts = c && typeof c === "object" ? (c as { parts?: unknown }).parts : undefined;
     if (!Array.isArray(parts)) continue;
     for (const p of parts) {
+      if (totalChars >= MAX_GUARD_TEXT_CHARS) break;
       const t = p && typeof p === "object" ? (p as { text?: unknown }).text : undefined;
-      if (typeof t === "string") chunks.push(t);
+      if (typeof t === "string") {
+        chunks.push(t);
+        totalChars += t.length + 1;
+      }
     }
   }
-  return chunks.join("\n");
+  return chunks.join("\n").slice(0, MAX_GUARD_TEXT_CHARS);
 }
 
 interface GeminiPart {
@@ -198,7 +213,8 @@ export function extractCandidateText(payload: unknown): string {
   return parts
     .filter((p) => p && p.thought !== true && typeof p.text === "string")
     .map((p) => String(p.text))
-    .join("");
+    .join("")
+    .slice(0, MAX_GUARD_TEXT_CHARS);
 }
 
 /**
@@ -243,10 +259,18 @@ export function resolveFeature(headerValue: string | null, body: unknown): strin
 export const LOUNGE_MAX_OUTPUT_TOKENS_CEILING = 4096;
 export const LOUNGE_DEFAULT_MAX_OUTPUT_TOKENS = 1536;
 
+const FORBIDDEN_CONFIG_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 /** Clamps generationConfig.maxOutputTokens for Lounge requests; never trusts the client alone. */
 export function clampLoungeGenerationConfig(generationConfig: unknown): Record<string, unknown> {
-  const cfg: Record<string, unknown> =
-    generationConfig && typeof generationConfig === "object" ? { ...(generationConfig as Record<string, unknown>) } : {};
+  const cfg: Record<string, unknown> = {};
+  if (generationConfig && typeof generationConfig === "object" && !Array.isArray(generationConfig)) {
+    for (const key of Object.getOwnPropertyNames(generationConfig)) {
+      if (!FORBIDDEN_CONFIG_KEYS.has(key)) {
+        cfg[key] = (generationConfig as Record<string, unknown>)[key];
+      }
+    }
+  }
   const requested = typeof cfg.maxOutputTokens === "number" && Number.isFinite(cfg.maxOutputTokens) ? cfg.maxOutputTokens : LOUNGE_DEFAULT_MAX_OUTPUT_TOKENS;
   cfg.maxOutputTokens = Math.max(1, Math.min(Math.floor(requested), LOUNGE_MAX_OUTPUT_TOKENS_CEILING));
   return cfg;
