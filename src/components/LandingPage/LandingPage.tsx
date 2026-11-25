@@ -437,16 +437,19 @@ export default function LandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center flex-wrap gap-2 mb-1">
                         <span className="px-2 py-0.5 rounded-full bg-[#76B900]/15 border border-[#76B900]/40 text-[10px] font-bold text-[#8ce405] tracking-wider uppercase">
                           NVIDIA Inception Program Member
                         </span>
+                        <span className="px-2 py-0.5 rounded-full bg-sky-500/15 border border-sky-400/40 text-[10px] font-bold text-sky-300 tracking-wider uppercase">
+                          Google for Startups Cloud Program
+                        </span>
                       </div>
                       <h4 className="text-white text-sm font-bold tracking-wide mb-1">
-                        Founder Milestone &amp; Startup Ecosystem Backing
+                        Founder Milestone &amp; Startup Ecosystem Support
                       </h4>
                       <p className="text-slate-300 text-xs font-medium leading-relaxed mb-2">
-                        Aegis Health AI is a member of the NVIDIA Inception program. Approved for startup acceleration and infrastructure support from NVIDIA Inception, Google Cloud AI Builder, AWS Activate, and Microsoft Azure.
+                        Aegis Health AI is a member of the NVIDIA Inception program and a participant in the Google for Startups Cloud Program, with cloud infrastructure support from AWS Activate and Microsoft Azure Founders Hub.
                       </p>
                       <p className="text-emerald-400/90 text-xs font-semibold tracking-wide mb-3">
                         Accelerating GPU clinical multimodal inference &amp; longitudinal health telemetry.
@@ -456,14 +459,14 @@ export default function LandingPage() {
                           <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] animate-pulse" />
                           NVIDIA Inception
                         </span>
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
-                          Google Cloud AI Builder
+                        <span className="px-2 py-1 rounded-md bg-sky-500/10 border border-sky-400/40 text-xs font-semibold text-sky-300 tracking-wide shadow-sm">
+                          Google for Startups Cloud Program
                         </span>
                         <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
                           AWS Activate
                         </span>
                         <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
-                          Azure Startup Support
+                          Microsoft Azure Founders Hub
                         </span>
                       </div>
                     </div>
@@ -1535,7 +1538,7 @@ export default function LandingPage() {
 
               <div className="text-center md:text-right space-y-3">
                 <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
-                  Powered by <span className="text-slate-200">Google Gemini & Firebase</span>
+                  Built on <span className="text-slate-200">Google Cloud, Vertex AI &amp; Firebase</span>
                   <Sparkles className="w-3 h-3 text-emerald-400" />
                 </p>
                 <div className="flex flex-col items-center md:items-end gap-2">
@@ -1553,7 +1556,7 @@ export default function LandingPage() {
                     />
                   </a>
                   <span className="text-xs font-medium text-slate-300">
-                    Aegis Health AI is a member of the NVIDIA Inception program.
+                    Aegis Health AI is a member of the NVIDIA Inception program &amp; supported by the Google for Startups Cloud Program.
                   </span>
                 </div>
               </div>
@@ -1561,7 +1564,7 @@ export default function LandingPage() {
 
             <div className="max-w-7xl mx-auto px-6 pt-4 text-center">
               <p className="text-[11px] text-slate-400 leading-relaxed max-w-4xl mx-auto">
-                © 2026 NVIDIA, the NVIDIA logo, and NVIDIA Inception are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries.
+                © 2026 NVIDIA, the NVIDIA logo, and NVIDIA Inception are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries. Google Cloud, Vertex AI, and Google for Startups are trademarks of Google LLC.
               </p>
             </div>
 

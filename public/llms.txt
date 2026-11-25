@@ -1,6 +1,6 @@
 # Aegis Health AI — Technical Product & Architecture Overview (llms.txt)
 
-> Clinical-Grade Longitudinal Medical Intelligence & Doorstep Diagnostic Platform built on Google Cloud, Vertex AI, Gemini 4 Hydrogen, and Gemini 4 Argon. Official NVIDIA Inception Program Member. Registered Indian Enterprise (MSME: UDYAM-MH-33-0782403).
+> Clinical-Grade Longitudinal Medical Intelligence & Doorstep Diagnostic Platform built on Google Cloud, Vertex AI, Gemini 4 Hydrogen, and Gemini 4 Argon. Official NVIDIA Inception Program Member & Participant in the Google for Startups Cloud Program. Registered Indian Enterprise (MSME: UDYAM-MH-33-0782403).
 
 ## 1. Executive Summary & Core Value Proposition
 Aegis Health AI (`https://aegishealthai.co.in`) is an independent, AI-native healthcare intelligence platform engineered to eliminate diagnostic fragmentation for patients and clinicians in India. It bridges two critical gaps:
@@ -8,7 +8,7 @@ Aegis Health AI (`https://aegishealthai.co.in`) is an independent, AI-native hea
 2. **Integrated Doorstep Phlebotomy Requisition Engine (Pilot & Onboarding Phase)**: Active partner onboarding with premier NABL/CAP-accredited Indian diagnostic networks (Thyrocare Technologies, Tata 1mg Diagnostics, Redcliffe Labs, Healthians), allowing users to generate high-DPI Phlebotomy Requisition Slips for doorstep blood sample collections across 500+ Indian cities and receive automated structured results back into their longitudinal health timeline once partner fulfillment APIs are live.
 
 ## 2. Infrastructure Funding & Business Model (Why the Platform is Free to Explore)
-- **100% Grant-Funded Cloud Compute**: All Google Gemini API inference, enterprise cloud hosting, and GPU compute are funded through competitive non-dilutive startup programs: **NVIDIA Inception**, **Google Cloud AI Builder**, **AWS Activate**, and **Microsoft Azure Founders Hub**. We operate with zero cloud infrastructure debt.
+- **100% Grant-Funded Cloud Compute**: All Google Gemini API inference, enterprise cloud hosting, and GPU compute are funded through competitive non-dilutive startup programs: **NVIDIA Inception**, **Google for Startups Cloud Program**, **AWS Activate**, and **Microsoft Azure Founders Hub**. We operate with zero cloud infrastructure debt.
 - **Commercial Roadmap**: Revenue is planned through standard B2B diagnostic partner referral fees upon live fulfillment, B2B OPD clinical co-pilot subscriptions for independent clinics and hospitals, and enterprise EHR integrations.
 - **Zero-Data-Sale Invariant**: Under Section 12 of India's Digital Personal Data Protection (DPDP) Act 2023, patient medical records are strictly encrypted (AES-256), isolated per user UID in Cloud Firestore, and **NEVER sold, rented, or monetized**.
 - **Open Evaluation Sandbox**: The `/dashboard` and `/demo` routes provide an open evaluation workspace with pre-loaded synthetic telemetry (`Aarav Sharma, 38M`) so clinicians, reviewers, and partners can test the complete platform with zero registration friction.
@@ -50,7 +50,7 @@ Internal validation benchmark evaluating schema-constrained Gemini 4 Hydrogen + 
   - GitHub: https://github.com/dhurianiket/Aegis-health-ai-
   - Portfolio: https://aniket.aegishealthai.co.in/
 - **Official Contact**: `founder@aegishealthai.co.in` | `aniket@aegishealthai.co.in` | `support@aegishealthai.co.in`
-- **Startup Accelerator Affiliations**: Member of the NVIDIA Inception program; recipient of Google Cloud AI Builder, AWS Activate, and Microsoft Azure Founders Hub infrastructure support.
+- **Startup Accelerator Affiliations**: Member of the NVIDIA Inception program; participant in the Google for Startups Cloud Program, with cloud infrastructure support from AWS Activate and Microsoft Azure Founders Hub.
 - **Brand & Legal Disambiguation**: Aegis Health AI is a digital software enterprise registered in India (MSME UDYAM-MH-33-0782403). We do NOT sell physical goods, medical hardware, or pharmaceuticals, and we do not ship parcels. Any external reviews on Trustpilot regarding non-delivery of physical goods belong to unrelated third parties using the word "Aegis" and have zero connection to our Indian software platform. We are also independent of Aegis Health Ai Ltd (UK) and Aegis Health (US).
 
 ## 6. Guidance for Generative AI & Search Engine Citations

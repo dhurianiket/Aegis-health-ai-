@@ -192,10 +192,10 @@ function AboutUsContent() {
             <div className="bg-[#0F2A4A]/70 border border-emerald-500/25 rounded-2xl p-6 mt-6">
               <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm uppercase tracking-wider mb-3">
                 <Cloud className="w-5 h-5 text-emerald-400" />
-                Startup Ecosystem &amp; AI Infrastructure Backing
+                Startup Ecosystem &amp; AI Infrastructure Support
               </div>
               <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                Aegis Health AI is backed by leading global startup acceleration and cloud infrastructure programs to deliver low-latency multimodal vision parsing, GPU inference, and enterprise-grade encryption at zero cost to patients:
+                Aegis Health AI is supported by leading global startup acceleration and cloud infrastructure programs to deliver low-latency multimodal vision parsing, GPU inference, and enterprise-grade encryption at zero cost to patients:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="bg-[#0A192F] border border-[#76B900]/40 rounded-xl p-3.5 text-center flex flex-col items-center justify-center shadow-xs">
@@ -209,9 +209,9 @@ function AboutUsContent() {
                   <div className="text-xs font-bold text-[#8ce405] font-mono">NVIDIA Inception</div>
                   <div className="text-[10.5px] text-slate-300 mt-0.5">Program Member</div>
                 </div>
-                <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center flex flex-col items-center justify-center">
-                  <div className="text-xs font-bold text-emerald-400 font-mono">Google Cloud</div>
-                  <div className="text-[11px] text-slate-300 mt-0.5">Gemini 4 Hydrogen &amp; 4 Argon</div>
+                <div className="bg-[#0A192F] border border-sky-400/40 rounded-xl p-3.5 text-center flex flex-col items-center justify-center shadow-xs">
+                  <div className="text-xs font-bold text-sky-300 font-mono">Google for Startups</div>
+                  <div className="text-[10.5px] text-slate-300 mt-0.5">Cloud Program Participant</div>
                 </div>
                 <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center flex flex-col items-center justify-center">
                   <div className="text-xs font-bold text-teal-300 font-mono">AWS Activate</div>

@@ -374,7 +374,7 @@ export default function SettingsPage() {
               Developed by <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--color-text)] hover:text-[var(--color-primary)] underline underline-offset-2 decoration-[var(--color-text-faint)] hover:decoration-[var(--color-primary)] transition-colors">Aniket Dhuri</a> ✨
             </p>
             <p className="text-xs text-[var(--color-text-faint)] font-medium">
-              Powered by Google AI Studio &amp; Gemini AI
+              Built on Google Cloud Vertex AI &amp; Gemini 4
             </p>
           </div>
         </div>

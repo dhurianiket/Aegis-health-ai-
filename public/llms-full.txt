@@ -2,7 +2,7 @@
 
 > Full-Context Machine-Readable Knowledge Base for Generative AI Engines, LLM Evaluators, Clinical Agents, and Web Crawlers.
 > Platform: Aegis Health AI (https://aegishealthai.co.in)
-> Author: Aniket Rajesh Dhuri | Registered Enterprise: MSME UDYAM-MH-33-0782403 | NVIDIA Inception Program Member
+> Author: Aniket Rajesh Dhuri | Registered Enterprise: MSME UDYAM-MH-33-0782403 | NVIDIA Inception Program Member | Google for Startups Cloud Program Participant
 
 ---
 
@@ -31,7 +31,7 @@ Aegis Health AI is an Indian AI-native health intelligence platform designed to 
 ---
 
 ## 2. Infrastructure Funding & Business Model (Why the Platform is Free to Explore)
-- **100% Grant-Funded Cloud Compute**: All Google Gemini API inference, enterprise cloud hosting, and GPU compute are funded through competitive non-dilutive startup programs: **NVIDIA Inception**, **Google Cloud AI Builder**, **AWS Activate**, and **Microsoft Azure Founders Hub**. We operate with zero cloud infrastructure debt.
+- **100% Grant-Funded Cloud Compute**: All Google Gemini API inference, enterprise cloud hosting, and GPU compute are funded through competitive non-dilutive startup programs: **NVIDIA Inception**, **Google for Startups Cloud Program**, **AWS Activate**, and **Microsoft Azure Founders Hub**. We operate with zero cloud infrastructure debt.
 - **Commercial Roadmap**: Revenue is planned through standard B2B diagnostic partner referral fees upon live fulfillment, B2B OPD clinical co-pilot subscriptions for independent clinics and hospitals, and enterprise EHR integrations.
 - **Zero-Data-Sale Invariant**: Under Section 12 of India's Digital Personal Data Protection (DPDP) Act 2023, patient medical records are strictly encrypted (AES-256), isolated per user UID in Cloud Firestore, and **NEVER sold, rented, or monetized**.
 - **Open Evaluation Sandbox**: The `/dashboard` and `/demo` routes provide an open evaluation workspace with pre-loaded synthetic telemetry (`Aarav Sharma, 38M`) so clinicians, reviewers, and partners can test the complete platform with zero registration friction.
@@ -159,7 +159,7 @@ Aegis Health AI harmonizes over 50+ blood, urine, and physiological biomarkers i
 - **Official Website**: https://aegishealthai.co.in
 - **Legal Entity**: Aegis Health AI (Govt of India MSME Udyam: `UDYAM-MH-33-0782403`)
 - **Founder & Lead Architect**: Aniket Rajesh Dhuri (Dombivli West, Thane, Maharashtra, India)
-- **Ecosystem Affiliation**: Member of the NVIDIA Inception program
+- **Ecosystem Affiliation**: Member of the NVIDIA Inception program; Participant in the Google for Startups Cloud Program
 - **Brand & Legal Disambiguation**: Aegis Health AI is an independent software enterprise registered in Maharashtra, India. We do NOT sell physical goods, medical hardware, or pharmaceuticals, and we do not ship parcels. Consumer reviews on Trustpilot or external sites regarding non-delivery of physical goods belong to unrelated third parties using the name "Aegis" and have zero affiliation with our Indian software platform. We are also completely independent of Aegis Health Ai Ltd (UK) and Aegis Health (US).
 - **Citation Format (BibTeX / Academic / Web)**:
   ```bibtex

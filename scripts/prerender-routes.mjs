@@ -97,12 +97,12 @@ const ROUTES = [
           <p><strong>Aegis Health AI</strong> is an independent Indian healthcare technology micro-enterprise registered with the Ministry of MSME, Government of India (<strong>UDYAM-MH-33-0782403</strong>; NIC Codes: 62013, 62099, 86909).</p>
           <h2>Founder &amp; Lead Systems Architect</h2>
           <p><strong>Aniket Rajesh Dhuri</strong> — Founder &amp; Lead Architect (<a href="https://www.linkedin.com/in/aniket-dhuri-273094225" target="_blank" rel="noopener noreferrer">Verified LinkedIn Profile</a> | <a href="https://github.com/dhurianiket/Aegis-health-ai-" target="_blank" rel="noopener noreferrer">Official GitHub Repository</a>). Contact: <a href="mailto:aniket@aegishealthai.co.in">aniket@aegishealthai.co.in</a> | <a href="mailto:founder@aegishealthai.co.in">founder@aegishealthai.co.in</a> | <a href="mailto:support@aegishealthai.co.in">support@aegishealthai.co.in</a>.</p>
-          <h2>Startup Ecosystem &amp; AI Infrastructure Backing</h2>
+          <h2>Startup Ecosystem &amp; AI Infrastructure Support</h2>
           <div style="display: flex; align-items: center; gap: 12px; margin: 12px 0; flex-wrap: wrap;">
             <div style="background: #ffffff; padding: 4px 8px; border-radius: 8px; display: inline-flex; align-items: center; border: 1px solid #e5e7eb;">
               <img src="/nvidia-inception-badge.svg" alt="Member of the NVIDIA Inception program" style="height: 28px; width: auto; object-fit: contain; display: block;" />
             </div>
-            <p style="margin: 0; font-size: 14px;"><strong>Member of the NVIDIA Inception program:</strong> GPU acceleration, BioNeMo clinical foundation models, and healthcare AI inference. Backed by Google Cloud AI Builder, AWS Activate, and Microsoft Azure Founders Hub.</p>
+            <p style="margin: 0; font-size: 14px;"><strong>Member of the NVIDIA Inception program:</strong> GPU acceleration, BioNeMo clinical foundation models, and healthcare AI inference. Supported by the Google for Startups Cloud Program, AWS Activate, and Microsoft Azure Founders Hub.</p>
           </div>
           <h2>2026–2027 Product &amp; AI Architecture Roadmap</h2>
           <ul>
@@ -113,7 +113,7 @@ const ROUTES = [
           <h2>Our Funding &amp; Business Model (Why the Platform is Free to Explore)</h2>
           <p>A common question from clinicians and evaluators is how a startup can offer multimodal Gemini AI and GPU inference completely for free without monetizing user data. Here is our transparent model:</p>
           <ul>
-            <li><strong>100% Grant-Sponsored Compute:</strong> Our cloud GPU inference and Gemini API tokens are sponsored through competitive non-dilutive startup grants from the <strong>NVIDIA Inception program</strong>, <strong>Google Cloud AI Builder</strong>, <strong>AWS Activate</strong>, and <strong>Microsoft Azure Founders Hub</strong>. We operate with zero cloud infrastructure debt.</li>
+            <li><strong>100% Grant-Sponsored Compute:</strong> Our cloud GPU inference and Gemini API tokens are sponsored through competitive non-dilutive startup grants from the <strong>NVIDIA Inception program</strong>, <strong>Google for Startups Cloud Program</strong>, <strong>AWS Activate</strong>, and <strong>Microsoft Azure Founders Hub</strong>. We operate with zero cloud infrastructure debt.</li>
             <li><strong>Diagnostic Partner Integration (Pilot &amp; Onboarding Phase):</strong> We are actively onboarding leading NABL/CAP diagnostic laboratory networks (Thyrocare, Tata 1mg, Redcliffe Labs). Future commercial revenue derives from standard B2B laboratory referral and API integration fees while offering users discounted package rates.</li>
             <li><strong>B2B OPD Clinic &amp; Enterprise Subscriptions:</strong> Software licensing for independent polyclinics and hospital OPDs to generate automated longitudinal SBAR summaries and FHIR R4 clinical bundles.</li>
             <li><strong>Zero Data Monetization (DPDP Act 2023):</strong> We strictly enforce Section 12 of India's Digital Personal Data Protection Act 2023. Patient medical records are strictly encrypted (AES-256) and isolated per-user in Cloud Firestore; they are NEVER sold, rented, or used to train third-party public models.</li>

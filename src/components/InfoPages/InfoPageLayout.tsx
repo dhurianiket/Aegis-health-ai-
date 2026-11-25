@@ -335,7 +335,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                   </span>
                 </div>
                 <p className="text-sm text-slate-300 font-light leading-relaxed max-w-xs mx-auto md:mx-0">
-                  Clinical-grade multi-agent health intelligence for Indian families. Powered by Google Cloud, Vertex AI, and Gemini 4 Hydrogen.
+                  Clinical-grade multi-agent health intelligence for Indian families. Built on Google Cloud, Vertex AI, and Gemini 4 Hydrogen.
                 </p>
                 <div className="flex items-center justify-center md:justify-start gap-3 pt-1">
                   <a
@@ -477,7 +477,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
 
               <div className="text-center md:text-right flex flex-col gap-2 items-center md:items-end">
                 <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
-                  Powered by <span className="text-slate-200">Google Cloud, Vertex AI &amp; Firebase</span>
+                  Built on <span className="text-slate-200">Google Cloud, Vertex AI &amp; Firebase</span>
                   <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
                 </p>
                 <div className="flex flex-col items-center md:items-end gap-1.5 mt-2">
@@ -489,7 +489,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
                     />
                   </div>
                   <span className="text-xs font-medium text-slate-300">
-                    Aegis Health AI is a member of the NVIDIA Inception program.
+                    Aegis Health AI is a member of the NVIDIA Inception program &amp; supported by the Google for Startups Cloud Program.
                   </span>
                 </div>
               </div>
@@ -497,7 +497,7 @@ export default function InfoPageLayout({ children, activePath }: InfoPageLayoutP
 
             <div className="max-w-7xl mx-auto px-6 pt-4 text-center">
               <p className="text-[11px] text-slate-400 leading-relaxed max-w-4xl mx-auto">
-                © 2026 NVIDIA, the NVIDIA logo, and NVIDIA Inception are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries.
+                © 2026 NVIDIA, the NVIDIA logo, and NVIDIA Inception are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries. Google Cloud, Vertex AI, and Google for Startups are trademarks of Google LLC.
               </p>
             </div>
           </footer>
