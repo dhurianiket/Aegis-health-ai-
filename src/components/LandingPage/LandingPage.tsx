@@ -1,101 +1,176 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { ShieldCheck, ArrowRight, Activity, TrendingUp, AlertCircle, Loader2, Sparkles, Heart, Brain, Stethoscope, Droplets, Zap, Github, Linkedin, Mail, MapPin, Cloud, Watch, Camera, Pill, Layers, RefreshCw, FileText, CheckCircle2, ShieldAlert, QrCode, Link2, FileJson } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import {
+  Activity,
+  AlertCircle,
+  ArrowRight,
+  ArrowUpRight,
+  Brain,
+  Camera,
+  CheckCircle2,
+  ChevronDown,
+  Droplets,
+  FileJson,
+  FileText,
+  Github,
+  Heart,
+  Link2,
+  Linkedin,
+  Mail,
+  MapPin,
+  Menu,
+  Pill,
+  QrCode,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  Stethoscope,
+  Volume2,
+  Watch,
+  Wind,
+  X,
+  Zap,
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
-import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import LegalModal from './LegalModal';
-import { SpotlightCard } from '../ui/SpotlightCard';
-import { DecryptedText } from '../ui/DecryptedText';
-import { CountUp } from '../ui/CountUp';
 import { AuthLoginModal } from '../Auth/AuthLoginModal';
+import { CountUp } from '../ui/CountUp';
+import { TiltSurface3D } from './TiltSurface3D';
+import { LandingScrollStory } from './LandingScrollStory';
+import { SpecialistShowcaseSection } from './SpecialistShowcaseSection';
 
-// ----------------------------------------------------------------------
-// MOCK DATA
-// ----------------------------------------------------------------------
+const HeroClinicalCore3D = lazy(() =>
+  import('./HeroClinicalCore3D').then((m) => ({ default: m.HeroClinicalCore3D })),
+);
+
+const EASE_OUT = [0.23, 1, 0.32, 1] as const;
+const EASE_DRAWER = [0.32, 0.72, 0, 1] as const;
+
 const BENTO_LABS = [
-  { id: 'hb', label: 'Hemoglobin', value: '14.2 g/dL', status: 'normal', desc: 'Optimal oxygen transport. Keep it up.', trend: 'stable', icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-  { id: 'hba1c', label: 'HbA1c', value: '5.8%', status: 'borderline', desc: 'Slightly elevated. Monitor dietary sugar.', trend: 'up', icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-  { id: 'vitd', label: 'Vitamin D', value: '18 ng/mL', status: 'abnormal', desc: 'Deficient level. Supplementation recommended.', trend: 'down', icon: AlertCircle, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
-  { id: 'crp', label: 'CRP', value: '3.5 mg/L', status: 'borderline', desc: 'Slight systemic inflammation detected.', trend: 'up', icon: AlertCircle, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+  {
+    id: 'hb',
+    label: 'Hemoglobin',
+    value: '14.2 g/dL',
+    range: '13.5 – 17.5 g/dL',
+    fillPct: 72,
+    status: 'Optimal',
+    desc: 'Healthy oxygen transport across recent CBC panels.',
+    icon: Activity,
+    color: 'text-emerald-300',
+    pillBg: 'bg-emerald-500/12 border-emerald-400/25',
+    barColor: 'bg-emerald-400',
+    glowColor: 'rgba(52, 211, 153, 0.16)',
+  },
+  {
+    id: 'hba1c',
+    label: 'HbA1c',
+    value: '5.8%',
+    range: '< 5.7% Normal',
+    fillPct: 64,
+    status: 'Borderline',
+    desc: 'Down from 6.4% over 16 weeks. Track post-meal glucose.',
+    icon: Activity,
+    color: 'text-amber-300',
+    pillBg: 'bg-amber-500/12 border-amber-400/25',
+    barColor: 'bg-amber-400',
+    glowColor: 'rgba(245, 158, 11, 0.16)',
+  },
+  {
+    id: 'vitd',
+    label: 'Vitamin D (25-OH)',
+    value: '18 ng/mL',
+    range: '30 – 100 ng/mL',
+    fillPct: 32,
+    status: 'Deficient',
+    desc: 'Units normalized from nmol/L. Flagged for clinician review.',
+    icon: AlertCircle,
+    color: 'text-rose-300',
+    pillBg: 'bg-rose-500/12 border-rose-400/25',
+    barColor: 'bg-rose-400',
+    glowColor: 'rgba(251, 113, 133, 0.16)',
+  },
+  {
+    id: 'crp',
+    label: 'hs-CRP',
+    value: '1.9 mg/L',
+    range: '< 3.0 mg/L',
+    fillPct: 48,
+    status: 'Improving',
+    desc: 'Systemic inflammation normalized from baseline 4.1 mg/L.',
+    icon: ShieldCheck,
+    color: 'text-sky-300',
+    pillBg: 'bg-sky-500/12 border-sky-400/25',
+    barColor: 'bg-sky-400',
+    glowColor: 'rgba(56, 189, 248, 0.16)',
+  },
 ];
 
 const EXPLORE_PAGES = [
   {
-    title: "How It Works",
-    desc: "Discover how Aegis safely translates raw blood, biochemistry, and scan reports into helpful clinical models step-by-step.",
-    href: "/how-it-works.html",
-    icon: Brain
+    title: 'How It Works',
+    desc: 'See how Aegis transforms raw Indian blood, biochemistry, and scan PDFs into structured clinical timelines.',
+    href: '/how-it-works.html',
+    icon: Brain,
   },
   {
-    title: "About Us",
-    desc: "Learn about our vision, our roots in Dombivli, Maharashtra, and our personal commitment to clinical transparency for Indian families.",
-    href: "/about.html",
-    icon: Heart
+    title: 'About Us',
+    desc: 'Our story from Dombivli, Maharashtra and our commitment to plain-language healthcare clarity for Indian families.',
+    href: '/about.html',
+    icon: Heart,
   },
   {
-    title: "Security First",
-    desc: "Understand our multi-tiered security, DPDP Act 2023 alignment, absolute privacy, and enterprise-grade data isolation protocols.",
-    href: "/security.html",
-    icon: ShieldCheck
+    title: 'Security First',
+    desc: 'Explore DPDP Act 2023 alignment, Model Armor AI firewalling, and isolated per-patient cloud storage.',
+    href: '/security.html',
+    icon: ShieldCheck,
   },
   {
-    title: "HbA1c Blood Sugar Guide",
-    desc: "Demystify your HbA1c lab values, find out how long-term blood glucose counts work, and learn how to manage home health trends.",
-    href: "/blog-hba1c.html",
-    icon: Droplets
+    title: 'HbA1c Blood Sugar Guide',
+    desc: 'Understand HbA1c percentages, South Asian glycemic thresholds, and how 90-day glucose trends behave.',
+    href: '/blog-hba1c.html',
+    icon: Droplets,
   },
   {
-    title: "CBC Blood Test Explainer",
-    desc: "Read our comprehensive Complete Blood Count guide and learn what platelets, red cells, and white cells indicate in plain words.",
-    href: "/blog-cbc.html",
-    icon: Stethoscope
+    title: 'CBC Blood Test Explainer',
+    desc: 'Plain-English guide to platelets, hemoglobin, MCV, and differential counts in Indian pathology panels.',
+    href: '/blog-cbc.html',
+    icon: Stethoscope,
   },
   {
-    title: "Engineering Playbook",
-    desc: "Deep dive into our engineering logic, detailing how Aegis structures autonomous multi-specialty agent systems at scale.",
-    href: "/engineering-playbook.html",
-    icon: Zap
-  }
+    title: 'Engineering Playbook',
+    desc: 'Architecture breakdown of our Vertex AI Gemini 4 pipeline, Cloudflare Edge gateway, and HL7 FHIR R4 layer.',
+    href: '/engineering-playbook.html',
+    icon: Zap,
+  },
 ];
 
-const CHAOS_TEXT = [
-  "WBC 12.5 H", "RBC 4.2", "HGB 12.1", "HCT 36.5", "MCV 85.0", 
-  "MCH 28.5", "MCHC 33.5", "RDW 14.2", "PLT 150", "MPV 9.5 L",
-  "ALT 85 H", "AST 65 H", "ALP 120", "BILIRUBIN 1.2", "ALBUMIN 4.5",
-  "GLUCOSE 110 H", "BUN 15", "CREATININE 0.9", "SODIUM 140", "POTASSIUM 4.2",
-  "CHLORIDE 100", "CO2 25", "CALCIUM 9.5", "PROTEIN 7.0", "GLOBULIN 2.5",
-];
+const HeroCanvasFallback: React.FC = () => (
+  <div className="aegis-hairline-surface rounded-[32px] p-6 w-full max-w-[540px] mx-auto h-[490px] flex flex-col items-center justify-center">
+    <div className="relative w-44 h-44 flex items-center justify-center">
+      <div className="absolute inset-0 rounded-full border border-teal-400/35 animate-pulse" />
+      <div className="absolute inset-4 rounded-full border border-dashed border-sky-400/30" />
+      <ShieldCheck className="w-16 h-16 text-teal-300" strokeWidth={1.6} />
+    </div>
+    <p className="mt-6 text-xs font-mono uppercase tracking-[0.18em] text-teal-300">
+      Initializing 3D Telemetry Core
+    </p>
+  </div>
+);
 
-const SPECIALISTS_SHOWCASE = [
-  { title: "AI Cardiologist", icon: Heart, guidelines: "IHCI/ICMR & ACC/AHA" },
-  { title: "AI Endocrinologist", icon: Zap, guidelines: "RSSDI & ADA 2025" },
-  { title: "AI Neurologist", icon: Brain, guidelines: "ICMR & AAN 2024" },
-  { title: "AI Gastroenterologist", icon: Droplets, guidelines: "ISG & ACG/AGA" },
-  { title: "AI Pulmonologist", icon: Activity, guidelines: "ICMR & GOLD 2025" },
-  { title: "AI Nephrologist", icon: Droplets, guidelines: "ICMR & KDIGO 2024" },
-  { title: "AI Psychiatrist", icon: Sparkles, guidelines: "Tele-MANAS & APA" },
-  { title: "AI Dermatologist", icon: ShieldCheck, guidelines: "IADVL & AAD" },
-  { title: "AI Orthopedist", icon: Stethoscope, guidelines: "IOA/ICMR & AAOS" },
-  { title: "AI Oncologist", icon: Activity, guidelines: "NCG India & NCCN" },
-];
-
-// ----------------------------------------------------------------------
-// MAIN COMPONENT
-// ----------------------------------------------------------------------
 export default function LandingPage() {
-  const { user, loading, signIn, signInWithEmail, isSigningIn } = useAuth();
+  const { user, loading, isSigningIn } = useAuth();
   const navigate = useNavigate();
-  const [isMobile, setIsMobile] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
   const [legalModalOpen, setLegalModalOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms' | null>(null);
-
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
+
+  const resourcesMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('login=true')) {
@@ -104,203 +179,247 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    console.log("[LandingPage] Auth State Checked:", { loading, hasUser: !!user });
     if (!loading && user) {
-      console.log("[LandingPage] Condition met! Navigating manually to /dashboard...");
       navigate('/dashboard', { replace: true });
     }
   }, [user, loading, navigate]);
 
-  const openLegalModal = (type: 'privacy' | 'terms') => {
-    setLegalModalType(type);
-    setLegalModalOpen(true);
-  };
-
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  
-  // Hero Scroll
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: heroProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
+    if (!resourcesOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setResourcesOpen(false);
+    };
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (resourcesMenuRef.current && !resourcesMenuRef.current.contains(e.target as Node)) {
+        setResourcesOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [resourcesOpen]);
+
+  const { scrollYProgress: pageScrollRaw } = useScroll();
+  const pageScrollProgress = useSpring(pageScrollRaw, {
+    stiffness: 180,
+    damping: 30,
+    restDelta: 0.001,
   });
 
-  const coreScale = useTransform(heroProgress, [0, 0.8], [0.9, 1.1]);
-
-  // Sticky Scroll Story (Chaos to Clarity)
-  const stickyRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: stickyRaw } = useScroll({
-    target: stickyRef,
-    offset: ["start start", "end end"]
-  });
-  
-  // Smooth the scroll
-  const stickyProgress = useSpring(stickyRaw, { stiffness: 100, damping: 30, restDelta: 0.001 });
-
-  // Phase 1: Chaos (0 to 25%)
-  const chaosOpacity = useTransform(stickyProgress, [0, 0.2, 0.3], [1, 1, 0]);
-  const chaosScale = useTransform(stickyProgress, [0, 0.3], [1, 1.2]);
-
-  // Phase 2: Decoding Bridge (20% to 50%)
-  const bridgeOpacity = useTransform(stickyProgress, [0.2, 0.35, 0.45, 0.6], [0, 1, 1, 0]);
-  const bridgeScale = useTransform(stickyProgress, [0.2, 0.5], [0.8, 1.1]);
-
-  // Phase 3: Shield / Processing Core (45% to End)
-  const shieldOpacity = useTransform(stickyProgress, [0.45, 0.6], [0, 1]);
-  const shieldY = useTransform(stickyProgress, [0.65, 0.9], ["0vh", "-30vh"]);
-  const shieldScale = useTransform(stickyProgress, [0.45, 0.6, 0.9], [0.6, 1, 0.7]);
-
-  // Phase 4: Validated Insights (65% to End)
-  const insightOpacity = useTransform(stickyProgress, [0.65, 0.9, 1], [0, 1, 1]);
-  const insightY = useTransform(stickyProgress, [0.65, 0.9, 1], ["20vh", "5vh", "5vh"]);
-
-  const handleSignIn = async () => {
-    setLoginError(null);
+  const handleSignIn = () => {
     setIsLoginModalOpen(true);
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoginError(null);
-    try {
-      const res = await signIn();
-      if (res && res.method === 'redirect') {
-        return;
-      }
-      navigate('/dashboard', { replace: true });
-    } catch (error: any) {
-      setLoginError(error?.message || "Google sign-in failed.");
-    }
-  };
+  const staggerInitial = (delayIdx: number) =>
+    prefersReducedMotion
+      ? { opacity: 0 }
+      : { opacity: 0, transform: `translateY(${10 + delayIdx * 2}px) scale(0.985)` };
 
-  const handleEmailFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginEmail.trim() || !loginPassword) {
-      setLoginError("Please enter both your Email ID and Password.");
-      return;
-    }
-    setLoginError(null);
-    setIsEmailSigningIn(true);
-    try {
-      if (signInWithEmail) {
-        await signInWithEmail(loginEmail.trim(), loginPassword);
-      }
-      navigate('/dashboard', { replace: true });
-    } catch (error: any) {
-      setLoginError(error?.code === 'auth/invalid-credential' ? "Invalid Email ID or Password. Please check your credentials." : (error?.message || "Failed to sign in with Email ID."));
-    } finally {
-      setIsEmailSigningIn(false);
-    }
-  };
-
+  const staggerAnimate = { opacity: 1, transform: 'translateY(0px) scale(1)' };
 
   return (
     <ErrorBoundary>
-      <div className="relative bg-[#0A192F] text-white min-h-screen font-sans selection:bg-emerald-500/30">
-        
-        {/* Persistent Sticky Navbar */}
+      <div
+        data-landing-dark="true"
+        className="relative bg-[#040B16] text-slate-50 min-h-screen font-sans selection:bg-teal-500/30 overflow-x-clip"
+      >
+        {/* Architectural Ambient Radial Grid Backdrop */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-0 opacity-40"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 18% 12%, rgba(20, 184, 166, 0.14), transparent 42%), radial-gradient(circle at 82% 24%, rgba(56, 189, 248, 0.10), transparent 38%), linear-gradient(to right, rgba(148, 163, 184, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.04) 1px, transparent 1px)',
+            backgroundSize: '100% 100%, 100% 100%, 56px 56px, 56px 56px',
+          }}
+        />
+
+        {/* Persistent Hairline Navbar */}
         <nav className="fixed w-full z-50 top-0 left-0">
-          <div className="absolute inset-0 bg-[#0A192F]/75 backdrop-blur-2xl border-b border-white/10 shadow-[0_1px_0_0_rgba(255,255,255,0.08)_inset,0_8px_32px_rgba(0,0,0,0.5)]" />
-          <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between relative z-10">
-            {/* Brand Logo */}
-            <div className="flex items-center gap-2 md:gap-3 shrink-0">
-              <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" strokeWidth={2} />
-              <span className="font-bold border-l border-white/20 pl-2 md:pl-3 text-sm md:text-lg tracking-[0.2em] text-emerald-400 font-sans">
+          <div className="absolute inset-0 bg-[#040B16]/82 backdrop-blur-2xl border-b border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_36px_rgba(0,0,0,0.45)]" />
+          {/* Top Hairline Scroll Progress Beam */}
+          <motion.div
+            aria-hidden="true"
+            style={{ scaleX: pageScrollProgress, transformOrigin: 'left center' }}
+            className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-teal-400 via-sky-400 to-emerald-400 z-20"
+          />
+
+          <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between relative z-10">
+            {/* Brand Mark */}
+            <Link to="/" className="flex items-center gap-2.5 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded-lg">
+              <ShieldCheck className="w-6 h-6 md:w-7 md:h-7 text-teal-400" strokeWidth={2} />
+              <span className="font-black border-l border-white/15 pl-2.5 text-sm md:text-base tracking-[0.2em] text-white">
                 AEGIS
               </span>
-            </div>
+            </Link>
 
-            {/* Desktop Center Navigation Links */}
+            {/* Desktop Navigation Links */}
             <div className="hidden lg:flex items-center gap-7">
-              <Link to="/how-it-works.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">How It Works</Link>
-              <Link to="/about.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">About Us</Link>
-              <Link to="/security.html" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">Security First</Link>
-              <a href="#pricing" className="text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase">
+              <a
+                href="#features-showcase"
+                className="text-xs font-bold tracking-[0.14em] text-slate-300 hover:text-teal-300 transition-colors duration-150 uppercase"
+              >
+                Capabilities
+              </a>
+              <a
+                href="#abha-gateway"
+                className="text-xs font-bold tracking-[0.14em] text-slate-300 hover:text-teal-300 transition-colors duration-150 uppercase"
+              >
+                ABDM &amp; FHIR
+              </a>
+              <a
+                href="#specialists"
+                className="text-xs font-bold tracking-[0.14em] text-slate-300 hover:text-teal-300 transition-colors duration-150 uppercase"
+              >
+                Specialists
+              </a>
+              <a
+                href="#pricing"
+                className="text-xs font-bold tracking-[0.14em] text-slate-300 hover:text-teal-300 transition-colors duration-150 uppercase"
+              >
                 Platform Access
               </a>
-              
-              <div className="relative group py-2">
-                <button aria-haspopup="menu" className="flex items-center gap-1 text-xs font-bold tracking-widest text-slate-300 hover:text-emerald-400 transition-colors uppercase focus:outline-none cursor-pointer">
-                  Articles <span className="text-xs">▾</span>
+
+              {/* Origin-Aware Resources Popover */}
+              <div
+                ref={resourcesMenuRef}
+                className="relative py-1"
+                onMouseEnter={() => setResourcesOpen(true)}
+                onMouseLeave={() => setResourcesOpen(false)}
+              >
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={resourcesOpen}
+                  onClick={() => setResourcesOpen((prev) => !prev)}
+                  className="flex items-center gap-1 text-xs font-bold tracking-[0.14em] text-slate-300 hover:text-teal-300 transition-colors duration-150 uppercase cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded-md px-1 py-1"
+                >
+                  <span>Resources</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${resourcesOpen ? 'rotate-180' : ''}`} />
                 </button>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-[#0F2A4A] border border-white/10 rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link to="/blog-hba1c.html" className="block px-4 py-2 text-xs font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">HbA1c Blood Sugar Guide</Link>
-                  <Link to="/blog-cbc.html" className="block px-4 py-2 text-xs font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">CBC Blood Test Explainer</Link>
-                  <Link to="/engineering-playbook.html" className="block px-4 py-2 text-xs font-semibold tracking-wider text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors uppercase">Engineering Playbook</Link>
-                </div>
+                <AnimatePresence>
+                  {resourcesOpen && (
+                    <motion.div
+                      role="menu"
+                      style={{ transformOrigin: 'top center' }}
+                      initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, transform: 'translateY(4px) scale(0.97)' }}
+                      animate={{ opacity: 1, transform: 'translateY(0px) scale(1)' }}
+                      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, transform: 'translateY(2px) scale(0.98)' }}
+                      transition={{ duration: 0.16, ease: EASE_OUT }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 w-60 rounded-2xl bg-[#081426]/98 border border-white/12 shadow-[0_20px_50px_rgba(0,0,0,0.65)] py-2 z-50 backdrop-blur-2xl"
+                    >
+                      {EXPLORE_PAGES.map((page) => (
+                        <Link
+                          key={page.href}
+                          role="menuitem"
+                          to={page.href}
+                          onClick={() => setResourcesOpen(false)}
+                          className="block px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-teal-500/10 hover:text-teal-300 transition-colors duration-150"
+                        >
+                          {page.title}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
             {/* Right Action CTAs */}
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0">
               <button
+                type="button"
                 onClick={handleSignIn}
-                disabled={isSigningIn || isEmailSigningIn}
-                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-all active:scale-95 cursor-pointer"
+                disabled={isSigningIn}
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 min-h-[40px] rounded-full text-xs font-semibold text-teal-200 hover:text-white bg-teal-500/10 hover:bg-teal-500/20 border border-teal-400/30 transition-[transform,background-color,border-color,color] duration-150 active:scale-[0.97] cursor-pointer"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Sign In</span>
               </button>
               <button
+                type="button"
                 onClick={handleSignIn}
-                disabled={isSigningIn || isEmailSigningIn}
-                className="px-5 md:px-7 py-2 md:py-2.5 bg-white text-[#0A192F] hover:bg-emerald-50 rounded-full text-xs md:text-xs font-black tracking-widest transition-all duration-100 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer shrink-0"
+                disabled={isSigningIn}
+                className="px-5 md:px-6 min-h-[40px] bg-white text-[#040B16] hover:bg-teal-50 rounded-full text-xs font-black tracking-[0.12em] uppercase transition-[transform,background-color] duration-150 active:scale-[0.97] shadow-[0_0_24px_rgba(255,255,255,0.14)] cursor-pointer shrink-0"
               >
-                GET STARTED
+                Get Started
               </button>
 
-              {/* Mobile Menu Toggle Button */}
+              {/* Mobile Menu Toggle */}
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                type="button"
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
                 aria-label="Toggle Menu"
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-menu"
-                className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-100 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
+                className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-[transform,background-color] duration-150 active:scale-[0.95] focus-visible:ring-2 focus-visible:ring-teal-400 cursor-pointer"
               >
-                {mobileMenuOpen ? (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
-          {/* Mobile Sliding Navigation Drawer */}
+          {/* Mobile Drawer */}
           <AnimatePresence>
             {mobileMenuOpen && (
               <motion.div
                 id="mobile-menu"
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
+                animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="lg:hidden w-full bg-[#0A192F]/95 backdrop-blur-2xl border-b border-white/10 z-40 overflow-hidden shadow-2xl relative"
+                transition={{ duration: 0.22, ease: EASE_DRAWER }}
+                className="lg:hidden w-full bg-[#061020]/96 backdrop-blur-2xl border-b border-white/10 z-40 overflow-hidden shadow-2xl relative"
               >
-                <div className="px-6 py-6 flex flex-col gap-4">
-                  <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-emerald-400 hover:text-emerald-300 transition-colors py-2 border-b border-white/5 uppercase">Launch Live Workspace</Link>
-                  <Link to="/how-it-works.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">How It Works</Link>
-                  <Link to="/about.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">About Us</Link>
-                  <Link to="/security.html" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-400 transition-colors py-2 border-b border-white/5 uppercase">Security First</Link>
-                  <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold tracking-wider text-slate-200 hover:text-emerald-300 transition-colors py-2 border-b border-white/5 uppercase flex items-center gap-1.5">
+                <div className="px-6 py-5 flex flex-col gap-3">
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-sm font-bold tracking-wide text-teal-300 py-2 border-b border-white/5"
+                  >
+                    Launch Live Workspace
+                  </Link>
+                  <a
+                    href="#features-showcase"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-sm font-semibold text-slate-200 py-2 border-b border-white/5"
+                  >
+                    Capabilities
+                  </a>
+                  <a
+                    href="#abha-gateway"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-sm font-semibold text-slate-200 py-2 border-b border-white/5"
+                  >
+                    ABDM &amp; FHIR R4
+                  </a>
+                  <a
+                    href="#specialists"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-sm font-semibold text-slate-200 py-2 border-b border-white/5"
+                  >
+                    10+ AI Specialists
+                  </a>
+                  <a
+                    href="#pricing"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-sm font-semibold text-slate-200 py-2 border-b border-white/5"
+                  >
                     Platform Access (Free)
                   </a>
-                  
-                  <div className="py-2">
-                    <span className="text-xs uppercase tracking-widest text-slate-400 font-extrabold block mb-2">Articles & Playbooks</span>
-                    <div className="pl-4 flex flex-col gap-3">
-                      <Link to="/blog-hba1c.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">HbA1c Blood Sugar Guide</Link>
-                      <Link to="/blog-cbc.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">CBC Blood Test Explainer</Link>
-                      <Link to="/engineering-playbook.html" onClick={() => setMobileMenuOpen(false)} className="text-xs font-bold tracking-wider text-slate-300 hover:text-emerald-400 transition-colors uppercase">Engineering Playbook</Link>
-                    </div>
+                  <div className="pt-1 flex flex-wrap gap-2">
+                    {EXPLORE_PAGES.map((page) => (
+                      <Link
+                        key={page.href}
+                        to={page.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-xs font-medium px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300"
+                      >
+                        {page.title}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </motion.div>
@@ -308,1187 +427,985 @@ export default function LandingPage() {
           </AnimatePresence>
         </nav>
 
-        {/* 1. HERO SECTION */}
-        <main id="main-content" className="relative">
-        <div ref={heroRef} className="relative min-h-screen flex items-center pt-24 pb-12">
-          {/* Background subtle glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
-
-          <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 lg:gap-12 items-center w-full relative z-10 transform-gpu">
-            {/* Left Content */}
-            <div className="max-w-2xl">
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="inline-flex flex-wrap items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#071325]/90 border border-emerald-500/30 shadow-[0_0_25px_rgba(45,212,191,0.15)] backdrop-blur-xl mb-6 max-w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-400"></span>
-                  </span>
-                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-teal-300">
-                    Next-Gen Health Intelligence 2.0
-                  </span>
-                </div>
-                <span className="text-white/20 hidden sm:inline">•</span>
-                <div className="flex items-center gap-1.5 text-xs text-slate-300 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] animate-pulse" />
-                  <span>Member of <strong className="text-[#8ce405] font-bold">NVIDIA Inception</strong></span>
-                </div>
-              </motion.div>
-
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-5xl md:text-7xl font-black tracking-tight text-white mb-6 leading-[1.08] font-sans"
-              >
-                Understand your medical telemetry. <br className="hidden md:block" />
-                <span className="bg-gradient-to-r from-teal-300 via-emerald-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(45,212,191,0.35)]">
-                  In plain clinical language.
-                </span>
-              </motion.h1>
-              
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="text-lg md:text-xl text-slate-200 mb-6 font-medium max-w-lg leading-relaxed"
-              >
-                Upload lab reports or prescriptions. Get a clear, AI-powered summary and ask questions. Built to help Indian families prepare for doctor visits with total confidence.
-              </motion.p>
-
-              <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
-               className="text-teal-200 text-xs md:text-sm font-semibold tracking-wide mb-8 bg-teal-500/10 border border-teal-500/30 px-5 py-3.5 rounded-2xl inline-flex items-start gap-3 shadow-[0_0_20px_rgba(45,212,191,0.15)] backdrop-blur-xl"
-              >
-                <div className="shrink-0 mt-0.5">
-                  <Sparkles className="w-5 h-5 text-teal-300 animate-pulse" />
-                </div>
-                <span>
-                  Engineered with <strong className="text-white">Google Gemini 4 Hydrogen &amp; Gemini 4 Argon</strong> for high-precision multimodal vision &amp; autonomous clinical reasoning.
-                </span>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-                className="flex flex-wrap items-center gap-4 md:gap-6 mb-10 text-xs md:text-sm font-bold text-teal-300"
-              >
-                <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-400" /> DPDP Act 2023 Aligned</div>
-                <div className="flex items-center gap-2"><Activity className="w-4 h-4 text-teal-400" /> Real-time Lab Analysis</div>
-                <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-cyan-400" /> Doctor Visit Prep</div>
-                <div className="flex items-center gap-2"><QrCode className="w-4 h-4 text-orange-400" /> ABHA Gateway Ready</div>
-                <div className="flex items-center gap-2"><FileJson className="w-4 h-4 text-indigo-400" /> FHIR R4 Export</div>
-              </motion.div>
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-                className="flex flex-col sm:flex-row gap-4"
-              >
-                <button
-                  onClick={handleSignIn}
-                  disabled={isSigningIn || isEmailSigningIn}
-                  className="px-8 py-4 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-[#0A192F] rounded-full font-black tracking-wider transition-all shadow-[0_0_30px_rgba(45,212,191,0.4)] hover:shadow-[0_0_45px_rgba(45,212,191,0.6)] flex flex-col items-center justify-center active:scale-95 cursor-pointer"
+        <main id="main-content" className="relative z-10">
+          {/* ─── 1. HERO SECTION ─── */}
+          <section className="relative min-h-[86vh] flex items-center pt-20 pb-10 px-6">
+            <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 lg:gap-8 items-center w-full">
+              {/* Left Narrative Column */}
+              <div className="lg:col-span-6 space-y-4">
+                <motion.div
+                  initial={staggerInitial(0)}
+                  animate={staggerAnimate}
+                  transition={{ duration: 0.28, ease: EASE_OUT }}
+                  className="inline-flex flex-wrap items-center gap-2.5 px-3.5 py-1 rounded-full bg-[#081426]/90 border border-teal-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                 >
-                  <div className="flex items-center gap-2 text-base">
-                    <Mail className="w-4 h-4" /> SIGN IN
+                  <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold tracking-wider text-teal-300">
+                    <span className="w-2 h-2 rounded-full bg-teal-400" />
+                    Aegis Health AI v2.0
+                  </span>
+                  <span className="text-white/20">|</span>
+                  <span className="text-xs font-semibold text-[#8ce405]">NVIDIA Inception</span>
+                  <span className="text-white/20 hidden sm:inline">|</span>
+                  <span className="text-xs font-semibold text-sky-300 hidden sm:inline">
+                    Google for Startups Cloud Program
+                  </span>
+                </motion.div>
+
+                <motion.h1
+                  initial={staggerInitial(1)}
+                  animate={staggerAnimate}
+                  transition={{ duration: 0.34, delay: 0.05, ease: EASE_OUT }}
+                  className="text-4xl sm:text-5xl xl:text-[3.5rem] font-black tracking-[-0.03em] text-white leading-[1.06]"
+                >
+                  Understand your medical telemetry.{' '}
+                  <span className="bg-gradient-to-r from-teal-300 via-emerald-300 to-sky-300 bg-clip-text text-transparent">
+                    In plain clinical language.
+                  </span>
+                </motion.h1>
+
+                <motion.p
+                  initial={staggerInitial(2)}
+                  animate={staggerAnimate}
+                  transition={{ duration: 0.34, delay: 0.1, ease: EASE_OUT }}
+                  className="text-base md:text-[17px] text-slate-300 max-w-[54ch] leading-relaxed"
+                >
+                  Upload Indian pathology PDFs or handwritten prescriptions. Decode biomarker trends with{' '}
+                  <strong className="text-white font-semibold">Gemini 4 Hydrogen &amp; Argon</strong>, listen in
+                  Indian languages via Cloud HD voice, and generate SBAR briefs for your Doctor Visit Prep.
+                </motion.p>
+
+                {/* Concise 4-Item Capability Strip */}
+                <motion.div
+                  initial={staggerInitial(3)}
+                  animate={staggerAnimate}
+                  transition={{ duration: 0.34, delay: 0.15, ease: EASE_OUT }}
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-semibold text-slate-200"
+                >
+                  <div className="px-2.5 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>DPDP Act 2023</span>
                   </div>
-                  <span className="text-[10px] font-extrabold mt-0.5 tracking-widest opacity-90 uppercase">EMAIL ID LOGIN &amp; GOOGLE AUTH</span>
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  disabled={isSigningIn || isEmailSigningIn}
-                  className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold border border-emerald-500/40 tracking-wide transition-all flex items-center justify-center gap-2 relative shadow-lg cursor-pointer"
+                  <div className="px-2.5 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-1.5">
+                    <QrCode className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                    <span>ABHA Gateway</span>
+                  </div>
+                  <div className="px-2.5 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-1.5">
+                    <FileJson className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                    <span>FHIR R4 Export</span>
+                  </div>
+                  <div className="px-2.5 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-teal-300 shrink-0" />
+                    <span>Doctor Visit Prep</span>
+                  </div>
+                </motion.div>
+
+                {/* Primary & Secondary CTAs */}
+                <motion.div
+                  initial={staggerInitial(4)}
+                  animate={staggerAnimate}
+                  transition={{ duration: 0.34, delay: 0.2, ease: EASE_OUT }}
+                  className="flex flex-col sm:flex-row gap-3 pt-0.5"
                 >
-                  {isEmailSigningIn ? <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> : <>EXPLORE LIVE DEMO <ArrowRight className="w-4 h-4 text-emerald-400" /></>}
-                </button>
-              </motion.div>
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={isSigningIn}
+                    className="px-7 py-3 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 rounded-full font-black tracking-wide transition-[transform,background-color] duration-150 active:scale-[0.97] shadow-[0_0_28px_rgba(45,212,191,0.32)] flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Sign In / Launch Vault</span>
+                  </button>
 
-              {/* Instant Live Demonstration Guarantee */}
-              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-slate-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span>Instant live demonstration of SBAR clinical handovers, 3D organ twin &amp; lab trajectories without signup.</span>
-              </div>
+                  <Link
+                    to="/dashboard"
+                    className="px-7 py-3 bg-white/[0.04] hover:bg-white/[0.09] text-white rounded-full font-semibold border border-teal-400/35 tracking-wide transition-[transform,background-color,border-color] duration-150 active:scale-[0.97] flex items-center justify-center gap-2"
+                  >
+                    <span>Explore Live Demo</span>
+                    <ArrowRight className="w-4 h-4 text-teal-300" />
+                  </Link>
+                </motion.div>
 
-              {/* Founder Milestone / Social Proof */}
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
-                className="mt-12 pt-8 border-t border-white/10 w-full max-w-lg"
-              >
-                <div className="bg-[#0f172a]/75 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                  <div className="absolute -top-4 -right-4 w-28 h-28 bg-[#76B900]/10 rounded-full blur-2xl pointer-events-none" />
-                  
-                  <div className="flex flex-col sm:flex-row items-start gap-4 relative z-10">
-                    <div className="flex items-center justify-center p-2 rounded-xl bg-white shadow-md border border-slate-200 shrink-0">
-                      <img 
-                        src="/nvidia-inception-badge.svg" 
-                        alt="Member of the NVIDIA Inception program" 
-                        className="h-10 md:h-12 w-auto object-contain" 
+                {/* Compact Ecosystem Backing Card */}
+                <div className="aegis-hairline-surface rounded-2xl p-3.5 sm:p-4 max-w-xl">
+                  <div className="flex flex-col sm:flex-row items-start gap-3.5">
+                    <div className="p-2 rounded-xl bg-white border border-slate-200 shrink-0">
+                      <img
+                        src="/nvidia-inception-badge.svg"
+                        alt="Member of the NVIDIA Inception program"
+                        className="h-9 w-auto object-contain"
                       />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center flex-wrap gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded-full bg-[#76B900]/15 border border-[#76B900]/40 text-[10px] font-bold text-[#8ce405] tracking-wider uppercase">
-                          NVIDIA Inception Program Member
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full bg-sky-500/15 border border-sky-400/40 text-[10px] font-bold text-sky-300 tracking-wider uppercase">
-                          Google for Startups Cloud Program
-                        </span>
-                      </div>
-                      <h4 className="text-white text-sm font-bold tracking-wide mb-1">
-                        Founder Milestone &amp; Startup Ecosystem Support
-                      </h4>
-                      <p className="text-slate-300 text-xs font-medium leading-relaxed mb-2">
-                        Aegis Health AI is a member of the NVIDIA Inception program and a participant in the Google for Startups Cloud Program, with cloud infrastructure support from AWS Activate and Microsoft Azure Founders Hub.
-                      </p>
-                      <p className="text-emerald-400/90 text-xs font-semibold tracking-wide mb-3">
-                        Accelerating GPU clinical multimodal inference &amp; longitudinal health telemetry.
+                    <div className="space-y-1.5 min-w-0">
+                      <h2 className="text-[11px] font-mono uppercase tracking-[0.14em] text-teal-300 font-bold">
+                        Startup Ecosystem &amp; Cloud Backing
+                      </h2>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Member of the <strong className="text-white">NVIDIA Inception</strong> program and participant
+                        in the <strong className="text-white">Google for Startups Cloud Program</strong>, with
+                        infrastructure credits from AWS Activate and Microsoft Azure Founders Hub.
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        <span className="px-2.5 py-1 rounded-md bg-[#76B900]/10 border border-[#76B900]/40 text-xs font-bold text-[#8ce405] tracking-wide shadow-sm flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#76B900] animate-pulse" />
+                        <span className="px-2 py-0.5 rounded-md bg-[#76B900]/12 border border-[#76B900]/35 text-[11px] font-semibold text-[#8ce405]">
                           NVIDIA Inception
                         </span>
-                        <span className="px-2 py-1 rounded-md bg-sky-500/10 border border-sky-400/40 text-xs font-semibold text-sky-300 tracking-wide shadow-sm">
+                        <span className="px-2 py-0.5 rounded-md bg-sky-500/12 border border-sky-400/35 text-[11px] font-semibold text-sky-300">
                           Google for Startups Cloud Program
                         </span>
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
+                        <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/15 text-[11px] font-semibold text-slate-200">
                           AWS Activate
                         </span>
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-600 text-xs font-semibold text-slate-200 tracking-wide shadow-sm">
+                        <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/15 text-[11px] font-semibold text-slate-200">
                           Microsoft Azure Founders Hub
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            </div>
-
-            {/* Right Content: Floating Health Core */}
-            <div className="relative h-[400px] md:h-[600px] flex items-center justify-center pointer-events-none origin-center mt-24 lg:mt-0">
-              <motion.div 
-                className="absolute w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-tr from-emerald-500/20 to-teal-400/20 border border-emerald-500/30 flex items-center justify-center will-change-transform"
-                style={{
-                  scale: coreScale,
-                }}
-              >
-                <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-emerald-400/20 blur-xl animate-pulse" />
-                
-                {/* Orbiting Labels */}
-                <motion.div 
-                  animate={{ rotate: 360 }} 
-                  transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 border border-dashed border-emerald-500/20 rounded-full"
-                >
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-[#0A192F] text-emerald-400 text-xs font-mono font-bold border border-emerald-500/30 rounded-full">HbA1c</div>
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 px-3 py-1 bg-[#0A192F] text-amber-400 text-xs font-mono font-bold border border-amber-500/30 rounded-full">Lipids</div>
-                </motion.div>
-                
-                <motion.div 
-                  animate={{ rotate: -360 }} 
-                  transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-                  className="absolute -inset-8 border border-white/5 rounded-full"
-                >
-                  <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-[#0A192F] text-rose-400 text-xs font-mono font-bold border border-rose-500/30 rounded-full">Vit D</div>
-                </motion.div>
-                
-                <ShieldCheck className="absolute w-16 h-16 md:w-24 md:h-24 text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]" />
-              </motion.div>
-            </div>
-          </div>
-        </div>
-
-        {/* ─── LIVE CLINICAL INTELLIGENCE BENCHMARKS ─── */}
-        <section className="w-full relative z-20 bg-[#071325]/90 border-y border-white/10 py-10 px-6 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
-              <div className="text-3xl md:text-4xl font-black text-emerald-400 font-mono flex items-center justify-center gap-0.5">
-                <CountUp to={99.4} decimals={1} duration={2} />
-                <span>%</span>
               </div>
-              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">Vision Extraction Precision</p>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-light">Multimodal OCR & Schema Check</p>
-            </div>
-            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
-              <div className="text-3xl md:text-4xl font-black text-teal-400 font-mono flex items-center justify-center gap-0.5">
-                <CountUp to={10} decimals={0} duration={1.5} />
-                <span>+</span>
-              </div>
-              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">Polyclinic Specialists</p>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-light">ACC, ADA, KDIGO Guidelines</p>
-            </div>
-            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
-              <div className="text-3xl md:text-4xl font-black text-cyan-400 font-mono flex items-center justify-center gap-0.5">
-                <CountUp to={100} decimals={0} duration={2} />
-                <span>%</span>
-              </div>
-              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">DPDP 2023 Aligned</p>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-light">Zero-Knowledge Encrypted Vault</p>
-            </div>
-            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-sm">
-              <div className="text-3xl md:text-4xl font-black text-indigo-400 font-mono flex items-center justify-center gap-0.5">
-                <span>&lt;</span>
-                <CountUp to={450} decimals={0} duration={2} />
-                <span className="text-base font-normal">ms</span>
-              </div>
-              <p className="text-xs uppercase tracking-widest text-slate-300 font-bold mt-2">Edge Inference Latency</p>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-light">Cloudflare Edge AI Gateway</p>
-            </div>
-          </div>
-        </section>
 
-        {/* EXPLORE AEGIS PAGES DIRECTORY */}
-        <section id="explore" className="w-full relative z-20 bg-[#0A192F] border-t border-b border-white/5 py-20 px-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16 max-w-2xl mx-auto">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-4">
-                <Sparkles className="w-3.5 h-3.5" /> Resource Center
-              </span>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
-                Explore Aegis Pages
-              </h2>
-              <p className="text-lg text-slate-400 font-light leading-relaxed">
-                Deep dive into blood reading guides, platform workflows, and autonomous system engineering.
-              </p>
+              {/* Right Interactive 3D Clinical Telemetry Stage */}
+              <div className="lg:col-span-6">
+                <Suspense fallback={<HeroCanvasFallback />}>
+                  <HeroClinicalCore3D />
+                </Suspense>
+              </div>
             </div>
+          </section>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {EXPLORE_PAGES.map((page, index) => {
-                const Icon = page.icon;
-                return (
-                  <Link
-                    key={index}
-                    to={page.href}
-                    className="rounded-3xl p-8 border border-white/10 bg-white/5 backdrop-blur-sm relative overflow-hidden flex flex-col group hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.01]"
-                  >
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
-                        <Icon className="w-6 h-6" />
+          {/* ─── 2. LIVE CLINICAL BENCHMARK BAR ─── */}
+          <section className="w-full relative z-20 bg-[#061020]/90 border-y border-white/10 py-10 px-6 backdrop-blur-xl">
+            <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-5 text-center">
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-3xl md:text-4xl font-black text-emerald-300 font-mono tabular-nums flex items-center justify-center gap-0.5">
+                  <CountUp to={99.4} decimals={1} duration={1.8} />
+                  <span>%</span>
+                </div>
+                <p className="text-xs uppercase tracking-widest text-slate-200 font-bold mt-2">
+                  Vision Schema Precision
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">Gemini 4 Multimodal OCR</p>
+              </div>
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-3xl md:text-4xl font-black text-teal-300 font-mono tabular-nums flex items-center justify-center gap-0.5">
+                  <CountUp to={10} decimals={0} duration={1.4} />
+                  <span>+</span>
+                </div>
+                <p className="text-xs uppercase tracking-widest text-slate-200 font-bold mt-2">
+                  Polyclinic Specialists
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">ICMR, ACC &amp; ADA Grounded</p>
+              </div>
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-3xl md:text-4xl font-black text-sky-300 font-mono tabular-nums flex items-center justify-center gap-0.5">
+                  <CountUp to={100} decimals={0} duration={1.8} />
+                  <span>%</span>
+                </div>
+                <p className="text-xs uppercase tracking-widest text-slate-200 font-bold mt-2">
+                  Mumbai Residency Vault
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">DPDP 2023 · asia-south1</p>
+              </div>
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-3xl md:text-4xl font-black text-indigo-300 font-mono tabular-nums flex items-center justify-center gap-0.5">
+                  <span>&lt;</span>
+                  <CountUp to={450} decimals={0} duration={1.8} />
+                  <span className="text-base font-medium">ms</span>
+                </div>
+                <p className="text-xs uppercase tracking-widest text-slate-200 font-bold mt-2">
+                  Edge AI Routing
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">Cloudflare + Vertex AI</p>
+              </div>
+            </div>
+          </section>
+
+          {/* ─── 3. 3D GLASSMORPHIC CLINICAL & CLOUD CAPABILITIES BENTO ─── */}
+          <section id="features-showcase" className="w-full relative z-20 bg-[#040B16] border-b border-white/10 py-24 px-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-14 max-w-3xl mx-auto">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-[0.16em] text-sky-300 bg-sky-500/10 border border-sky-400/25 mb-4">
+                  <Sparkles className="w-3.5 h-3.5" /> Six Core Clinical Modules
+                </span>
+                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-5 text-white">
+                  Wearables, Lab Vision, and{' '}
+                  <span className="bg-gradient-to-r from-sky-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">
+                    Google Cloud AI Defense.
+                  </span>
+                </h2>
+                <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
+                  Every layer works together — streaming smartwatch vitals, checking medication safety, protecting prompts with Model Armor, and speaking results in your family&apos;s language.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Module 1: Wearable Telemetry */}
+                <TiltSurface3D glowColor="rgba(56, 189, 248, 0.20)" className="rounded-[28px] p-7 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="p-2.5 rounded-xl bg-sky-500/15 text-sky-300 border border-sky-400/30">
+                        <Watch className="w-5 h-5" />
                       </div>
-                      <span className="text-xs uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/5 text-slate-400 group-hover:bg-emerald-500/10 group-hover:text-emerald-400 transition-colors duration-300">
-                        LEARN MORE →
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-sky-300 bg-sky-500/10 px-2.5 py-1 rounded-full border border-sky-400/20">
+                        Web Bluetooth
                       </span>
                     </div>
-                    
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white tracking-wide mb-2 group-hover:text-emerald-400 transition-colors">
-                        {page.title}
-                      </h3>
-                      <p className="text-sm text-slate-400 leading-relaxed font-light">
-                        {page.desc}
-                      </p>
+                    <h3 className="text-xl font-bold text-white mb-2.5">Wearable Biometric Fusion</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Correlates live Resting HR, HRV, and SpO2 streams with blood inflammation markers to calibrate recovery intensity.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-white/10 p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-white">Readiness Index</span>
+                      <span className="text-emerald-300 font-mono font-bold">88 / 100 Peak</span>
                     </div>
-                    
-                    {/* Decorative glow */}
-                    <div className="absolute -bottom-10 -right-10 w-24 h-24 rounded-full blur-[40px] opacity-10 bg-emerald-500 pointer-events-none group-hover:opacity-20 transition-opacity duration-300" />
-                  </Link>
-                );
-              })}
+                    <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                      <div className="p-2 rounded-xl bg-white/[0.04]">
+                        <span className="block text-[10px] text-slate-400">HR</span>
+                        <span className="font-mono font-bold text-sky-300 tabular-nums">64 bpm</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-white/[0.04]">
+                        <span className="block text-[10px] text-slate-400">SpO2</span>
+                        <span className="font-mono font-bold text-emerald-300 tabular-nums">98%</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-white/[0.04]">
+                        <span className="block text-[10px] text-slate-400">HRV</span>
+                        <span className="font-mono font-bold text-indigo-300 tabular-nums">62 ms</span>
+                      </div>
+                    </div>
+                  </div>
+                </TiltSurface3D>
+
+                {/* Module 2: Drug-Lab Matrix */}
+                <TiltSurface3D glowColor="rgba(251, 113, 133, 0.20)" className="rounded-[28px] p-7 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="p-2.5 rounded-xl bg-rose-500/15 text-rose-300 border border-rose-400/30">
+                        <Pill className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-rose-300 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-400/20">
+                        Safety Guard
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2.5">Drug–Lab Interaction Matrix</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Cross-references parsed medications with renal and electrolyte panels to surface clinically grounded alerts early.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-rose-500/25 p-3.5 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-rose-300 flex items-center gap-1.5">
+                        <ShieldAlert className="w-3.5 h-3.5" /> High-Priority Flag
+                      </span>
+                      <span className="font-mono text-[10px] text-rose-200 bg-rose-500/20 px-2 py-0.5 rounded">Review</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-slate-200">
+                      <span>Lisinopril (10mg) ↔ Serum K+</span>
+                      <span className="font-mono font-bold text-rose-300 tabular-nums">5.4 mEq/L ↑</span>
+                    </div>
+                  </div>
+                </TiltSurface3D>
+
+                {/* Module 3: Gemini 4 Multimodal Vision */}
+                <TiltSurface3D glowColor="rgba(52, 211, 153, 0.20)" className="rounded-[28px] p-7 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+                        <Camera className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-400/20">
+                        Strict Schema OCR
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2.5">Gemini 4 Lab &amp; Rx Vision</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Schema-enforced extraction parses multi-column Indian diagnostic PDFs and handwritten scripts with adaptive thinking retry.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-white/10 p-3.5 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-emerald-300" /> Verified Extraction
+                      </span>
+                      <span className="font-mono text-[11px] text-emerald-300">99.4%</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 text-[11px] font-medium">
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/12 text-emerald-200 border border-emerald-500/25">HbA1c 5.8%</span>
+                      <span className="px-2 py-0.5 rounded bg-amber-500/12 text-amber-200 border border-amber-500/25">Vit D 18 ng/mL</span>
+                      <span className="px-2 py-0.5 rounded bg-sky-500/12 text-sky-200 border border-sky-500/25">Metformin BD</span>
+                    </div>
+                  </div>
+                </TiltSurface3D>
+
+                {/* Module 4: Evidence-Grounded Specialists */}
+                <TiltSurface3D glowColor="rgba(168, 85, 247, 0.20)" className="rounded-[28px] p-7 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="p-2.5 rounded-xl bg-purple-500/15 text-purple-300 border border-purple-400/30">
+                        <Brain className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-purple-300 bg-purple-500/10 px-2.5 py-1 rounded-full border border-purple-400/20">
+                        Clinical Grounding
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2.5">10+ Polyclinic Specialists</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Virtual specialist lenses grounded in ICMR, ADA 2025, ACC/AHA, and KDIGO citations plus live Google Search clinical retrieval.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-white/10 p-3.5 text-xs space-y-1.5">
+                    <div className="flex items-center justify-between font-bold text-purple-300">
+                      <span>AI Endocrinologist</span>
+                      <span className="text-[10px] font-mono bg-purple-500/15 px-2 py-0.5 rounded-full">ADA 2025</span>
+                    </div>
+                    <p className="text-slate-300 leading-relaxed">
+                      Pairs HbA1c velocity with post-meal walking &amp; clinician medication review prompts.
+                    </p>
+                  </div>
+                </TiltSurface3D>
+
+                {/* Module 5: Model Armor + Mumbai FHIR R4 */}
+                <TiltSurface3D glowColor="rgba(45, 212, 191, 0.22)" className="rounded-[28px] p-7 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="p-2.5 rounded-xl bg-teal-500/15 text-teal-300 border border-teal-400/30">
+                        <ShieldCheck className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-teal-300 bg-teal-500/10 px-2.5 py-1 rounded-full border border-teal-400/20">
+                        asia-south1
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2.5">Model Armor &amp; Mumbai FHIR R4</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Google Cloud Model Armor screens clinical prompts for injection attacks while Cloud Healthcare API isolates FHIR R4 stores in Mumbai.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-teal-500/25 p-3.5 text-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-teal-200">Firewall · aegis-clinical-guard</span>
+                      <span className="font-mono text-emerald-300">ACTIVE</span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-400 font-mono text-[11px]">
+                      <span>aegis-fhir-r4</span>
+                      <span>DPDP Residency</span>
+                    </div>
+                  </div>
+                </TiltSurface3D>
+
+                {/* Module 6: Cloud HD Indian Voice & Local AQI */}
+                <TiltSurface3D glowColor="rgba(251, 146, 60, 0.20)" className="rounded-[28px] p-7 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <div className="p-2.5 rounded-xl bg-orange-500/15 text-orange-300 border border-orange-400/30">
+                        <Volume2 className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-orange-300 bg-orange-500/10 px-2.5 py-1 rounded-full border border-orange-400/20">
+                        Cloud TTS &amp; AQI
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2.5">Cloud HD Voice &amp; Local AQI</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Hear SBAR summaries read aloud via Google Cloud Text-to-Speech in Hindi, Marathi, Tamil, Telugu, or English alongside live Google Air Quality advisories.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-white/10 p-3.5 text-xs space-y-2">
+                    <div className="flex items-center justify-between text-slate-200">
+                      <span className="inline-flex items-center gap-1.5 font-semibold">
+                        <Volume2 className="w-3.5 h-3.5 text-orange-300" /> Cloud HD Synthesis
+                      </span>
+                      <span className="font-mono text-[11px] text-orange-300">EN · HI · MR · TA · TE</span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-300">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Wind className="w-3.5 h-3.5 text-sky-300" /> Air Quality Telemetry
+                      </span>
+                      <span className="font-mono text-[11px] text-sky-300">Live City AQI</span>
+                    </div>
+                  </div>
+                </TiltSurface3D>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* NEW FEATURES SHOWCASE: 3D GLASSMORPHIC CLINICAL INTELLIGENCE & WEARABLES */}
-        <section id="features-showcase" className="w-full relative z-20 bg-[#071325] border-t border-white/10 py-24 px-6 overflow-hidden">
-          {/* Subtle Ambient Background Lighting */}
-          <div className="absolute top-1/4 left-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-16 max-w-3xl mx-auto">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 mb-4 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-                <Sparkles className="w-4 h-4 text-cyan-400" /> Next-Gen Health Intelligence 2.0
-              </span>
-              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6 text-white leading-tight">
-                Wearable Biometrics Met Clinical Diagnostics. <br />
-                <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-                  Powered by Gemini 4 Hydrogen & Web Bluetooth.
+          {/* ─── 4. ABHA / ABDM INDIA HEALTH STACK ─── */}
+          <section id="abha-gateway" className="w-full relative z-20 bg-gradient-to-b from-[#040B16] to-[#071325] py-24 px-6 border-b border-white/10">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-14 max-w-3xl mx-auto">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-[0.16em] text-orange-300 bg-orange-500/10 border border-orange-400/30 mb-4">
+                  <QrCode className="w-3.5 h-3.5" /> India Health Stack · NHA ABDM Gateway
                 </span>
-              </h2>
-              <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
-                Connect live wearable streams, scan handwritten prescriptions, and cross-reference active medications against blood lab values in real time.
-              </p>
-            </div>
+                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-5 text-white">
+                  Your Health ID.{' '}
+                  <span className="bg-gradient-to-r from-orange-300 via-amber-300 to-yellow-300 bg-clip-text text-transparent">
+                    Interoperable Across Hospitals.
+                  </span>
+                </h2>
+                <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
+                  Built to align with the National Health Authority&apos;s ABDM architecture — link care contexts across diagnostic chains and share AES-GCM-256 encrypted HL7 FHIR R4 bundles.
+                </p>
+              </div>
 
-            {/* 3D Glassmorphic Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Feature Card 1: AI Health Coach Wearable Fusion */}
-              <motion.div
-                whileHover={{ y: -8, rotateX: 2, rotateY: -2, scale: 1.01 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-cyan-500/40 hover:shadow-[0_20px_60px_rgba(6,182,212,0.2)] flex flex-col justify-between"
-              >
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Watch className="w-32 h-32 text-cyan-400" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-3 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                      <Watch className="w-6 h-6" />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <TiltSurface3D glowColor="rgba(251, 146, 60, 0.22)" className="rounded-[28px] p-7 border-orange-500/25 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2.5 rounded-xl bg-orange-500/15 text-orange-300 border border-orange-400/30">
+                        <QrCode className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-orange-300">M1 · ABHA Auth</span>
                     </div>
-                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
-                      Web Bluetooth Active
-                    </span>
+                    <h3 className="text-xl font-bold text-white mb-2.5">ABHA ID &amp; Handle Mapping</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Connect your 14-digit Ayushman Bharat Health Account and <span className="font-mono text-orange-200">name@abdm</span> handle cleanly inside your patient vault.
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-cyan-300 transition-colors">
-                    AI Health Coach & Biometric Telemetry
-                  </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
-                    Streams continuous Resting HR, HRV, SpO2, and Sleep Architecture from smartwatches directly to your dashboard. Automatically overrides workout strain when inflammatory markers (hs-CRP) flag high.
-                  </p>
-                </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-orange-400/20 p-3.5 space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-slate-300 font-semibold">ABHA Sample Format</span>
+                      <span className="text-emerald-300 font-mono">Verified</span>
+                    </div>
+                    <div className="font-mono text-orange-200 font-bold tracking-wider">91-2345-6789-0123</div>
+                  </div>
+                </TiltSurface3D>
 
-                {/* Micro Live UI Mockup */}
-                <div className="bg-[#0A192F]/90 border border-white/10 rounded-2xl p-4 space-y-3 shadow-inner">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-cyan-400" />
-                      <span className="text-xs font-bold text-white">Daily Readiness Score</span>
+                <TiltSurface3D glowColor="rgba(245, 158, 11, 0.22)" className="rounded-[28px] p-7 border-amber-500/25 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-400/30">
+                        <Link2 className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-300">M2 · Care Contexts</span>
                     </div>
-                    <span className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                      88 / 100 Optimal Peak
-                    </span>
+                    <h3 className="text-xl font-bold text-white mb-2.5">Care-Context Linking</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Organize CBC panels, lipid studies, prescriptions, and clinical handover briefs into longitudinal care episodes.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                      <span className="text-slate-400 block text-[10px]">Resting HR</span>
-                      <span className="text-cyan-400 font-extrabold">64 bpm</span>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-amber-400/20 p-3.5 space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">CBC &amp; Lipid Panel</span>
+                      <span className="text-emerald-300 font-semibold">Linked</span>
                     </div>
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                      <span className="text-slate-400 block text-[10px]">SpO2</span>
-                      <span className="text-emerald-400 font-extrabold">98%</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                      <span className="text-slate-400 block text-[10px]">HRV Baseline</span>
-                      <span className="text-indigo-400 font-extrabold">62 ms</span>
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">SBAR Handover Note</span>
+                      <span className="text-emerald-300 font-semibold">Linked</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] pt-1 text-slate-300">
-                    <span className="font-semibold text-cyan-300">[Source: Wearable HR/Steps]</span>
-                    <span className="font-semibold text-purple-300">[Source: Lab HbA1c]</span>
-                  </div>
-                </div>
-              </motion.div>
+                </TiltSurface3D>
 
-              {/* Feature Card 2: Drug-Lab Interaction Matrix */}
-              <motion.div
-                whileHover={{ y: -8, rotateX: 2, rotateY: 2, scale: 1.01 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-rose-500/40 hover:shadow-[0_20px_60px_rgba(244,63,94,0.2)] flex flex-col justify-between"
-              >
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Pill className="w-32 h-32 text-rose-400" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-3 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
-                      <Pill className="w-6 h-6" />
+                <TiltSurface3D glowColor="rgba(129, 140, 248, 0.22)" className="rounded-[28px] p-7 border-indigo-500/25 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-400/30">
+                        <FileJson className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-300">M3 · FHIR R4</span>
                     </div>
-                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
-                      Contraindication Guard
-                    </span>
+                    <h3 className="text-xl font-bold text-white mb-2.5">Mumbai Cloud FHIR R4 Vault</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-5">
+                      Generate HL7 FHIR R4 / NRCeS India bundles synced directly with our tenant-isolated <span className="font-mono text-indigo-200">asia-south1</span> store.
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-rose-300 transition-colors">
-                    Drug-Lab Interaction Matrix
-                  </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
-                    Cross-references active prescriptions against parsed blood lab biomarkers. Instantly flags clinical contraindications like ACE Inhibitors combined with elevated serum potassium before adverse reactions occur.
-                  </p>
-                </div>
+                  <div className="rounded-2xl bg-[#040B16]/85 border border-indigo-400/20 p-3.5 grid grid-cols-2 gap-1.5 text-[11px] font-mono text-indigo-200 text-center">
+                    <span className="px-2 py-1 rounded bg-indigo-500/12">Patient</span>
+                    <span className="px-2 py-1 rounded bg-indigo-500/12">DiagnosticReport</span>
+                    <span className="px-2 py-1 rounded bg-indigo-500/12">Observation</span>
+                    <span className="px-2 py-1 rounded bg-indigo-500/12">Consent</span>
+                  </div>
+                </TiltSurface3D>
+              </div>
 
-                {/* Micro Live UI Mockup */}
-                <div className="bg-[#0A192F]/90 border border-rose-500/30 rounded-2xl p-4 space-y-3 shadow-inner">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                    <div className="flex items-center gap-2">
-                      <ShieldAlert className="w-4 h-4 text-rose-400" />
-                      <span className="text-xs font-bold text-rose-300">CRITICAL SAFETY ALERT</span>
-                    </div>
-                    <span className="text-[10px] font-extrabold uppercase bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md border border-rose-500/40">
-                      High Risk
-                    </span>
+              <div className="aegis-hairline-surface rounded-3xl p-6 md:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-orange-400/25">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-2xl bg-orange-500/15 text-orange-300 border border-orange-400/30 shrink-0">
+                    <ShieldCheck className="w-7 h-7" />
                   </div>
-                  <div className="text-xs space-y-1">
-                    <div className="flex justify-between text-slate-200">
-                      <span className="font-semibold">Lisinopril (10mg) ↔ Potassium</span>
-                      <span className="text-rose-400 font-bold">5.4 mEq/L ↑</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 leading-normal">
-                      Risk of severe hyperkalemia. Co-monitoring of serum electrolytes recommended.
+                  <div>
+                    <h3 className="text-white font-bold text-lg mb-1">Built on the NHA ABDM &amp; DPDP Act 2023 Stack</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">
+                      Aligned with ABDM M1–M3 milestones, NRCeS FHIR R4 India IG, AES-GCM-256 encryption, and Indian data residency controls.
                     </p>
                   </div>
                 </div>
-              </motion.div>
-
-              {/* Feature Card 3: Multimodal Camera & Prescription Scan */}
-              <motion.div
-                whileHover={{ y: -8, rotateX: -2, rotateY: -2, scale: 1.01 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-emerald-500/40 hover:shadow-[0_20px_60px_rgba(16,185,129,0.2)] flex flex-col justify-between"
-              >
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Camera className="w-32 h-32 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                      <Camera className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                      Gemini Multimodal OCR
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-emerald-300 transition-colors">
-                    Prescription & Camera Scan Vision
-                  </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
-                    Direct camera capture and high-res image upload extracts handwritten doctor notes, multi-column lab charts, and physical diagnostic documents with clinical schema validation.
-                  </p>
-                </div>
-
-                {/* Micro Live UI Mockup */}
-                <div className="bg-[#0A192F]/90 border border-white/10 rounded-2xl p-4 space-y-2.5 shadow-inner">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300 font-bold flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-emerald-400" /> Photo Report Parsed
-                    </span>
-                    <span className="text-emerald-400 font-mono text-[10px]">99.4% Confidence</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold">
-                      HbA1c: 5.8% (Normal)
-                    </span>
-                    <span className="px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-semibold">
-                      Vitamin D: 18 ng/mL (Low)
-                    </span>
-                    <span className="px-2 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold">
-                      Metformin 500mg BD
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Feature Card 4: Guidelines-Grounded Polyclinic */}
-              <motion.div
-                whileHover={{ y: -8, rotateX: -2, rotateY: 2, scale: 1.01 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-[36px] p-8 relative overflow-hidden group shadow-2xl hover:border-purple-500/40 hover:shadow-[0_20px_60px_rgba(168,85,247,0.2)] flex flex-col justify-between"
-              >
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Brain className="w-32 h-32 text-purple-400" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-3 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                      <Brain className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs font-mono font-bold tracking-widest uppercase text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
-                      Consensus Evidence Grounded
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-purple-300 transition-colors">
-                    10+ AI Specialist Polyclinic
-                  </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light">
-                    Consult Virtual Cardiologists, Endocrinologists, and Nephrologists. Every recommendation displays official evidence citation badges linked to ACC/AHA 2024, ADA 2025, and KDIGO guidelines.
-                  </p>
-                </div>
-
-                {/* Micro Live UI Mockup */}
-                <div className="bg-[#0A192F]/90 border border-white/10 rounded-2xl p-4 space-y-2 shadow-inner">
-                  <div className="flex items-center justify-between text-xs text-purple-300 font-bold">
-                    <span>AI Endocrinologist</span>
-                    <span className="text-[10px] bg-purple-500/20 px-2 py-0.5 rounded-full border border-purple-500/40 text-purple-200">
-                      ADA 2025 Standard
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    "Post-meal glucose spikes can be dampened by a 15-minute Zone 2 walk after dinner."
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── ABHA / ABDM INDIA HEALTH STACK SECTION ─── */}
-        <section id="abha-gateway" className="w-full relative z-20 bg-gradient-to-b from-[#071325] to-[#0A192F] border-t border-white/10 py-24 px-6 overflow-hidden">
-          {/* Ambient glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-orange-500/8 blur-[140px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-0 right-10 w-80 h-80 bg-indigo-500/8 blur-[120px] rounded-full pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto">
-            {/* Section Header */}
-            <div className="text-center mb-16 max-w-3xl mx-auto">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-orange-400 bg-orange-500/10 border border-orange-500/30 mb-4 shadow-[0_0_20px_rgba(249,115,22,0.2)]">
-                <QrCode className="w-4 h-4" /> India Health Stack · NHA ABDM Gateway
-              </span>
-              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6 text-white leading-tight">
-                Your Health ID. <br />
-                <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
-                  Linked to Every Hospital in India.
-                </span>
-              </h2>
-              <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
-                Aegis is built on the National Health Authority's ABDM (Ayushman Bharat Digital Mission) stack. 
-                Create your 14-digit ABHA ID, link lab reports from any diagnostic center, and share encrypted FHIR R4 records with any doctor — in seconds.
-              </p>
-            </div>
-
-            {/* Main 3-column grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-
-              {/* Card 1: ABHA ID Creation */}
-              <SpotlightCard
-                spotlightColor="rgba(249, 115, 22, 0.25)"
-                className="border-orange-500/30 rounded-[32px] group shadow-2xl hover:border-orange-400/60 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="p-3 rounded-2xl bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                    <QrCode className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">M1 · ABHA Auth</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-orange-300 transition-colors">ABHA ID & OTP Registration</h3>
-                <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light flex-1">
-                  Create your official 14-digit Ayushman Bharat Health Account number using Aadhaar or Mobile OTP. Get your unique <span className="font-mono text-orange-300">name@abdm</span> handle instantly.
-                </p>
-                <div className="bg-[#0A192F]/90 border border-orange-500/20 rounded-2xl p-4 space-y-2 shadow-inner">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300 font-bold flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-orange-400" /> ABHA Number Assigned</span>
-                    <span className="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">✓ Verified</span>
-                  </div>
-                  <div className="font-mono text-orange-300 text-sm font-bold tracking-widest">91-2345-6789-0123</div>
-                  <div className="text-slate-400 text-[11px]">Handle: <span className="text-orange-300 font-semibold">aniket.dhuri@abdm</span></div>
-                </div>
-              </SpotlightCard>
-
-              {/* Card 2: Care-Context Linking */}
-              <SpotlightCard
-                spotlightColor="rgba(245, 158, 11, 0.25)"
-                className="border-amber-500/30 rounded-[32px] group shadow-2xl hover:border-amber-400/60 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                    <Link2 className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">M2 · Care Contexts</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-amber-300 transition-colors">Lab Report & Prescription Linking</h3>
-                <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light flex-1">
-                  Automatically discover and link CBC, Lipid Panel, and HbA1c lab reports from any diagnostic center to your ABHA profile — across hospital networks.
-                </p>
-                <div className="bg-[#0A192F]/90 border border-amber-500/20 rounded-2xl p-4 space-y-2 shadow-inner">
-                  <div className="text-xs font-bold text-amber-300 mb-2">Linked Care Contexts</div>
-                  {[
-                    { label: 'CBC & Lipid Panel', type: 'DiagnosticReport', status: 'Linked' },
-                    { label: 'Hypertension Rx', type: 'Prescription', status: 'Linked' },
-                    { label: 'SBAR Clinical Handover', type: 'ClinicalNote', status: 'Linked' },
-                  ].map((ctx, i) => (
-                    <div key={i} className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-300 font-semibold">{ctx.label}</span>
-                      <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30 font-bold">✓ {ctx.status}</span>
-                    </div>
-                  ))}
-                </div>
-              </SpotlightCard>
-
-              {/* Card 3: FHIR R4 Encrypted Transfer */}
-              <SpotlightCard
-                spotlightColor="rgba(99, 102, 241, 0.25)"
-                className="border-indigo-500/30 rounded-[32px] group shadow-2xl hover:border-indigo-400/60 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                    <FileJson className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-mono font-bold tracking-widest uppercase text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">M3 · FHIR R4</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-indigo-300 transition-colors">Encrypted FHIR R4 Health Records</h3>
-                <p className="text-sm text-slate-300 leading-relaxed mb-6 font-light flex-1">
-                  Approve digital consent requests from hospitals, and share AES-GCM-256 encrypted HL7 FHIR R4 bundles with any NHA-compliant HIU. Zero data exposure in transit.
-                </p>
-                <div className="bg-[#0A192F]/90 border border-indigo-500/20 rounded-2xl p-4 space-y-2 shadow-inner">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300 font-bold flex items-center gap-1.5"><FileJson className="w-3.5 h-3.5 text-indigo-400" /> FHIR Bundle Ready</span>
-                    <span className="text-indigo-300 font-mono text-[10px]">HL7 R4 · NRCeS India</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5 mt-1">
-                    {['Patient', 'DiagnosticReport', 'Observation', 'Consent'].map(t => (
-                      <span key={t} className="px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-mono font-semibold text-center">{t}</span>
-                    ))}
-                  </div>
-                </div>
-              </SpotlightCard>
-            </div>
-
-            {/* Full-width compliance banner */}
-            <div className="rounded-3xl bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-indigo-500/10 border border-orange-500/20 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
-                <div className="p-3 rounded-2xl bg-orange-500/15 text-orange-400 border border-orange-500/30 shrink-0">
-                  <ShieldCheck className="w-8 h-8" />
-                </div>
-                <div>
-                  <h4 className="text-white font-bold text-lg mb-1">India's Only AI Health Platform on the ABDM Stack</h4>
-                  <p className="text-slate-300 text-sm font-light leading-relaxed max-w-2xl">
-                    Compliant with NHA ABDM M1/M2/M3 milestones, NRCeS FHIR R4 India IG, DPDP Act 2023, and Digital Personal Data Protection. Your records stay yours.
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {['NHA ABDM', 'FHIR R4 · NRCeS India', 'DPDP Act 2023', 'AES-GCM-256', 'HL7 Compliant'].map(badge => (
-                      <span key={badge} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-semibold tracking-wide">{badge}</span>
-                    ))}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={isSigningIn}
+                  className="shrink-0 px-7 py-3.5 bg-gradient-to-r from-orange-400 to-amber-400 hover:from-orange-300 hover:to-amber-300 text-slate-950 rounded-2xl font-black text-xs uppercase tracking-wider transition-[transform,background-color] duration-150 active:scale-[0.97] flex items-center gap-2 cursor-pointer"
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>{isSigningIn ? 'Connecting...' : 'Connect ABHA ID'}</span>
+                </button>
               </div>
-              <button
-                onClick={handleSignIn}
-                disabled={isSigningIn}
-                className="shrink-0 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-slate-950 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:shadow-[0_0_45px_rgba(249,115,22,0.5)] flex items-center gap-2 active:scale-95"
-              >
-                <QrCode className="w-4 h-4" />
-                {isSigningIn ? 'Connecting...' : 'Connect ABHA ID'}
-              </button>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <div ref={stickyRef} className="relative w-full h-[250vh]">
-          <div className="sticky top-0 h-[100dvh] w-full flex items-center justify-center overflow-clip transform-gpu will-change-transform">
-            
-            <div className="absolute inset-0 bg-[#0A192F] pointer-events-none -z-20" />
+          {/* ─── 5. CHAOS TO CLARITY 3D PIPELINE ─── */}
+          <LandingScrollStory />
 
-            {/* Cinematic Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0A192F] via-transparent to-[#0A192F] z-50 pointer-events-none" />
-
-            {/* LAYER 1: Raw Report Blur (Chaos) */}
-            <motion.div 
-              className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none will-change-transform transform-gpu"
-              style={{ 
-                opacity: chaosOpacity,
-                scale: chaosScale,
-              }}
-            >
-              <div className="relative w-full h-full max-w-5xl mx-auto flex items-center justify-center overflow-hidden">
-                {/* Floating Scattered Data */}
-                <div className="absolute top-[25%] left-[5%] md:left-[15%] text-emerald-500/40 font-mono text-xl md:text-3xl filter blur-[1px] md:blur-[2px] whitespace-nowrap">WBC 12.5 H</div>
-                <div className="absolute top-[65%] left-[10%] md:left-[25%] text-rose-500/30 font-mono text-2xl md:text-5xl filter blur-[2px] md:blur-[4px] whitespace-nowrap">RBC 4.2 L</div>
-                <div className="absolute top-[20%] right-[5%] md:right-[20%] text-emerald-500/20 font-mono text-lg md:text-2xl whitespace-nowrap">HGB 12.1</div>
-                <div className="absolute bottom-[20%] right-[10%] md:right-[25%] text-amber-500/40 font-mono text-3xl md:text-4xl filter blur-[1px] md:blur-[3px] whitespace-nowrap">PLT 150</div>
-                <div className="absolute top-[45%] left-[2%] md:left-[10%] text-slate-400/50 font-mono text-lg filter blur-[1px] md:blur-[2px] whitespace-nowrap">MCHC 33.5</div>
-                <div className="absolute bottom-[40%] right-[2%] md:right-[15%] text-rose-500/20 font-mono text-xl md:text-3xl filter blur-[2px] md:blur-[5px] whitespace-nowrap">GLUCOSE 110</div>
-
-                {/* Center Core Text */}
-                <div className="text-center font-mono text-sm md:text-2xl tracking-[0.3em] md:tracking-[0.5em] text-emerald-400/80 font-bold z-10 filter drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">
-                  READING CLINICAL VECTORS...
+          {/* ─── 6. 100% FREE OPEN PLATFORM SHOWCASE (#pricing) ─── */}
+          <section id="pricing" className="w-full relative z-20 bg-[#040B16] border-t border-white/10 py-24 px-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-14 max-w-3xl mx-auto">
+                <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 mb-4">
+                  <Sparkles className="w-3.5 h-3.5" /> Production v2.0 • 100% Free Open Access
                 </div>
-              </div>
-            </motion.div>
-
-            {/* LAYER 2: BRIDGE (Fills the dead zone) */}
-            <motion.div 
-              style={{ opacity: bridgeOpacity, scale: bridgeScale }}
-              className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none will-change-transform transform-gpu"
-            >
-              <div className="relative flex flex-col items-center">
-                <div className="absolute inset-0 bg-emerald-500/20 blur-[60px] rounded-full scale-150" />
-                <h2 className="text-xl md:text-4xl font-light tracking-[0.2em] md:tracking-[0.4em] text-emerald-400 animate-pulse text-center px-4 relative z-10">
-                  EXTRACTING INSIGHTS
+                <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
+                  Full Health Intelligence.{' '}
+                  <span className="bg-gradient-to-r from-emerald-300 via-teal-300 to-sky-300 bg-clip-text text-transparent">
+                    100% Free Open Access.
+                  </span>
                 </h2>
-                <div className="h-0.5 w-32 md:w-48 bg-gradient-to-r from-transparent via-emerald-400 to-transparent mt-4 opacity-50" />
+                <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
+                  Every clinical intelligence module — from multimodal lab ingestion and multi-profile tracking to our 10+ specialist lounges — is live in production and completely unlocked.
+                </p>
               </div>
-            </motion.div>
 
-            {/* LAYER 3: The Shield/Health Core */}
-            <motion.div 
-              className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none will-change-transform transform-gpu"
-              style={{ 
-                opacity: shieldOpacity,
-                y: shieldY,
-                scale: shieldScale,
-              }}
-            >
-              <div className="relative w-32 h-32 md:w-56 md:h-56 rounded-full bg-[#0A192F] border-2 border-emerald-500/50 flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.3)]">
-                <div className="absolute inset-0 rounded-full border border-emerald-400/20 animate-[spin_10s_linear_infinite]" />
-                <div className="absolute inset-2 rounded-full border border-dashed border-emerald-500/30 animate-[spin_15s_linear_infinite_reverse]" />
-                <ShieldCheck className="w-16 h-16 md:w-24 md:h-24 text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" strokeWidth={1.5} />
-              </div>
-            </motion.div>
-
-            {/* LAYER 4: The Dashboard Cards / Insights */}
-            <motion.div 
-              className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none px-4 w-full max-w-lg mx-auto will-change-transform transform-gpu"
-              style={{ 
-                opacity: insightOpacity, 
-                y: insightY,
-              }}
-            >
-              <div className="flex flex-col gap-3 md:gap-4 w-full">
-                {/* Emerald Card */}
-                <div className="p-4 md:p-5 rounded-2xl bg-[#0A192F]/90 backdrop-blur-xl border border-emerald-500/40 flex items-start gap-3 md:gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transform transition-transform hover:scale-[1.02]">
-                  <div className="p-2 md:p-3 bg-emerald-500/10 rounded-xl shrink-0">
-                    <Activity className="text-emerald-400 w-5 h-5 md:w-6 md:h-6" />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-6xl mx-auto">
+                {/* Card 1 */}
+                <TiltSurface3D glowColor="rgba(45, 212, 191, 0.16)" className="rounded-3xl p-7 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-emerald-400 font-bold text-sm md:text-base tracking-wide">Hemoglobin Optimal</h3>
-                    <p className="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">Levels are perfectly balanced, ensuring optimal oxygen flow across vitals.</p>
+                    <span className="text-xs font-mono font-bold text-teal-300 uppercase tracking-widest bg-teal-500/10 px-3 py-1 rounded-full border border-teal-400/20">
+                      Clinical Intelligence
+                    </span>
+                    <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multimodal Lab AI</h3>
+                    <div className="flex items-baseline gap-1.5 mb-6">
+                      <span className="text-4xl font-black text-white tabular-nums">₹0</span>
+                      <span className="text-sm font-bold text-emerald-300">Free Open Access</span>
+                    </div>
+                    <ul className="space-y-3 mb-8 text-sm text-slate-300">
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span><strong className="text-white">Unlimited</strong> Lab Report Vision Scans</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Instant Unit Normalization &amp; Anomaly Alerts</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Automated SBAR Doctor Handover Reports</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>FHIR R4 Diagnostic Bundles &amp; Export</span>
+                      </li>
+                    </ul>
                   </div>
-                </div>
 
-                {/* Amber Card */}
-                <div className="p-4 md:p-5 rounded-2xl bg-[#0A192F]/90 backdrop-blur-xl border border-amber-500/40 flex items-start gap-3 md:gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transform transition-transform hover:scale-[1.02]">
-                  <div className="p-2 md:p-3 bg-amber-500/10 rounded-xl shrink-0">
-                    <AlertCircle className="text-amber-400 w-5 h-5 md:w-6 md:h-6" />
-                  </div>
+                  <Link
+                    to="/dashboard"
+                    onClick={(e) => {
+                      if (!user) {
+                        e.preventDefault();
+                        handleSignIn();
+                      }
+                    }}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition-[transform,background-color] duration-150 active:scale-[0.97] flex items-center justify-center gap-2"
+                  >
+                    Start Free Ingestion
+                  </Link>
+                </TiltSurface3D>
+
+                {/* Card 2 (Featured) */}
+                <TiltSurface3D
+                  glowColor="rgba(52, 211, 153, 0.24)"
+                  className="rounded-3xl p-7 !border-emerald-400/60 flex flex-col justify-between shadow-[0_0_45px_rgba(16,185,129,0.16)]"
+                >
                   <div>
-                    <h3 className="text-amber-400 font-bold text-sm md:text-base tracking-wide">HbA1c Borderline</h3>
-                    <p className="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">Slightly elevated relative to baseline. Monitor dietary sugar and activity.</p>
-                  </div>
-                </div>
-
-                {/* Info Table / List */}
-                <div className="p-4 md:p-5 rounded-2xl bg-[#0A192F]/90 backdrop-blur-xl border border-white/10 flex flex-col gap-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transform transition-transform hover:scale-[1.02]">
-                  <div className="text-sm font-semibold tracking-wide text-slate-300">CLINICAL VECTORS</div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-xs md:text-sm">
-                      <span className="text-slate-400">Total Cholesterol</span>
-                      <span className="text-amber-400 font-mono">240 mg/dL ↑</span>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 font-black text-[11px] uppercase tracking-wider mb-3">
+                      <Sparkles className="w-3.5 h-3.5" /> All Features Unlocked
                     </div>
-                    <div className="flex justify-between items-center text-xs md:text-sm border-t border-white/5 pt-2">
-                      <span className="text-slate-400">Vitamin D</span>
-                      <span className="text-rose-400 font-mono">18 ng/mL ↓</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs md:text-sm border-t border-white/5 pt-2">
-                      <span className="text-slate-400">WBC Count</span>
-                      <span className="text-emerald-400 font-mono">6.5 K/uL ✓</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-          </div>
-        </div>
-
-        {/* 100% FREE OPEN PLATFORM SHOWCASE SECTION */}
-        <section id="pricing" className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 py-24 px-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16 max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                <Sparkles className="w-3.5 h-3.5" /> Production v2.0 • 100% Free Open Access
-              </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
-                Full Health Intelligence. <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">100% Free Open Access.</span>
-              </h2>
-              <p className="text-lg text-slate-300 font-light leading-relaxed">
-                Every clinical intelligence module — from multimodal report ingestion and multi-profile tracking to our 10+ clinical specialist lounges — is live in production and completely unlocked. Explore the live interactive workspace immediately with zero login walls or payment barriers.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {/* Card 1: Clinical Intelligence Engine */}
-              <div className="rounded-3xl p-8 border border-white/10 bg-white/5 backdrop-blur-md flex flex-col justify-between hover:border-teal-400/40 transition-all">
-                <div>
-                  <span className="text-xs font-mono font-bold text-teal-400 uppercase tracking-widest bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">
-                    Clinical Intelligence
-                  </span>
-                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multimodal Lab AI</h3>
-                  <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-4xl font-black text-white">₹0</span>
-                    <span className="text-sm font-medium text-emerald-400 font-bold ml-1">Free Open Access</span>
-                  </div>
-
-                  <ul className="space-y-3 mb-8 text-sm text-slate-300 font-light">
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <strong className="text-white font-medium">Unlimited</strong> Lab Report Vision Scans
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      Instant Unit Normalization & Anomaly Alerts
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      Automated SBAR Doctor Handover Reports
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      FHIR R4 Diagnostic Bundles & Export
-                    </li>
-                  </ul>
-                </div>
-
-                <Link
-                  to="/dashboard"
-                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  Start Free Ingestion
-                </Link>
-              </div>
-
-              {/* Card 2: Multi-Profile & Digital Twin (Featured) */}
-              <div className="rounded-3xl p-8 border-2 border-emerald-500 bg-gradient-to-b from-emerald-500/10 to-teal-500/5 backdrop-blur-md flex flex-col justify-between relative shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-0.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs uppercase tracking-widest shadow-md">
-                  ✨ ALL FEATURES UNLOCKED
-                </div>
-
-                <div>
-                  <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                    Family & Wearables
-                  </span>
-                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multi-Profile Vault</h3>
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-4xl font-black text-emerald-400">₹0</span>
-                    <span className="text-sm font-medium text-emerald-300 font-bold">100% Free Open Access</span>
-                  </div>
-                  <p className="text-xs font-bold text-emerald-400 mb-6">Unlimited tracking for you & your loved ones</p>
-
-                  <ul className="space-y-3 mb-8 text-sm text-slate-200">
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <strong className="text-white font-semibold">Multi-Profile</strong> Family & Patient Tracking
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      Apple Health & Google Health Auto-Sync
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      3D Holographic Body Scanner & Digital Twin
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      Longitudinal Historical Trend Sparklines
-                    </li>
-                  </ul>
-                </div>
-
-                <Link
-                  to="/dashboard"
-                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  Launch Live Workspace
-                </Link>
-              </div>
-
-              {/* Card 3: Specialist Lounge & Clinical Practice */}
-              <div className="rounded-3xl p-8 border border-indigo-500/40 bg-indigo-500/5 backdrop-blur-md flex flex-col justify-between hover:border-indigo-500/80 transition-all">
-                <div>
-                  <span className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                    Specialist Lounge
-                  </span>
-                  <h3 className="text-2xl font-bold text-white mt-4 mb-2">10+ AI Specialists</h3>
-                  <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-4xl font-black text-indigo-400">₹0</span>
-                    <span className="text-sm font-medium text-indigo-300 font-bold ml-1">Included Free</span>
-                  </div>
-
-                  <ul className="space-y-3 mb-8 text-sm text-slate-300">
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      <strong className="text-white font-semibold">Specialist Lounge</strong> (Cardio, Endo, Nephro & more)
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      Drug-Lab Contraindication Matrix
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      Plain-English Clinical Explanations & Diets
-                    </li>
-                    <li className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      DPDP 2023 Aligned Zero-Knowledge Client Vault
-                    </li>
-                  </ul>
-                </div>
-
-                <Link
-                  to="/dashboard"
-                  onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  Explore Specialist Lounge
-                </Link>
-              </div>
-            </div>
-
-            {/* Bottom Open Access Guarantee Banner */}
-            <div className="mt-12 max-w-4xl mx-auto rounded-2xl p-4 bg-emerald-500/10 border border-emerald-500/20 text-center">
-              <p className="text-xs md:text-sm text-emerald-300 font-medium">
-                🛡️ <strong className="text-white">Open Platform Guarantee:</strong> No credit card required. Launch the live interactive demo or sign in with your Email ID or Google account to access your sovereign health vault.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* 3. LAB SUMMARY BENTO GRID */}
-        <div className="w-full relative z-20 bg-[#0A192F] border-t border-white/5 pt-16 pb-32">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16 max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
-                Everything in its right place.
-              </h2>
-              <p className="text-lg text-slate-400 font-light leading-relaxed">
-                Aegis extracts values directly from your PDFs, standardizes the units, and places them into an actionable dashboard.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {BENTO_LABS.map((lab) => {
-                const Icon = lab.icon;
-                return (
-                  <div key={lab.id} className={`rounded-3xl p-6 border ${lab.border} ${lab.bg} backdrop-blur-sm relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300`}>
-                    <div className="flex justify-between items-start mb-12">
-                      <div className={`p-3 rounded-2xl bg-white/5 backdrop-blur-md ${lab.color}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <span className={`text-xs uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/5 ${lab.color}`}>
-                        {lab.status}
+                    <div className="block">
+                      <span className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-400/20">
+                        Family &amp; Wearables
                       </span>
                     </div>
-                    
-                    <div>
-                      <p className="text-slate-400 font-medium mb-1">{lab.label}</p>
-                      <div className="flex items-baseline gap-2 mb-3">
-                        <h3 className={`text-3xl font-bold tracking-tight ${lab.color}`}>{lab.value}</h3>
-                      </div>
-                      <p className="text-sm text-slate-400 leading-relaxed font-light">
-                        {lab.desc}
-                      </p>
+                    <h3 className="text-2xl font-bold text-white mt-4 mb-2">Multi-Profile Vault</h3>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-4xl font-black text-emerald-300 tabular-nums">₹0</span>
+                      <span className="text-sm font-bold text-emerald-200">100% Free Open Access</span>
+                    </div>
+                    <p className="text-xs font-semibold text-emerald-300 mb-6">
+                      Unlimited tracking for you &amp; your loved ones
+                    </p>
+
+                    <ul className="space-y-3 mb-8 text-sm text-slate-200">
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span><strong className="text-white">Multi-Profile</strong> Family &amp; Patient Tracking</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Apple Health &amp; Google Health Auto-Sync</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>3D Holographic Body Scanner &amp; Digital Twin</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Longitudinal Historical Trend Sparklines</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <Link
+                    to="/dashboard"
+                    onClick={(e) => {
+                      if (!user) {
+                        e.preventDefault();
+                        handleSignIn();
+                      }
+                    }}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-sm transition-[transform,background-color] duration-150 active:scale-[0.97] flex items-center justify-center gap-2"
+                  >
+                    Launch Live Workspace
+                  </Link>
+                </TiltSurface3D>
+
+                {/* Card 3 */}
+                <TiltSurface3D glowColor="rgba(129, 140, 248, 0.20)" className="rounded-3xl p-7 !border-indigo-400/35 flex flex-col justify-between">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-indigo-300 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-400/20">
+                      Specialist Lounge
+                    </span>
+                    <h3 className="text-2xl font-bold text-white mt-4 mb-2">10+ AI Specialists</h3>
+                    <div className="flex items-baseline gap-1.5 mb-6">
+                      <span className="text-4xl font-black text-indigo-300 tabular-nums">₹0</span>
+                      <span className="text-sm font-bold text-indigo-200">Included Free</span>
                     </div>
 
-                    {/* Decorative glow */}
-                    <div className={`absolute -bottom-10 -right-10 w-32 h-32 rounded-full blur-[50px] opacity-20 ${lab.bg.split('/')[0]}`} />
+                    <ul className="space-y-3 mb-8 text-sm text-slate-300">
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <span><strong className="text-white">Specialist Lounge</strong> (Cardio, Endo, Nephro &amp; more)</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <span>Drug-Lab Contraindication Matrix</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <span>Cloud HD Regional Voice &amp; Local AQI Advice</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <span>DPDP 2023 Aligned Zero-Knowledge Client Vault</span>
+                      </li>
+                    </ul>
                   </div>
-                );
-              })}
-            </div>
 
-            {/* 4. VIRTUAL POLYCLINIC SECTION */}
-            <div className="mt-32 mb-16 border-t border-white/5 pt-24">
-              <div className="text-center mb-16 max-w-3xl mx-auto">
+                  <Link
+                    to="/dashboard"
+                    onClick={(e) => {
+                      if (!user) {
+                        e.preventDefault();
+                        handleSignIn();
+                      }
+                    }}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-sm transition-[transform,background-color] duration-150 active:scale-[0.97] flex items-center justify-center gap-2"
+                  >
+                    Explore Specialist Lounge
+                  </Link>
+                </TiltSurface3D>
+              </div>
+
+              <div className="mt-10 max-w-4xl mx-auto rounded-2xl p-4 bg-emerald-500/10 border border-emerald-400/25 flex items-center justify-center gap-2.5 text-center">
+                <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
+                <p className="text-xs md:text-sm text-emerald-200 font-medium">
+                  <strong className="text-white">Open Platform Guarantee:</strong> No credit card required. Launch the live interactive demo or sign in with your Email ID or Google account.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* ─── 7. LAB BIOMARKER BENTO & INTERACTIVE SPECIALIST EXPLORER ─── */}
+          <section className="w-full relative z-20 bg-[#040B16] border-t border-white/10 pt-20 pb-24 px-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-14 max-w-2xl mx-auto">
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
-                  Consult the Specialists.
+                  Everything in its right place.
                 </h2>
-                <p className="text-lg text-slate-400 font-light leading-relaxed">
-                  Don't just read your labs. Discuss them with a virtual polyclinic of AI specialists, each trained on global clinical guidelines.
+                <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
+                  Aegis extracts analyte values from PDFs, harmonizes units, and maps every biomarker against clinical reference ranges.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {SPECIALISTS_SHOWCASE.map((spec, idx) => {
-                  const Icon = spec.icon;
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+                {BENTO_LABS.map((lab) => {
+                  const Icon = lab.icon;
                   return (
-                    <div key={idx} className="p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors flex flex-col items-center text-center group">
-                      <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-                        <Icon className="w-6 h-6 text-emerald-400" />
+                    <TiltSurface3D key={lab.id} glowColor={lab.glowColor} className="rounded-3xl p-6 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-8">
+                          <div className={`p-2.5 rounded-xl bg-white/5 border border-white/10 ${lab.color}`}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <span className={`text-[11px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border ${lab.pillBg} ${lab.color}`}>
+                            {lab.status}
+                          </span>
+                        </div>
+
+                        <p className="text-slate-300 text-sm font-medium">{lab.label}</p>
+                        <h3 className={`text-3xl font-black font-mono tabular-nums tracking-tight mt-1 ${lab.color}`}>
+                          {lab.value}
+                        </h3>
+                        <p className="text-xs text-slate-400 font-mono mt-1 mb-4">Ref: {lab.range}</p>
                       </div>
-                      <h3 className="text-sm font-bold text-white tracking-wide mb-2">{spec.title}</h3>
-                      <div className="mt-auto pt-2">
-                        <span className="text-xs font-mono tracking-widest text-emerald-400 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 whitespace-nowrap">
-                          {spec.guidelines}
-                        </span>
+
+                      <div>
+                        <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden mb-3">
+                          <div className={`h-full rounded-full ${lab.barColor}`} style={{ width: `${lab.fillPct}%` }} />
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed">{lab.desc}</p>
                       </div>
-                    </div>
+                    </TiltSurface3D>
                   );
                 })}
               </div>
-            </div>
 
-            <div className="mt-24 text-center">
-              <div className="mb-16 inline-grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto border-t border-b border-white/5 py-12">
-                <div className="px-4">
-                  <h3 className="text-white font-bold mb-2">AES-256 Database Encryption</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">Your data is stored with enterprise-grade encryption and privacy controls.</p>
-                </div>
-                <div className="px-4 border-y md:border-y-0 md:border-x border-white/5">
-                  <h3 className="text-white font-bold mb-2">Clinical Precision</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">
-                    Aegis Health AI uses advanced language models to structure data. It is an educational companion meant for tracking and preparation, not a clinical authority.
+              <SpecialistShowcaseSection
+                isAuthenticated={!!user}
+                onRequireSignIn={handleSignIn}
+              />
+
+              {/* ─── 8. RESOURCE CENTER (#explore) ─── */}
+              <div id="explore" className="mt-24 pt-20 border-t border-white/10">
+                <div className="text-center mb-12 max-w-2xl mx-auto">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest text-teal-300 bg-teal-500/10 border border-teal-400/25 mb-3">
+                    <Sparkles className="w-3.5 h-3.5" /> Resource Center
+                  </span>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3 text-white">
+                    Explore Aegis Guides &amp; Architecture
+                  </h2>
+                  <p className="text-base text-slate-300 font-light">
+                    Read biomarker primers, patient safety documentation, and our multi-agent architecture playbook.
                   </p>
                 </div>
-                <div className="px-4">
-                  <h3 className="text-white font-bold mb-2">Zero Data Sale</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed uppercase tracking-tighter">We never sell your health information to insurers or third parties. Period.</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {EXPLORE_PAGES.map((page) => {
+                    const Icon = page.icon;
+                    return (
+                      <Link key={page.href} to={page.href} className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded-3xl">
+                        <TiltSurface3D glowColor="rgba(45, 212, 191, 0.16)" className="rounded-3xl p-7 h-full flex flex-col justify-between">
+                          <div>
+                            <div className="flex justify-between items-start mb-5">
+                              <div className="p-3 rounded-2xl bg-teal-500/12 border border-teal-400/25 text-teal-300">
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-slate-300 group-hover:text-teal-300 group-hover:border-teal-400/30 transition-colors">
+                                <span>Read Guide</span>
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                              </span>
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-teal-300 transition-colors">
+                              {page.title}
+                            </h3>
+                            <p className="text-sm text-slate-300 leading-relaxed font-light">
+                              {page.desc}
+                            </p>
+                          </div>
+                        </TiltSurface3D>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 
-            {/* 5. ABOUT THE FOUNDER SECTION */}
-            <div className="mt-32 mb-16 max-w-3xl mx-auto">
-              <div className="bg-[#0f2a4a] border border-white/10 rounded-[2rem] p-8 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col items-center gap-6 relative overflow-hidden">
-                <div className="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
-                
-                <img 
-                  src="https://lh3.googleusercontent.com/d/11-MtBvMJRl6OpfL60wypuMn-LCw2jC50" 
-                  alt="Aniket Rajesh Dhuri - Founder & Lead AI Systems Architect of Aegis Health AI" 
-                  className="w-48 h-48 md:w-56 md:h-56 shrink-0 object-cover object-[center_35%] rounded-full border-2 border-emerald-400/50 shadow-sm relative z-10 bg-slate-800"
-                />
-
-                <div className="text-center md:text-left relative z-10 w-full flex flex-col md:flex-row items-center md:items-start gap-8 mt-4">
-                  <div className="flex flex-col text-left">
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider">
-                        Founder & Lead AI Systems Architect
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-mono">
-                        Govt. of India MSME Udyam: UDYAM-MH-33-0782403
-                      </span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-4">Leadership & Company Story</h3>
-                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
-                      Hi, I’m <a href="https://aniket.aegishealthai.co.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-400/30 hover:decoration-emerald-400 transition-all">Aniket Rajesh Dhuri, Founder &amp; Lead Architect</a> of Aegis Health AI, headquartered in Dombivli West, Thane, Maharashtra, India.
+              {/* ─── 9. SECURITY PILLARS & FOUNDER STORY ─── */}
+              <div className="mt-24 text-center">
+                <div className="mb-20 inline-grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto border-y border-white/10 py-10 text-left">
+                  <div className="px-4">
+                    <h3 className="text-white font-bold text-base mb-2">AES-256 &amp; Model Armor</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Tenant-isolated cloud vault with Mumbai region Model Armor prompt screening and strict session scoping.
                     </p>
-                    <p className="text-slate-300 font-light leading-relaxed mb-4 text-sm md:text-base">
-                      Aegis Health AI started from a clear observation: medical diagnostic lab reports from Indian pathology chains (Thyrocare, Dr. Lal PathLabs, Metropolis, Apollo, SRL) are formatted for physicians, leaving patients and families anxious and confused while waiting for consultations.
+                  </div>
+                  <div className="px-4 border-y md:border-y-0 md:border-x border-white/10 py-4 md:py-0">
+                    <h3 className="text-white font-bold text-base mb-2">Clinical Decision Support</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Aegis Health AI structures data for tracking and consultation prep. It is not a medical diagnosis authority.
                     </p>
-                    <p className="text-slate-300 font-light leading-relaxed mb-6 text-sm md:text-base">
-                      Aegis Health AI v2.0 is live in production on Google Cloud, Firebase, Gemini 4 Hydrogen, and Gemini 4 Argon — transforming unstructured diagnostic PDFs into normalized longitudinal timelines, HL7 FHIR R4 bundles, SBAR doctor handover briefs, and interactive specialist consultations.
+                  </div>
+                  <div className="px-4">
+                    <h3 className="text-white font-bold text-base mb-2">Zero Data Sale Guarantee</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      We never sell health records to insurers, advertisers, or third parties. Your data belongs to your family.
                     </p>
-                    
-                    <div className="flex flex-wrap items-center gap-3 w-full pt-4 border-t border-white/10">
-                      <a
-                        href="https://www.linkedin.com/in/aniket-dhuri-273094225"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 border border-blue-400/30 rounded-xl text-xs font-bold transition-colors"
-                      >
-                        <Linkedin className="w-4 h-4 text-blue-400" />
-                        LinkedIn Profile
-                      </a>
-                      <a
-                        href="https://github.com/dhurianiket/Aegis-health-ai-"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/15 rounded-xl text-xs font-bold transition-colors"
-                      >
-                        <Github className="w-4 h-4 text-emerald-400" />
-                        GitHub Repository
-                      </a>
-                      <a
-                        href="https://aniket.aegishealthai.co.in/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 rounded-xl text-xs font-bold transition-colors"
-                      >
-                        <Sparkles className="w-4 h-4 text-emerald-400" />
-                        Founder Portfolio &amp; CV
-                      </a>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-400 ml-auto">
-                        <MapPin className="w-4 h-4 text-emerald-400" />
-                        Dombivli West, Thane, Maharashtra 421202
-                      </div>
-                    </div>
                   </div>
                 </div>
+
+                {/* Founder Card */}
+                <div className="mb-20 max-w-3xl mx-auto">
+                  <TiltSurface3D glowColor="rgba(45, 212, 191, 0.16)" className="rounded-[2rem] p-8 md:p-10 text-left">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-7">
+                      <img
+                        src="https://lh3.googleusercontent.com/d/11-MtBvMJRl6OpfL60wypuMn-LCw2jC50"
+                        alt="Aniket Rajesh Dhuri - Founder & Lead AI Systems Architect of Aegis Health AI"
+                        className="w-36 h-36 md:w-44 md:h-44 shrink-0 object-cover object-[center_35%] rounded-full border-2 border-teal-400/50 bg-slate-800"
+                      />
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold">
+                            Founder &amp; Lead AI Systems Architect
+                          </span>
+                          <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-mono">
+                            Govt. of India MSME: UDYAM-MH-33-0782403
+                          </span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-3">Leadership &amp; Company Story</h3>
+                        <p className="text-slate-300 leading-relaxed mb-3 text-sm md:text-base">
+                          Hi, I&apos;m{' '}
+                          <a
+                            href="https://aniket.aegishealthai.co.in/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-teal-300 hover:text-teal-200 underline underline-offset-4 decoration-teal-400/40"
+                          >
+                            Aniket Rajesh Dhuri, Founder &amp; Lead Architect
+                          </a>{' '}
+                          of Aegis Health AI, headquartered in Dombivli West, Thane, Maharashtra, India.
+                        </p>
+                        <p className="text-slate-300 leading-relaxed mb-5 text-sm md:text-base">
+                          Built to help Indian families decode pathology reports from Thyrocare, Dr. Lal PathLabs, Metropolis, Apollo, and SRL into normalized longitudinal timelines, HL7 FHIR R4 bundles, SBAR Doctor Visit Prep briefs, and multilingual summaries.
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-white/10">
+                          <a
+                            href="https://www.linkedin.com/in/aniket-dhuri-273094225"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 border border-blue-400/30 rounded-xl text-xs font-bold transition-colors"
+                          >
+                            <Linkedin className="w-4 h-4 text-blue-400" />
+                            <span>LinkedIn</span>
+                          </a>
+                          <a
+                            href="https://github.com/dhurianiket/Aegis-health-ai-"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3.5 py-2 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/15 rounded-xl text-xs font-bold transition-colors"
+                          >
+                            <Github className="w-4 h-4 text-emerald-400" />
+                            <span>GitHub</span>
+                          </a>
+                          <a
+                            href="https://aniket.aegishealthai.co.in/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-200 border border-emerald-400/30 rounded-xl text-xs font-bold transition-colors"
+                          >
+                            <Sparkles className="w-4 h-4 text-emerald-300" />
+                            <span>Founder Portfolio</span>
+                          </a>
+                          <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 md:ml-auto">
+                            <MapPin className="w-3.5 h-3.5 text-teal-400" />
+                            Dombivli West, Thane 421202
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </TiltSurface3D>
+                </div>
+
+                {/* Final Bottom CTA */}
+                <p className="text-teal-300 font-mono font-bold mb-3 tracking-widest text-xs uppercase">
+                  Your health, decoded.
+                </p>
+                <h3 className="text-3xl md:text-5xl font-bold mb-5 text-white tracking-tight max-w-2xl mx-auto">
+                  Stop guessing. Start knowing.
+                </h3>
+                <p className="text-base md:text-lg text-slate-300 mb-8 max-w-lg mx-auto font-light leading-relaxed">
+                  Launch the live clinical workspace right now or upload your own diagnostic PDF report.
+                </p>
+                <Link
+                  to="/dashboard"
+                  onClick={(e) => {
+                    if (!user) {
+                      e.preventDefault();
+                      handleSignIn();
+                    }
+                  }}
+                  className="px-9 py-4 bg-white text-[#040B16] hover:bg-teal-50 rounded-full font-black text-sm tracking-wide transition-[transform,background-color] duration-150 active:scale-[0.97] shadow-[0_0_30px_rgba(255,255,255,0.14)] inline-flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4 text-teal-600" />
+                  <span>Sign In / Launch Workspace</span>
+                </Link>
               </div>
             </div>
+          </section>
 
-            <p className="text-emerald-400 font-medium mb-4 tracking-widest text-xs uppercase">Your health, decoded.</p>
-              <h3 className="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight max-w-2xl mx-auto leading-tight">
-                Stop guessing. Start knowing.
-              </h3>
-              <p className="text-lg text-slate-400 mb-10 max-w-lg mx-auto font-light leading-relaxed">
-                Explore our live clinical workspace immediately or upload your own diagnostic PDF report.
-              </p>
-              <Link
-                to="/dashboard"
-                onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }}
-                className="px-10 py-5 bg-white text-[#0A192F] hover:bg-slate-200 rounded-full font-bold tracking-wide transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-flex items-center gap-2"
-              >
-                <Sparkles className="w-5 h-5 text-emerald-500" /> SIGN IN / LAUNCH WORKSPACE
-              </Link>
-            </div>
-          </div>
-          
-          {/* Footer */}
-          <footer className="mt-32 pb-12 border-t border-white/5 pt-16 bg-[#0A192F]">
-            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+          {/* ─── FOOTER ─── */}
+          <footer className="pb-12 border-t border-white/10 pt-16 bg-[#040B16]">
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
               <div className="text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
-                  <ShieldCheck className="w-6 h-6 text-emerald-400" strokeWidth={2} />
-                  <span className="font-bold tracking-[0.2em] text-emerald-400 text-lg">
-                    AEGIS
-                  </span>
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                  <ShieldCheck className="w-6 h-6 text-teal-400" strokeWidth={2} />
+                  <span className="font-black tracking-[0.2em] text-white text-lg">AEGIS</span>
                 </div>
                 <p className="text-sm text-slate-400 font-light leading-relaxed max-w-xs mx-auto md:mx-0">
-                  Premium health intelligence for everyone. Powered by enterprise-grade AI infrastructure.
+                  Clinical-grade medical telemetry and plain-language health intelligence for Indian families.
                 </p>
               </div>
 
               <div className="text-center md:text-left">
-                <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Explore Aegis</h4>
-                <ul className="space-y-3">
+                <h4 className="text-white font-bold tracking-widest uppercase text-xs mb-4">Explore Aegis</h4>
+                <ul className="space-y-2.5 text-sm">
                   <li>
-                    <Link to="/dashboard" onClick={(e) => { if (!user) { e.preventDefault(); handleSignIn(); } }} className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors text-sm">
+                    <Link
+                      to="/dashboard"
+                      onClick={(e) => {
+                        if (!user) {
+                          e.preventDefault();
+                          handleSignIn();
+                        }
+                      }}
+                      className="text-teal-300 hover:text-teal-200 font-bold"
+                    >
                       Live Interactive Workspace
                     </Link>
                   </li>
                   <li>
-                    <a href="#pricing" className="text-slate-300 hover:text-emerald-300 font-medium transition-colors text-sm">
-                      Platform Capabilities (100% Free)
+                    <a href="#pricing" className="text-slate-300 hover:text-teal-300">
+                      Platform Capabilities (Free)
                     </a>
                   </li>
-                  <li>
-                    <Link to="/how-it-works.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
-                      How It Works
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/about.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
-                      About Us &amp; Leadership
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/security.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
-                      Security First
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/blog-hba1c.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
-                      HbA1c Sugar Guide
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/blog-cbc.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
-                      CBC Blood Explainer
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/engineering-playbook.html" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
-                      Engineering Playbook
-                    </Link>
-                  </li>
+                  {EXPLORE_PAGES.map((page) => (
+                    <li key={page.href}>
+                      <Link to={page.href} className="text-slate-400 hover:text-teal-300 transition-colors">
+                        {page.title}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
               <div className="text-center md:text-left">
-                <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Contact & Support</h4>
-                <ul className="space-y-4">
+                <h4 className="text-white font-bold tracking-widest uppercase text-xs mb-4">Contact &amp; Support</h4>
+                <ul className="space-y-3 text-sm">
                   <li>
-                    <a href="mailto:founder@aegishealthai.co.in" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm flex items-center justify-center md:justify-start gap-3">
-                      <Mail className="w-4 h-4 shrink-0" /> founder@aegishealthai.co.in
+                    <a
+                      href="mailto:founder@aegishealthai.co.in"
+                      className="text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-2"
+                    >
+                      <Mail className="w-4 h-4 shrink-0" />
+                      <span>founder@aegishealthai.co.in</span>
                     </a>
                   </li>
                   <li>
-                    <a href="mailto:support@aegishealthai.co.in" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm flex items-center justify-center md:justify-start gap-3">
-                      <Mail className="w-4 h-4 shrink-0" /> support@aegishealthai.co.in
+                    <a
+                      href="mailto:support@aegishealthai.co.in"
+                      className="text-slate-400 hover:text-teal-300 transition-colors inline-flex items-center gap-2"
+                    >
+                      <Mail className="w-4 h-4 shrink-0" />
+                      <span>support@aegishealthai.co.in</span>
                     </a>
                   </li>
-                  <li className="text-slate-400 text-sm flex items-center justify-center md:justify-start gap-3">
-                    <MapPin className="w-4 h-4 shrink-0" /> Dombivli West, Thane, Maharashtra 421202
+                  <li className="text-slate-400 inline-flex items-center gap-2">
+                    <MapPin className="w-4 h-4 shrink-0" />
+                    <span>Dombivli West, Thane 421202</span>
                   </li>
                   <li className="text-slate-400 text-xs font-mono">
                     MSME Udyam: UDYAM-MH-33-0782403
@@ -1497,100 +1414,113 @@ export default function LandingPage() {
               </div>
 
               <div className="text-center md:text-right">
-                <h4 className="text-white font-bold tracking-widest uppercase text-sm mb-4">Legal</h4>
-                <ul className="space-y-4">
+                <h4 className="text-white font-bold tracking-widest uppercase text-xs mb-4">Legal</h4>
+                <ul className="space-y-3 text-sm">
                   <li>
-                    <Link to="/privacy-policy" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
+                    <Link
+                      to="/privacy-policy"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setLegalModalType('privacy');
+                        setLegalModalOpen(true);
+                      }}
+                      className="text-slate-400 hover:text-teal-300 underline decoration-white/20 underline-offset-4"
+                    >
                       Privacy Policy
                     </Link>
                   </li>
                   <li>
-                    <Link to="/terms-of-service" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm underline decoration-white/20 underline-offset-4">
-                      Terms & Medical Disclaimer
+                    <Link
+                      to="/terms-of-service"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setLegalModalType('terms');
+                        setLegalModalOpen(true);
+                      }}
+                      className="text-slate-400 hover:text-teal-300 underline decoration-white/20 underline-offset-4"
+                    >
+                      Terms &amp; Medical Disclaimer
                     </Link>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 mb-8">
-              <p className="text-xs text-slate-400 text-center uppercase tracking-widest mb-2 font-semibold">Important Clinical &amp; Medical Disclaimer</p>
-              <p className="text-xs text-slate-300 text-center max-w-4xl mx-auto leading-relaxed">
-                Aegis Health AI is an informational clinical decision-support and health intelligence platform and does NOT provide medical diagnosis or treatment prescriptions. It does not replace professional clinical assessments. Always consult a qualified healthcare provider regarding your health data or any medical condition. If you are experiencing an urgent medical issue, contact emergency services immediately.
+            <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/10 mb-8 text-center">
+              <p className="text-xs text-slate-400 uppercase tracking-widest mb-2 font-semibold">
+                Important Clinical &amp; Medical Disclaimer
+              </p>
+              <p className="text-xs text-slate-300 max-w-4xl mx-auto leading-relaxed">
+                Aegis Health AI is an informational clinical decision-support and health intelligence platform and does NOT provide medical diagnosis or treatment prescriptions. It does not replace professional clinical assessments. Always consult a qualified healthcare provider regarding your health data or any medical condition.
               </p>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-              <div className="text-center md:text-left">
-                <p className="text-xs text-slate-400 tracking-wide uppercase mb-1">
+            <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+              <div className="text-center md:text-left space-y-1">
+                <p className="text-xs text-slate-400 tracking-wide uppercase">
                   &copy; {new Date().getFullYear()} Aegis Health AI. All rights reserved.
                 </p>
-                <p className="text-sm text-slate-400 transition-colors mb-2">
-                  Proudly developed in Mumbai, Maharashtra, India.
-                </p>
-                <p className="text-xs text-slate-400 tracking-[0.2em] font-mono mb-2">
+                <p className="text-xs text-slate-400 font-mono">
                   VERSION 2.0.0 / SECURE ENCRYPTION ACTIVE
                 </p>
                 <p className="text-xs text-slate-300 max-w-md">
-                  This site uses only essential session cookies to keep you signed in. We do not use tracking or advertising cookies.
+                  This site uses only essential session cookies to keep you signed in. No tracking or advertising cookies.
                 </p>
               </div>
 
-              <div className="text-center md:text-right space-y-3">
-                <p className="text-xs text-slate-400 flex items-center justify-center md:justify-end gap-1.5 font-medium italic">
-                  Built on <span className="text-slate-200">Google Cloud, Vertex AI &amp; Firebase</span>
-                  <Sparkles className="w-3 h-3 text-emerald-400" />
+              <div className="text-center md:text-right space-y-2.5">
+                <p className="text-xs text-slate-300 flex items-center justify-center md:justify-end gap-1.5 italic">
+                  <span>Built on Google Cloud, Vertex AI &amp; Firebase</span>
+                  <Sparkles className="w-3.5 h-3.5 text-teal-400" />
                 </p>
                 <div className="flex flex-col items-center md:items-end gap-2">
-                  <a 
-                    href="https://www.nvidia.com/en-us/startups/" 
-                    target="_blank" 
+                  <a
+                    href="https://www.nvidia.com/en-us/startups/"
+                    target="_blank"
                     rel="noopener noreferrer"
                     title="Aegis Health AI is a member of the NVIDIA Inception program"
-                    className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-200 inline-block hover:shadow-md transition-shadow"
+                    className="p-1.5 bg-white rounded-lg border border-slate-200 inline-block"
                   >
-                    <img 
-                      src="/nvidia-inception-badge.svg" 
-                      alt="Member of the NVIDIA Inception program" 
-                      className="h-8 md:h-9 w-auto object-contain" 
+                    <img
+                      src="/nvidia-inception-badge.svg"
+                      alt="Member of the NVIDIA Inception program"
+                      className="h-8 w-auto object-contain"
                     />
                   </a>
-                  <span className="text-xs font-medium text-slate-300">
-                    Aegis Health AI is a member of the NVIDIA Inception program &amp; supported by the Google for Startups Cloud Program.
+                  <span className="text-xs text-slate-300">
+                    Member of NVIDIA Inception &amp; supported by the Google for Startups Cloud Program.
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 pt-4 text-center">
+            <div className="max-w-7xl mx-auto px-6 pt-4 text-center space-y-3">
               <p className="text-[11px] text-slate-400 leading-relaxed max-w-4xl mx-auto">
                 © 2026 NVIDIA, the NVIDIA logo, and NVIDIA Inception are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries. Google Cloud, Vertex AI, and Google for Startups are trademarks of Google LLC.
               </p>
+              <p className="text-xs text-slate-400">
+                This site is protected by reCAPTCHA and the Google{' '}
+                <a className="text-sky-400 hover:underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">
+                  Privacy Policy
+                </a>{' '}
+                and{' '}
+                <a className="text-sky-400 hover:underline" href="https://policies.google.com/terms" target="_blank" rel="noreferrer">
+                  Terms of Service
+                </a>{' '}
+                apply.
+              </p>
             </div>
-
-            <p className="text-xs text-slate-300 mt-8 mb-4 text-center">
-              This site is protected by reCAPTCHA and the Google{' '}
-              <a className="text-blue-500 hover:underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
-              <a className="text-blue-500 hover:underline" href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms of Service</a> apply.
-            </p>
           </footer>
-        </div>
         </main>
 
-        {/* Email ID + Password + Google Sign-In Modal */}
-        <AuthLoginModal
-          isOpen={isLoginModalOpen}
-          onClose={() => setIsLoginModalOpen(false)}
-        />
+        <AuthLoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
 
-        {/* Legal Modal */}
-        <LegalModal 
-          isOpen={legalModalOpen} 
-          onClose={() => setLegalModalOpen(false)} 
-          type={legalModalType} 
+        <LegalModal
+          isOpen={legalModalOpen}
+          onClose={() => setLegalModalOpen(false)}
+          type={legalModalType}
         />
       </div>
     </ErrorBoundary>
   );
 }
-
