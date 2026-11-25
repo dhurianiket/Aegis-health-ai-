@@ -160,11 +160,31 @@ export async function getGcpAccessToken(
   return { token: tokenData.access_token, projectId: key.project_id };
 }
 
+const LEGACY_VERTEX_FLASH_ALIASES = new Set([
+  "",
+  "gemini-3.8-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3-flash-preview",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+]);
+
+const LEGACY_VERTEX_PRO_ALIASES = new Set([
+  "gemini-3.1-pro-preview",
+  "gemini-2.5-pro",
+  "gemini-1.5-pro",
+]);
+
 export function resolveVertexModel(requestedModel: string): string {
   const trimmed = requestedModel.trim();
-  // Vertex AI global endpoint returns 404 for gemini-3.6-flash; route to verified gemini-3.8-flash.
-  if (trimmed === "gemini-3.6-flash" || trimmed === "") {
-    return "gemini-3.8-flash";
+  if (LEGACY_VERTEX_FLASH_ALIASES.has(trimmed)) {
+    return "gemini-4-hydrogen";
+  }
+  if (LEGACY_VERTEX_PRO_ALIASES.has(trimmed)) {
+    return "gemini-4-argon";
   }
   return trimmed;
 }

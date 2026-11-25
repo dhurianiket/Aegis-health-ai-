@@ -129,7 +129,7 @@ describe("Worker Vertex AI routing & Discovery Engine clinical search", () => {
     expect(res.headers.get("Cache-Control")).toBe("no-store, private");
     expect(calls.length).toBe(1);
     expect(calls[0].url).toBe(
-      `https://gateway.ai.cloudflare.com/v1/test-account/test-gateway/google-vertex-ai/v1/projects/${TEST_PROJECT_ID}/locations/global/publishers/google/models/gemini-3.8-flash:generateContent`,
+      `https://gateway.ai.cloudflare.com/v1/test-account/test-gateway/google-vertex-ai/v1/projects/${TEST_PROJECT_ID}/locations/global/publishers/google/models/gemini-4-hydrogen:generateContent`,
     );
     expect(calls[0].headers["Authorization"]).toBe("Bearer synthetic-gcp-access-token");
     expect(calls[0].headers["cf-aig-skip-cache"]).toBe("true");
@@ -173,7 +173,7 @@ describe("Worker Vertex AI routing & Discovery Engine clinical search", () => {
           Authorization: `Bearer ${idToken}`,
           "CF-Connecting-IP": "198.51.100.11",
         },
-        body: JSON.stringify({ model: "gemini-3.8-flash", contents: [{ role: "user", parts: [{ text: "Hi" }] }] }),
+        body: JSON.stringify({ model: "gemini-4-hydrogen", contents: [{ role: "user", parts: [{ text: "Hi" }] }] }),
       }),
       vertexEnv,
       {},
@@ -183,6 +183,66 @@ describe("Worker Vertex AI routing & Discovery Engine clinical search", () => {
     expect(res.headers.get("X-AI-Provider")).toBe("google-ai-studio");
     expect(calledUrls.some((u) => u.includes("google-vertex-ai"))).toBe(true);
     expect(calledUrls.some((u) => u.includes("google-ai-studio"))).toBe(true);
+  });
+
+  it("maps legacy gemini-3.8-flash to gemini-4-hydrogen and degrades 403 carbon/neon cleanly to gemini-4-argon on Vertex AI", async () => {
+    const requestedUrls: string[] = [];
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === GOOGLE_JWKS_URL) {
+        return new Response(JSON.stringify(signer.jwks), { status: 200 });
+      }
+      if (url === "https://oauth2.googleapis.com/token") {
+        return new Response(JSON.stringify({ access_token: "synthetic-gcp-access-token", expires_in: 3600 }), { status: 200 });
+      }
+      requestedUrls.push(url);
+      if (url.includes("/models/gemini-4-carbon:")) {
+        return new Response(
+          JSON.stringify({ error: { code: 403, message: "Access requires an eligible paid billing account in a supported region" } }),
+          { status: 403 },
+        );
+      }
+      return new Response(
+        JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text: "Vertex reply" }] }, finishReason: "STOP" }] }),
+        { status: 200 },
+      );
+    });
+
+    const legacyRes = await worker.fetch(
+      new Request("https://api.example.test/api/ai/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+          "CF-Connecting-IP": "198.51.100.14",
+        },
+        body: JSON.stringify({ model: "gemini-3.8-flash", contents: "Hi" }),
+      }),
+      vertexEnv,
+      {},
+    );
+    expect(legacyRes.status).toBe(200);
+    expect(legacyRes.headers.get("X-AI-Provider")).toBe("vertex-ai");
+    expect(requestedUrls.some((u) => u.includes("/models/gemini-4-hydrogen:generateContent"))).toBe(true);
+
+    requestedUrls.length = 0;
+    const carbonRes = await worker.fetch(
+      new Request("https://api.example.test/api/ai/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+          "CF-Connecting-IP": "198.51.100.14",
+        },
+        body: JSON.stringify({ model: "gemini-4-carbon", contents: "Deep reasoning" }),
+      }),
+      vertexEnv,
+      {},
+    );
+    expect(carbonRes.status).toBe(200);
+    expect(carbonRes.headers.get("X-AI-Provider")).toBe("vertex-ai");
+    expect(requestedUrls.some((u) => u.includes("/models/gemini-4-carbon:generateContent"))).toBe(true);
+    expect(requestedUrls.some((u) => u.includes("/models/gemini-4-argon:generateContent"))).toBe(true);
   });
 
   it("enforces auth, prototype guard, and length cap on POST /api/ai/clinical-search", async () => {

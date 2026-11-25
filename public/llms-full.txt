@@ -11,7 +11,7 @@ Aegis Health AI is an Indian AI-native health intelligence platform designed to 
 
 ### Core Architectural Differentiators:
 1. **Multi-Model AI Consensus Pipeline**:
-   - **Google Gemini 3.8 Flash**: Sub-second multimodal OCR extraction, schema-constrained JSON analyte parsing, and real-time interactive triage.
+   - **Google Gemini 4 Hydrogen**: Sub-second multimodal OCR extraction, schema-constrained JSON analyte parsing, and real-time interactive triage.
    - **Google Gemini 4 Argon**: 1M-token deep clinical reasoning model automatically escalated for dense, handwritten OPD prescriptions, ambiguous multi-year laboratory trajectories, and multi-specialist consensus reviews.
    - **NVIDIA NIM Clinical Foundation Models**: High-throughput accelerated inference for pathology telemetry as an official member of the NVIDIA Inception program.
    - **Amazon Bedrock Mantle / Anthropic Claude Proxy**: Secondary clinical validation and second-opinion safety cross-checking.

@@ -33,7 +33,7 @@ function AboutUsContent() {
       icon: "🧬",
       badge: "HL7 FHIR R4 Standard",
       title: "Clinical Precision over Hype",
-      desc: "We combine Google Vertex AI (Gemini 3.8 Flash & Gemini 4 Argon) multimodal vision with deterministic LOINC/FHIR R4 schemas, SBAR physician handovers, and drug-lab contraindication checks.",
+      desc: "We combine Google Vertex AI (Gemini 4 Hydrogen & Gemini 4 Argon) multimodal vision with deterministic LOINC/FHIR R4 schemas, SBAR physician handovers, and drug-lab contraindication checks.",
     },
   ];
 
@@ -182,7 +182,7 @@ function AboutUsContent() {
               Across India, millions of pathology tests are run every morning. Yet most families walk away with dense PDF sheets filled with bolded numbers and laboratory reference brackets—without any plain-language context on how their markers have shifted over the last 90 days or what questions they should ask their physician.
             </p>
             <p className="text-slate-200 font-light text-base leading-relaxed">
-              I engineered <strong className="text-white">Aegis Health AI</strong> on <strong className="text-emerald-300">Google Cloud, Vertex AI (Gemini 3.8 Flash &amp; Gemini 4 Argon), and Firebase</strong> to bridge this exact clinical communication gap. Aegis transforms raw diagnostic PDFs and prescription scans into HL7 FHIR R4 structured biomarkers, 10-specialist polyclinic insights, 3D anatomical readiness scores, and single-page SBAR doctor handover briefs—all inside a zero-knowledge, DPDP Act 2023 isolated vault.
+              I engineered <strong className="text-white">Aegis Health AI</strong> on <strong className="text-emerald-300">Google Cloud, Vertex AI (Gemini 4 Hydrogen &amp; Gemini 4 Argon), and Firebase</strong> to bridge this exact clinical communication gap. Aegis transforms raw diagnostic PDFs and prescription scans into HL7 FHIR R4 structured biomarkers, 10-specialist polyclinic insights, 3D anatomical readiness scores, and single-page SBAR doctor handover briefs—all inside a zero-knowledge, DPDP Act 2023 isolated vault.
             </p>
             <blockquote className="border-l-2 border-emerald-400 pl-4 py-1 text-slate-100 font-medium italic text-base bg-emerald-500/5 rounded-r-xl">
               "Information is preventative medicine. When families understand their longitudinal biomarkers clearly, they have calmer, higher-trust consultations with their doctors."
@@ -211,7 +211,7 @@ function AboutUsContent() {
                 </div>
                 <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center flex flex-col items-center justify-center">
                   <div className="text-xs font-bold text-emerald-400 font-mono">Google Cloud</div>
-                  <div className="text-[11px] text-slate-300 mt-0.5">Gemini 3.8 Flash &amp; 4 Argon</div>
+                  <div className="text-[11px] text-slate-300 mt-0.5">Gemini 4 Hydrogen &amp; 4 Argon</div>
                 </div>
                 <div className="bg-[#0A192F] border border-white/10 rounded-xl p-3.5 text-center flex flex-col items-center justify-center">
                   <div className="text-xs font-bold text-teal-300 font-mono">AWS Activate</div>
@@ -302,7 +302,7 @@ function AboutUsContent() {
             <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full inline-block mb-3">
               Phase 1 · Live in Production (Q3–Q4 2026)
             </span>
-            <h3 className="text-white font-extrabold text-lg mb-2">Dual-Tier Gemini 3.8 Flash + Gemini 4 Argon MVP</h3>
+            <h3 className="text-white font-extrabold text-lg mb-2">Dual-Tier Gemini 4 Hydrogen + Gemini 4 Argon MVP</h3>
             <p className="text-slate-300 text-xs leading-relaxed">
               Multimodal lab report &amp; handwritten OPD prescription OCR across Thyrocare, Dr. Lal PathLabs, Metropolis, and SRL; 50+ normalized biomarkers; 10-specialist clinical synthesis; and 1-page SBAR physician handover briefs.
             </p>

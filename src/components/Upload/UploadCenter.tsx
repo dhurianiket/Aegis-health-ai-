@@ -504,7 +504,7 @@ export default function UploadCenter({
   const runSampleReportSimulation = useCallback((preset: "metropolis" | "thyrocare") => {
     setIsProcessing(true);
     setProcessingStep(1);
-    setProcessingMessage("Stage 1/4: Gemini 3.8 Flash Multimodal OCR Tokenization...");
+    setProcessingMessage("Stage 1/4: Gemini 4 Hydrogen Multimodal OCR Tokenization...");
     setTimeout(() => {
       setProcessingStep(2);
       setProcessingMessage("Stage 2/4: LOINC Harmonization & SI → Conventional Unit Conversion...");
@@ -1449,7 +1449,7 @@ export default function UploadCenter({
                              <span>
                                 {result.consensus.overallConsensus === 'DISCREPANCY_FLAGGED'
                                    ? `⚠️ AI Flagged: ${result.consensus.discrepancyMarkers} marker discrepancy`
-                                   : (result.consensus.engine ? `🛡️ ${result.consensus.engine}` : `🛡️ Tri-Model Verified: Gemini 3.8 Flash + Claude 3.7 + NVIDIA Nemotron-70B`)}
+                                   : (result.consensus.engine ? `🛡️ ${result.consensus.engine}` : `🛡️ Tri-Model Verified: Gemini 4 Hydrogen + Claude 3.7 + NVIDIA Nemotron-70B`)}
                              </span>
                              <span className="text-[10px] opacity-75 font-mono">({result.consensus.agreementPercentage}%)</span>
                           </div>

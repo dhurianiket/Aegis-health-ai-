@@ -50,23 +50,35 @@ describe('geminiClient edge proxy + model normalization', () => {
     expect(() => mod.getAI()).toThrow(/Authentication required/);
   });
 
-  it('normalizeModel maps flash/pro aliases', () => {
-    expect(normalizeModel('gemini-2.5-flash')).toBe('gemini-3.6-flash');
-    expect(normalizeModel('gemini-1.5-pro')).toBe('gemini-3.1-pro-preview');
-    expect(normalizeModel('gemini-3.6-flash')).toBe('gemini-3.6-flash');
+  it('normalizeModel maps flash/pro aliases to Gemini 4 and passes Gemini 4 models through', () => {
+    expect(normalizeModel('gemini-2.5-flash')).toBe('gemini-4-hydrogen');
+    expect(normalizeModel('gemini-3.6-flash')).toBe('gemini-4-hydrogen');
+    expect(normalizeModel('gemini-3.8-flash')).toBe('gemini-4-hydrogen');
+    expect(normalizeModel('gemini-1.5-pro')).toBe('gemini-4-argon');
+    expect(normalizeModel('gemini-3.1-pro-preview')).toBe('gemini-4-argon');
+    expect(normalizeModel('gemini-4-hydrogen')).toBe('gemini-4-hydrogen');
+    expect(normalizeModel('gemini-4-argon')).toBe('gemini-4-argon');
+    expect(normalizeModel('gemini-4-neon')).toBe('gemini-4-neon');
+    expect(normalizeModel('gemini-4-carbon')).toBe('gemini-4-carbon');
   });
 
   describe('Model Normalization via edge POST', () => {
     it.each([
-      ['gemini-3-flash-preview', 'gemini-3.6-flash'],
-      ['gemini-3.5-flash', 'gemini-3.6-flash'],
-      ['gemini-2.0-flash', 'gemini-3.6-flash'],
-      ['gemini-1.5-flash', 'gemini-3.6-flash'],
-      ['gemini-2.5-flash', 'gemini-3.6-flash'],
-      ['gemini-2.5-flash-lite', 'gemini-3.6-flash'],
-      ['gemini-1.5-pro', 'gemini-3.1-pro-preview'],
-      ['gemini-2.5-pro', 'gemini-3.1-pro-preview'],
-      ['gemini-3.6-flash', 'gemini-3.6-flash'],
+      ['gemini-3-flash-preview', 'gemini-4-hydrogen'],
+      ['gemini-3.5-flash', 'gemini-4-hydrogen'],
+      ['gemini-3.6-flash', 'gemini-4-hydrogen'],
+      ['gemini-3.8-flash', 'gemini-4-hydrogen'],
+      ['gemini-2.0-flash', 'gemini-4-hydrogen'],
+      ['gemini-1.5-flash', 'gemini-4-hydrogen'],
+      ['gemini-2.5-flash', 'gemini-4-hydrogen'],
+      ['gemini-2.5-flash-lite', 'gemini-4-hydrogen'],
+      ['gemini-1.5-pro', 'gemini-4-argon'],
+      ['gemini-2.5-pro', 'gemini-4-argon'],
+      ['gemini-3.1-pro-preview', 'gemini-4-argon'],
+      ['gemini-4-hydrogen', 'gemini-4-hydrogen'],
+      ['gemini-4-argon', 'gemini-4-argon'],
+      ['gemini-4-neon', 'gemini-4-neon'],
+      ['gemini-4-carbon', 'gemini-4-carbon'],
     ])('maps model "%s" to "%s" for generateContent', async (inputModel, expectedModel) => {
       const ai = getAI();
       const res = await ai.models.generateContent({ model: inputModel, contents: 'hello' }) as { text: string };
@@ -84,8 +96,8 @@ describe('geminiClient edge proxy + model normalization', () => {
     });
 
     it.each([
-      ['gemini-3-flash-preview', 'gemini-3.6-flash'],
-      ['gemini-1.5-pro', 'gemini-3.1-pro-preview'],
+      ['gemini-3-flash-preview', 'gemini-4-hydrogen'],
+      ['gemini-1.5-pro', 'gemini-4-argon'],
     ])('maps model "%s" to "%s" for generateContentStream (non-stream polyfill)', async (inputModel, expectedModel) => {
       const ai = getAI();
       const stream = await ai.models.generateContentStream({ model: inputModel, contents: 'stream test' });
@@ -101,7 +113,7 @@ describe('geminiClient edge proxy + model normalization', () => {
   });
 
   describe('503 Error Resilience', () => {
-    it('retries with gemini-3.6-flash then succeeds', async () => {
+    it('retries with gemini-4-hydrogen then succeeds', async () => {
       mockFetch
         .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Service Unavailable' }), { status: 503 }))
         .mockResolvedValueOnce(new Response(JSON.stringify({
@@ -113,10 +125,10 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(result.text).toBe('Fallback success');
       expect(mockFetch).toHaveBeenCalledTimes(2);
       const models = mockFetch.mock.calls.map((c) => JSON.parse(String((c[1] as RequestInit).body)).model);
-      expect(models).toEqual(['gemini-3.1-pro-preview', 'gemini-3.6-flash']);
+      expect(models).toEqual(['gemini-4-argon', 'gemini-4-hydrogen']);
     });
 
-    it('retries secondary gemini-3.5-flash after both primary paths 503', async () => {
+    it('retries gemini-4-hydrogen then gemini-4-argon after primary model throws 503', async () => {
       mockFetch
         .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Overloaded' }), { status: 503 }))
         .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'High demand' }), { status: 503 }))
@@ -125,10 +137,10 @@ describe('geminiClient edge proxy + model normalization', () => {
         }), { status: 200 }));
 
       const ai = getAI();
-      const result = await ai.models.generateContent({ model: 'gemini-1.5-pro', contents: 'test prompt' }) as { text: string };
+      const result = await ai.models.generateContent({ model: 'gemini-4-carbon', contents: 'test prompt' }) as { text: string };
       expect(result.text).toBe('Secondary fallback success');
       const models = mockFetch.mock.calls.map((c) => JSON.parse(String((c[1] as RequestInit).body)).model);
-      expect(models).toEqual(['gemini-3.1-pro-preview', 'gemini-3.6-flash', 'gemini-3.5-flash']);
+      expect(models).toEqual(['gemini-4-carbon', 'gemini-4-hydrogen', 'gemini-4-argon']);
     });
 
     it('does NOT retry non-503 errors', async () => {
@@ -161,7 +173,7 @@ describe('geminiClient edge proxy + model normalization', () => {
     it('normalizes string systemInstruction in chat sessions', async () => {
       const ai = getAI();
       const chat = ai.chats.create({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-4-hydrogen',
         config: {
           systemInstruction: 'You are Aura AI.',
         },
@@ -183,7 +195,7 @@ describe('geminiClient edge proxy + model normalization', () => {
       };
       const ai = getAI();
       await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-4-hydrogen',
         contents: 'test',
         systemInstruction: structuredSI,
       });
@@ -199,7 +211,7 @@ describe('geminiClient edge proxy + model normalization', () => {
     it('sends contextParts as separate user parts before the message, never in systemInstruction', async () => {
       const ai = getAI();
       const chat = ai.chats.create({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-4-hydrogen',
         history: [{ role: 'user', parts: [{ text: 'earlier q' }] }, { role: 'model', parts: [{ text: 'earlier a' }] }],
         config: { systemInstruction: 'SYSTEM RULES' },
       });
@@ -218,14 +230,14 @@ describe('geminiClient edge proxy + model normalization', () => {
     it('passes maxOutputTokens + thinkingConfig through to the edge and the feature flag in the body', async () => {
       const ai = getAI();
       const chat = ai.chats.create({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-4-hydrogen',
         config: { systemInstruction: 'S', temperature: 0.1, maxOutputTokens: 1536, thinkingConfig: { thinkingLevel: 'low' } },
         feature: 'specialist',
       });
       await chat.sendMessage('hi');
       const init = mockFetch.mock.calls[0][1] as RequestInit;
       const body = JSON.parse(String(init.body));
-      expect(body.model).toBe('gemini-3.8-flash');
+      expect(body.model).toBe('gemini-4-hydrogen');
       expect(body.generationConfig).toEqual({ temperature: 0.1, maxOutputTokens: 1536, thinkingConfig: { thinkingLevel: 'low' } });
       expect(body.aegisFeature).toBe('specialist');
       // Flag travels in the body, not a custom header (no CORS preflight change).
@@ -235,23 +247,23 @@ describe('geminiClient edge proxy + model normalization', () => {
     it('reports modelUsed, modelVersion and finishReason', async () => {
       mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({
         candidates: [{ content: { parts: [{ text: 'x' }] }, finishReason: 'MAX_TOKENS' }],
-        modelVersion: 'gemini-3.8-flash-001',
+        modelVersion: 'gemini-4-hydrogen-001',
       }), { status: 200 }));
-      const res = await getAI().models.generateContent({ model: 'gemini-3.8-flash', contents: 'q' });
-      expect(res.modelUsed).toBe('gemini-3.8-flash');
-      expect(res.modelVersion).toBe('gemini-3.8-flash-001');
+      const res = await getAI().models.generateContent({ model: 'gemini-4-hydrogen', contents: 'q' });
+      expect(res.modelUsed).toBe('gemini-4-hydrogen');
+      expect(res.modelVersion).toBe('gemini-4-hydrogen-001');
       expect(res.finishReason).toBe('MAX_TOKENS');
     });
 
     it('falls back from a pinned model that returns 404 and labels the fallback model', async () => {
       mockFetch
-        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'models/gemini-3.8-flash is not found for API version v1beta' }), { status: 404 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'models/gemini-4-argon is not found for API version v1beta' }), { status: 404 }))
         .mockResolvedValueOnce(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'fallback' }] } }] }), { status: 200 }));
-      const res = await getAI().models.generateContent({ model: 'gemini-3.8-flash', contents: 'q' });
+      const res = await getAI().models.generateContent({ model: 'gemini-4-argon', contents: 'q' });
       expect(res.text).toBe('fallback');
-      expect(res.modelUsed).toBe('gemini-3.6-flash');
+      expect(res.modelUsed).toBe('gemini-4-hydrogen');
       const models = mockFetch.mock.calls.map((c) => JSON.parse(String((c[1] as RequestInit).body)).model);
-      expect(models).toEqual(['gemini-3.8-flash', 'gemini-3.6-flash']);
+      expect(models).toEqual(['gemini-4-argon', 'gemini-4-hydrogen']);
     });
 
     it('aborting the caller signal cancels the in-flight fetch with an AbortError (no retry, no fallback)', async () => {
@@ -263,7 +275,7 @@ describe('geminiClient edge proxy + model normalization', () => {
         });
       });
       const controller = new AbortController();
-      const chat = getAI().chats.create({ model: 'gemini-3.8-flash', signal: controller.signal });
+      const chat = getAI().chats.create({ model: 'gemini-4-hydrogen', signal: controller.signal });
       // The single-chunk stream starts the request when first iterated.
       const stream = await chat.sendMessageStream('hi');
       const pending = stream.next();
@@ -277,7 +289,7 @@ describe('geminiClient edge proxy + model normalization', () => {
     it('does not call the edge at all when the signal is already aborted', async () => {
       const controller = new AbortController();
       controller.abort();
-      const chat = getAI().chats.create({ model: 'gemini-3.8-flash', signal: controller.signal });
+      const chat = getAI().chats.create({ model: 'gemini-4-hydrogen', signal: controller.signal });
       await expect(chat.sendMessage('hi')).rejects.toMatchObject({ name: 'AbortError' });
       expect(mockFetch).not.toHaveBeenCalled();
     });
@@ -290,7 +302,7 @@ describe('geminiClient edge proxy + model normalization', () => {
 
       const ai = getAI();
       await expect(
-        ai.models.generateContent({ model: 'gemini-3.6-flash', contents: 'hello' }),
+        ai.models.generateContent({ model: 'gemini-4-hydrogen', contents: 'hello' }),
       ).rejects.toMatchObject({ name: 'EdgeGeminiError', status: 408 });
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -322,7 +334,7 @@ describe('geminiClient edge proxy + model normalization', () => {
 
       const ai = getAI();
       const result = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-4-hydrogen',
         contents: 'hello nephrologist',
       }) as { text: string };
 
@@ -341,7 +353,7 @@ describe('geminiClient edge proxy + model normalization', () => {
 
       const ai = getAI();
       const result = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-4-hydrogen',
         contents: 'hello coach',
       }) as { text: string };
 
@@ -359,7 +371,7 @@ describe('geminiClient edge proxy + model normalization', () => {
 
       const ai = getAI();
       await expect(ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-4-hydrogen',
         contents: 'hello nephrologist',
       })).rejects.toThrow(/Failed to fetch/);
       expect(mockFetch).toHaveBeenCalledTimes(3);

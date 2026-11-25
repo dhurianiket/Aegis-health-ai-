@@ -446,7 +446,7 @@ export interface ClinicalConsensusParams {
   prompt: string;
   systemInstruction?: string;
   contextData?: string;
-  primaryModel?: string; // default: "gemini-3.6-flash"
+  primaryModel?: string; // default: "gemini-4-hydrogen"
   secondaryModel?: string; // default: BEDROCK_MANTLE_MODELS.DEEPSEEK_V3_2
   temperature?: number;
   featureName?: string;
@@ -476,7 +476,7 @@ export async function evaluateClinicalConsensus(
   params: ClinicalConsensusParams,
   fetchImpl: typeof fetch = bedrockFetchForTests || fetch,
 ): Promise<ClinicalConsensusResponse> {
-  const primaryModel = params.primaryModel || "gemini-3.6-flash";
+  const primaryModel = params.primaryModel || "gemini-4-hydrogen";
   const secondaryModel = params.secondaryModel || DEFAULT_MANTLE_MODEL;
 
   const combinedPrompt = params.contextData
@@ -605,7 +605,7 @@ export async function callWithUnifiedFallback(
     try {
       const ai = getAI();
       const geminiParams: GeminiGenerateParams = {
-        model: params.geminiModel || "gemini-3.6-flash",
+        model: params.geminiModel || "gemini-4-hydrogen",
         contents: [{ role: "user", parts: [{ text: params.prompt }] }],
         config: {
           systemInstruction: params.systemInstruction,
@@ -623,7 +623,7 @@ export async function callWithUnifiedFallback(
       return {
         text: resp.text || "",
         providerUsed: "gemini",
-        modelUsed: params.geminiModel || "gemini-3.6-flash",
+        modelUsed: params.geminiModel || "gemini-4-hydrogen",
         fallbackOccurred: false,
       };
     } catch (err: any) {
@@ -682,7 +682,7 @@ export async function callWithUnifiedFallback(
       try {
         const ai = getAI();
         const geminiParams: GeminiGenerateParams = {
-          model: params.geminiModel || "gemini-3.6-flash",
+          model: params.geminiModel || "gemini-4-hydrogen",
           contents: [{ role: "user", parts: [{ text: params.prompt }] }],
           config: {
             systemInstruction: params.systemInstruction,
@@ -700,7 +700,7 @@ export async function callWithUnifiedFallback(
         return {
           text: resp.text || "",
           providerUsed: "gemini",
-          modelUsed: params.geminiModel || "gemini-3.6-flash",
+          modelUsed: params.geminiModel || "gemini-4-hydrogen",
           fallbackOccurred: true,
           originalError: firstAttemptError?.message,
         };

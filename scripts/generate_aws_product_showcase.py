@@ -801,7 +801,7 @@ def render_rich_showcase():
           <div class="model-card gemini">
             <div class="model-top">
               <span class="model-name">
-                <span style="color:#38BDF8;">●</span> Google Gemini (gemini-3.6-flash)
+                <span style="color:#38BDF8;">●</span> Google Gemini (gemini-4-hydrogen)
               </span>
               <span class="model-meta">Latency: 412ms · Edge Proxy</span>
             </div>

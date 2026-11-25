@@ -14,10 +14,10 @@ function EngineeringPlaybookContent() {
     {
       id: "L1",
       name: "Layer 1: Multimodal Vision & Diagnostic OCR",
-      tech: "Google Vertex AI • Gemini 3.8 Flash & Gemini 4 Argon",
-      summary: "Ingests multi-page diagnostic PDFs and skewed smartphone photos of Indian laboratory reports with Gemini 3.8 Flash, automatically escalating complex multi-page panels and low-confidence handwritten Rx (<85% confidence) to Gemini 4 Argon.",
-      code: `// Adaptive Model Routing -> Gemini 3.8 Flash / Gemini 4 Argon Escalation
-const primaryModel = isComplexReport ? 'gemini-4-argon' : 'gemini-3.8-flash';
+      tech: "Google Vertex AI • Gemini 4 Hydrogen & Gemini 4 Argon",
+      summary: "Ingests multi-page diagnostic PDFs and skewed smartphone photos of Indian laboratory reports with Gemini 4 Hydrogen, automatically escalating complex multi-page panels and low-confidence handwritten Rx (<85% confidence) to Gemini 4 Argon.",
+      code: `// Adaptive Model Routing -> Gemini 4 Hydrogen / Gemini 4 Argon Escalation
+const primaryModel = isComplexReport ? 'gemini-4-argon' : 'gemini-4-hydrogen';
 const response = await ai.models.generateContent({
   model: primaryModel,
   contents: [reportInlineData, CLINICAL_EXTRACTION_PROMPT],
@@ -48,7 +48,7 @@ export function normalizeToFhirObservation(raw: ExtractedLabItem, uid: string) {
     {
       id: "L3",
       name: "Layer 3: 10-Specialist Multi-Agent Polyclinic",
-      tech: "Gemini 4 Argon & Gemini 3.8 Flash • Coordinated Agent Graph",
+      tech: "Gemini 4 Argon & Gemini 4 Hydrogen • Coordinated Agent Graph",
       summary: "Routes longitudinal biomarker deltas to 10 domain-specific specialist agents (Cardiology, Endocrinology, Nephrology, Hematology, Hepatology) grounded in ICMR, RSSDI, and ACC/AHA guidelines.",
       code: `// Multi-Agent Polyclinic Dispatcher
 const specialistBriefs = await Promise.all([
@@ -79,7 +79,7 @@ service cloud.firestore {
       badge: "PATTERN 01 • SCHEMA DETERMINISM",
       title: "Strict JSON Schema Enforcement & Unit Canonicalization",
       problem: "Unconstrained LLM prompts frequently hallucinate markdown wrappers, inconsistent biomarker keys ('Hb', 'Haemoglobin', 'HGB'), or mismatched units ('mg/dL' vs. 'mmol/L'), breaking longitudinal trend charts.",
-      solution: "Every Gemini 3.8 Flash invocation enforces a strict OpenAPI/JSON responseSchema at temperature 0.1, paired with a deterministic TypeScript unit-conversion and LOINC lookup layer before writing to Firestore.",
+      solution: "Every Gemini 4 Hydrogen invocation enforces a strict OpenAPI/JSON responseSchema at temperature 0.1, paired with a deterministic TypeScript unit-conversion and LOINC lookup layer before writing to Firestore.",
     },
     {
       badge: "PATTERN 02 • ZERO-TRUST CLOUD PROXY",
@@ -97,8 +97,8 @@ service cloud.firestore {
 
   const stackMatrix = [
     {
-      service: "Google Vertex AI • Gemini 3.8 Flash & Gemini 4 Argon",
-      role: "Adaptive multimodal diagnostic OCR (Gemini 3.8 Flash) with automatic escalation to Gemini 4 Argon for complex multi-page reports, 10-specialist clinical reasoning, and SBAR synthesis.",
+      service: "Google Vertex AI • Gemini 4 Hydrogen & Gemini 4 Argon",
+      role: "Adaptive multimodal diagnostic OCR (Gemini 4 Hydrogen) with automatic escalation to Gemini 4 Argon for complex multi-page reports, 10-specialist clinical reasoning, and SBAR synthesis.",
     },
     {
       service: "Cloud Functions for Firebase (2nd Gen / Cloud Run)",
@@ -131,7 +131,7 @@ service cloud.firestore {
               <DecryptedText text="AEGIS SYSTEMS ARCHITECTURE & ENGINEERING PLAYBOOK" animateOn="view" speed={35} />
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-white mb-6 leading-tight font-sans">
-              Architecting a Multi-Agent Clinical Intelligence Platform on <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">Google Cloud, Gemini 3.8 Flash &amp; 4 Argon</span>
+              Architecting a Multi-Agent Clinical Intelligence Platform on <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">Google Cloud, Gemini 4 Hydrogen &amp; 4 Argon</span>
             </h1>
             <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-slate-400 text-xs md:text-sm font-mono">
               <span className="flex items-center gap-1.5 font-semibold text-slate-200">
@@ -300,7 +300,7 @@ service cloud.firestore {
                 Indian Diagnostic Lab Extraction Benchmark (N = 120 Reports)
               </h2>
               <p className="text-xs md:text-sm text-slate-300 mb-4 leading-relaxed">
-                Internal validation benchmark evaluating schema-constrained <strong className="text-white">Gemini 3.8 Flash + Gemini 4 Argon Escalation</strong> across 120 de-identified Indian pathology PDFs and smartphone photos (measuring exact analyte name normalization, numeric value extraction, SI-to-conventional unit conversion, and ICMR reference flag accuracy):
+                Internal validation benchmark evaluating schema-constrained <strong className="text-white">Gemini 4 Hydrogen + Gemini 4 Argon Escalation</strong> across 120 de-identified Indian pathology PDFs and smartphone photos (measuring exact analyte name normalization, numeric value extraction, SI-to-conventional unit conversion, and ICMR reference flag accuracy):
               </p>
               <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0A192F]/90">
                 <table className="w-full text-left text-xs border-collapse font-sans">

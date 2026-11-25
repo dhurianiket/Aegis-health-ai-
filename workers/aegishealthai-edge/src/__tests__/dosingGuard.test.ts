@@ -63,7 +63,7 @@ describe("applyLoungeOutputGuard", () => {
   const response = (text: string) => ({
     candidates: [{ content: { role: "model", parts: [{ text }] }, finishReason: "STOP" }],
     usageMetadata: { totalTokenCount: 10 },
-    modelVersion: "gemini-3.8-flash",
+    modelVersion: "gemini-4-hydrogen",
   });
 
   it("replaces a dosing reply with the fixed safe message and keeps metadata", () => {
@@ -72,7 +72,7 @@ describe("applyLoungeOutputGuard", () => {
     const payload = out.payload as ReturnType<typeof response>;
     expect(payload.candidates).toHaveLength(1);
     expect(payload.candidates[0].content.parts[0].text).toBe(SAFE_DOSING_REPLY);
-    expect(payload.modelVersion).toBe("gemini-3.8-flash");
+    expect(payload.modelVersion).toBe("gemini-4-hydrogen");
     expect(SAFE_DOSING_REPLY).toMatch(/registered medical practitioner \(RMP\)/);
     expect(SAFE_DOSING_REPLY).toMatch(/112/);
   });

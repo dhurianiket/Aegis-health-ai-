@@ -155,10 +155,10 @@ ${OUTPUT_FORMAT_JSON}
         contents: geminiConfig.contents as any
       });
     } catch (proError: any) {
-      console.warn("Gemini 4 Argon failed, falling back to Gemini 3.8 Flash:", proError.message || proError);
+      console.warn("Gemini 4 Argon failed, falling back to Gemini 4 Hydrogen:", proError.message || proError);
       response = await ai.models.generateContent({
         ...geminiConfig,
-        model: "gemini-3.8-flash",
+        model: "gemini-4-hydrogen",
         contents: geminiConfig.contents as any
       });
     }
@@ -324,9 +324,9 @@ Generate the summary strictly following the plain text format above.
         },
       });
     } catch (proError: any) {
-      console.warn("Gemini 4 Argon failed, falling back to Gemini 3.8 Flash:", proError.message || proError);
+      console.warn("Gemini 4 Argon failed, falling back to Gemini 4 Hydrogen:", proError.message || proError);
       response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model: "gemini-4-hydrogen",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,
@@ -470,7 +470,7 @@ export async function extractMedicalReports(
         totalBase64Length > 1_200_000 ||
         filesData.some((f) => f.mimeType === "application/pdf" && (f.base64Data?.length || 0) > 600_000);
 
-      const primaryExtractionModel = isComplexReport ? "gemini-4-argon" : "gemini-3.8-flash";
+      const primaryExtractionModel = isComplexReport ? "gemini-4-argon" : "gemini-4-hydrogen";
 
       const runExtractionWithModel = (modelId: string) =>
         safeGeminiCall(() => ai.models.generateContent({
@@ -555,15 +555,15 @@ export async function extractMedicalReports(
         response = await runExtractionWithModel(primaryExtractionModel);
       } catch (primaryErr: any) {
         if (primaryExtractionModel === "gemini-4-argon") {
-          console.warn("[Extraction] Gemini 4 Argon unavailable, falling back to Gemini 3.8 Flash:", primaryErr?.message || primaryErr);
-          response = await runExtractionWithModel("gemini-3.8-flash");
+          console.warn("[Extraction] Gemini 4 Argon unavailable, falling back to Gemini 4 Hydrogen:", primaryErr?.message || primaryErr);
+          response = await runExtractionWithModel("gemini-4-hydrogen");
         } else {
           throw primaryErr;
         }
       }
 
-      // Automatic accuracy escalation: if initial Flash pass detects low OCR confidence (e.g., handwritten Rx or skewed scan), re-run with Gemini 4 Argon
-      if (primaryExtractionModel === "gemini-3.8-flash") {
+      // Automatic accuracy escalation: if initial Hydrogen pass detects low OCR confidence (e.g., handwritten Rx or skewed scan), re-run with Gemini 4 Argon
+      if (primaryExtractionModel === "gemini-4-hydrogen") {
         const initialParsed = safeJsonParse<ExtractedReportResponse | null>(response.text || "{}", null);
         const hasLowConfidence =
           initialParsed &&
@@ -573,10 +573,10 @@ export async function extractMedicalReports(
 
         if (hasLowConfidence) {
           try {
-            if (import.meta.env.DEV) console.log("[Extraction] Low confidence detected on initial Flash pass; escalating to gemini-4-argon...");
+            if (import.meta.env.DEV) console.log("[Extraction] Low confidence detected on initial Hydrogen pass; escalating to gemini-4-argon...");
             response = await runExtractionWithModel("gemini-4-argon");
           } catch (argonErr) {
-            console.warn("[Extraction] Gemini 4 Argon escalation fallback retained Flash output:", argonErr);
+            console.warn("[Extraction] Gemini 4 Argon escalation fallback retained Hydrogen output:", argonErr);
           }
         }
       }

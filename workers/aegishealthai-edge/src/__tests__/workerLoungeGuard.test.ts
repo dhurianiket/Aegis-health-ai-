@@ -23,7 +23,7 @@ beforeAll(async () => {
 
 function geminiReply(text: string): Response {
   return new Response(
-    JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text }] }, finishReason: "STOP" }], modelVersion: "gemini-3.8-flash" }),
+    JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text }] }, finishReason: "STOP" }], modelVersion: "gemini-4-hydrogen" }),
     { status: 200, headers: { "Content-Type": "application/json" } },
   );
 }
@@ -69,7 +69,7 @@ describe("Worker /api/ai/generate — Lounge guard, token clamp, gateway logging
 
   it("sends cf-aig-collect-log-payload: false on AI Gateway requests", async () => {
     installFetch(fetchMock, [geminiReply("ok")]);
-    await worker.fetch(generateRequest({ model: "gemini-3.6-flash", contents: [] }), TEST_ENV, {});
+    await worker.fetch(generateRequest({ model: "gemini-4-hydrogen", contents: [] }), TEST_ENV, {});
     const [url, init] = upstreamCalls(fetchMock)[0];
     expect(url).toContain("gateway.ai.cloudflare.com");
     expect((init.headers as Record<string, string>)["cf-aig-collect-log-payload"]).toBe("false");
@@ -78,7 +78,7 @@ describe("Worker /api/ai/generate — Lounge guard, token clamp, gateway logging
   it("replaces patient-directed dosing for Lounge requests (body flag) and clamps maxOutputTokens", async () => {
     installFetch(fetchMock, [geminiReply("Take 20 units of insulin tonight.")]);
     const res = await worker.fetch(
-      generateRequest({ model: "gemini-3.8-flash", aegisFeature: "specialist", contents: [], generationConfig: { maxOutputTokens: 100000 } }),
+      generateRequest({ model: "gemini-4-hydrogen", aegisFeature: "specialist", contents: [], generationConfig: { maxOutputTokens: 100000 } }),
       TEST_ENV,
       {},
     );

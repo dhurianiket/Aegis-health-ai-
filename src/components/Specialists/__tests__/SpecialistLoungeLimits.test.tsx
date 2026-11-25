@@ -104,16 +104,16 @@ describe("SpecialistLounge — token caps, model pin, Stop", () => {
     setDocMock.mockReset().mockResolvedValue(undefined);
     resetStorageMocks();
     saveCachedReportMock.mockReset().mockResolvedValue(undefined);
-    replyWith({ text: "General info.", modelUsed: "gemini-3.8-flash" });
+    replyWith({ text: "General info.", modelUsed: "gemini-4-hydrogen" });
   });
 
-  it("chat turns use the pinned stable Flash model with a 1536-token cap, low thinking, abort signal and Lounge feature flag", async () => {
+  it("chat turns use the pinned Gemini 4 Hydrogen model with a 1536-token cap, low thinking, abort signal and Lounge feature flag", async () => {
     await act(async () => {
       render(<SpecialistLounge />);
     });
     await send("What is LDL?");
     const args = lastCreate();
-    expect(args.model).toBe("gemini-3.8-flash");
+    expect(args.model).toBe("gemini-4-hydrogen");
     expect(args.model).not.toMatch(/preview/);
     expect(args.config?.maxOutputTokens).toBe(1536);
     expect(args.config?.thinkingConfig?.thinkingLevel).toBe("low");
@@ -122,29 +122,29 @@ describe("SpecialistLounge — token caps, model pin, Stop", () => {
   });
 
   it("summary requests get a 3072-token cap and cache the model that actually answered", async () => {
-    replyWith({ text: "Summary.", modelUsed: "gemini-3.6-flash" });
+    replyWith({ text: "Summary.", modelUsed: "gemini-4-hydrogen" });
     await act(async () => {
       render(<SpecialistLounge />);
     });
     await send("Summarize my labs");
     const args = lastCreate();
-    expect(args.model).toBe("gemini-3.8-flash");
+    expect(args.model).toBe("gemini-4-argon");
     expect(args.config?.maxOutputTokens).toBe(3072);
     expect(saveCachedReportMock).toHaveBeenCalledTimes(1);
-    expect(saveCachedReportMock.mock.calls[0][1]).toMatchObject({ modelUsed: "gemini-3.6-flash", promptVersion: "v2.0-safe-guides" });
+    expect(saveCachedReportMock.mock.calls[0][1]).toMatchObject({ modelUsed: "gemini-4-hydrogen", promptVersion: "v2.0-safe-guides" });
   });
 
   it("prefers Gemini's reported modelVersion for the cache label", async () => {
-    replyWith({ text: "Summary.", modelUsed: "gemini-3.8-flash", modelVersion: "gemini-3.8-flash-001" });
+    replyWith({ text: "Summary.", modelUsed: "gemini-4-argon", modelVersion: "gemini-4-argon-001" });
     await act(async () => {
       render(<SpecialistLounge />);
     });
     await send("Summarize my labs");
-    expect(saveCachedReportMock.mock.calls[0][1]).toMatchObject({ modelUsed: "gemini-3.8-flash-001" });
+    expect(saveCachedReportMock.mock.calls[0][1]).toMatchObject({ modelUsed: "gemini-4-argon-001" });
   });
 
   it("marks truncated replies and never caches a truncated summary", async () => {
-    replyWith({ text: "Partial summary", modelUsed: "gemini-3.8-flash", finishReason: "MAX_TOKENS" });
+    replyWith({ text: "Partial summary", modelUsed: "gemini-4-argon", finishReason: "MAX_TOKENS" });
     await act(async () => {
       render(<SpecialistLounge />);
     });
@@ -189,7 +189,7 @@ describe("SpecialistLounge — token caps, model pin, Stop", () => {
 
     // The input is usable again: a new message goes through normally.
     createMock.mockImplementation(() => ({ sendMessageStream: sendMock }));
-    replyWith({ text: "Fresh answer.", modelUsed: "gemini-3.8-flash" });
+    replyWith({ text: "Fresh answer.", modelUsed: "gemini-4-hydrogen" });
     await send("What is TSH?");
     expect(savedMessages().map((m) => m.content)).toEqual(["Explain my thyroid report", "What is TSH?", "Fresh answer."]);
   });

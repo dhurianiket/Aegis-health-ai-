@@ -68,19 +68,21 @@ type EdgeErrorBody = {
 };
 
 const DEFAULT_EDGE_API_URL = 'https://api.aegishealthai.co.in';
-const DEFAULT_MODEL = 'gemini-3.6-flash';
-const SECONDARY_FALLBACK = 'gemini-3.5-flash';
+const DEFAULT_MODEL = 'gemini-4-hydrogen';
+const SECONDARY_FALLBACK = 'gemini-4-argon';
 
 const FLASH_ALIASES = new Set([
-  'gemini-3-flash-preview',
+  'gemini-3.8-flash',
+  'gemini-3.6-flash',
   'gemini-3.5-flash',
+  'gemini-3-flash-preview',
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
   'gemini-2.0-flash',
   'gemini-1.5-flash',
 ]);
 
-const PRO_ALIASES = new Set(['gemini-2.5-pro', 'gemini-1.5-pro']);
+const PRO_ALIASES = new Set(['gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-1.5-pro']);
 
 /** True for caller-initiated cancellation (AbortController.abort()). */
 export function isAbortError(err: unknown): boolean {
@@ -119,7 +121,7 @@ export function isEdgeConfigured(): boolean {
 export function normalizeModel(model: string | undefined): string {
   if (!model) return DEFAULT_MODEL;
   if (FLASH_ALIASES.has(model)) return DEFAULT_MODEL;
-  if (PRO_ALIASES.has(model)) return 'gemini-3.1-pro-preview';
+  if (PRO_ALIASES.has(model)) return 'gemini-4-argon';
   return model;
 }
 
@@ -449,30 +451,28 @@ async function generateWithFallback(
   };
   const shouldFallBack = (err: unknown) => isUnavailableError(err) || isModelNotFoundError(err);
 
+  const fallbacks = [DEFAULT_MODEL, SECONDARY_FALLBACK].filter((m) => m !== effectiveModel);
+
   try {
     return await attempt(effectiveModel);
   } catch (err: unknown) {
-    if (!shouldFallBack(err)) throw err;
+    if (!shouldFallBack(err) || fallbacks.length === 0) throw err;
 
-    if (effectiveModel !== DEFAULT_MODEL) {
+    let lastErr: unknown = err;
+    let prevLabel = originalModel ? `${originalModel} (${effectiveModel})` : effectiveModel;
+    for (const nextModel of fallbacks) {
       console.warn(
-        `[Gemini Edge] Model "${originalModel}" (mapped to "${effectiveModel}") unavailable. Retrying with "${DEFAULT_MODEL}"...`,
+        `[Gemini Edge] Model "${prevLabel}" unavailable. Retrying with "${nextModel}"...`,
       );
       try {
-        return await attempt(DEFAULT_MODEL);
+        return await attempt(nextModel);
       } catch (retryErr: unknown) {
         if (!shouldFallBack(retryErr)) throw retryErr;
-        console.warn(
-          `[Gemini Edge] "${DEFAULT_MODEL}" unavailable. Retrying with "${SECONDARY_FALLBACK}"...`,
-        );
-        return await attempt(SECONDARY_FALLBACK);
+        lastErr = retryErr;
+        prevLabel = nextModel;
       }
     }
-
-    console.warn(
-      `[Gemini Edge] "${DEFAULT_MODEL}" unavailable. Retrying with "${SECONDARY_FALLBACK}"...`,
-    );
-    return await attempt(SECONDARY_FALLBACK);
+    throw lastErr;
   }
 }
 

@@ -370,7 +370,7 @@ export default function LandingPage() {
                   <Sparkles className="w-5 h-5 text-teal-300 animate-pulse" />
                 </div>
                 <span>
-                  Engineered with <strong className="text-white">Google Gemini 3.8 Flash &amp; Gemini 4 Argon</strong> for high-precision multimodal vision &amp; autonomous clinical reasoning.
+                  Engineered with <strong className="text-white">Google Gemini 4 Hydrogen &amp; Gemini 4 Argon</strong> for high-precision multimodal vision &amp; autonomous clinical reasoning.
                 </span>
               </motion.div>
 
@@ -611,7 +611,7 @@ export default function LandingPage() {
               <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6 text-white leading-tight">
                 Wearable Biometrics Met Clinical Diagnostics. <br />
                 <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-                  Powered by Gemini 3.8 Flash & Web Bluetooth.
+                  Powered by Gemini 4 Hydrogen & Web Bluetooth.
                 </span>
               </h2>
               <p className="text-base md:text-lg text-slate-300 font-light leading-relaxed">
@@ -1352,7 +1352,7 @@ export default function LandingPage() {
                       Aegis Health AI started from a clear observation: medical diagnostic lab reports from Indian pathology chains (Thyrocare, Dr. Lal PathLabs, Metropolis, Apollo, SRL) are formatted for physicians, leaving patients and families anxious and confused while waiting for consultations.
                     </p>
                     <p className="text-slate-300 font-light leading-relaxed mb-6 text-sm md:text-base">
-                      Aegis Health AI v2.0 is live in production on Google Cloud, Firebase, Gemini 3.8 Flash, and Gemini 4 Argon — transforming unstructured diagnostic PDFs into normalized longitudinal timelines, HL7 FHIR R4 bundles, SBAR doctor handover briefs, and interactive specialist consultations.
+                      Aegis Health AI v2.0 is live in production on Google Cloud, Firebase, Gemini 4 Hydrogen, and Gemini 4 Argon — transforming unstructured diagnostic PDFs into normalized longitudinal timelines, HL7 FHIR R4 bundles, SBAR doctor handover briefs, and interactive specialist consultations.
                     </p>
                     
                     <div className="flex flex-wrap items-center gap-3 w-full pt-4 border-t border-white/10">

@@ -1,7 +1,7 @@
 /**
  * Tri-Model Consensus Engine for Lab Report & Prescription Extraction
  * 
- * Pairs Google Gemini 3.8 Flash & Gemini 4 Argon (Primary Ingestion & OCR)
+ * Pairs Google Gemini 4 Hydrogen & Gemini 4 Argon (Primary Ingestion & OCR)
  * with Anthropic Claude 3.7 Sonnet v1 / 3.5 Sonnet v2 via AWS Bedrock (Mumbai ap-south-1)
  * and NVIDIA Llama-3.1-Nemotron-70B-Instruct via NVIDIA NIM
  * to achieve near-zero hallucination rates on complex blood panels, decimal precision, and prescriptions.
@@ -167,7 +167,7 @@ export async function reconcileDualModelConsensus(
         discrepancyNote: reason,
       })),
       consensusSummary: {
-        engine: "Gemini 3.8 Flash (Single-Model Fallback)",
+        engine: "Gemini 4 Hydrogen (Single-Model Fallback)",
         overallConsensus: "SINGLE_MODEL_FALLBACK",
         totalMarkers: rawObservations.length,
         verifiedMarkers: 0,
@@ -456,13 +456,13 @@ OUTPUT RULES:
       ? "FULL_CONSENSUS"
       : "HIGH_CONSENSUS";
 
-  let engineLabel = "Gemini 3.8 Flash & Gemini 4 Argon Dual-Tier Verification (Google Cloud Vertex AI)";
+  let engineLabel = "Gemini 4 Hydrogen & Gemini 4 Argon Dual-Tier Verification (Google Cloud Vertex AI)";
   if (hasBedrock && hasNim) {
-    engineLabel = "Tri-Model Consensus: Gemini 3.8 Flash + Claude 3.7 Sonnet + NVIDIA Nemotron-70B";
+    engineLabel = "Tri-Model Consensus: Gemini 4 Hydrogen + Claude 3.7 Sonnet + NVIDIA Nemotron-70B";
   } else if (hasBedrock) {
-    engineLabel = "Dual-Model Consensus: Gemini 3.8 Flash + AWS Bedrock Claude";
+    engineLabel = "Dual-Model Consensus: Gemini 4 Hydrogen + AWS Bedrock Claude";
   } else if (hasNim) {
-    engineLabel = "Dual-Model Consensus: Gemini 3.8 Flash + NVIDIA Nemotron-70B";
+    engineLabel = "Dual-Model Consensus: Gemini 4 Hydrogen + NVIDIA Nemotron-70B";
   }
 
   return {

@@ -1,6 +1,6 @@
 # Aegis Health AI — Technical Product & Architecture Overview (llms.txt)
 
-> Clinical-Grade Longitudinal Medical Intelligence & Doorstep Diagnostic Platform built on Google Cloud, Vertex AI, Gemini 3.8 Flash, and Gemini 4 Argon. Official NVIDIA Inception Program Member. Registered Indian Enterprise (MSME: UDYAM-MH-33-0782403).
+> Clinical-Grade Longitudinal Medical Intelligence & Doorstep Diagnostic Platform built on Google Cloud, Vertex AI, Gemini 4 Hydrogen, and Gemini 4 Argon. Official NVIDIA Inception Program Member. Registered Indian Enterprise (MSME: UDYAM-MH-33-0782403).
 
 ## 1. Executive Summary & Core Value Proposition
 Aegis Health AI (`https://aegishealthai.co.in`) is an independent, AI-native healthcare intelligence platform engineered to eliminate diagnostic fragmentation for patients and clinicians in India. It bridges two critical gaps:
@@ -14,7 +14,7 @@ Aegis Health AI (`https://aegishealthai.co.in`) is an independent, AI-native hea
 - **Open Evaluation Sandbox**: The `/dashboard` and `/demo` routes provide an open evaluation workspace with pre-loaded synthetic telemetry (`Aarav Sharma, 38M`) so clinicians, reviewers, and partners can test the complete platform with zero registration friction.
 
 ## 3. Indian Diagnostic Lab Extraction Benchmark (N = 120 De-Identified Reports)
-Internal validation benchmark evaluating schema-constrained Gemini 3.8 Flash + Gemini 4 Argon escalation on analyte normalization, numeric extraction, SI-to-conventional unit conversion, and ICMR flag accuracy:
+Internal validation benchmark evaluating schema-constrained Gemini 4 Hydrogen + Gemini 4 Argon escalation on analyte normalization, numeric extraction, SI-to-conventional unit conversion, and ICMR flag accuracy:
 - **Thyrocare Technologies (Aarogyam PDFs, N=30)**: Precision `99.6%` | Recall `99.3%` | **F1 = `99.4%`** (Handles dense multi-column tables, CLIA/Photometry tags, nmol/L → ng/mL Vitamin D conversion).
 - **Dr. Lal PathLabs (NABL Multi-Page PDFs, N=30)**: Precision `99.5%` | Recall `99.1%` | **F1 = `99.3%`** (Handles nested age/trimester brackets, footnote commentary stripping, DLC % vs absolute count).
 - **Metropolis Healthcare (Clinical Panels, N=25)**: Precision `99.7%` | Recall `99.4%` | **F1 = `99.5%`** (Handles historical prior-value columns, asterisk abnormal flags, ICMR lipid risk tiers).

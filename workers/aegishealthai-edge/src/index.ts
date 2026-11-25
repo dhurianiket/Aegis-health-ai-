@@ -730,7 +730,7 @@ async function handleDynamicRoute(
       const feature = resolveFeature(request.headers.get("X-Aegis-Feature"), body);
       const isLounge = feature === LOUNGE_FEATURE;
 
-      const model = typeof body.model === "string" && body.model ? body.model : "gemini-3.6-flash";
+      const model = typeof body.model === "string" && body.model ? body.model : "gemini-4-hydrogen";
       const apiKey = env.GEMINI_API_KEY;
       const hasVertexCreds = Boolean(env.GCP_VERTEX_SA_JSON);
 
@@ -768,11 +768,6 @@ async function handleDynamicRoute(
           const vertexLocation = env.GCP_VERTEX_LOCATION || "global";
           const vertexModel = resolveVertexModel(model);
 
-          const vertexGatewayUrl =
-            `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-vertex-ai/v1/projects/${encodeURIComponent(vertexProjectId)}/locations/${encodeURIComponent(vertexLocation)}/publishers/google/models/${encodeURIComponent(vertexModel)}:generateContent`;
-          const directVertexUrl =
-            `https://aiplatform.googleapis.com/v1/projects/${encodeURIComponent(vertexProjectId)}/locations/${encodeURIComponent(vertexLocation)}/publishers/google/models/${encodeURIComponent(vertexModel)}:generateContent`;
-
           const vertexPayload = JSON.stringify({
             contents: normalizeVertexContents(body.contents),
             generationConfig: effectiveGenerationConfig,
@@ -797,15 +792,33 @@ async function handleDynamicRoute(
             "Authorization": `Bearer ${tokenInfo.token}`,
           };
 
-          const vertexAttempt = await fetchWithGatewayFailover(
-            vertexGatewayUrl,
-            vertexGatewayHeaders,
-            directVertexUrl,
-            directVertexHeaders,
-            vertexPayload,
-            clientSignal,
-            "VertexAI",
-          );
+          const callVertexModel = (targetVertexModel: string) => {
+            const gwUrl =
+              `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/google-vertex-ai/v1/projects/${encodeURIComponent(vertexProjectId)}/locations/${encodeURIComponent(vertexLocation)}/publishers/google/models/${encodeURIComponent(targetVertexModel)}:generateContent`;
+            const directUrl =
+              `https://aiplatform.googleapis.com/v1/projects/${encodeURIComponent(vertexProjectId)}/locations/${encodeURIComponent(vertexLocation)}/publishers/google/models/${encodeURIComponent(targetVertexModel)}:generateContent`;
+            return fetchWithGatewayFailover(
+              gwUrl,
+              vertexGatewayHeaders,
+              directUrl,
+              directVertexHeaders,
+              vertexPayload,
+              clientSignal,
+              `VertexAI(${targetVertexModel})`,
+            );
+          };
+
+          let vertexAttempt = await callVertexModel(vertexModel);
+
+          // If gemini-4-carbon / gemini-4-neon returns 403 on this billing account, degrade cleanly to verified gemini-4-argon on Vertex AI.
+          if (
+            vertexAttempt.response.status === 403 &&
+            (vertexModel === "gemini-4-carbon" || vertexModel === "gemini-4-neon") &&
+            !clientSignal?.aborted
+          ) {
+            console.warn(`[VertexAI] ${vertexModel} returned 403 (tier eligibility), degrading cleanly to gemini-4-argon`);
+            vertexAttempt = await callVertexModel("gemini-4-argon");
+          }
 
           const shouldFallbackToAiStudio =
             Boolean(apiKey) &&

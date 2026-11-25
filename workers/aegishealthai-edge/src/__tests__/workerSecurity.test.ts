@@ -184,7 +184,7 @@ describe("Worker rate limiting — CF-Connecting-IP and per-userUid", () => {
             Authorization: `Bearer ${token}`,
             "CF-Connecting-IP": `198.51.100.${(i % 200) + 1}`,
           },
-          body: JSON.stringify({ model: "gemini-3.6-flash", contents: [] }),
+          body: JSON.stringify({ model: "gemini-4-hydrogen", contents: [] }),
         }),
         env,
         {},
@@ -200,7 +200,7 @@ describe("Worker rate limiting — CF-Connecting-IP and per-userUid", () => {
           Authorization: `Bearer ${token}`,
           "CF-Connecting-IP": "198.51.100.250",
         },
-        body: JSON.stringify({ model: "gemini-3.6-flash", contents: [] }),
+        body: JSON.stringify({ model: "gemini-4-hydrogen", contents: [] }),
       }),
       env,
       {},
@@ -248,7 +248,7 @@ describe("Worker prototype pollution and payload validation", () => {
       throw new Error(`Unexpected upstream call: ${String(input)}`);
     });
 
-    const generateRaw = '{"model":"gemini-3.6-flash","contents":[],"__proto__":{"polluted":true}}';
+    const generateRaw = '{"model":"gemini-4-hydrogen","contents":[],"__proto__":{"polluted":true}}';
     const resGenerate = await worker.fetch(
       new Request("https://api.example.test/api/ai/generate", {
         method: "POST",
@@ -359,7 +359,7 @@ describe("Worker JWT algorithm and claim hardening", () => {
         new Request("https://api.example.test/api/ai/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${badToken}` },
-          body: JSON.stringify({ model: "gemini-3.6-flash", contents: [] }),
+          body: JSON.stringify({ model: "gemini-4-hydrogen", contents: [] }),
         }),
         env,
         {},
@@ -386,7 +386,7 @@ describe("Worker JWT algorithm and claim hardening", () => {
       new Request("https://api.example.test/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${validShapeToken}` },
-        body: JSON.stringify({ model: "gemini-3.6-flash", contents: [] }),
+        body: JSON.stringify({ model: "gemini-4-hydrogen", contents: [] }),
       }),
       env,
       {},

@@ -3,28 +3,23 @@ import type { GeminiGenerateResponse } from "../../../lib/geminiClient";
 /**
  * Specialist Lounge model pinning and output limits.
  *
- * Pinned to STABLE Gemini model ids (not preview aliases) per Google's model
- * list (ai.google.dev/gemini-api/docs/models, last updated 2026-09-24):
- *   - gemini-3.8-flash : newest stable Flash ("most intelligent Flash").
- *   - gemini-3.6-flash : previous stable Flash; already the app-wide default
- *     in geminiClient, used as the fallback.
- * There is no stable Gemini 3.x Pro id (only `gemini-3.1-pro-preview`), so
- * summaries also use stable Flash with a larger output budget instead of the
- * previous `gemini-3.1-pro-preview` → Flash fallback.
+ * Pinned to verified Vertex AI Gemini 4 periodic-table models:
+ *   - gemini-4-hydrogen : fast multimodal/chat model for real-time Lounge replies.
+ *   - gemini-4-argon    : frontier clinical reasoning model for multi-specialist summaries.
  *
- * geminiClient falls back automatically (pinned → gemini-3.6-flash →
- * gemini-3.5-flash) on 5xx/"unavailable" or model-not-found errors, and
- * reports the model actually used as `modelUsed` / `modelVersion`.
+ * geminiClient falls back automatically (`gemini-4-hydrogen` <-> `gemini-4-argon`)
+ * on 5xx/"unavailable" or model-not-found errors, and reports the model actually
+ * used as `modelUsed` / `modelVersion`.
  */
-export const LOUNGE_CHAT_MODEL = "gemini-3.8-flash";
-export const LOUNGE_SUMMARY_MODEL = "gemini-3.8-flash";
-export const LOUNGE_FALLBACK_MODEL = "gemini-3.6-flash";
+export const LOUNGE_CHAT_MODEL = "gemini-4-hydrogen";
+export const LOUNGE_SUMMARY_MODEL = "gemini-4-argon";
+export const LOUNGE_FALLBACK_MODEL = "gemini-4-hydrogen";
 
 /**
- * Output caps. On Gemini 3.x, thinking tokens count toward maxOutputTokens and
- * a reply that hits the cap is truncated (or empty), so the Lounge also asks for
- * `thinkingLevel: "low"` and keeps some headroom above the answer length the
- * prompts request. The edge Worker enforces a hard ceiling of 4096.
+ * Output caps. Thinking tokens count toward maxOutputTokens and a reply that
+ * hits the cap can be truncated, so the Lounge asks for `thinkingLevel: "low"`
+ * and keeps headroom above the requested answer length. The edge Worker enforces
+ * a hard ceiling of 4096.
  */
 export const LOUNGE_CHAT_MAX_OUTPUT_TOKENS = 1536;
 export const LOUNGE_SUMMARY_MAX_OUTPUT_TOKENS = 3072;

@@ -126,10 +126,10 @@ ${formattedContext}
         },
       });
     } catch (proError: any) {
-      console.warn("Gemini 4 Argon failed, falling back to Gemini 3.8 Flash:", proError.message || proError);
-      modelUsed = "gemini-3.8-flash";
+      console.warn("Gemini 4 Argon failed, falling back to Gemini 4 Hydrogen:", proError.message || proError);
+      modelUsed = "gemini-4-hydrogen";
       response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model: "gemini-4-hydrogen",
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 8192,

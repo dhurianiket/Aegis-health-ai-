@@ -227,7 +227,7 @@ describe("Tri-Model Consensus Extraction Engine", () => {
 
       const result = await reconcileDualModelConsensus(primaryGeminiExtraction);
 
-      expect(result.consensusSummary.engine).toContain("Dual-Model Consensus: Gemini 3.8 Flash + AWS Bedrock Claude");
+      expect(result.consensusSummary.engine).toContain("Dual-Model Consensus: Gemini 4 Hydrogen + AWS Bedrock Claude");
       expect(result.observations[0].consensusStatus).toBe("VERIFIED");
       expect(result.observations[0].modelsAgreed).toContain("gemini");
       expect(result.observations[0].modelsAgreed).toContain("claude");

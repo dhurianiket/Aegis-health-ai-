@@ -56,10 +56,10 @@ export const analyzeSharedRisks = async (
         contents: aiConfig.contents as any
       });
     } catch (proErr) {
-      console.warn("Genetic analysis failed with Gemini 4 Argon, falling back to Gemini 3.8 Flash", proErr);
+      console.warn("Genetic analysis failed with Gemini 4 Argon, falling back to Gemini 4 Hydrogen", proErr);
       response = await ai.models.generateContent({
         ...aiConfig,
-        model: "gemini-3.8-flash",
+        model: "gemini-4-hydrogen",
         contents: aiConfig.contents as any
       });
     }
