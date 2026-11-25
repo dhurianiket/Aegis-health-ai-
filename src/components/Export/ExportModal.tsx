@@ -11,10 +11,13 @@ import {
   ChevronDown,
   Activity,
   ShieldCheck,
+  CloudUpload,
+  Loader2,
 } from "lucide-react";
 import { format, subDays, subMonths, subYears } from "date-fns";
 import { exportToPDF } from "../../services/pdfExportService";
 import { exportToFhirBundle, downloadFhirJson } from "../../services/fhirService";
+import { syncFhirBundleToCloud } from "../../services/cloudFhirService";
 
 interface ExportModalProps {
   onClose: () => void;
@@ -38,6 +41,9 @@ export default function ExportModal({
   const [dateRange, setDateRange] = useState<DateRange>("30days");
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [isSyncingFhir, setIsSyncingFhir] = useState(false);
+  const [fhirSyncMessage, setFhirSyncMessage] = useState<string | null>(null);
+  const [fhirSyncError, setFhirSyncError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,6 +88,24 @@ export default function ExportModal({
       onClose();
     } catch (err) {
       console.error("FHIR export failed:", err);
+    }
+  };
+
+  const handleSyncCloudFhir = async () => {
+    setIsSyncingFhir(true);
+    setFhirSyncMessage(null);
+    setFhirSyncError(null);
+    try {
+      const patient = { name: healthContext.userName, id: 'patient-export' };
+      const bundle = exportToFhirBundle(patient, healthContext.recentTrends || [], healthContext.aiClinicalSummary);
+      const res = await syncFhirBundleToCloud(bundle);
+      setFhirSyncMessage(
+        `Synced ${res.syncedCount} FHIR R4 resources to Google Cloud Healthcare (${res.region} Mumbai)`
+      );
+    } catch (err: any) {
+      setFhirSyncError(err?.message || "Failed to sync FHIR R4 bundle to Cloud Healthcare.");
+    } finally {
+      setIsSyncingFhir(false);
     }
   };
 
@@ -185,18 +209,45 @@ export default function ExportModal({
               healthcare professional.
             </p>
           </div>
+
+          {fhirSyncMessage && (
+            <div className="flex items-center gap-2.5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-xs text-emerald-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{fhirSyncMessage}</span>
+            </div>
+          )}
+
+          {fhirSyncError && (
+            <div className="flex items-center gap-2.5 p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs text-rose-300">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <span>{fhirSyncError}</span>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="p-6 bg-black/20 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2 text-slate-400 order-3 sm:order-1">
             <Clock className="w-4 h-4" />
-            <span className="text-xs">Instant client-side export</span>
+            <span className="text-xs">Client-side export &amp; Mumbai FHIR sync</span>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto order-1 sm:order-2 flex-wrap">
             <button
-              disabled={isExporting}
+              disabled={isExporting || isSyncingFhir}
+              onClick={handleSyncCloudFhir}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-4 rounded-2xl font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+            >
+              {isSyncingFhir ? (
+                <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+              ) : (
+                <CloudUpload className="w-5 h-5 text-emerald-400" />
+              )}
+              {isSyncingFhir ? "Syncing..." : "Sync Cloud FHIR"}
+            </button>
+
+            <button
+              disabled={isExporting || isSyncingFhir}
               onClick={handleExportFhir}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 transition-all shadow-lg active:scale-95"
             >

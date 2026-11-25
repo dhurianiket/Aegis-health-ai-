@@ -34,6 +34,9 @@
     "BEDROCK_MANTLE_ENDPOINT": "https://bedrock-mantle.us-east-1.api.aws/v1",
     "GCP_VERTEX_LOCATION": "global",
     "DISCOVERY_ENGINE_ID": "aegis-clinical-search",
-    "DISCOVERY_ENGINE_LOCATION": "global"
+    "DISCOVERY_ENGINE_LOCATION": "global",
+    "HEALTHCARE_LOCATION": "asia-south1",
+    "HEALTHCARE_DATASET_ID": "aegis-health-india",
+    "HEALTHCARE_FHIR_STORE_ID": "aegis-fhir-r4"
   }
 }

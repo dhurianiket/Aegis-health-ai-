@@ -40,11 +40,20 @@ import {
   resolveVertexModel,
   sanitizeDiscoverySnippet,
 } from "./gcpAuth";
+import {
+  buildHealthcareFhirBaseUrl,
+  deriveFhirTenantPrefix,
+  prepareTenantTransactionBundle,
+  type PreparedFhirTransaction,
+} from "./fhirCloud";
 
 export interface Env {
   GEMINI_API_KEY?: string;
   GCP_VERTEX_SA_JSON?: string;
   GCP_VERTEX_LOCATION?: string;
+  HEALTHCARE_LOCATION?: string;
+  HEALTHCARE_DATASET_ID?: string;
+  HEALTHCARE_FHIR_STORE_ID?: string;
   DISCOVERY_ENGINE_ID?: string;
   DISCOVERY_ENGINE_LOCATION?: string;
   NVIDIA_NIM_API_KEY?: string;
@@ -529,6 +538,353 @@ async function fetchWithGatewayFailover(
   }
 }
 
+async function handleFhirCloudRoute(
+  request: Request,
+  env: Env,
+  corsHeaders: Record<string, string>,
+  requestId: string,
+  action: "sync" | "status" | "delete",
+): Promise<Response> {
+  const clientIp = getVerifiedClientIp(request);
+  const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `fhir:ip:${clientIp}`, 30);
+  if (!ipLimit.allowed) {
+    return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+  }
+
+  const authHeader = request.headers.get("Authorization") || "";
+  const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  if (!bearerToken) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized", message: "Missing Authorization Bearer token", request_id: requestId }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const projectId = env.FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID;
+  let userUid: string | undefined;
+  if (bearerToken.includes(".")) {
+    const verifyResult = await verifyFirebaseIdToken(bearerToken, projectId);
+    if (verifyResult.valid && verifyResult.uid) {
+      userUid = verifyResult.uid;
+    } else {
+      console.warn(`[Auth] JWT verification failed for FHIR ${action} ${requestId}:`, verifyResult.error);
+    }
+  }
+
+  if (!userUid) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        message: "Invalid or expired credentials. Please provide a verified Firebase ID token.",
+        request_id: requestId,
+      }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const userLimit = await enforceRateLimit(env.USER_RATE_LIMITER, `fhir:uid:${userUid}`, 20);
+  if (!userLimit.allowed) {
+    return rateLimitExceededResponse(userLimit.retryAfterSec, corsHeaders, requestId);
+  }
+
+  const datasetId = (env.HEALTHCARE_DATASET_ID || "aegis-health-india").trim();
+  const fhirStoreId = (env.HEALTHCARE_FHIR_STORE_ID || "aegis-fhir-r4").trim();
+  const location = (env.HEALTHCARE_LOCATION || "asia-south1").trim();
+
+  if (!env.GCP_VERTEX_SA_JSON) {
+    return new Response(
+      JSON.stringify({
+        error: "Service Unavailable",
+        message: "Cloud Healthcare credentials are not configured on edge.",
+        request_id: requestId,
+      }),
+      { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
+
+  let preparedSyncData: PreparedFhirTransaction | undefined;
+  if (action === "sync") {
+    const parsed = await parseSafeJsonBody(request, 2 * 1024 * 1024);
+    if (!parsed.ok) {
+      return new Response(
+        JSON.stringify({ error: "Bad Request", message: parsed.error, request_id: requestId }),
+        { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (!isPlainObject(parsed.data.bundle)) {
+      return new Response(
+        JSON.stringify({ error: "Bad Request", message: "Request body must contain a FHIR R4 bundle object.", request_id: requestId }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const prepared = await prepareTenantTransactionBundle(parsed.data.bundle, userUid);
+    if (!prepared.ok) {
+      return new Response(
+        JSON.stringify({ error: "Bad Request", message: prepared.error, request_id: requestId }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    preparedSyncData = prepared.data;
+  }
+
+  try {
+    const tokenInfo = await getGcpAccessToken(env.GCP_VERTEX_SA_JSON);
+    const gcpProjectId = tokenInfo.projectId || projectId;
+    const fhirBaseUrl = buildHealthcareFhirBaseUrl(gcpProjectId, location, datasetId, fhirStoreId);
+    const tenantPrefix = await deriveFhirTenantPrefix(userUid);
+    const patientId = `${tenantPrefix}-self`;
+
+    const gcpHeaders = {
+      "Authorization": `Bearer ${tokenInfo.token}`,
+      "x-goog-user-project": gcpProjectId,
+      "Accept": "application/fhir+json",
+      "User-Agent": "AegisHealthAI-Edge/2.0",
+    };
+
+    if (action === "sync" && preparedSyncData) {
+      const syncRes = await fetch(fhirBaseUrl, {
+        method: "POST",
+        headers: {
+          ...gcpHeaders,
+          "Content-Type": "application/fhir+json; charset=utf-8",
+        },
+        body: JSON.stringify(preparedSyncData.transactionBundle),
+        signal: clientSignal,
+      });
+
+      if (!syncRes.ok) {
+        let diag = `Cloud Healthcare API returned HTTP ${syncRes.status}`;
+        try {
+          const errJson = (await syncRes.json()) as { issue?: Array<{ diagnostics?: unknown }> };
+          const firstDiag = errJson?.issue?.[0]?.diagnostics;
+          if (typeof firstDiag === "string" && firstDiag.trim()) {
+            diag = firstDiag.trim().slice(0, 200);
+          }
+        } catch {
+          // Ignore non-JSON upstream error bodies
+        }
+        const statusCode = syncRes.status === 400 || syncRes.status === 422 ? 400 : 502;
+        return new Response(
+          JSON.stringify({
+            error: statusCode === 400 ? "Bad Request" : "Cloud Healthcare Error",
+            message: diag,
+            request_id: requestId,
+          }),
+          { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "cloud-healthcare-fhir" } },
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          status: "synced",
+          region: location,
+          datasetId,
+          fhirStoreId,
+          patientId,
+          syncedCount: preparedSyncData.resourceCount,
+          resourceTypes: preparedSyncData.resourceTypes,
+          syncedAt: new Date().toISOString(),
+          request_id: requestId,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId, "X-AI-Provider": "cloud-healthcare-fhir" } },
+      );
+    }
+
+    if (action === "status") {
+      const patientRes = await fetch(`${fhirBaseUrl}/Patient/${encodeURIComponent(patientId)}`, {
+        method: "GET",
+        headers: gcpHeaders,
+        signal: clientSignal,
+      });
+
+      if (patientRes.status === 404) {
+        return new Response(
+          JSON.stringify({
+            configured: true,
+            region: location,
+            datasetId,
+            fhirStoreId,
+            patientId,
+            synced: false,
+            counts: { observations: 0, diagnosticReports: 0, documentReferences: 0 },
+            request_id: requestId,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId } },
+        );
+      }
+
+      if (!patientRes.ok) {
+        return new Response(
+          JSON.stringify({
+            error: "Cloud Healthcare Error",
+            message: `Failed to query FHIR Patient record (HTTP ${patientRes.status})`,
+            request_id: requestId,
+          }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const countTypes = ["Observation", "DiagnosticReport", "DocumentReference"] as const;
+      const countValues = await Promise.all(
+        countTypes.map(async (rType) => {
+          const countRes = await fetch(
+            `${fhirBaseUrl}/${rType}?subject=${encodeURIComponent(`Patient/${patientId}`)}&_summary=count`,
+            { method: "GET", headers: gcpHeaders, signal: clientSignal },
+          );
+          if (!countRes.ok) return 0;
+          const json = (await countRes.json()) as { total?: unknown };
+          return typeof json.total === "number" && Number.isFinite(json.total) ? json.total : 0;
+        }),
+      );
+
+      return new Response(
+        JSON.stringify({
+          configured: true,
+          region: location,
+          datasetId,
+          fhirStoreId,
+          patientId,
+          synced: true,
+          counts: {
+            observations: countValues[0],
+            diagnosticReports: countValues[1],
+            documentReferences: countValues[2],
+          },
+          request_id: requestId,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId } },
+      );
+    }
+
+    // action === "delete" (DPDP Act 2023 cascading patient FHIR erasure)
+    const childSearchSpecs: Array<{ resourceType: string; param: "subject" | "patient" }> = [
+      { resourceType: "DocumentReference", param: "subject" },
+      { resourceType: "DiagnosticReport", param: "subject" },
+      { resourceType: "Observation", param: "subject" },
+      { resourceType: "MedicationStatement", param: "subject" },
+      { resourceType: "Condition", param: "subject" },
+      { resourceType: "AllergyIntolerance", param: "patient" },
+    ];
+
+    const childDeleteUrls: string[] = [];
+    for (const spec of childSearchSpecs) {
+      const searchRes = await fetch(
+        `${fhirBaseUrl}/${spec.resourceType}?${spec.param}=${encodeURIComponent(`Patient/${patientId}`)}&_elements=id&_count=100`,
+        { method: "GET", headers: gcpHeaders, signal: clientSignal },
+      );
+      if (!searchRes.ok) {
+        return new Response(
+          JSON.stringify({
+            error: "Cloud Healthcare Error",
+            message: `Failed to enumerate ${spec.resourceType} records for deletion`,
+            request_id: requestId,
+          }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const searchData = (await searchRes.json()) as {
+        entry?: Array<{ resource?: { id?: unknown } }>;
+      };
+      if (Array.isArray(searchData.entry)) {
+        for (const item of searchData.entry) {
+          const id = item?.resource?.id;
+          if (typeof id === "string" && id.startsWith(`${tenantPrefix}-`)) {
+            childDeleteUrls.push(`${spec.resourceType}/${encodeURIComponent(id)}`);
+          }
+        }
+      }
+    }
+
+    const patientCheckRes = await fetch(`${fhirBaseUrl}/Patient/${encodeURIComponent(patientId)}`, {
+      method: "GET",
+      headers: gcpHeaders,
+      signal: clientSignal,
+    });
+    const patientExists = patientCheckRes.ok;
+
+    const deleteUrls = patientExists
+      ? [...childDeleteUrls, `Patient/${encodeURIComponent(patientId)}`]
+      : childDeleteUrls;
+
+    if (deleteUrls.length === 0) {
+      return new Response(
+        JSON.stringify({
+          status: "deleted",
+          region: location,
+          datasetId,
+          fhirStoreId,
+          patientId,
+          deletedCount: 0,
+          request_id: requestId,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId } },
+      );
+    }
+
+    const deleteBundle = {
+      resourceType: "Bundle",
+      type: "transaction",
+      entry: deleteUrls.map((url) => ({
+        request: { method: "DELETE", url },
+      })),
+    };
+
+    const deleteRes = await fetch(fhirBaseUrl, {
+      method: "POST",
+      headers: {
+        ...gcpHeaders,
+        "Content-Type": "application/fhir+json; charset=utf-8",
+      },
+      body: JSON.stringify(deleteBundle),
+      signal: clientSignal,
+    });
+
+    if (!deleteRes.ok) {
+      return new Response(
+        JSON.stringify({
+          error: "Cloud Healthcare Error",
+          message: `Cloud Healthcare API returned HTTP ${deleteRes.status} during FHIR erasure`,
+          request_id: requestId,
+        }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        status: "deleted",
+        region: location,
+        datasetId,
+        fhirStoreId,
+        patientId,
+        deletedCount: deleteUrls.length,
+        request_id: requestId,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-Request-Id": requestId } },
+    );
+  } catch (err) {
+    if (clientSignal?.aborted) {
+      return new Response(
+        JSON.stringify({ error: "Client Closed Request", code: "CLIENT_ABORTED", request_id: requestId }),
+        { status: 499, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    console.error(`[CloudHealthcare] Error during FHIR ${action} on request ${requestId}:`, err);
+    return new Response(
+      JSON.stringify({
+        error: "Cloud Healthcare Error",
+        message: "Failed to communicate with Google Cloud Healthcare FHIR R4 store",
+        request_id: requestId,
+      }),
+      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+}
+
 async function handleDynamicRoute(
   request: Request,
   env: Env,
@@ -543,9 +899,25 @@ async function handleDynamicRoute(
           status: "healthy",
           vertexAiConfigured: Boolean(env.GCP_VERTEX_SA_JSON),
           clinicalSearchConfigured: Boolean(env.GCP_VERTEX_SA_JSON),
+          fhirStoreConfigured: Boolean(
+            env.GCP_VERTEX_SA_JSON &&
+            env.HEALTHCARE_DATASET_ID &&
+            env.HEALTHCARE_FHIR_STORE_ID,
+          ),
+          fhirRegion: env.HEALTHCARE_LOCATION || "asia-south1",
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
+    }
+
+    if (url.pathname === "/api/fhir/sync" && request.method === "POST") {
+      return handleFhirCloudRoute(request, env, corsHeaders, requestId, "sync");
+    }
+    if (url.pathname === "/api/fhir/status" && request.method === "GET") {
+      return handleFhirCloudRoute(request, env, corsHeaders, requestId, "status");
+    }
+    if (url.pathname === "/api/fhir/records" && request.method === "DELETE") {
+      return handleFhirCloudRoute(request, env, corsHeaders, requestId, "delete");
     }
 
     // 2c. Standalone Turnstile Token Verification
