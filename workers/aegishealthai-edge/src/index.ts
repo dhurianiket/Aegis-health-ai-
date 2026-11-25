@@ -46,6 +46,16 @@ import {
   prepareTenantTransactionBundle,
   type PreparedFhirTransaction,
 } from "./fhirCloud";
+import {
+  extractPromptTextForScreening,
+  screenPromptWithModelArmor,
+} from "./modelArmor";
+import {
+  fetchGoogleAirQuality,
+  synthesizeClinicalSpeech,
+  validateLatLngPayload,
+  validateTtsPayload,
+} from "./cloudServices";
 
 export interface Env {
   GEMINI_API_KEY?: string;
@@ -54,6 +64,8 @@ export interface Env {
   HEALTHCARE_LOCATION?: string;
   HEALTHCARE_DATASET_ID?: string;
   HEALTHCARE_FHIR_STORE_ID?: string;
+  MODEL_ARMOR_LOCATION?: string;
+  MODEL_ARMOR_TEMPLATE_ID?: string;
   DISCOVERY_ENGINE_ID?: string;
   DISCOVERY_ENGINE_LOCATION?: string;
   NVIDIA_NIM_API_KEY?: string;
@@ -885,6 +897,185 @@ async function handleFhirCloudRoute(
   }
 }
 
+const VERTEX_CACHED_CONTENT_PATTERN =
+  /^projects\/([a-zA-Z0-9._-]{1,64})\/locations\/[a-zA-Z0-9._-]{1,32}\/cachedContents\/[a-zA-Z0-9._-]{1,128}$/;
+
+function normalizeGeminiGenerationConfig(
+  generationConfig: unknown,
+  targetModel: string,
+  isLounge: boolean,
+): Record<string, unknown> | undefined {
+  if (isLounge) {
+    return clampLoungeGenerationConfig(generationConfig);
+  }
+  if (!isPlainObject(generationConfig)) {
+    return undefined;
+  }
+  const cfg: Record<string, unknown> = { ...generationConfig };
+  if (
+    targetModel.startsWith("gemini-4") &&
+    typeof cfg.maxOutputTokens === "number" &&
+    Number.isFinite(cfg.maxOutputTokens) &&
+    cfg.maxOutputTokens <= 2048 &&
+    cfg.thinkingConfig === undefined
+  ) {
+    cfg.thinkingConfig = { thinkingLevel: "low" };
+  }
+  return cfg;
+}
+
+function validateGeminiTools(
+  rawTools: unknown,
+): { ok: true; tools: Array<{ googleSearch: Record<string, never> }> | undefined } | { ok: false; error: string } {
+  if (rawTools === undefined) {
+    return { ok: true, tools: undefined };
+  }
+  if (!Array.isArray(rawTools) || rawTools.length === 0 || rawTools.length > 1) {
+    return { ok: false, error: "Invalid tools configuration: only [{ googleSearch: {} }] is supported" };
+  }
+  const tool = rawTools[0];
+  if (!isPlainObject(tool) || Object.keys(tool).length !== 1 || !isPlainObject(tool.googleSearch) || Object.keys(tool.googleSearch).length !== 0) {
+    return { ok: false, error: "Unsupported tool declaration: only Google Search grounding is allowed" };
+  }
+  return { ok: true, tools: [{ googleSearch: {} }] };
+}
+
+function validateCachedContentResource(
+  rawCachedContent: unknown,
+  expectedProjectId: string,
+): { ok: true; cachedContent: string | undefined } | { ok: false; error: string } {
+  if (rawCachedContent === undefined) {
+    return { ok: true, cachedContent: undefined };
+  }
+  if (typeof rawCachedContent !== "string") {
+    return { ok: false, error: "cachedContent must be a string resource name" };
+  }
+  const trimmed = rawCachedContent.trim();
+  const match = VERTEX_CACHED_CONTENT_PATTERN.exec(trimmed);
+  if (!match || match[1] !== expectedProjectId) {
+    return { ok: false, error: "Invalid or cross-project cachedContent resource name" };
+  }
+  return { ok: true, cachedContent: trimmed };
+}
+
+async function handleAuthenticatedJsonCloudProxy<T>(
+  request: Request,
+  env: Env,
+  corsHeaders: Record<string, string>,
+  requestId: string,
+  opts: { ratePrefix: string; ipMax: number; uidMax: number; maxBodyBytes: number; serviceLabel: string },
+  validator: (data: Record<string, unknown>) => { ok: true; data: T } | { ok: false; error: string } | ({ ok: true } & T),
+  executor: (
+    validated: T,
+    tokenInfo: { token: string; projectId?: string },
+    projectId: string,
+    clientSignal: AbortSignal | undefined,
+  ) => Promise<
+    | { ok: true; provider: string; body: Record<string, unknown> }
+    | { ok: false; status: number; error: string; message: string }
+  >,
+): Promise<Response> {
+  const clientIp = getVerifiedClientIp(request);
+  const ipLimit = await enforceRateLimit(env.IP_RATE_LIMITER, `${opts.ratePrefix}:ip:${clientIp}`, opts.ipMax);
+  if (!ipLimit.allowed) {
+    return rateLimitExceededResponse(ipLimit.retryAfterSec, corsHeaders, requestId);
+  }
+
+  const authHeader = request.headers.get("Authorization") || "";
+  const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  if (!bearerToken) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized", message: "Missing Authorization Bearer token", request_id: requestId }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const projectId = env.FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID;
+  const verifyResult = bearerToken.includes(".")
+    ? await verifyFirebaseIdToken(bearerToken, projectId)
+    : { valid: false, error: "Malformed JWT" };
+  if (!verifyResult.valid || !verifyResult.uid) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        message: "Invalid or expired credentials. Please provide a verified Firebase ID token.",
+        request_id: requestId,
+      }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const userLimit = await enforceRateLimit(env.USER_RATE_LIMITER, `${opts.ratePrefix}:uid:${verifyResult.uid}`, opts.uidMax);
+  if (!userLimit.allowed) {
+    return rateLimitExceededResponse(userLimit.retryAfterSec, corsHeaders, requestId);
+  }
+
+  const parsed = await parseSafeJsonBody(request, opts.maxBodyBytes);
+  if (!parsed.ok) {
+    return new Response(
+      JSON.stringify({ error: "Bad Request", message: parsed.error, request_id: requestId }),
+      { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const validated = validator(parsed.data);
+  if (!validated.ok) {
+    return new Response(
+      JSON.stringify({ error: "Bad Request", message: (validated as { error: string }).error, request_id: requestId }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  if (!env.GCP_VERTEX_SA_JSON) {
+    return new Response(
+      JSON.stringify({
+        error: "Service Unavailable",
+        message: `${opts.serviceLabel} credentials are not configured on edge`,
+        request_id: requestId,
+      }),
+      { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  const payloadData = ("data" in validated ? validated.data : validated) as T;
+  const clientSignal: AbortSignal | undefined = request.signal ?? undefined;
+
+  try {
+    const tokenInfo = await getGcpAccessToken(env.GCP_VERTEX_SA_JSON);
+    const execRes = await executor(payloadData, tokenInfo, projectId, clientSignal);
+    if (!execRes.ok) {
+      return new Response(
+        JSON.stringify({ error: execRes.error, message: execRes.message, request_id: requestId }),
+        { status: execRes.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    return new Response(JSON.stringify(execRes.body), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "X-Request-Id": requestId,
+        "X-AI-Provider": execRes.provider,
+      },
+    });
+  } catch {
+    if (clientSignal?.aborted) {
+      return new Response(
+        JSON.stringify({ error: "Client Closed Request", code: "CLIENT_ABORTED", request_id: requestId }),
+        { status: 499, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    return new Response(
+      JSON.stringify({
+        error: `${opts.serviceLabel} Error`,
+        message: `Failed to invoke ${opts.serviceLabel} via Google Cloud`,
+        request_id: requestId,
+      }),
+      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+}
+
 async function handleDynamicRoute(
   request: Request,
   env: Env,
@@ -905,6 +1096,9 @@ async function handleDynamicRoute(
             env.HEALTHCARE_FHIR_STORE_ID,
           ),
           fhirRegion: env.HEALTHCARE_LOCATION || "asia-south1",
+          modelArmorConfigured: Boolean(env.GCP_VERTEX_SA_JSON && env.MODEL_ARMOR_TEMPLATE_ID),
+          cloudTtsConfigured: Boolean(env.GCP_VERTEX_SA_JSON),
+          airQualityConfigured: Boolean(env.GCP_VERTEX_SA_JSON),
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -918,6 +1112,72 @@ async function handleDynamicRoute(
     }
     if (url.pathname === "/api/fhir/records" && request.method === "DELETE") {
       return handleFhirCloudRoute(request, env, corsHeaders, requestId, "delete");
+    }
+
+    if (url.pathname === "/api/audio/synthesize" && request.method === "POST") {
+      return handleAuthenticatedJsonCloudProxy(
+        request,
+        env,
+        corsHeaders,
+        requestId,
+        { ratePrefix: "tts", ipMax: 30, uidMax: 20, maxBodyBytes: 16 * 1024, serviceLabel: "Cloud TTS" },
+        validateTtsPayload,
+        async (validated, tokenInfo, projectId, clientSignal) => {
+          const ttsResult = await synthesizeClinicalSpeech({
+            text: validated.text,
+            languageCode: validated.languageCode,
+            speakingRate: validated.speakingRate,
+            projectId: tokenInfo.projectId || projectId,
+            accessToken: tokenInfo.token,
+            signal: clientSignal,
+          });
+          if (!ttsResult.ok) {
+            return { ok: false, status: ttsResult.status, error: "Cloud TTS Error", message: ttsResult.error };
+          }
+          return {
+            ok: true,
+            provider: "google-cloud-tts",
+            body: {
+              audioContent: ttsResult.audioContent,
+              contentType: "audio/mpeg",
+              languageCode: ttsResult.languageCode,
+              provider: "google-cloud-tts",
+              request_id: requestId,
+            },
+          };
+        },
+      );
+    }
+
+    if (url.pathname === "/api/environment/air-quality" && request.method === "POST") {
+      return handleAuthenticatedJsonCloudProxy(
+        request,
+        env,
+        corsHeaders,
+        requestId,
+        { ratePrefix: "env", ipMax: 30, uidMax: 20, maxBodyBytes: 4 * 1024, serviceLabel: "Air Quality" },
+        validateLatLngPayload,
+        async (validated, tokenInfo, projectId, clientSignal) => {
+          const aqiRes = await fetchGoogleAirQuality({
+            latitude: validated.latitude,
+            longitude: validated.longitude,
+            projectId: tokenInfo.projectId || projectId,
+            accessToken: tokenInfo.token,
+            signal: clientSignal,
+          });
+          if (!aqiRes.ok) {
+            return { ok: false, status: aqiRes.status, error: "Air Quality Error", message: aqiRes.error };
+          }
+          return {
+            ok: true,
+            provider: "google-air-quality",
+            body: {
+              ...aqiRes.data,
+              request_id: requestId,
+            },
+          };
+        },
+      );
     }
 
     // 2c. Standalone Turnstile Token Verification
@@ -1099,6 +1359,14 @@ async function handleDynamicRoute(
         );
       }
 
+      const toolsCheck = validateGeminiTools(body.tools);
+      if (!toolsCheck.ok) {
+        return new Response(
+          JSON.stringify({ error: "Bad Request", message: toolsCheck.error, request_id: requestId }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       const feature = resolveFeature(request.headers.get("X-Aegis-Feature"), body);
       const isLounge = feature === LOUNGE_FEATURE;
 
@@ -1115,9 +1383,12 @@ async function handleDynamicRoute(
 
       const accountId = env.CLOUDFLARE_ACCOUNT_ID || "ca163e8753d019d7dfa1937535d7ea57";
       const gatewayId = env.CF_AI_GATEWAY_ID || "aegishealthai";
-      const effectiveGenerationConfig = isLounge
-        ? clampLoungeGenerationConfig(body.generationConfig)
-        : body.generationConfig;
+      const resolvedVertexModel = resolveVertexModel(model);
+      const effectiveGenerationConfig = normalizeGeminiGenerationConfig(
+        body.generationConfig,
+        resolvedVertexModel,
+        isLounge,
+      );
 
       // Propagate client disconnect / Stop to the upstream call so we
       // stop spending tokens on a reply nobody will read.
@@ -1132,19 +1403,83 @@ async function handleDynamicRoute(
       let usedGateway = true;
       let providerUsed: "vertex-ai" | "google-ai-studio" = "google-ai-studio";
 
-      // Primary: Vertex AI via Cloudflare AI Gateway (draws from GCP Startup credits & enterprise privacy)
+      let gcpTokenInfo: { token: string; projectId?: string } | undefined;
       if (env.GCP_VERTEX_SA_JSON) {
         try {
-          const tokenInfo = await getGcpAccessToken(env.GCP_VERTEX_SA_JSON);
+          gcpTokenInfo = await getGcpAccessToken(env.GCP_VERTEX_SA_JSON);
+        } catch (tokenErr) {
+          if (clientSignal?.aborted) return clientClosedResponse();
+          console.warn("[GCPAuth] Failed to mint access token:", tokenErr);
+          if (!apiKey) {
+            return new Response(
+              JSON.stringify({ error: "Bad Gateway", message: "Vertex AI credentials failed and GEMINI_API_KEY fallback is unset", request_id: requestId }),
+              { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+        }
+      }
+
+      // Optional Google Cloud Model Armor firewall (PI/jailbreak screening; fail-open on 5xx/timeout)
+      if (gcpTokenInfo && env.MODEL_ARMOR_TEMPLATE_ID) {
+        const promptTextForArmor = extractPromptTextForScreening(body.contents);
+        if (promptTextForArmor) {
+          const armorProjectId = gcpTokenInfo.projectId || projectId;
+          const armorLocation = env.MODEL_ARMOR_LOCATION || "asia-south1";
+          const armorRes = await screenPromptWithModelArmor({
+            text: promptTextForArmor,
+            projectId: armorProjectId,
+            location: armorLocation,
+            templateId: env.MODEL_ARMOR_TEMPLATE_ID,
+            accessToken: gcpTokenInfo.token,
+            signal: clientSignal,
+          });
+          if (clientSignal?.aborted) return clientClosedResponse();
+          if (armorRes.blocked) {
+            console.warn(`[ModelArmor] Blocked request ${requestId} (${armorRes.reason || "policy"})`);
+            return new Response(
+              JSON.stringify({
+                error: "Prompt Rejected by Security Policy",
+                message: "Your request triggered prompt-injection or unsafe-link screening.",
+                code: "MODEL_ARMOR_BLOCKED",
+                request_id: requestId,
+              }),
+              {
+                status: 400,
+                headers: {
+                  ...corsHeaders,
+                  "Content-Type": "application/json",
+                  "X-Request-Id": requestId,
+                  "X-Model-Armor": "blocked",
+                },
+              },
+            );
+          }
+        }
+      }
+
+      // Primary: Vertex AI via Cloudflare AI Gateway (draws from GCP Startup credits & enterprise privacy)
+      if (gcpTokenInfo) {
+        try {
+          const tokenInfo = gcpTokenInfo;
           const vertexProjectId = tokenInfo.projectId || projectId;
           const vertexLocation = env.GCP_VERTEX_LOCATION || "global";
-          const vertexModel = resolveVertexModel(model);
+          const vertexModel = resolvedVertexModel;
+
+          const cachedCheck = validateCachedContentResource(body.cachedContent, vertexProjectId);
+          if (!cachedCheck.ok) {
+            return new Response(
+              JSON.stringify({ error: "Bad Request", message: cachedCheck.error, request_id: requestId }),
+              { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
 
           const vertexPayload = JSON.stringify({
             contents: normalizeVertexContents(body.contents),
             generationConfig: effectiveGenerationConfig,
             systemInstruction: normalizeVertexSystemInstruction(body.systemInstruction),
             safetySettings: body.safetySettings,
+            ...(toolsCheck.tools ? { tools: toolsCheck.tools } : {}),
+            ...(cachedCheck.cachedContent ? { cachedContent: cachedCheck.cachedContent } : {}),
           });
 
           const vertexGatewayHeaders: Record<string, string> = {
@@ -1235,6 +1570,7 @@ async function handleDynamicRoute(
           generationConfig: effectiveGenerationConfig,
           systemInstruction: body.systemInstruction,
           safetySettings: body.safetySettings,
+          ...(toolsCheck.tools ? { tools: toolsCheck.tools } : {}),
         });
 
         const gatewayHeaders: Record<string, string> = {

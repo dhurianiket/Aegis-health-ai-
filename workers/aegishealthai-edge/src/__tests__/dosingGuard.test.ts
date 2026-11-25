@@ -103,8 +103,27 @@ describe("feature flag + token clamp", () => {
   });
 
   it("clamps Lounge maxOutputTokens server-side", () => {
-    expect(clampLoungeGenerationConfig({ temperature: 0.1, maxOutputTokens: 99999 })).toEqual({ temperature: 0.1, maxOutputTokens: 4096 });
-    expect(clampLoungeGenerationConfig(undefined)).toEqual({ maxOutputTokens: 1536 });
-    expect(clampLoungeGenerationConfig({ maxOutputTokens: 1024 })).toEqual({ maxOutputTokens: 1024 });
+    expect(clampLoungeGenerationConfig({ temperature: 0.1, maxOutputTokens: 99999 })).toEqual({
+      temperature: 0.1,
+      maxOutputTokens: 4096,
+      thinkingConfig: { thinkingLevel: "low" },
+    });
+    expect(clampLoungeGenerationConfig(undefined)).toEqual({
+      maxOutputTokens: 1536,
+      thinkingConfig: { thinkingLevel: "low" },
+    });
+    expect(clampLoungeGenerationConfig({ maxOutputTokens: 1024 })).toEqual({
+      maxOutputTokens: 1024,
+      thinkingConfig: { thinkingLevel: "low" },
+    });
+    expect(
+      clampLoungeGenerationConfig({
+        maxOutputTokens: 1024,
+        thinkingConfig: { thinkingLevel: "medium" },
+      }),
+    ).toEqual({
+      maxOutputTokens: 1024,
+      thinkingConfig: { thinkingLevel: "medium" },
+    });
   });
 });

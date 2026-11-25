@@ -273,5 +273,8 @@ export function clampLoungeGenerationConfig(generationConfig: unknown): Record<s
   }
   const requested = typeof cfg.maxOutputTokens === "number" && Number.isFinite(cfg.maxOutputTokens) ? cfg.maxOutputTokens : LOUNGE_DEFAULT_MAX_OUTPUT_TOKENS;
   cfg.maxOutputTokens = Math.max(1, Math.min(Math.floor(requested), LOUNGE_MAX_OUTPUT_TOKENS_CEILING));
+  if (cfg.thinkingConfig === undefined) {
+    cfg.thinkingConfig = { thinkingLevel: "low" };
+  }
   return cfg;
 }

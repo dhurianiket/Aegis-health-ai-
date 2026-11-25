@@ -369,4 +369,80 @@ describe("Worker Vertex AI routing & Discovery Engine clinical search", () => {
       "alert(1)Safe &<tag>",
     );
   });
+
+  it("enforces Gemini 4 thinkingLevel=low default on compact outputs, allowlists googleSearch tools, and scopes cachedContent", async () => {
+    const sentPayloads: Array<Record<string, any>> = [];
+    fetchMock.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === GOOGLE_JWKS_URL) {
+        return new Response(JSON.stringify(signer.jwks), { status: 200 });
+      }
+      if (url === "https://oauth2.googleapis.com/token") {
+        return new Response(JSON.stringify({ access_token: "synthetic-gcp-access-token", expires_in: 3600 }), { status: 200 });
+      }
+      sentPayloads.push(JSON.parse(String(init?.body || "{}")));
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: { role: "model", parts: [{ text: "ICMR threshold is 6.5%." }] },
+              finishReason: "STOP",
+              groundingMetadata: { webSearchQueries: ["ICMR HbA1c threshold"] },
+            },
+          ],
+        }),
+        { status: 200 },
+      );
+    });
+
+    const rejectedTools = await worker.fetch(
+      new Request("https://api.example.test/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}`, "CF-Connecting-IP": "198.51.100.25" },
+        body: JSON.stringify({
+          model: "gemini-4-hydrogen",
+          contents: "Hi",
+          tools: [{ functionDeclarations: [{ name: "exfiltrate" }] }],
+        }),
+      }),
+      vertexEnv,
+      {},
+    );
+    expect(rejectedTools.status).toBe(400);
+
+    const rejectedCache = await worker.fetch(
+      new Request("https://api.example.test/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}`, "CF-Connecting-IP": "198.51.100.25" },
+        body: JSON.stringify({
+          model: "gemini-4-hydrogen",
+          contents: "Hi",
+          cachedContent: "projects/other-victim-project/locations/global/cachedContents/c1",
+        }),
+      }),
+      vertexEnv,
+      {},
+    );
+    expect(rejectedCache.status).toBe(400);
+
+    const okRes = await worker.fetch(
+      new Request("https://api.example.test/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}`, "CF-Connecting-IP": "198.51.100.25" },
+        body: JSON.stringify({
+          model: "gemini-4-hydrogen",
+          contents: "What is ICMR HbA1c threshold?",
+          generationConfig: { maxOutputTokens: 1024 },
+          tools: [{ googleSearch: {} }],
+          cachedContent: `projects/${TEST_PROJECT_ID}/locations/global/cachedContents/icmr-guide-v1`,
+        }),
+      }),
+      vertexEnv,
+      {},
+    );
+    expect(okRes.status).toBe(200);
+    expect(sentPayloads[0].generationConfig.thinkingConfig).toEqual({ thinkingLevel: "low" });
+    expect(sentPayloads[0].tools).toEqual([{ googleSearch: {} }]);
+    expect(sentPayloads[0].cachedContent).toBe(`projects/${TEST_PROJECT_ID}/locations/global/cachedContents/icmr-guide-v1`);
+  });
 });

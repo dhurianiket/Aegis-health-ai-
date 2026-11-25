@@ -21,6 +21,10 @@ export interface GeminiGenerateConfig {
   maxOutputTokens?: number;
   responseMimeType?: string;
   responseSchema?: unknown;
+  thinkingConfig?: {
+    thinkingLevel?: 'low' | 'medium' | 'high' | 'xhigh' | string;
+    thinkingBudget?: number;
+  };
   systemInstruction?: unknown;
   safetySettings?: unknown;
   [key: string]: unknown;
@@ -33,6 +37,10 @@ export interface GeminiGenerateParams {
   generationConfig?: Record<string, unknown>;
   safetySettings?: unknown;
   systemInstruction?: unknown;
+  /** Optional Vertex AI Search Grounding (`tools: [{ googleSearch: {} }]`). */
+  enableGoogleSearchGrounding?: boolean;
+  /** Optional Vertex AI context cache resource name (`projects/.../cachedContents/...`). */
+  cachedContent?: string;
   /** Caller cancellation (e.g. the Lounge Stop button). Aborts the in-flight fetch. */
   signal?: AbortSignal;
   /**
@@ -51,6 +59,8 @@ export interface GeminiGenerateResponse {
   modelVersion?: string;
   /** finishReason of the first candidate (e.g. "STOP", "MAX_TOKENS"). */
   finishReason?: string;
+  /** Grounding citations/search metadata returned when search grounding is enabled. */
+  groundingMetadata?: unknown;
   candidates?: unknown[];
   usageMetadata?: {
     promptTokenCount?: number;
@@ -270,6 +280,14 @@ function buildEdgeBody(params: GeminiGenerateParams, model: string): Record<stri
     body.safetySettings = safetySettings;
   }
 
+  if (params.enableGoogleSearchGrounding === true) {
+    body.tools = [{ googleSearch: {} }];
+  }
+
+  if (typeof params.cachedContent === 'string' && params.cachedContent.trim().length > 0) {
+    body.cachedContent = params.cachedContent.trim();
+  }
+
   return body;
 }
 
@@ -396,15 +414,17 @@ export async function callEdgeGenerate(
       : undefined;
   const firstCandidate =
     parsed && typeof parsed === 'object'
-      ? (parsed as { candidates?: Array<{ finishReason?: unknown }> }).candidates?.[0]
+      ? (parsed as { candidates?: Array<{ finishReason?: unknown; groundingMetadata?: unknown }> }).candidates?.[0]
       : undefined;
   const finishReason = typeof firstCandidate?.finishReason === 'string' ? firstCandidate.finishReason : undefined;
+  const groundingMetadata = firstCandidate?.groundingMetadata;
 
   return {
     text: extractText(parsed),
     modelUsed: model,
     modelVersion,
     finishReason,
+    ...(groundingMetadata !== undefined ? { groundingMetadata } : {}),
     candidates:
       parsed && typeof parsed === 'object' && 'candidates' in parsed
         ? (parsed as { candidates?: unknown[] }).candidates

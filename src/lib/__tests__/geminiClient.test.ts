@@ -438,4 +438,43 @@ describe('geminiClient edge proxy + model normalization', () => {
       expect(lastCallInit.headers['X-Turnstile-Token']).toBeUndefined();
     });
   });
+
+  describe('Grounding, ThinkingConfig, and Context Caching Forwarding', () => {
+    it('forwards enableGoogleSearchGrounding, cachedContent, and returns groundingMetadata', async () => {
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            candidates: [
+              {
+                content: { parts: [{ text: 'Grounded clinical insight' }] },
+                finishReason: 'STOP',
+                groundingMetadata: { webSearchQueries: ['ICMR diabetes'] },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      );
+
+      const ai = getAI();
+      const res = await ai.models.generateContent({
+        model: 'gemini-4-hydrogen',
+        contents: 'Explain HbA1c',
+        enableGoogleSearchGrounding: true,
+        cachedContent: 'projects/aegis-health-app-90697/locations/global/cachedContents/cache-1',
+        config: {
+          maxOutputTokens: 1024,
+          thinkingConfig: { thinkingLevel: 'low' },
+        },
+      });
+
+      expect(res.text).toBe('Grounded clinical insight');
+      expect(res.groundingMetadata).toEqual({ webSearchQueries: ['ICMR diabetes'] });
+
+      const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body as string) as Record<string, unknown>;
+      expect(sentBody.tools).toEqual([{ googleSearch: {} }]);
+      expect(sentBody.cachedContent).toBe('projects/aegis-health-app-90697/locations/global/cachedContents/cache-1');
+      expect((sentBody.generationConfig as Record<string, unknown>).thinkingConfig).toEqual({ thinkingLevel: 'low' });
+    });
+  });
 });

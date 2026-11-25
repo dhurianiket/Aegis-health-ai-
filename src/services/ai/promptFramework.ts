@@ -129,6 +129,83 @@ export const LabExtractionSchema = z.object({
 
 export type LabExtraction = z.infer<typeof LabExtractionSchema>;
 
+export const LAB_EXTRACTION_RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    collection_date: { type: "STRING", nullable: true },
+    patient: {
+      type: "OBJECT",
+      properties: {
+        name: { type: "STRING", nullable: true },
+        dob: { type: "STRING", nullable: true },
+        sex: { type: "STRING", nullable: true },
+        id: { type: "STRING", nullable: true },
+      },
+      required: ["name", "dob", "sex", "id"],
+    },
+    reportMetadata: {
+      type: "OBJECT",
+      properties: {
+        labName: { type: "STRING", nullable: true },
+        accessionNumber: { type: "STRING", nullable: true },
+        collectionDate: { type: "STRING", nullable: true },
+        reportDate: { type: "STRING", nullable: true },
+      },
+      required: ["labName", "accessionNumber", "collectionDate", "reportDate"],
+    },
+    observations: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          panel: { type: "STRING", nullable: true },
+          testName: { type: "STRING" },
+          loincLikeName: { type: "STRING", nullable: true },
+          display_value: { type: "STRING", nullable: true },
+          numeric_value: { type: "NUMBER", nullable: true },
+          unitOriginal: { type: "STRING", nullable: true },
+          valueCanonical: { type: "NUMBER", nullable: true },
+          unitCanonical: { type: "STRING", nullable: true },
+          referenceLow: { type: "NUMBER", nullable: true },
+          referenceHigh: { type: "NUMBER", nullable: true },
+          flag: { type: "STRING", enum: ["LOW", "NORMAL", "HIGH", "CRITICAL"], nullable: true },
+          page: { type: "NUMBER", nullable: true },
+          rawText: { type: "STRING", nullable: true },
+          confidence: { type: "NUMBER" },
+        },
+        required: [
+          "panel",
+          "testName",
+          "loincLikeName",
+          "display_value",
+          "numeric_value",
+          "unitOriginal",
+          "valueCanonical",
+          "unitCanonical",
+          "referenceLow",
+          "referenceHigh",
+          "flag",
+          "page",
+          "rawText",
+          "confidence",
+        ],
+      },
+    },
+    issues: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          type: { type: "STRING" },
+          description: { type: "STRING" },
+        },
+        required: ["type", "description"],
+      },
+    },
+  },
+  required: ["patient", "reportMetadata", "observations", "issues"],
+} as const;
+
 /**
  * Normalizes lab observations to canonical units.
  * - mmol/L glucose -> mg/dL (* 18.0182)
@@ -313,7 +390,12 @@ export async function classifyDocument(filesData: { base64Data: string; mimeType
     contents: [
       { role: "user", parts: [{ text: "Classify this document. Return JSON: { \"documentType\": \"lab_report\"|\"prescription\"|\"other\", \"labPanels\": [\"CBC\", \"Lipid\", ...], \"confidence\": number(0-1), \"extractionRecommended\": boolean }" }, ...filesData.map((f) => ({ inlineData: { data: f.base64Data, mimeType: f.mimeType } }))] }
     ],
-    config: { maxOutputTokens: 8192, temperature: 0.1, responseMimeType: "application/json" }
+    config: {
+      maxOutputTokens: 8192,
+      temperature: 0.1,
+      responseMimeType: "application/json",
+      thinkingConfig: { thinkingLevel: "low" },
+    }
   }), 3, "pdf_extraction");
   return safeJsonParse<any>(response.text, {});
 }
@@ -426,7 +508,11 @@ export async function explainInteraction(medicationContext: any) {
   const response = await safeGeminiCall(() => ai.models.generateContent({
     model: "gemini-4-hydrogen",
     contents: [{ role: "user", parts: [{ text: `${CORE_SYSTEM_PROMPT}\n\nExplain this drug-drug interaction JSON: ${JSON.stringify(medicationContext)}` }] }],
-    config: { maxOutputTokens: 8192, temperature: 0.1 }
+    config: {
+      maxOutputTokens: 8192,
+      temperature: 0.1,
+      thinkingConfig: { thinkingLevel: "low" },
+    }
   }), 3, "med_interaction");
   return response.text;
 }
@@ -481,6 +567,8 @@ export async function extractLabData(
           systemInstruction: CORE_SYSTEM_PROMPT,
           temperature: 0.1,
           responseMimeType: "application/json",
+          responseSchema: LAB_EXTRACTION_RESPONSE_SCHEMA,
+          thinkingConfig: { thinkingLevel: attempt >= 2 ? "medium" : "low" },
           maxOutputTokens: 8192,
         },
         contents: [

@@ -37,6 +37,8 @@
     "DISCOVERY_ENGINE_LOCATION": "global",
     "HEALTHCARE_LOCATION": "asia-south1",
     "HEALTHCARE_DATASET_ID": "aegis-health-india",
-    "HEALTHCARE_FHIR_STORE_ID": "aegis-fhir-r4"
+    "HEALTHCARE_FHIR_STORE_ID": "aegis-fhir-r4",
+    "MODEL_ARMOR_LOCATION": "asia-south1",
+    "MODEL_ARMOR_TEMPLATE_ID": "aegis-clinical-guard"
   }
 }

@@ -3,7 +3,7 @@ import { Volume2, VolumeX, Play, Pause, Square, Globe, Sparkles } from 'lucide-r
 import {
   regionalVoiceService,
   INDIAN_LANGUAGES,
-  IndianLanguageOption,
+  type AudioPlaybackSource,
 } from '../../services/ai/regionalVoiceService';
 
 interface RegionalAudioPlayerProps {
@@ -22,6 +22,7 @@ export const RegionalAudioPlayer: React.FC<RegionalAudioPlayerProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [playbackRate, setPlaybackRate] = useState<number>(1.0);
   const [progress, setProgress] = useState<number>(0);
+  const [audioSource, setAudioSource] = useState<AudioPlaybackSource | null>(null);
 
   useEffect(() => {
     return () => {
@@ -56,6 +57,9 @@ export const RegionalAudioPlayer: React.FC<RegionalAudioPlayerProps> = ({
         () => {
           setIsPlaying(false);
           setIsPaused(false);
+        },
+        (source) => {
+          setAudioSource(source);
         }
       );
     }
@@ -66,6 +70,7 @@ export const RegionalAudioPlayer: React.FC<RegionalAudioPlayerProps> = ({
     setIsPlaying(false);
     setIsPaused(false);
     setProgress(0);
+    setAudioSource(null);
   };
 
   const handleRateToggle = () => {
@@ -93,7 +98,7 @@ export const RegionalAudioPlayer: React.FC<RegionalAudioPlayerProps> = ({
             <h4 className="text-sm font-bold text-white tracking-wide flex items-center gap-1.5">
               {title}
               <span className="px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 font-mono text-[10px] font-semibold">
-                10+ Languages
+                {audioSource === 'cloud' ? 'Cloud HD' : audioSource === 'browser' ? 'Device Voice' : '10+ Languages'}
               </span>
             </h4>
             <p className="text-[11px] text-slate-400 font-light">
